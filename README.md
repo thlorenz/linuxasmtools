@@ -57,8 +57,8 @@ Or visit http://groups.yahoo.com/group/DesktopLinuxAsm
 The latest version of programs and additional
 information is available at either:
 
- http://linuxasmtools.net/    (terminal/console programs)
- http://linuxasmtools.net/x   (x window programs)
+ http://thlorenz.github.io/linuxasmtools-net    (terminal/console programs)
+ http://thlorenz.github.io/linuxasmtools-net/x   (x window programs)
 
 Individual program may be at source forge.
 Construct the sourceforge URL as follows:

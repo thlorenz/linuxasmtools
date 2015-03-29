@@ -147,7 +147,7 @@ is installed by copying anywhare on the executable
 path.  AsmLIb can be anywhere reachable by the
 linker.
 
-The web site http://linuxasmtools.net/
+The web site http://thlorenz.github.io/linuxasmtools-net/
 has more information, examples and tutorials.
 
  

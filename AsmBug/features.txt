@@ -83,7 +83,7 @@ Here is a partial list of unique features:
 
 all the best, jeff
 
- http://linuxasmtools.net/
+ http://thlorenz.github.io/linuxasmtools-net/
 
 
 

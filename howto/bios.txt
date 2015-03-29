@@ -35,7 +35,7 @@
   2.  Introduction
 
   The most recent version of this document can always be found at
-  http://linuxasmtools.net
+  http://thlorenz.github.io/linuxasmtools-net
 
   The BIOS (boot code) is contained in ROM (Read Only Memory)
   and includes startup code plus configuration menus.  After

@@ -3,4 +3,4 @@ asmmenu is called from scripts to get
 user input.  All data to build menu is
 placed at end of script.
 runs in the console or x terminal
-http://linuxasmtools.net
+http://thlorenz.github.io/linuxasmtools-net

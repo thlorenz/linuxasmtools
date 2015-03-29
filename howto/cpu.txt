@@ -35,7 +35,7 @@
   2.  Introduction
 
   The most recent version of this document can always be found at
-  http://linuxasmtools.net
+  http://thlorenz.github.io/linuxasmtools-net
 
   The CPU (Central Processing Unit) is the engine that runs
   a computer.  Over the years this engine has changed and

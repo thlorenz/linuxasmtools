@@ -104,7 +104,7 @@ BUG/COMMENTS
  Additional information may be available on the
  home page at:
 
- http://linuxasmtools.net/
+ http://thlorenz.github.io/linuxasmtools-net/
 
 This package is part of AsmTools (a collection of
 programs for assembler developent on Linux X86 cpu's.)

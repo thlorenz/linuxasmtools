@@ -78,7 +78,7 @@ COPYRIGHT
  additional information may be available on the
  home page at:
 
- http://linuxasmtools.net/
+ http://thlorenz.github.io/linuxasmtools-net/
 
  http://sourceforge.net/projects/asmedit
 

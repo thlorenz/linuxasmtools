@@ -35,7 +35,7 @@
   2.  Introduction
 
   The most recent version of this document can always be found at
-  http://linuxasmtools.net
+  http://thlorenz.github.io/linuxasmtools-net
 
   Most kernels are not configured to access CMOS memory, this
   make reading CMOS a little work.  This howto will discuss

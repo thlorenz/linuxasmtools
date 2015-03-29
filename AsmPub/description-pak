@@ -4,4 +4,4 @@ programs by extracting comments.  Comments
 must be in a special format and can be
 sorted and processed by asmpub.
 It runs in console or X terminal.
-http://linuxasmtools.net
+http://thlorenz.github.io/linuxasmtools-net

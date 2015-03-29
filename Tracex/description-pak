@@ -1,4 +1,4 @@
 trace x server calls
 tracex is a simple logger for calls
 a program makes to the x server.
-http://linuxasmtools.net
+http://thlorenz.github.io/linuxasmtools-net

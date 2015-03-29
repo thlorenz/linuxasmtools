@@ -2,4 +2,4 @@ X library for assembler programmers
 asmlibx is a general library that talks
 directly to x server.  It achieves
 small size by only supporting text windows.
-http://linuxasmtools.net
+http://thlorenz.github.io/linuxasmtools-net

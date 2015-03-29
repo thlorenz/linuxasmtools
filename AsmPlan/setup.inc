@@ -569,7 +569,7 @@ demo_project:
   db '_Y120060102.',0ah,0ah
   db '_Y120060103Additional help is available at the following:',0ah,0ah
   db '_Y120060104Subscribe to DesktopLinuxAsm-subscribe@yahoogroups.com by sending blank email',0ah,0ah
-  db '_Y120060105Web page at http://linuxasmtools.net/',0ah,0ah
+  db '_Y120060105Web page at http://thlorenz.github.io/linuxasmtools-net/',0ah,0ah
   db '_Y120060106 email contact is  jko@bsn1.net (Jeff Owens)',0ah,0ah
   db '_Y120060107Delete this project/topic or add your activities',0ah,0ah
 demo_project_end:

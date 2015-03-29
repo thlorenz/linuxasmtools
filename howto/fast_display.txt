@@ -35,7 +35,7 @@
 2.  Introduction
 
   The most recent version of this document can always be found at
-  http://linuxasmtools.net
+  http://thlorenz.github.io/linuxasmtools-net
 
   There has been a lot of interest in speeding up graphical
   displays, but little discussion of text displays.  Generally,
@@ -176,9 +176,9 @@
 7. Finding more information
 
     AsmLiba  - fast display and keyboard cache.
-               http://linuxasmtools.net/asmliba.html
+               http://thlorenz.github.io/linuxasmtools-net/asmliba.html
 
     AsmLiba_tutor - tutorial
-               http://linuxasmtools.net/asmliba_tutorial.html
+               http://thlorenz.github.io/linuxasmtools-net/asmliba_tutorial.html
 
 
