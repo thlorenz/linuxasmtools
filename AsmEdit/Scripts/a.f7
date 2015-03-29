@@ -1,0 +1,96 @@
+#! /bin/bash
+#>1 script
+#  a.f7 - example print script
+# INPUTS
+#  $1 is base name of file to print.
+# OUTPUT
+#  printer is called, but edit file unouched.
+# NOTES
+# * file: a.f7  <- tied to function key f7
+# *
+# * This example script is configured for the HP 500
+# * printer.  It does show how enscript can be used
+# * with a menu program to print two pages side by
+# * side.
+#<
+# * ----------------------------------------------
+
+asmmenu $0
+ret=$?
+echo "button returned code "$ret
+echo "printing file "$1
+
+if [ $ret = 11 ]; then
+       # print bold without title
+       enscript $1 --no-header -f Courier-Bold10 -M Letterdj -c 
+fi
+
+if [ $ret = 21 ]; then
+       # print big type without headers
+       enscript $1 --no-header -f Courier-Bold12 -M Letterdj -c
+fi
+
+if [ $ret = 31 ]; then
+       # print  with title
+       enscript $1 --fancy-header -f Courier-Bold10 -M Letterdj -c
+fi
+
+if [ $ret = 12 ]; then
+       # print bold without title
+       enscript $1 --no-header -f Courier-Bold8 -M Letterdj -c -2r
+       echo "2up"
+fi
+
+if [ $ret = 22 ]; then
+       # print bold without headers
+       enscript $1 --no-header -f Courier-Bold10 -M Letterdj -c -2r
+       echo "2upB"
+fi
+
+if [ $ret = 32 ]; then
+       # print bold with title
+       enscript $1 --fancy-header -f Courier-Bold8 -M Letterdj -c -2r
+       echo "2upT"
+fi
+
+if [ $ret = 13 ]; then
+       # print bold without headers
+       enscript $1 --no-header -f Courier-Bold8 -M Letterdj -c -r
+       echo "2upB"
+fi
+
+if [ $ret = 23 ]; then
+       # print bold without headers
+       enscript $1 --no-header -f Courier-Bold10 -M Letterdj -c -r
+       echo "2upB"
+fi
+
+if [ $ret = 33 ]; then
+       # print bold without headers
+       enscript $1 --no-header -f Courier-Bold12 -M Letterdj -c -r
+       echo "2upB"
+fi
+exit 0
+#---------------------------------------------------
+#menu definition follows
+# return code grid 11 12 13
+#                  21 22 23
+#                  31 32 33
+buttonsize: 3,12
+clear
+header: ""
+header: "            Print format menu"
+header: ""
+header: " 1up-print     2up-print     landscape"
+	1-up    	2-up    	small font
+	90 columns	71 columns	xx columns
+	65 rows 	62 rows 	xx rows
+
+	1-up    	2-up    	medium font
+	74 columns	mini    	xx columns
+	55 rows 	font    	xx rows
+
+	1-up+title	2-up+title	big font
+	90 columns	71 columns	xx columns
+	63 rows 	60 rows 	xx rows
+

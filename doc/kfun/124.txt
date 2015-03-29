@@ -1,0 +1,77 @@
+
+----------------------------------------------------------------------------
+124 adjtimex       - adjtimex   - tune kernel clock
+----------------------------------------------------------------------------
+  mov   eax,124
+  mov   ebx,struc ptr
+  int   80h
+
+       Linux  uses  David L. Mills' clock adjustment algorithm (see RFC 1305).
+       The system call adjtimex reads and optionally sets  adjustment  parame-
+       ters  for  this  algorithm.   It  takes a pointer to a timex structure,
+       updates kernel parameters from  field  values,  and  returns  the  same
+       structure  with  current  kernel values.  This structure is declared as
+       follows:
+
+              struct timex
+                  modes      resd 1 ; mode selector */
+                  offset     resd 1 ; time offset (usec) */
+                  freq       resd 1 ; frequency offset (scaled ppm) */
+                  maxerror   resd 1 ; maximum error (usec) */
+                  esterror   resd 1 ; estimated error (usec) */
+                  status     resd 1 ; clock command/status */
+                  constant   resd 1 ; pll time constant */
+                  precision  resd 1 ; clock precision (usec) (read only) */
+                  tolerance  resd 1 ; clock frequency tolerance (ppm)
+                                      (read only) */
+                  tv_sec     resd 1 ; struct timeval time; /* current time (read only) */
+                  tv_mic     resd 1 ;
+                  tick       resd 1 ; usecs between clock ticks */
+              endstruc
+
+       The modes field determines which parameters, if any, to  set.   It  may
+       contain a bitwise-or combination of zero or more of the following bits:
+
+              #define ADJ_OFFSET            0x0001 /* time offset */
+              #define ADJ_FREQUENCY         0x0002 /* frequency offset */
+              #define ADJ_MAXERROR          0x0004 /* maximum time error */
+              #define ADJ_ESTERROR          0x0008 /* estimated time error */
+              #define ADJ_STATUS            0x0010 /* clock status */
+              #define ADJ_TIMECONST         0x0020 /* pll time constant */
+              #define ADJ_TICK              0x4000 /* tick value */
+              #define ADJ_OFFSET_SINGLESHOT 0x8001 /* old-fashioned adjtime */
+
+       Ordinary users are restricted to a zero value for mode.  Only the supe-
+       ruser may set any parameters.
+
+RETURN VALUE
+       On success, adjtimex returns the clock state:
+
+              #define TIME_OK   0 /* clock synchronized */
+              #define TIME_INS  1 /* insert leap second */
+              #define TIME_DEL  2 /* delete leap second */
+              #define TIME_OOP  3 /* leap second in progress */
+              #define TIME_WAIT 4 /* leap second has occurred */
+              #define TIME_BAD  5 /* clock not synchronized */
+
+       On failure, adjtimex returns a negative error code
+
+ERRORS
+       EFAULT buf does not point to writable memory.
+
+       EPERM  buf.mode is non-zero and the user is not super-user.
+
+       EINVAL An  attempt  is  made  to  set buf.offset to a value outside the
+              range -131071 to +131071, or to set buf.status to a value  other
+              than  those  listed above, or to set buf.tick to a value outside
+              the range 900000/HZ to 1100000/HZ, where HZ is the system  timer
+              interrupt frequency.
+
+CONFORMING TO
+       adjtimex  is Linux specific and should not be used in programs intended
+       to be portable.  There is a similar but less general  call  adjtime  in
+       SVr4.
+
+SEE ALSO
+       settimeofday
+

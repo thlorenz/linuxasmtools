@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>MiniBug debugger</title>
+ <meta name="keywords" content="debugger, assembler, linux, utilities, x86, assembly, tools">
+ <meta name="description" content="terminal or console debugger">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+
+minibug - debugger for ELF executables<br>
+<br>
+USAGE<br>
+<br>
+ minibug [-a] file<br>
+<br>
+where  -a      attach to running file<br>
+       file    is name of file to debug<br>
+<br>
+DESCRIPTION<br>
+<br>
+minibug is a simple console or terminal debugger.<br>
+It provides a main window with rgister display, breakpoint<br>
+display, a code display, and memory display.<br>
+<br>
+Two keys cycle through window:<br>
+  w - select next window<br>
+  W - selects mini window when in debug window<br>
+<br>
+Initially the debug (main window) is displayed with<br>
+a small mini window on the right side. The mini window<br>
+can be toggled between several modes by pressing shift<br>
+w (upper case w).<br>
+<br>
+The debug window can be replaced with several other windows<br>
+by pressing the w key. Each press will show a different window.<br>
+Also windows can be selected by pressing alt key and first<br>
+letter of their name.<br>
+<br>
+MiniBug starts in debug window, recognizing the following keys:<br>
+ ?-window help                f-find label, or register name<br>
+ w-toggle to next win         &lt;enter&gt;-find next<br>
+ W-toggle mini win on right   alt-letter -select window by letter <br>
+ s-step                       up-scroll up<br>
+ o-step over                  down-scroll down <br>
+ g-go                         pgup-page up <br>
+ q-quit                       pgdn-page down <br>
+ h-help<br>
+<br>
+Register window recognizes the following keys:<br>
+ ?-window help               alt-letter -select window by letter <br>
+ w-toggle to next win        q-quit to debug window<br>
+ e-edit register value<br>
+<br>
+Memory window recognizes the following keys:<br>
+ ?-window help               alt-letter -select window by letter <br>
+ w-toggle to next win        q-quit to debug window<br>
+ e-edit memory value         f-find label or register<br>
+ b-show bytes   2-show words   d-show dwords<br>
+ up/down-scroll up/down      pgup/pgdn-page up/down<br>
+<br>
+Break window recognizes the following keys:<br>
+ ?-window help               alt-letter -select window by letter <br>
+ w-toggle to next win        q-quit to debug window<br>
+ a-add breakpoint<br>
+ c-clear breakpoints<br>
+<br>
+Note: breaks may be easier to set from the debug window.<br>
+      using f(find) and b(break-here)<br>
+<br>
+Stack window recognizes the following keys: <br>
+ ?-window help               alt-letter -select window by letter <br>
+ w-toggle to next win        q-quit to debug window<br>
+ up-scroll up<br>
+ down-scroll down <br>
+ pgup-page up <br>
+ pgdn-page down<br>
+<br>
+<br>
+PROBLEMS<br>
+<br>
+MiniBug sometimes fails to disassemble correctly. This<br>
+often occurs if data is included within the .text section.<br>
+Stepping into the code may fix the disassembly.<br>
+<br>
+FILES<br>
+<br>
+MiniBug is contained within one file and does not<br>
+use any support files<br>
+<br>
+SEE ALSO<br>
+<br>
+asmbug asmdis<br>
+<br>
+AUTHOR<br>
+<br>
+Jeff Owens &lt;jko@bsn1.net&gt;<br>
+<br>
+COPYRIGHT<br>
+<br>
+GNU Copyright (C) 2007 Jeff Owens<br>
+This program comes with absolutely NO WARRANTY<br>
+<br>
+      <br>
+      </big><br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

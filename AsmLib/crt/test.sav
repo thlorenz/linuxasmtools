@@ -1,0 +1,319 @@
+
+ [section .text]
+
+  extern move_cursor,crt_color_at,crt_char_at
+  extern crt_clear,crt_vertical,crt_str
+  extern crt_open,crt_close
+  extern crt_columns,crt_rows
+  extern crt_window,color_cursor
+  extern crt_table,crt_table_loc,cursor_to_table
+  extern str_move
+  extern crt_mouse_line
+
+  global _start
+  global main
+
+_start:
+main:
+  nop
+  call	crt_color_at_test
+  call	crt_open
+
+  mov	eax,30003730h
+  call	crt_clear
+
+  call	crt_table_test
+  call	crt_screen_test
+  call	mouse_line_test
+  call	cursor_test
+  call	crt_char_test
+  call	crt_vertical_test
+  mov	ecx,msg1
+  call	msg_plus_key
+
+  call	crt_close
+  mov	eax,1		;exit
+  int	80h
+;-------------------------------
+crt_screen_test:
+  call	crt_open
+
+  mov	al,[crt_rows]
+  mov	[c_win_rows],al
+  mov	al,[crt_columns]
+  mov	[c_win_col],al
+
+  mov	esi,in_block
+  call	crt_window
+; put cursor on screen
+  mov	eax,37003437h	;color
+  mov	bh,2		;row
+  mov	bl,2		;column
+  mov	ecx,screen
+  call	color_cursor
+
+  call	key
+  call	crt_close
+  ret  
+;-------------------
+  [section .data]
+
+in_block:
+  dd	37003437h
+  dd	screen
+  dd	quick_end
+  dd	0		;scroll
+c_win_col:
+  db	8		;window columns
+c_win_rows:
+  db	4		;window rows
+  db	1		;starting row
+  db	1		;starting column 1+
+
+  [section .text]
+
+;--------------------------------
+mouse_line_test:
+  mov	esi,button_row1
+  mov	ah,[crt_rows]
+  mov	ecx,30003037h
+  mov	edx,30003730h
+  call	crt_mouse_line
+  ret
+
+button_row1:
+ db 1,'F1 find ->',8,8,8,8,'<- again f2','Quit f10',1,0
+
+;--------------------------------
+cursor_test:
+  mov	al,1
+  mov	ah,2
+  call	move_cursor
+  mov	ecx,msg2
+  call	msg_plus_key
+  ret
+;-------------------------------
+crt_color_at_test:
+  mov	eax,30003730h
+  mov	bl,2
+  mov	bh,6
+  mov	ecx,msg3
+  call	crt_color_at
+  mov	al,1		;column
+  mov	ah,8		;row
+  mov	ecx,msg7
+  call	msg_plus_key_at
+  ret
+;-------------------------------
+crt_char_test:
+  mov	eax,31003037h
+  mov	bl,1
+  mov	bh,12
+  mov	cl,'x'
+  call	crt_char_at
+
+  mov	eax,30003037h
+  mov	bl,1
+  mov	bh,13
+  mov	ecx,msg4
+  call	crt_color_at
+  mov	al,1		;column
+  mov	ah,15		;row
+  mov	ecx,msg7
+  call	msg_plus_key_at
+  ret
+;-------------------------------
+crt_vertical_test:
+  mov	eax,30003730h
+  call	crt_clear
+
+  mov	eax,30003730h
+  mov	al,1
+  mov	ah,1
+  mov	ecx,msg5
+  call	msg_plus_key_at
+
+  mov	eax,37003730h
+  mov	al,30
+  mov	ah,1
+  mov	bl,'x'
+  mov	bh,5
+  call	crt_vertical
+
+  mov	bl,1
+  mov	bh,10
+  mov	ecx,msg6
+  call	msg_plus_key_at
+  ret
+;-------------------------------
+crt_table_test:
+  mov	esi,edit_table
+  call	crt_table
+
+  mov	esi,edit_table
+  mov	edi,tyear
+  call	crt_table_loc	;find row column of tyear
+  push	eax
+  call	move_cursor	;move cursor to loc
+  pop	ecx
+  mov	esi,edit_table
+  call	cursor_to_table
+  cmp	esi,tyear
+  je	ctt_ok
+  nop
+ctt_ok:
+  ret
+
+default_text_field_len	equ	60
+
+ db -67			;trap to catch clicks at upper left corner of screen
+edit_table:
+ db 1,'  ',-73,4,'Previous(PgUp)',1,'  ',-74,4,'Next(PgDn)',1,'  ',-65,4,'Delete(F8)',1,'  ',-67,4,'Abort edits(F9)',1,'  ',-66,4,'Done(F10)',1,9
+ db 1,9
+ db 1,'todo state:   ',-1,2
+pending
+ db 'Pending',1,'   ',-2,2
+completed
+ db 'completed',1,'   ',-3,2
+deleted
+ db 'deleted',1,9
+ db 1,9
+ db 1,'date:  year:  ',-4,2
+years
+tyear:
+ db '2003',1,' ',-5,2
+years2 
+ db '2004',1,' ',-6,2
+years3
+ db '2005',1,9
+ db 1,'       Month: ',-7,2
+months
+ db '01',1,' ',-8,2,'02',1,' ',-9,2,'03',1,' ',-10,2,'04',1,' ',-11,2,'05',1,' ',-12,2,'06',1,' ',-13,2,'07',1,' ',-14,2,'08',1,' ',-15,2,'09',1,' ',-16,2,'10',1,' ',-17,2,'11',1,' ',-18,2,'12',1,9
+ db 1,'       Day:   ',-19,2
+days1
+ db '01',1,' ',-20,2,'02',1,' ',-21,2,'03',1,' ',-22,2,'04',1,' ',-23,2,'05',1,' ',-24,2,'06',1,' ',-25,2,'07',1,' ',-26,2,'08',1,' ',-27,2,'09',1,' ',-28,2,'10',1,' ',-29,2,'11',1,' ',-30,2,'12',1,' ',-31,2,'13',1,' ',-32,2,'14',1,' ',-33,2,'15',1,9
+ db 1,'              ',-34,2
+days2
+ db '16',1,' ',-35,2,'17',1,' ',-36,2,'18',1,' ',-37,2,'19',1,' ',-38,2,'20',1,' ',-39,2,'21',1,' ',-40,2,'22',1,' ',-41,2,'23',1,' ',-42,2,'24',1,' ',-43,2,'25',1,' ',-44,2,'26',1,' ',-45,2,'27',1,' ',-46,2,'28',1,' ',-47,2
+day29
+ db '29',1,' ',-48,2
+day30
+ db '30',1,' ',-49,2
+day31
+ db '31',1,9
+ db 1,9
+ db 1,'Schedule:  ',-50,2
+schedule_once
+ db 'once',1,'     ',-51,2
+schedule_daily
+ db 'daily',1,'   ',-52,2
+schedule_eom
+ db 'at EOM',1,9
+ db 1,'           every:   ',-53,2
+schedule_wk1
+ db 'weekly',1,'  ',-54,2
+schedule_wk2
+ db '2 weeks',1,'    ',-55,2
+schedule_wk3
+ db '3 weeks',1,'   ',-56,2
+schedule_wk4
+ db '4 weeks',1,9 
+ db 1,'           every:   ',-57,2
+schedule_m1
+ db 'month',1,'   ',-58,2
+schedule_m2
+ db '2 months',1,'   ',-59,2
+schedule_m3
+ db '3 months',1,'  ',-60,2
+schedule_m4
+ db '4 months',1,'  ',-61,2
+schedule_m6
+ db '6 months',1,9
+ db 1,'           every:   ',-62,2
+schedule_y1
+ db 'yearly',1,'  ',-63,2
+schedule_y2
+ db '2 years',1,'    ',-64,2
+schedule_y3
+ db '3 years',1,9
+ db 1,9
+
+ db    1,'  ',-68,4				;temp;;; use button color for text area
+edit_line1
+ times default_text_field_len db ('*')
+ db	1,9
+ db    1,'  ',-69,4
+edit_line2
+ times default_text_field_len db ('*')
+ db	1,9
+ db    1,'  ',-70,4
+edit_line3
+ times default_text_field_len db ('*')
+ db	1,9
+ db    1,'  ',-71,4
+edit_line4
+ times default_text_field_len db ('*')
+ db	1,9
+ db    1,'  ',-72,4
+edit_line5
+ times default_text_field_len db ('*')
+ db	1,9
+
+ db 5
+ db 0
+edit_table_end
+
+  
+;-------------------------------
+%include "../test.inc"
+
+;--------------------------------------------------
+  [section .data]
+
+msg1: db "this completes /crt_xxx.asm tests",0ah,0
+msg2: db "<- should be row 2 line 1",0ah,0
+msg3: db "<- row 6 column 2, white on black",0ah,0
+msg4: db "line above should have single x",0ah,0
+msg5: db "screen should be cleared",0ah,0
+msg6: db "vertical bar above left",0ah,0
+msg7: db "-",0ah,0
+
+screen:
+ db 'AsmEdit quick reference',0ah
+ db '',0ah
+ db 'command mode    command menu keys       other keys',0ah
+ db '-------------   -----------------       ------------------',0ah
+ db ' a - again	A - abort files         -   find backwards',0ah
+ db ' b - block	B - block menu          ^a  delete right ',0ah
+ db ' c - calc	C - calc                ^x  delete left',0ah
+ db ' d - del block	D - del block           ^z  delete line',0ah
+ db ' e - execute	E - exit editor         ^u  undo last ^z',0ah
+ db ' f - find	F - find menu           ^r  emter hex char',0ah
+ db ' g - get	G - get block     ',0ah
+ db ' h - help	H - help                f1 - help',0ah
+ db ' i - insert mode I - insert mode        f2 - planner',0ah
+ db ' j - jump menu	J - jump menu           f3 - compile',0ah
+ db ' k -            K - find backwards      f4 - debugger',0ah
+ db ' l -            L - goto line           f5 - spell check',0ah
+ db ' m - macro      M - misc menu           f6 - compare files',0ah
+ db ' n -            N - new file            f7 - print',0ah
+ db ' o - other      O - other file          f8 - ',0ah
+ db ' p - paragraph  P - paragraph           f9 -',0ah
+ db ' q - quit menu	Q - quit menu           f10 - exit',0ah
+ db ' r - replace	R - replace',0ah
+ db ' s - setup      S - setup',0ah
+ db ' t - tag        T - edit menu',0ah
+ db ' u -            U - update file',0ah
+ db ' v -            V - save file as',0ah
+ db ' w - win split  W - window menu',0ah
+ db ' x - overtype   X - overtype mode',0ah
+ db ' y -            Y - insert file',0ah
+ db ' z -            Z - abort edit session',0ah
+ db '                space - main menu',0ah
+quick_end:    
+screen_cursor:
+ db 'cursor should be at start of this line',0ah
+ db ' this is the next to last line',0ah
+ db '-press <enter> to continue',0ah
+screen_end:
+ db 0ah

@@ -1,0 +1,23 @@
+
+----------------------------------------------------------------------------
+ 52 umount2        - mount and unmount filesystems
+----------------------------------------------------------------------------
+
+  (this function has not been verified to work as described)
+
+  mov  eax,052
+  mov  ebx,path  ;file or directory path
+  mov  ecx,flag
+  int  80h
+
+  flag
+  ----
+
+  0 = normal umount
+  1 = forced umount
+
+  If file un-mounted a zero is returned in eax
+  else negative error code
+
+  see umount
+

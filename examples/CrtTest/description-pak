@@ -1,0 +1,6 @@
+show information about the display
+crt_test is a example program from
+AsmLib.  It shows current display status
+and has a simple menu.
+crt_test runs in console or X terminal.
+http://linuxasmtools.net

@@ -1,0 +1,46 @@
+
+
+  global _start,main
+main:
+_start:
+  mov	ah,55h		;key
+  mov	esi,string
+  mov	edi,coded_buf
+  call	encode		;encode string
+;decode setup
+  mov	esi,coded_buf
+  mov	edi,decoded_buf
+  call	decode		;decode string
+
+  mov	eax,1
+  int	80h
+;-------------------------
+encode:		;input ah=key esi=string edi=output buffer
+  mov	al,ah
+en_loop:
+  xor	al,[esi]
+  rol	al,3
+  inc	al
+  stosb
+  inc	esi
+  cmp	[esi-1],byte 0
+  jnz	en_loop
+  ret 	
+;-------------------------
+decode:		;input ah=key esi=encoded string  edi=decoded result
+  lodsb
+  dec	al
+  ror	al,3
+  xor	al,ah
+  stosb
+  mov	ah,[esi-1]
+  jnz	decode
+  ret
+;------------
+  [section .data]
+string	db 'abcdefghijkl',0
+coded_buf	times 20 db 0
+decoded_buf	times 20 db 0
+  [section .text]
+
+

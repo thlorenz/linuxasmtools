@@ -1,0 +1,94 @@
+
+--------------------------------------------------------------------------
+247 io_getevents   - Read asynchronuous I/O events from the completion queue
+--------------------------------------------------------------------------
+
+  mov  eax,247
+  mov  ebx,ctx_id     ;context ptr returned by io_setup
+  mov  ecx,min_nr     ;minimum number of events
+  mov  edx,nr         ;maximum number of events
+  mov  esi,events     ;pointer to buffer (events placed here)
+  mov  edi,timeout    ;pointer to timeout; max time to wait for nr events,
+  int  80h
+
+SYNOPSIS
+
+       int io_getevents(aio_context_t ctx_id, long min_nr, long nr,
+                        struct io_event *events, struct timespec *timeout);
+
+
+DESCRIPTION
+       io_getevents()  attempts  to  read  at least min_nr events and up to nr
+       events from the completion  queue  of  the  AIO  context  specified  by
+       ctx_id.  timeout specifies the amount of time to wait for events, where
+       a NULL timeout waits until at least min_nr events have been seen.  Note
+       that timeout is relative and will be updated if not NULL and the opera‐
+       tion blocks.
+
+RETURN VALUE
+       On success, io_getevents() returns the number of events read: 0  if  no
+       events  are  available or < min_nr if the timeout has elapsed; on fail‐
+       ure, it returns one of the errors listed under ERRORS.
+
+ebx
+---
+
+       ebx contains context ptr (same as aio_ring_base).  This ptr is
+       returned by io_setup and points to:
+                      dd id (address of aio_ring_base)=this address
+                      dd nr (number of contexts possible)
+                      dd head
+                      dd tail
+                      dd magic (a10a10a1)
+                      dd compat
+                      dd incompat
+                      dd header_len
+                      dq event1_data (set to handler from io_submit)
+                      dq event1_obj  (iocb ptr for event1)
+                      dq event1_result (eax return code)
+                      dq event1_result (suplemental result)
+
+esi
+---
+       On success the esi register points at end of stored events.
+       Event entries appear as:
+         dq  aio_handler ;pointer to event handler (provided by caller)
+         dq  aio_obj     ;iocb ptr for this event
+         dq  result1     ;returned in eax
+         dq  result2     ;supllmental result
+
+       Note: Most kernel functions only change the eax register.  This
+             is an exception.
+iocb
+----
+
+      The io control block is created by io_submit and describes
+      a operation.  It contains:
+
+         dq aio_handler ;pointer to event handler (provided in io_submit)
+         dq aio_key
+         dw aio_lio_opcode ;0=read 1=write
+         dw aio_reqprio    ;priority
+         dd aio_filedes    ;fd
+         dq sio_nbytes     ;buffer size
+         dq aio_offset
+
+ERRORS
+       EINVAL ctx_id is invalid.  min_nr is out of  range  or  nr  is  out  of
+              range.
+
+       EFAULT Either events or timeout is an invalid pointer.
+
+       ENOSYS io_getevents() is not implemented on this architecture.
+
+VERSIONS
+       The  asynchronous  I/O system calls first appeared in Linux 2.5, August
+       2002.
+
+CONFORMING TO
+       io_getevents() is Linux specific and should not  be  used  in  programs
+       that are intended to be portable.
+
+SEE ALSO
+       io_setup, io_submit, io_getevents, io_cancel, io_destroy
+

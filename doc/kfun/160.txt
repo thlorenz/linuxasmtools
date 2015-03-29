@@ -1,0 +1,48 @@
+
+----------------------------------------------------------------------------
+system 160 sched_get_priority_min  - get static priority range
+----------------------------------------------------------------------------
+  mov  eax,160
+  mov  ebx,policy
+  int  80h
+
+       sched_get_priority_min returns the minimum priority value that  can  be
+       used with the scheduling algorithm identified by policy. Supported pol-
+       icy values are SCHED_FIFO, SCHED_RR, and SCHED_OTHER.
+
+       Processes with numerically higher priority values are scheduled  before
+       processes  with  numerically  lower  priority  values.  Thus, the value
+       returned by sched_get_priority_max  will  be  greater  than  the  value
+       returned by sched_get_priority_min.
+
+       Linux allows the static priority value range 1 to 99 for SCHED_FIFO and
+       SCHED_RR and the priority 0 for SCHED_OTHER. Scheduling priority ranges
+       for the various policies are not alterable.
+
+       The  range  of  scheduling  priorities may vary on other POSIX systems,
+       thus it is a good idea for portable applications to use a virtual  pri-
+       ority  range and map it to the interval given by sched_get_priority_max
+       and sched_get_priority_min.  POSIX.1b requires a spread of at least  32
+       between the maximum and the minimum values for SCHED_FIFO and SCHED_RR.
+
+       POSIX systems  on  which  sched_get_priority_max  and  sched_get_prior-
+       ity_min  are available define _POSIX_PRIORITY_SCHEDULING in <unistd.h>.
+
+
+RETURN VALUE
+       On success, sched_get_priority_max  and  sched_get_priority_min  return
+       the maximum/minimum priority value for the named scheduling policy.  On
+       error a negative code is returned
+
+ERRORS
+       EINVAL parameter policy does not identify a defined scheduling policy.
+
+CONFORMING TO
+       POSIX.1b (formerly POSIX.4)
+
+SEE ALSO
+       sched_setaffinity(2),    sched_getaffinity(2),   sched_setscheduler(2),
+       sched_getscheduler(2), sched_setparam(2), sched_getparam(2)
+
+       sched_setscheduler(2) has a description of the Linux scheduling scheme.
+

@@ -1,0 +1,115 @@
+;****f* date/days2dateregs *
+; NAME
+;  days2dateregs - convert days to week,day,month, etc.
+; INPUTS
+;  * eax = days since jan 1 1970
+; OUTPUT
+;  * eax days_since_1970 - total days since 1970
+;  * dh  [day_of_week] - 0=wednesday 1=thursday...-> 0=sunday
+;  * ebx year - current year
+;  * dl  day_of_month - 1 based
+;  * esi month_number - 1 based
+;  * 
+; NOTES
+; * source file: days2dateregs.asm
+; * -
+; * ----------------------------------------------
+;*******
+
+;--------------------------------------------------------------------------------
+; days2dateregs
+;  input:  eax = days since 1970
+; output: year, day_of_month, month_number
+;         day_of_week
+;
+  global days2dateregs
+days2dateregs:
+  mov	[days_since_1970],eax
+;
+; now compute the day of the week
+;
+  xor	edx,edx
+  mov	ebx,7
+  div	ebx
+  or	edx,edx			;check if remainder
+  mov	[day_of_week],dl	;0=wednesday 1=thursday 2=friday
+;
+; determine current year
+;
+  mov	eax,[days_since_1970]
+  mov	ecx,2	;leap year mod
+  mov	esi,1970	;starting year
+yr_lp:
+  mov	ebx,365	;days in non-leap year
+  inc	esi
+  xor	edx,edx
+  inc	ecx
+  test	cl,3
+  jnz	no_yr_adjust	;jmp if not leap year
+  inc	ebx	;add in extra day for leap year
+  jmp	yr_tail
+no_yr_adjust:
+  cmp	esi,2000
+  jne	yr_tail
+  inc	ebx	;adjust of leap year every 100 years
+yr_tail:	;remove days from year count
+  sub	eax,ebx
+  jc	yr_done
+  jmp	yr_lp	
+  
+yr_done:
+  dec	esi
+  add	eax,ebx	;restore days in current year
+  mov	[year],esi	;save year
+;
+; esi = current year
+; eax = day of year
+; ebx = 365 if normal year 364 if leap year
+;
+  mov	edx,eax	;get day# in current year
+  mov	esi, day_in_month
+  xor	eax,eax
+dys_dte_100:
+  lodsb		;get days/month starting with January
+  cmp	al,28	;is this feb
+  jne	yr_20	;jmp if not Feb
+  sub	ebx,364	;if leap this will set ebx=1
+  add	eax,ebx
+yr_20:
+  sub	edx,eax	;all days accounted for?  
+  jnc	dys_dte_100	;  n: get next month's days, else...  
+  add	edx,eax	;restore this months days
+  add	dl,1	;convert to 1 based and make ?? adjustment
+;  mov	[day_of_month],dl
+  sub	esi,day_in_month
+;  mov	[month_number],esi ;month is 1 based
+  mov	ebx,[year]
+  mov	eax,[days_since_1970]
+  mov	dh,[day_of_week]	;0=wed at this point
+  add	dh,4			;adjust day of week (see .adw)
+  cmp	dh,7			;too much?
+  jb	s_done			;jmp if done
+  sub	dh,7			;fix day of week
+s_done:
+  ret
+
+day_in_month:
+	db	31		;days in January
+	db	28		; February
+	db	31		;days in March
+	db	30		;days in April
+	db	31		;days in May
+	db	30		;days in June
+	db	31		;days in July
+	db	31		;days in August
+	db	30		;days in September
+	db	31		;days in October
+	db	30		;days in November
+	db	31		;days in December
+
+
+ [section .data]
+year dd	0
+days_since_1970 dd	0	;days since 1970
+day_of_week dd 0
+

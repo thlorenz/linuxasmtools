@@ -1,0 +1,43 @@
+
+----------------------------------------------------------------------------
+ 191 ugetrlimit    - return limits in rlimit struc
+----------------------------------------------------------------------------
+    mov  eax,191
+    mov  ebx,resources  ;
+    mov  ecx,rlimit     ;ptr to rlimit struc
+    int  80h
+
+  resource
+  --------
+   ebx It must be one of the following values:
+   RUSAGE_SELF     0  - get resource usage for parent process
+   RUSAGE_CHILDREN -1 - get resource usage for child processes.
+
+
+  rlim
+  ----
+   struc rusage
+;   ru_utime            ; user time used
+    .ut_sec      rd 1 ; seconds
+    .ut_usec     rd 1 ; microseconds
+;   ru_stime            ; system time used
+    .st_sec      rd 1 ; seconds
+    .st_usec     rd 1 ; microseconds
+   .ru_maxrss   rd 1 ; maximum resident set size
+   .ru_ixrss    rd 1 ; integral shared memory size
+   .ru_idrss    rd 1 ; integral unshared data size
+   .ru_isrss    rd 1 ; integral unshared stack size
+   .ru_minflt   rd 1 ; page reclaims
+   .ru_majflt   rd 1 ; page faults
+   .ru_nswap    rd 1 ; swaps
+   .ru_inblock  rd 1 ; block input operations
+   .ru_oublock  rd 1 ; block output operations
+   .ru_msgsnd   rd 1 ; messages sent
+   .ru_msgrcv   rd 1 ; messages received
+   .ru_nsignals rd 1 ; signals received
+   .ru_nvcsw    rd 1 ; voluntary context switches
+   .ru_nivcsw   rd 1 ; involuntary context switches
+   endstruc
+
+
+

@@ -1,0 +1,425 @@
+
+  [section .text align=1]
+
+%include "../../include/signal.inc"
+%include "../../include/system.inc"
+%include "../../include/dcache_colors.inc"
+;%include "signal.inc"
+;%include "system.inc"
+;%include "dcache_colors.inc"
+
+;external library calls follow    
+  extern sys_exit
+  extern delay
+  extern sys_read
+  extern poll_fd
+  extern env_stack
+  extern read_window_size
+
+  extern vt_setup
+  extern vt_ptty_setup
+  extern vt_flush
+  extern ptty_pid
+  extern vt_out
+  extern vt_close
+  extern vt_ptty_launch
+  extern ptty_fd
+  extern vt_in
+
+  extern event_setup
+  extern vt_fd
+
+  extern event_decode
+  extern event_wait
+  extern signal_hit_mask
+  extern sigchld_pid
+  extern event_close
+  extern sigurg_status
+  extern sigio_status
+  extern signal_attach
+  extern signal_install_list
+
+  extern list_check_front
+  extern list_get_from_front
+  extern list_put_at_end
+  extern list_check_end
+ 
+;The display is built in a buffer and then
+;written with dcache_flush.  First, we need
+;to find the display buffer size.
+  global _start
+_start:
+  call	env_stack
+  call	read_window_size	;needed for vt_flush
+  mov	esi,vt_setup_block
+  call	vt_setup
+
+  mov	eax,launch_name
+  call	vt_ptty_setup
+  call	vt_flush
+  call	vt_ptty_launch
+
+  call	write_help
+
+  call	flush_app
+;
+;catch all signals for maximum visibility and
+;problem detection.
+;
+  mov	eax,-1		;enable all possible signal traps
+  mov	ebp,cleanup	;send abort signals here
+  mov	dl,0		;no keyboard handler
+  call	event_setup	;enable signal handlers
+
+  call	attach_signals
+  call	fsync_adjust
+  call	adjust_signal_handlers
+
+  call	vt_flush
+
+event_loop:
+;  mov	eax,2000
+;  call	delay
+;  mov	eax,[signal_hit_mask]
+;  or	eax,eax
+;  jz	event_loop
+
+  cmp	[signal_hit_mask],dword 0
+  jne	event_waiting
+  call	event_wait
+
+  extern log_regtxt
+;  mov	eax,'msk '
+;  call	log_regtxt
+;  mov	eax,[signal_hit_mask]
+  extern log_hex,log_eol
+;  call	log_hex
+;  call	log_eol
+
+event_waiting:
+  mov	eax,decode_table
+  call	event_decode
+  or	eax,eax
+  jz	event_loop	;jmp if no events of interest
+  jmp	eax		;goto event
+;if event was not in table, we can decode
+;it manually by looking at mask signal_hit_mask
+;and refering to signal.inc for format.
+;---------
+  [section .data]
+decode_table:
+          dd  SIGCHLD_code  ; child died
+          dd  SIGWINCH_code ; terminal resize
+          dd  SIGTRAP_code  ; breakpoint/trap occured
+          dd  SIGUSR1_code  ; event #1, user assigned
+          dd  SIGUSR2_code  ; event #2, user assigned
+          dd  SIGALRM_code  ; alarm/timer event
+          dd  SIGURG_code   ; ptty display output
+          dd  SIGIO_code    ; stdin ready
+  [section .text]
+SIGCHLD_code:  ; child died
+  and	[signal_hit_mask],dword ~_CHLD
+  mov	eax,[sigchld_pid]
+  cmp	eax,[ptty_pid]
+  je	cleanup		;jmp if child dead
+  jmp	event_loop	;ignore this signal
+SIGWINCH_code: ; terminal resize
+winch_loop:
+  and	[signal_hit_mask],dword ~_WINCH
+  mov	eax,-1
+  call	delay
+  test	[signal_hit_mask],dword _WINCH
+  jnz	winch_loop
+;;  call	display_setup
+  jmp	event_loop
+;;  jmp	restart
+
+SIGTRAP_code:  ; breakpoint/trap occured
+  jmp	event_loop	;ignore this signal
+SIGUSR1_code:  ; event #1, user assigned
+  and	[signal_hit_mask],dword ~_USR1
+  jmp	event_loop	;ignore this signal
+SIGUSR2_code:  ; event #2, user assigned
+  jmp	event_loop	;ignore this signal
+SIGALRM_code:  ; alarm/timer event
+  jmp	event_loop	;ignore this signal
+SIGURG_code:   ; urgent ptty event
+  and	[signal_hit_mask],dword ~_URG
+  mov	edx,list_block
+  call	list_check_front;set esi if entry found
+  js	event_loop	;exit if no data
+sigurg_loop:
+  mov	ecx,[esi]	;get buffer ptr
+  mov	edx,[esi+4]	;get length of data
+  call	vt_out		;process buffer
+  mov	edx,list_block
+  call	list_get_from_front ;remove packet processed
+  call	list_check_front;check if more data
+  jns	sigurg_loop	;jmp if more data  
+;all data has been processed, now do flush
+  call	vt_flush
+  jmp	event_loop
+
+do_app:
+;  mov	eax,'app '
+;  call	log_regtxt
+;  mov	eax,' fd='
+;  call	log_regtxt
+;  extern sigurg_fd
+;  mov	eax,[sigurg_fd]
+;  call	log_hex
+;  mov	eax,' st='
+;  call	log_regtxt
+;  mov	eax,[sigurg_status]
+;  call	log_hex
+;  call	log_eol
+
+  mov	edx,list_block
+  call	list_check_end		;anything on list
+  js	do_app_10		;jmp if empty list
+  mov	ecx,[esi]		;get last buffer
+  add	ecx,[esi+4]		;advance to next avail loc
+  jmp	short do_app_20		;go read data
+;read to top of buffer
+do_app_10:
+  mov	ecx,work_buf
+do_app_20:
+  mov	edx,5000
+  mov	ebx,[ptty_fd]
+  call	sys_read
+  or	eax,eax
+  jz	do_app_exit	;exit if no data
+  jns	do_app_30	;jmp if good read
+  cmp	al,-11		;do again?
+  je    do_app_exit	;keep trying?
+do_app_30:
+  mov	edx,list_block
+  mov	esi,list_entry
+  mov	[esi],ecx	;store buffer
+  mov	[esi+4],eax	;store size
+  call	list_put_at_end
+do_app_exit:
+  ret      
+
+
+SIGIO_code:    ; key available
+; read stdin here and call vt_in
+  and	[signal_hit_mask],dword ~_IO
+;-----------------
+do_key:
+;  mov	eax,'key '
+;  call	log_regtxt
+;  mov	eax,' fd='
+;  call	log_regtxt
+;  extern sigio_fd
+;  mov	eax,[sigio_fd]
+;  call	log_hex
+
+;  mov	eax,' st='
+;  call	log_regtxt
+  mov	eax,[sigio_status]
+;  call	log_hex
+;  call	log_eol
+
+  cmp	al,1
+  jne	do_key_exit
+
+  mov	edx,[sigio_read_len]
+  mov	ecx,key_buf
+  call	vt_in
+do_key_exit:
+  jmp	event_loop
+;-------------------------------------
+cleanup:
+  call	event_close
+  call	vt_close
+  call	sys_exit
+
+;-------------------------------------------------
+;child_close:
+;  mov	ebx,[ptty_fd]
+;  call	file_close
+;  ret
+
+;------------------------------------------------
+write_help:
+  mov	ecx,help_msg
+  mov	edx,help_msg_size
+  call	vt_out
+  call	vt_flush
+  ret
+;------------------------------------------------
+flush_app:
+; wait for child to write something
+child_wait:
+  mov	eax,20000
+  call	delay
+  mov	eax,[ptty_fd]
+  mov	edx,0		;immediate return
+  call	poll_fd
+  js	child_wait_exit		;jmp if error
+  jz	child_wait_exit
+; read ptty_fd here and call vt_out
+  mov	ebx,[ptty_fd]	;read data]
+  mov	ecx,work_buf
+  mov	edx,5000
+  call	sys_read
+  or	eax,eax
+  js	child_wait_exit
+  mov	edx,eax		;move amount read to edx
+  call	vt_out
+  jmp	child_wait	;go get more?
+child_wait_exit:
+  ret
+
+;--------------------------------------------------------
+attach_signals:
+; call signal_attach of ptty_fd (use SIGURG ?)  see file y
+  mov	ebx,[ptty_fd]
+  mov	eax,SIGURG
+  mov	ecx,_URG
+;  mov	eax,SIGUSR1
+;  mov	ecx,_USR1
+  mov	dl,0
+  call	signal_attach
+
+; call signal attach for stdin (use SIGIO)  see file y
+  mov	ebx,[vt_fd]
+  mov	eax,SIGIO	;tty fd
+  mov	ecx,_IO		;mask
+  mov	dl,0		;no keyboard handler
+  call	signal_attach
+  ret
+;---------------------------------------------------------
+
+fsync_adjust:
+;change SIGURG (app)
+  mov	eax,55		;fcntl
+  mov	ebx,[ptty_fd]
+  mov	ecx,4		;F_SETFL
+;  mov	edx,4000q	;O_NONBLOCK
+;  mov	edx,20000q	;O_ASYNC
+  mov	edx,24000q
+;  mov	edx,0
+;  int	byte 80h
+
+;change SIGIO (keyboard)
+  mov	eax,55		;fcntl
+  mov	ebx,[vt_fd]
+  mov	ecx,4		;F_SETFL
+  mov	edx,24000q
+;  mov	edx,0
+;  mov	edx,4000q	;O_NONBLOCK
+;  mov	edx,20000q	;O_ASYNC
+;  mov	edx,24000q
+;  int	byte 80h
+  ret
+;---------------------------------------
+adjust_signal_handlers:
+  mov	ebp,sig_table
+  call	signal_install_list
+  ret
+
+  extern sigurg_fd
+sigurg_app:
+;  mov	eax,'-ap-'
+;  call	log_regtxt
+;  call	log_eol
+  mov	eax,[esp+32]	;get fd
+  mov	[sigurg_fd],eax
+  mov	eax,[esp+24]	;get status flag
+  mov	[sigurg_status],eax
+  cmp	al,1			;data here?
+;  jne	sigurg_exit		;exit if no data avail
+  call	do_app
+  or	[signal_hit_mask+2],byte 40h
+sigurg_exit:
+  ret
+
+  extern sigio_fd
+sigio_key:
+;  mov	eax,'-ky-'
+;  call	log_regtxt
+;  call	log_eol
+  mov	eax,[esp+32]	;get fd
+  mov	[sigio_fd],eax
+  mov	eax,[esp+18h]	;get status
+  mov	[sigio_status],eax
+  cmp	al,1
+  jne	sigio_exit
+
+
+  mov	ebx,0
+  mov	ecx,key_buf
+  mov	edx,2000
+  call	sys_read
+  or	eax,eax    
+  js	sigio_exit
+  
+  or	[signal_hit_mask+2],byte 80h
+  mov	[sigio_read_len],eax
+sigio_exit:
+  ret
+;---------------------
+  [section .data]
+sigio_read_len: dd 0
+  [section .text]  
+;--------------------
+  [section .data]
+sig_table:
+  db 23		;sigurg
+;  db 10		;sigusr1
+  dd sigurg_app
+  dd -1	;mask
+  dd 4		;pass extra info
+  dd 0
+
+  db 29		;sigio
+  dd sigio_key
+  dd -1		;mask
+  dd 4
+  dd 0
+  db 0		;end of table
+
+
+vt_setup_block:
+  dd 24	;rows
+  dd 80 ;columns
+  dd buffer
+  dd 1	;fd
+  dd 0	;top row
+  dd 0	;top left col
+  db grey_char + black_back
+
+list_block:
+  dd list_buffer  ;ptr to top of list
+  dd list_buffer_end
+  dd 8            ;list entry size
+  dd list_buffer  ;list start entery
+  dd list_buffer  ;list end entry
+
+list_entry: dd 0  ;buffer address
+            dd 0  ;lenght of data
+
+list_buffer: times 8*8 db 0
+list_buffer_end:
+  
+status	dd 0
+;launch_name:	db '/home/jeff/bin/vttest',0,'-l',0,0
+;launch_name:	db '/bin/bash',0,'-c',0,'/bin/bash',0,0
+launch_name:	db '/bin/bash',0,0
+;launch_name:	db '/bin/ls',0,0
+;launch_name:	db '/bin/less term.asm',0,0
+;launch_name: db '/bin/pwd',0,0
+;launch_name: db '/usr/bin/strace',0,'-o',0,'xx',0,'/bin/bash',0,0
+;launch_name: db '/usr/bin/strace',0,'-o',0,'xx',0,'/home/jeff/work/test2',0,0
+;launch_name: db '/usr/bin/crt_test',0,0
+buffer: times 20000 db 0
+work_buf: times 5000 db 0
+key_buf:  times 2000 db 0
+
+help_msg: db "type  exit  to leave vt terminal",0ah,0dh
+ db "enter normal shell commands to test",0ah,0dh
+help_msg_size equ $ - help_msg
+  [section .text]
+

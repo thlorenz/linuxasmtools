@@ -1,0 +1,105 @@
+
+extern signal_mask_get
+extern signal_mask_set
+extern signal_mask_block
+extern signal_mask_unblock
+extern signal_handler_install
+extern signal_handler_default
+extern signal_handler_none
+extern signal_handler_status
+extern signals_pending
+extern signal_send
+extern signal_install
+
+ [section .text]
+
+
+  global main, _start
+main:
+_start:
+  nop
+  nop
+  nop
+
+  mov	ebx,10
+  mov	ecx,buffer
+  call	signal_handler_status
+
+  mov	ebx,10			;install handler for signal 10
+  mov	ecx,data_block
+  call	signal_install
+
+;test - signal_handler_status ----
+
+  mov	ebx,10
+  mov	ecx,buffer
+  call	signal_handler_status
+
+  mov	ebx,10
+  call	signal_handler_default
+  mov	ebx,10
+  mov	ecx,buffer
+  call	signal_handler_status
+
+  mov	ebx,10
+  call	signal_handler_none
+  mov	ebx,10
+  mov	ecx,buffer
+  call	signal_handler_status
+
+
+  mov	ebx,10			;install handler for signal 10
+  mov	ecx,data_block
+  call	signal_install
+  mov	ebx,10
+  mov	ecx,buffer
+  call	signal_handler_status
+
+; test - signal_send ---
+
+  mov	eax,20
+  int	80h			;get our pid
+  mov	[parent_pid],eax
+  mov	ebx,eax			;send signal to ourself
+  mov	ecx,10			;send signal 10
+;  call	signal_send
+
+; block signal and check pending
+
+  mov	ecx,sbits
+  call	signal_mask_block
+  call	signal_mask_get
+  call	signal_mask_get
+  mov	ebx,[parent_pid]
+  mov	ecx,10
+  call	signal_send
+  call	signals_pending
+  mov	ecx,sbits
+  call	signal_mask_unblock
+  call	signals_pending
+
+
+;---------------------------------
+  mov	eax,1
+  mov	ebx,0
+  int	80h		;exit
+
+;---------
+  [section .data]
+sbits	dd	00000200h	;bit 10
+parent_pid	dd	0
+buffer  times 20 db 0
+data_block:
+  dd	handler
+  dd	200h		;signals to ignore while handling this sig
+  dd	0		;1 arguement
+  dd	0		;unused
+
+  [section .text]
+;
+; dummy signal handler
+;
+handler:
+	nop
+	ret
+  

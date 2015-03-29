@@ -1,0 +1,24 @@
+
+----------------------------------------------------------------------------
+ 73 sigpending      - Retrieves signals that are pending while blocked
+----------------------------------------------------------------------------
+  mov  eax,073
+  mov  ebx,set	<- pointer to dword for mask storage
+  int  80h
+
+       The sigpending call allows the examination  of  pending  signals  (ones
+       which have been raised while blocked).  The signal mask of pending sig-
+       nals is stored in set.
+
+       "set" is a bit mask where signal #1 is represented as:  00000001h
+                                 signal #17 is:                00010000h
+
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return the following is returned:
+
+   -EFAULT ebx points to memory which is not a valid part of the process
+   address space.
+

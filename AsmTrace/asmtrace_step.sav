@@ -1,0 +1,595 @@
+extern delay
+;------------- asmtrace_step.inc ----------------------------
+;-------------------------------------------------------------
+  [section .text]
+;step newest process that isn't dead or running
+;inputs: none
+;output: carry = all process dead
+;        no carry = continue
+;
+step:
+  mov	ebp,pid_table
+step_lp1:
+  cmp	[ebp+pids.pid],dword 0	;end of table
+  je	step_lp2  	;jmp if end of table found
+  add	ebp,pids_struc_size ;move to next pid
+  jmp	short step_lp1  ;loop till table end
+;start process from end of table to beginning
+step_lp2:
+  sub	ebp,pids_struc_size	;move to next pid
+  or	eax,byte -1		;preload no pids running status
+  cmp	ebp,pid_table		;end of table
+  jnb	step_05			;jmp if pid found
+  jmp	step_98			;exit if all pids dead
+step_05:
+;check if this pid needs starting
+  test	[ebp+pids.pid_status],byte 1 + 2 + 4 + 20h + 80h ;stopped?
+  jz	step_lp2		;jmp if not stopped
+  test	[ebp+pids.pid_status],byte 8  ;dead
+  jnz	step_lp2		;jmp if dead
+;check if trigger off
+  call	check_trigger_off
+  test	[report_flag],byte 1	;triggers now off?
+  jz	step_07			;jmp if triggers on
+  jmp	step_99			;exit & continue
+;check if fork here
+step_07:
+;read instruction to be stepped
+  mov	edx,[ebp+pids.r_eip]	;read address
+  mov	esi,bin_instruction	;bin data
+  mov	edi,12			;read length
+  call	trace_peek_bytes
+;check if this is fork
+  cmp	[bin_instruction],word 080cdh	;int 80h?
+  jne	step_09		;jmp if not int 80h
+  call	fork_modify
+step_09:
+  or	[ebp+pids.pid_status],byte 10h	;set running bit
+  mov	eax,[ebp+pids.r_eip]	;get eip
+  mov	[ebp+pids.r_old_eip],eax ;save eip
+
+  mov	eax,[ebp+pids.r_eax]		;get eax
+  mov	[ebp+pids.r_sav_old_eax],eax	;save eax
+;step this pid
+  mov	eax,[ebp+pids.pid]	;setup for ptrace call
+  mov	[trace_pid],eax		;get process id
+  mov	esi,0			;set no special signal flag
+  call	trace_step
+
+%ifdef DEBUG
+  call	log_step
+%endif
+
+  js	step_98			;jmp if error  
+  call	trace_wait		;wait for any child stop
+;decode child stop status
+;         if eax negative then error, else ebx is:
+;         ebx = child status if eax = child pid
+;            bl=status (7fh)-normal trace stop
+;                      (00) -exception code in status
+;            bh=signal if status non zero else exception
+;                      signal was not caught
+;
+;    The format of status in ebx if eax positive:
+;
+;    byte 1                   byte 2
+;    (bl in trace_wait call)  (bh in trace_wait call)
+;    -----------------------  -----------------------
+;    0   =process exited      kernel exit call reg "bl"
+;    1-7e=process killed      signal# that killed process
+;    7f  =process stopped     signal# that stopped process
+;    ff  =process continued   singal# that continued process
+;
+;         examples:  ebx=0200 exception signal occured
+;                    ebx=0b7f illegal segment register set by code
+;                    ebx=087f divide by zero
+;                    ebx=0037 unknown signal 37h sent by ptrace_step
+;                    ebx=normal if int3 is encountered and no handler
+;                               has been setup.
+;
+%ifdef DEBUG
+  call	log_wait
+%endif
+  or	eax,eax
+  jnz	pid_10			;jmp if possible pid
+  jmp	step_98			;jmp if all pids dead
+pid_10:
+;check if this pid is in table
+  mov	ebp,pid_table
+pid_table_lp:
+  cmp	[ebp+pids.pid],dword 0	;end of table?
+  je	_new_pid		;jmp if not in table
+  cmp	eax,[ebp + pids.pid]	;process found?
+  je	_found_pid		;jmp if process match
+  add	ebp,pids_struc_size	;move to next process
+  jmp	short pid_table_lp	;loop
+;ebp points to new pid entry
+_new_pid:
+  mov	[ebp+pids.pid],eax ;insert pid#
+  mov	[ebp+pids.wait_status],ebx ;insert wait4 status
+  mov	[trace_pid],eax ;store process_id
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsget
+  mov	[ebp+pids.pid_status],byte 45h ;new pid status
+  jmp	step_96
+_found_pid:
+  mov	[trace_pid],eax	;set this pid for library call
+  mov	[ebp+pids.wait_status],ebx
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsget
+;check for signal or process death
+  mov	eax,[ebp+pids.wait_status]	;get wait status
+;check if dead
+  or	eax,eax
+  jz	_dead_pid		;jmp if process exit
+;check if fork in process
+  test	[ebp+pids.pid_status],byte 20h
+  jz	step_12
+  call	fork_restore
+step_12:
+;check if this is signal
+  cmp	al,7fh			;nornal signal
+  jne	_dead_pid		;jmp if unexpected signal
+  cmp	ah,05			;break signal
+  je	_found_break		;jmp if break signal
+  cmp	ah,11h			;stop?
+  jne	_signal_stop		;jmp if signal
+;unknown stop?
+_signal_stop:
+  mov	[ebp+pids.pid_status],byte 0c0h ;signal
+  jmp	step_96
+_dead_pid:
+  mov	[ebp+pids.pid_status],byte 8	;dead status
+  jmp	step_96  
+;this is existing pid at normal break,
+_found_break:
+  mov	[ebp+pids.pid_status],byte 44h	;report + backend
+  call	show_dis  
+
+  mov	edi,lib_buf
+;check if this was a kernel call (int80)
+  cmp	[bin_instruction],word 080cdh	;int 80h?
+  jne	step_99		;jmp if not int 80h
+
+;report using pid table status
+step_96:
+  call	logit
+  call	report
+step_98:
+  stc		;all pids dead flag
+  jmp	short step_exit
+step_99:
+  call	logit
+  clc
+step_exit:
+  ret
+
+;--------------------------------------------------------------------
+fork_modify:
+  mov	eax,[ebp+pids.r_eax]	;get function#
+; check if fork(2) clone(120) or vfork(190)
+  cmp	eax,2		;fork?
+  je	sp_fork_found	;jmp if fork
+  cmp	eax,120
+  jne	_wfs_22			;jmp if not clone
+;clone found
+  or	[ebp+pids.r_ebx],dword 2000h	;set ptrace bit
+  jmp	short _wfs_24
+_wfs_22:
+  cmp	eax,190
+  jne	fm_exit			;jmp if not vfork
+;vfork found
+sp_fork_found:
+  mov	[ebp+pids.r_eax],dword 120	;force clone
+  mov	[ebp+pids.r_ebx],dword 2011h	;ptrace bit + sig 11h = stop
+  mov	[ebp+pids.r_ecx],dword 0
+_wfs_24:
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsset
+  or	[ebp+pids.pid_status],20h		;set fork in process
+fm_exit:
+ ret
+;-----------------------------------------------
+;Restore munged fork,vfork,clone data.
+_fork_restore:
+  mov	[timeout],byte 2
+_fr_lp:
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsget
+  or	eax,eax
+  jns	_fr_01
+;sometimes we get error ffffffd here (no such process).  I
+;think this means registers for this process have not been
+;updated yet.  If we try again after a delay it works.
+  mov	eax,1
+  call	delay
+  dec	byte [timeout]
+  or	[timeout],al
+  jp	_fr_lp
+_fr_01:
+  mov	eax,[ebp+pids.r_sav_old_eax]	;get function number
+; check if fork(2) clone(120) or vfork(190)
+  cmp	eax,2		;fork?
+  jne	_fr_02		;jmp if not fork
+;fork found
+;  mov	[ebp+pids.r_old_eax],eax	;restore fork
+  mov	eax,[ebp+pids.r_sav_ebx]
+  mov	[ebp+pids.r_ebx],eax
+  mov	eax,[ebp+pids.r_sav_ecx]
+  mov	[ebp+pids.r_ecx],eax
+  jmp	short _fr_10
+_fr_02:
+  cmp	eax,120
+  jne	_fr_04
+;clone found
+  mov	eax,[ebp+pids.r_sav_ebx]
+  mov	[ebp+pids.r_ebx],eax
+  jmp	short _fr_10
+_fr_04:
+  cmp	eax,190
+  jne	_fr_10		;jmp if not vfork
+;vfork found
+;  mov	[ebp+pids.r_old_eax],eax	;restore vfork 
+  mov	eax,[ebp+pids.r_sav_ebx]
+  mov	[ebp+pids.r_ebx],eax
+_fr_10:
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsset
+  mov	eax,[ebp+pids.pid_status]
+  and	al,~21h				;clear fork bit
+  mov	[ebp+pids.pid_status],eax
+  ret
+;------------
+  [section .data]
+timeout db 0
+  [section .text]
+;-----------------------------------------------
+show_dis:
+;read instruction to be reported
+  mov	edx,[ebp+pids.r_eip]	;read address
+  mov	esi,bin_instruction	;bin data
+  mov	edi,12			;read length
+  call	trace_peek_bytes
+
+  push	ebp
+  mov	edi,lib_buf
+  mov	al,09h
+  stosb				;add tabs to front
+;disassemble instruction
+  mov	eax,[ebp+pids.r_old_eip]	;address
+;  mov	eax,[ebp+pids.r_eip]
+  mov	ebp,bin_instruction	;bin data ptr
+  push	edi
+  call	dis_one
+%ifdef DEBUG
+  call	log_dis
+%endif
+  pop	edi
+  pop	ebp
+;add address
+  push	eax			;save ptr to dis data
+  mov	ecx,[ebp+pids.r_old_eip]
+  mov	esi,8		;store 8 digets
+  call	dword_to_hexascii
+  mov	al,' '
+  stosb
+  pop	eax
+;move data to out buffer
+  lea	esi,[eax + dis_block.inst]
+  call	str_move
+;strip off any line feeds
+if_remove:
+  cmp	byte [edi -1],0ah
+  je	if_dis_done
+  mov	al,0ah
+  stosb
+if_dis_done:  
+  mov	ecx,lib_buf
+  mov	edx,edi		;get buffer start
+  sub	edx,ecx		;compute length
+  call	outfile_write
+if_exit:
+  ret
+;--------
+  [section .data]
+decode_entry:
+name_offset: dw 0
+process_id: db 0
+struc_id:   db 0
+bin_instruction: times 13 db 0
+  [section .text]
+
+
+
+
+
+;*********************************************************************
+;----------------
+;single step loop for disasm
+dloop:
+  call	step_pids
+  jns	d_05		;jmp if pid started
+  jmp	exit2		;jmp if all process dead
+d_05:
+  call	step_wait
+  test	[report_flag],byte 1	;reporting on?
+  jnz	d_10			;jmp if reports on
+;reports are off,check triggers
+  call	check_trigger_on
+  test	[report_flag],byte 1	;check if reports now on
+  jz	mloop			;loop if reports off
+  call	show_dis
+  jmp	mloop
+;reports are on, check triggers
+d_10:
+  call	show_dis
+  call	check_trigger_off
+  jmp	mloop 
+
+;---------------------------------------------------------------
+;step newest pids first
+; output:  eax = -1 set and flags for js,jns if all pids dead
+;
+;
+step_pids:
+  mov	ebp,pid_table
+step_lp1:
+  cmp	[ebp+pids.pid],dword 0	;end of table
+  je	step_lp2  	;jmp if end of table found
+  add	ebp,pids_struc_size ;move to next pid
+  jmp	short step_lp1  ;loop till table end
+;start process from end of table to beginning
+step_lp2:
+  sub	ebp,pids_struc_size		;move to next pid
+  or	eax,byte -1			;preload no pids running status
+  cmp	ebp,pid_table			;end of table
+  jnb	step_05				;jmp if pid found
+  jmp	step_exit
+step_05:
+;check if this pid needs starting
+  test	[ebp+pids.pid_status],byte 1 + 2 + 4 + 20h + 80h ;stopped?
+  jz	step_lp2		;jmp if not stopped
+  test	[ebp+pids.pid_status],byte 8  ;dead
+  jnz	step_lp2		;jmp if dead
+;read instruction to be stepped
+  mov	edx,[ebp+pids.r_eip]	;read address
+  mov	esi,bin_instruction	;bin data
+  mov	edi,12			;read length
+  call	trace_peek_bytes
+;check if this is fork
+  cmp	[bin_instruction],word 080cdh	;int 80h?
+  jne	sp_step	;jmp if not int 80h
+
+  mov	eax,[ebp+pids.r_eax]	;get function#
+; check if fork(2) clone(120) or vfork(190)
+  cmp	eax,2		;fork?
+  je	sp_fork_found	;jmp if fork
+  cmp	eax,120
+  jne	_wfs_22			;jmp if not clone
+;clone found
+  or	[ebp+pids.r_ebx],dword 2000h	;set ptrace bit
+  jmp	short _wfs_24
+_wfs_22:
+  cmp	eax,190
+  mov	al,44h 			;preload step (front)
+  jne	sp_step			;jmp if not vfork
+;vfork found
+sp_fork_found:
+  mov	[ebp+pids.r_eax],dword 120	;force clone
+  mov	[ebp+pids.r_ebx],dword 2011h	;ptrace bit + sig 11h = stop
+  mov	[ebp+pids.r_ecx],dword 0
+_wfs_24:
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsset
+  mov	[step_fork_flag],byte 1	;set fork flag
+sp_step:
+  mov	eax,[ebp+pids.r_eax]		;get eax
+  mov	[ebp+pids.r_sav_old_eax],eax	;save eax
+
+  mov	eax,[ebp+pids.r_eip]	;get eip
+  mov	[ebp+pids.r_old_eip],eax ;save eip
+;step this pid
+  mov	eax,[ebp+pids.pid]	;setup for ptrace call
+  mov	[trace_pid],eax		;get process id
+  mov	esi,0			;set no special signal flag
+  call	trace_step
+%ifdef DEBUG
+  call	log_step
+%endif
+  js	step_exit1		;jmp if error
+  cmp	[step_fork_flag],byte 0	;fork here?
+  je	sp_50			;jmp if not fork
+;we just did a fork, restore
+  call	_fork_restore
+  mov	[step_fork_flag],byte 0
+sp_50:
+  mov	[ebp+pids.pid_status],byte 10h ;set running
+step_exit:
+  or	eax,eax		;if any pids running set eax non-zero
+step_exit1:
+  ret
+;--------------
+  [section .data]
+step_fork_flag	db 0
+  [section .text]
+;-------------------------------------------------------------
+; wait for process stop
+;inputs: none
+;output: ebp = pids struc ptr
+;         al = last .pid_status
+step_wait:
+  mov	[last_pid_table_ptr],ebp
+  call	trace_wait		;wait for any child stop
+;decode child stop status
+;         if eax negative then error, else ebx is:
+;         ebx = child status if eax = child pid
+;            bl=status (7fh)-normal trace stop
+;                      (00) -exception code in status
+;            bh=signal if status non zero else exception
+;                      signal was not caught
+;
+;    The format of status in ebx if eax positive:
+;
+;    byte 1                   byte 2
+;    (bl in trace_wait call)  (bh in trace_wait call)
+;    -----------------------  -----------------------
+;    0   =process exited      kernel exit call reg "bl"
+;    1-7e=process killed      signal# that killed process
+;    7f  =process stopped     signal# that stopped process
+;    ff  =process continued   singal# that continued process
+;
+;         examples:  ebx=0200 exception signal occured
+;                    ebx=0b7f illegal segment register set by code
+;                    ebx=087f divide by zero
+;                    ebx=0037 unknown signal 37h sent by ptrace_step
+;                    ebx=normal if int3 is encountered and no handler
+;                               has been setup.
+;
+  mov	[trace_wait_pid],eax	;save process id
+  mov	[wait_stat],ebx		;save wait4 return status
+%ifdef DEBUG
+  call	log_wait
+%endif
+;check if this pid is in table
+  mov	ebp,pid_table
+pid_table_lp:
+  cmp	[ebp+pids.pid],dword 0	;end of table?
+  je	_new_pid		;jmp if not in table
+  cmp	eax,[ebp + pids.pid]	;process found?
+  je	_found_pid		;jmp if process match
+  add	ebp,pids_struc_size	;move to next process
+  jmp	short pid_table_lp	;loop
+;ebp points to new pid entry
+_new_pid:
+  push	eax		;save process id
+  push	ebx		;save wait4 status
+  mov	[trace_pid],eax ;store process_id
+  mov	[ebp+pids.pid],eax ;insert pid#
+  mov	[ebp+pids.wait_status],ebx ;insert wait4 status
+;  call	report_new_process	;report new process
+  lea	esi,[ebp+pids.r_ebx] ;setup to read regs
+  call	trace_regsget	;read registers
+  pop	ebx		;restore wait4 return
+  pop	eax		;restore process id
+  or	eax,eax
+  js	_dead_pid	;jmp if error
+  cmp	ebx,dword 137fh ;sigstop?
+  je	_np_temp
+  cmp	ebx,dword 117fh ;sigchld?
+  je	_dead_pid	;jmp if dead pid
+  cmp	ebx,dword 057fh	;sigtrap? initial stop or break?
+  jne	_dead_pid
+_np_temp:
+  mov	al,1 + 40h+ 80h
+  jmp	new_pid_exit
+_dead_pid:
+  mov	[ebp+pids.pid_status],byte 8
+  mov	al,8 + 40h 		;dead status
+new_pid_exit:
+  mov	[ebp+pids.pid_status],al
+  push	ebp
+;report dis for step just completed
+  mov	ebp,[last_pid_table_ptr] ;get info for step
+  lea	esi,[ebp+pids.r_ebx] ;setup to read regs
+  call	trace_regsget	;read registers
+  call	report		;report step just completed
+;setup to report signal recieved (new pid)
+  pop	ebp   		;setup for new pid report
+  lea	esi,[ebp+pids.r_ebx] ;setup to read regs
+  call	trace_regsget	;read registers
+  jmp	_wfs_exit3
+;---
+;existing pid was found, process it
+_found_pid:
+  mov	[trace_pid],eax	;set this pid for library call
+  mov	[ebp+pids.wait_status],ebx
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsget
+;check if dead
+  mov	eax,[trace_wait_pid]	;get wait eax
+  or	eax,eax
+  js	_dead_pid
+  mov	eax,[wait_stat]		;get wait ebx
+  or	eax,eax
+  jz	_dead_pid		;jmp if process exit
+;check if this is signal
+  cmp	al,7fh			;nornal signal
+  jne	dead_pid		;jmp if unexpected signal
+  cmp	ah,05			;break signal
+  je	_found_break		;jmp if break signal
+  cmp	ah,11h			;stop?
+  jne	_signal_stop		;jmp if signal
+;this is a child stop, the child pid is in child eax
+;register?
+
+_signal_stop:
+  mov	al, 40h + 80h
+_wfs_exit2j:
+  jmp	_wfs_exit2
+;this is existing pid at normal break,
+_found_break:
+  mov	al,44h			;report + backend
+_wfs_exit2:
+  mov	[ebp+pids.pid_status],al
+_wfs_exit3:
+%ifdef DEBUG
+  call	logit
+%endif
+  ret
+;-------------
+  [section .data]
+last_pid_table_ptr dd 0
+  [section .text]
+;-----------------------------------------------
+;Restore munged fork,vfork,clone data.
+_fork_restore:
+  mov	[timeout],byte 2
+_fr_lp:
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsget
+  or	eax,eax
+  jns	_fr_01
+;sometimes we get error ffffffd here (no such process).  I
+;think this means registers for this process have not been
+;updated yet.  If we try again after a delay it works.
+  mov	eax,1
+  call	delay
+  dec	byte [timeout]
+  or	[timeout],al
+  jp	_fr_lp
+_fr_01:
+  mov	eax,[ebp+pids.r_sav_old_eax]	;get function number
+; check if fork(2) clone(120) or vfork(190)
+  cmp	eax,2		;fork?
+  jne	_fr_02		;jmp if not fork
+;fork found
+;  mov	[ebp+pids.r_old_eax],eax	;restore fork
+  mov	eax,[ebp+pids.r_sav_ebx]
+  mov	[ebp+pids.r_ebx],eax
+  mov	eax,[ebp+pids.r_sav_ecx]
+  mov	[ebp+pids.r_ecx],eax
+  jmp	short _fr_10
+_fr_02:
+  cmp	eax,120
+  jne	_fr_04
+;clone found
+  mov	eax,[ebp+pids.r_sav_ebx]
+  mov	[ebp+pids.r_ebx],eax
+  jmp	short _fr_10
+_fr_04:
+  cmp	eax,190
+  jne	_fr_10		;jmp if not vfork
+;vfork found
+;  mov	[ebp+pids.r_old_eax],eax	;restore vfork 
+  mov	eax,[ebp+pids.r_sav_ebx]
+  mov	[ebp+pids.r_ebx],eax
+_fr_10:
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsset
+  ret
+;------------
+  [section .data]
+timeout db 0
+  [section .text]
+
+

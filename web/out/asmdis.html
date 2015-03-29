@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>AsmDis disassembler</title>
+ <meta name="keywords" content="assembler, linux, utilities, x86, assembly, disassembler">
+ <meta name="description" content="Disassembler for Linux ELF files, written in assembler">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+
+NAME<br>
+<br>
+ asmdis - disassembler for ELF executables<br>
+<br>
+SYNOPSIS<br>
+<br>
+ asmdis &lt;file&gt;<br>
+<br>
+        &lt;file&gt; is optional ELF target. If no &lt;file&gt;<br>
+        is provided then this is continuation and<br>
+        asmdis looks for existing database of ELF<br>
+        decoding information in current directory.<br>
+<br>
+DESCRIPTION<br>
+<br>
+ asmdis is a interactive disassembler for x86<br>
+ executables in ELF format (Linux executables).<br>
+ It builds a descriptive database in the current<br>
+ directory. This database is available to<br>
+ asmbug and asmsrc and can be updated by asmdis<br>
+ as long as all three programs are started without<br>
+ a file name.<br>
+<br>
+ asmdis display ELF information as nasm formatted<br>
+ assembly. If the ELF executable has debug information<br>
+ it will be included along with any source files found<br>
+ in the current directory.<br>
+<br>
+ The program allows operator to specify areas where<br>
+ code exists and can also specify data areas. It<br>
+ initially hunts for code and data using a simple<br>
+ hunt algorithm.<br>
+<br>
+USAGE<br>
+<br>
+The current directory is a work directory and asmdis<br>
+stores descriptive files here. It also expect to find<br>
+source files and other work files in this directory.<br>
+Before starting it is best to setup the work directory<br>
+with the ELF executable and all its associated files.<br>
+<br>
+ buttons<br>
+ <br>
+ Show Code - selects the code (.text) section. It also includes<br>
+             the rodata (read only data) section if found. This<br>
+             section may also have library wrappers added by the<br>
+             linker. Everything that was present in the first<br>
+             load section ends up here.<br>
+<br>
+ Show Data - select the data (.data) section and all sections<br>
+             that are loaded as data. If two load sections are<br>
+             in the ELF then "Show Data" include everything except<br>
+             for the .bss data.<br>
+<br>
+ Show bss  - select initialized data section (.bss). The data<br>
+             in this section must be initialized by the program,<br>
+             and may appear as one large repeat statement until<br>
+             program decode is able to identify areas.<br>
+<br>
+ Abort     - Exit without updating any of the files<br>
+<br>
+ Save      - Exit and update the decode files.<br>
+<br>
+ Code Here - Starts searching for code from this location.<br>
+<br>
+ Data Here - Forces data types db,dw,dd,string,data pointer,<br>
+             and code pointer. The most useful will be<br>
+             code pointer, it tells AsmDis to go search for<br>
+             code at pointer location.<br>
+<br>
+ Label Here - Create a label at this location<br>
+<br>
+ Undo last - undo's the last "code here" or "data here" operation.<br>
+<br>
+ goto top  - goto top of section<br>
+<br>
+ goto end  - goto end of section<br>
+<br>
+DESIGN DISCUSSION<br>
+<br>
+A stripped ELF executable can be reduced to binary data<br>
+without much information about where code locations or<br>
+the types of data present. Normally, more information<br>
+can be found, but AsmDis does not assume any extra<br>
+information is present.<br>
+<br>
+The big problem is finding code areas. The program could<br>
+make some guesses and be right 90 percent of the time, but<br>
+it is much safer to work interactively and avoid creating a<br>
+buggy source or disassembly display.<br>
+<br>
+The process is expected to go like this:<br>
+<br>
+ 1. Run AsmDis to create the initial tables and identify<br>
+    code that flows after the entry point. This logic<br>
+    will miss areas that use jump tables or computed addresses.<br>
+    Also, code called using register jumps will not be<br>
+    found. Some example of calls and jumps that are not<br>
+    followed are:<br>
+<br>
+      jmp eax<br>
+<br>
+      jmp [eax]<br>
+<br>
+      push  address<br>
+      ret<br>
+<br>
+      ret<br>
+<br>
+ 2. Next, use AsmDis to view the executable and look for areas in<br>
+    the code section that are shown as "db" statements. It is<br>
+    possible these areas could be data, but usually they are code.<br>
+    Find the top of a string of data statements that end with 0c3h.<br>
+    This should be a function and the "c3" is a ret instruction.<br>
+    Move the select bar to top and click the "code here" button.<br>
+    If the resulting disassembly is correct then go on to the<br>
+    next block. If the disassembly looks incorrect, then click<br>
+    the undo button and try another block. For most programs,<br>
+    this process will identify all code areas.<br>
+<br>
+ 3. If the ELF has some tricky code or data fields inside instructions<br>
+    then, we need to use AsmBug. AsmBug allows us to step through<br>
+    the ELF executable and watch how code executes. It also keeps<br>
+    records that are shared with AsmDis and AsmSrc.<br>
+<br>
+ 4. To check the progress of a disassembly, generate a source<br>
+    file using AsmSrc and see if it executes. If not then<br>
+    compare the generated code to original ELF using objdump.<br>
+    Another approach is to execute both the ELF and our generated<br>
+    executable using strace and then comparing the two traces.<br>
+    If we are decoding a HLL program with dynamic link sections<br>
+    then the strace option may not work very well.<br>
+<br>
+FILES<br>
+<br>
+ asmbug - debugger<br>
+ asmdis - disassembler that works with asmbug<br>
+ asmsrc - source code generator that works with asmbug<br>
+<br>
+   asmdis_history.dat  - status of last executable disassembled<br>
+   asmdis_image.dat    - load image of last executable<br>
+   asmdis_fimage.dat   - flags image describing executable<br>
+   asmdis_sym.dat      - symbol table for last executable<br>
+   asmdis_externs.txt  - list of extern's if file used dynamic lib<br>
+   asmdis_lib.txt      - list of dynamic libraries used<br>
+<br>
+DEPENDENCIES<br>
+<br>
+  Optional compile dependency: AsmLib<br>
+<br>
+SEE ALSO<br>
+ asmmgr(1) asmref(1) asmedit(1) asmsrc(1) asmdis(1)<br>
+ asmbug(1)<br>
+ <br>
+AUTHOR<br>
+ Jeff Owens &lt;jko@bsn1.net&gt;<br>
+<br>
+COPYRIGHT<br>
+ Copyright (C) 2007 Jeff Owens<br>
+ This program comes with absolutely NO WARRANTY<br>
+<br>
+        <br>
+      </big><br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

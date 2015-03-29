@@ -1,0 +1,52 @@
+assemblers
+  nasm - net wide assembler
+  yasm - nasm clone
+  fasm - flat assembler (no debugging support)
+  as   - the GNU gas assembler
+  gcc - front end for as,ln
+
+debuggers
+  gdb - basic command line debug
+  ald - simple debugger for assembler
+  insight - x-window debugger
+  kdbg - x-window debugger
+  linice - kernel debugger
+  strace - system call tracer
+  lsof - open file list
+  ltrace - trace library calls
+
+source control
+  kdiff3 - file difference
+  xxdiff - file difference
+  compare - file difference
+  asmpub - extract comments from src
+  expand - remove tabs from files
+
+file viewers
+  ht - view files, hex,disasm
+  objdump - view object files
+  nm - list symbols in file
+  readelf - view elf format
+  strings - search binaries for strings
+
+file format
+  elfstratifer - create static executables
+  strip - remove debugging info from files
+  ar - create static library
+  ln - link object files
+
+release/install
+  tar    - create tar.gz source release
+  rpm    - install rpm files
+  make   - development automation
+  install - install program
+
+information
+  pinfo - browse info files
+  man - man pages
+  apropos - search keys
+  key_echo - show keyboard scan codes
+  dumpkeys - dump keyboard map
+  testcrt - display crt state and capabilities
+  xkbwatch - watch control keys
+   

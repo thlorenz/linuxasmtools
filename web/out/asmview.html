@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>AsmView file viewer</title>
+ <meta name="keywords" content="viewer, small, fast, linux, utilities">
+ <meta name="description" content="small fast file viewer written in assembler">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+
+<br>
+NAME<br>
+<br>
+ asmview - text file viewer<br>
+<br>
+SYNOPSIS<br>
+<br>
+    usage: asmview file<br>
+           asmview &lt; file<br>
+           cat file | asmview<br>
+           asmview<br>
+<br>
+    if no file name is provided or if a bad filename is<br>
+    provided the program displays a file selection window.<br>
+<br>
+DESCRIPTION<br>
+<br>
+AsmView reads a file into memory and converts all non-text<br>
+(binary) data to "." (period) characters. The data is then<br>
+displayed in a window. The data can be scrolled in any direction.<br>
+Long lines will extend beyond the right edge of the screen and<br>
+can be viewed with the right-arrow key.<br>
+<br>
+USAGE<br>
+<br>
+        keyboard ACTIONS<br>
+        ----------------<br>
+<br>
+          up key - scroll up<br>
+          down key - scroll down<br>
+          pgup key - page up<br>
+          pgdn key - page down<br>
+          right,left - scroll<br>
+          esc   - exit<br>
+          f10   = exit<br>
+          f3    = exit<br>
+          enter key - begin/repeat  search<br>
+          f1 - help<br>
+          home - goto top of file<br>
+          end = goto end of file<br>
+<br>
+SEARCHING<br>
+<br>
+search strings can be entered by typing a normal text character.<br>
+the search string will appear on the status line (bottom of the<br>
+display). The search string keys are:<br>
+<br>
+  text key - appended to current search string<br>
+  rubout   - removes the last text character entered<br>
+  Enter    - begins search<br>
+<br>
+searching always begins from the second line of currently displayed<br>
+page and all matches are positioned on the top line of the display.<br>
+to continue searching, just keep pressing &lt;Enter&gt;. To start a search<br>
+from the top of file, type &lt;home&gt; and then either &lt;Enter&gt; or a new<br>
+search string followed by &lt;Enter&gt;<br>
+<br>
+all non-control keys are assumed to be part of a search string and<br>
+will be shown at the bottom of the screen.<br>
+<br>
+SEE ALSO<br>
+ asmmgr(1) asmref(1) asmedit(1)<br>
+ <br>
+AUTHOR<br>
+ Jeff Owens<br>
+<br>
+COPYRIGHT<br>
+ copyright (C) 2007 Jeff Owens<br>
+ this program comes with absolutely NO WARRANTY<br>
+<br>
+ -----------------------------------------------<br>
+ the author can be found on the DesktopLinuxAsm<br>
+ discussion group at yahoogroups. To join send<br>
+ a blank email to:<br>
+<br>
+   DesktopLinuxAsm-subscribe@yahoogroups.com<br>
+<br>
+ additional information may be available on the<br>
+ home page at:<br>
+<br>
+ http://linuxasmtools.net/<br>
+<br>
+ http://sourceforge.net/projects/asmedit<br>
+<br>
+      <br>
+      </big><br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

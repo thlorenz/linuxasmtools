@@ -1,0 +1,121 @@
+
+---------------------------------------------------------------------
+290 ioprio_get  - get I/O scheduling priority
+---------------------------------------------------------------------
+
+  mov  eax,290
+  mov  ebx,op
+  mov  ecx,p1
+  int  80h
+
+  
+   Get the I/O scheduling class and priority of one or more processes.
+
+args
+----
+
+ ebx This argument determines how the argument in ecx is interpreted,
+   and has one of the following values:
+
+   IOPRIO_WHO_PROCESS ecx contains a process ID identifying a single
+   process.
+
+   IOPRIO_WHO_PGRP ecx contains a process group ID identifying all the
+   members of a process group.
+
+   IOPRIO_WHO_USER ecx contains a user ID identifying all of the
+   processes that have a matching real UID.
+   If ebx is specified as IOPRIO_WHO_PGRP or IOPRIO_WHO_USER when calling
+   sys_ioprio_get, and more than one process matches ecx, then the
+   returned priority will be the highest one found among all of the
+   matching processes. One priority is said to be higher than another one
+   if it belongs to a higher priority class (IOPRIO_CLASS_RT is the
+   highest priority class; IOPRIO_CLASS_IDLE is the lowest) or if it
+   belongs to the same priority class as the other process but has a
+   higher priority level (a lower priority number means a higher priority
+   level).
+
+ ecx This arguments depends on the value of ebx. See above.
+
+Return values
+
+   If the system call succeeds the return value is ioprio value of the
+   process with highest I/O priority of any of the processes that match
+   the criteria specified in ebx and ecx. ioprio value can be dissected
+   to its class and data components in the following way:
+
+   class component (IOPRIO_CLASS_RT, IOPRIO_CLASS_BE, or
+   IOPRIO_CLASS_IDLE.):
+
+   ioprio shr IOPRIO_CLASS_SHIFT
+
+   priority (data) component:
+
+   ioprio and IOPRIO_PRIO_MASK
+
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ESRCH No process(es) could be found that matched the specification in
+     ebx and ecx.
+   -EINVAL Invalid value for ebx.
+
+   This system call only has an effect when used in conjunction with an
+   I/O scheduler that supports I/O priorities. As at kernel 2.6.17 the
+   only such scheduler is the Completely Fair Queuing (CFQ) I/O
+   scheduler.
+
+   Selecting an I/O Scheduler:
+
+   I/O Schedulers are selected on a per-device basis via the special file
+   /sys/block/<device>/queue/scheduler.
+   One can view the current I/O scheduler via the /sys file system. For
+   example, the following command displays a list of all schedulers
+   currently loaded in the kernel:
+
+   $ cat /sys/block/hda/queue/scheduler
+   noop anticipatory deadline [cfq]
+
+   The scheduler surrounded by brackets is the one actually in use for
+   the device (hda in the example). Setting another scheduler is done by
+   writing the name of the new scheduler to this file. For example, the
+   following command will set the set the scheduler for the hda device to
+   cfq:
+
+   $ su Password: # echo cfq > /sys/block/hda/queue/scheduler
+
+   The Completely Fair Queuing (CFQ) I/O Scheduler:
+   Since v3 (aka CFQ Time Sliced) CFQ implements I/O nice levels similar
+   to those of CPU scheduling. These nice levels are grouped in three
+   scheduling classes each one containing one or more priority levels:
+
+   IOPRIO_CLASS_RT This is the real-time I/O class. This scheduling class
+   is given higher priority than any other class: processes from this
+   class are given first access to the disk every time. Thus this I/O
+   class needs to be used with some care: one I/O real-time process can
+   starve the entire system. Within the real-time class, there are 8
+   levels of class data (priority) that determine exactly how much time
+   this process needs the disk for on each service. The highest real-time
+   priority level is 0; the lowest is 7. In the future this might change
+   to be more directly mappable to performance, by passing in a desired
+   data rate instead.
+
+   IOPRIO_CLASS_BE This is the best-effort scheduling class, which is the
+   default for any process that hasn't set a specific I/O priority. The
+   class data (priority) determines how much I/O bandwidth the process
+   will get. Best-effort priority levels are analogous to CPU nice values
+   (see [1]sys_getpriority). The priority level determines a priority
+   relative to other processes in the best-effort scheduling class.
+   Priority levels range from 0 (highest) to 7 (lowest).
+
+   IOPRIO_CLASS_IDLE This is the idle scheduling class. Processes running
+   at this level only get I/O time when no one else needs the disk. The
+   idle class has no class data. Attention is required when assigning
+   this priority class process, since it may become starved if higher
+   priority processes are constantly accessing the disk.
+   Refer to Documentation/block/ioprio.txt for more information on the
+   CFQ I/O Scheduler and an example program.
+
+
+   Available since 2.6.13
+

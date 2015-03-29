@@ -1,0 +1,76 @@
+
+-------------------------------------------------------------------------
+264 clock_settime  - set clock time
+-------------------------------------------------------------------------
+
+  mov  eax,264
+  mov  ebx,which_clock
+  mov  ecx,tp           ;pointer to timespec
+  int  80h
+
+
+SYNOPSIS
+       #include <time.h>
+
+       int  clock_settime(clockid_t  which_clock,  const struct timespec *set‐
+       ting);
+
+     #define CLOCK_REALTIME			0
+     #define CLOCK_MONOTONIC			1
+     #define CLOCK_PROCESS_CPUTIME_ID		2
+     #define CLOCK_THREAD_CPUTIME_ID		3
+
+     struct timespec {
+     	time_t	tv_sec;		/* seconds */
+     	long	tv_nsec;	/* nanoseconds */
+     };
+
+DESCRIPTION
+       clock_settime sets the clock specified by which_clock to the time value
+       specified  by  setting.   Time values that are not integer multiples of
+       the clock resolution are truncated down.
+
+       The calling process must possess the appropriate capability  (typically
+       CAP_SYS_TIME).
+
+       By  definition,  the  CLOCK_MONOTONIC and CLOCK_MONOTONIC_HR clocks can
+       not be set.
+
+       To retrieve the current time value of a  given  clock,  see  clock_get�‐
+       time(3).    To   retrieve   the   resolution  of  a  given  clock,  see
+       clock_getres(3).
+
+       For a listing of valid clocks, see clock_gettime(3).
+
+RETURN VALUE
+       On success, clock_settime returns the value 0 and  sets  the  specified
+       clock to the specified time value.
+
+       On  failure, clock_settime returns the value -1 and errno is set appro‐
+       priately.
+
+ERRORS
+       EFAULT A specified memory address is outside the address range  of  the
+              calling process.
+
+       EINVAL The  clock  specified  by which_clock is invalid, the time value
+              specified by setting is outside the range for the  given  clock,
+              or  the  nanosecond value specified by setting is less than zero
+              or greater than or equal to 1000 million.
+
+       ENOSYS The function is not supported on this implementation.
+
+       EPERM  The requesting process does not have the requisite privilege  to
+              set the specified clock.
+
+CONFORMING TO
+       POSIX 1003.1b (formerly POSIX.4) as ammended by POSIX 1003.1j-2000.
+
+SEE ALSO
+       clock_getcpuclockid(3),        clock_getres(3),       clock_gettime(3),
+       clock_nanosleep(3),     pthread_getcpuclockid(3),      timer_create(3),
+       timer_delete(3), timer_settime(3), timer_gettime(3)
+
+
+
+

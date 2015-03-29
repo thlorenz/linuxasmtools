@@ -1,0 +1,18 @@
+
+ NAME
+
+  simple-window - display window
+
+ INPUTS
+
+  pressing any key will exit and kill window
+
+ OUTPUT:
+
+    window with different colors and fonts are
+    displayed
+              
+ NOTES
+   source file: /demo/simple-window.asm
+
+

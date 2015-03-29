@@ -1,0 +1,102 @@
+
+  extern block_open_read
+  extern block_close
+  extern block_open_write
+  extern block_open_update
+  extern block_open_home_write
+  extern block_write_home_all
+  extern block_read_home_all
+  extern block_write
+
+global	_start
+global main
+
+main:
+_start:
+  nop
+  call	update_test
+  call	read_write_all
+  call	open_write_test
+  call	open_test
+  mov	eax,1
+  int	80h		;exit
+;------------------------------
+read_write_all:
+;    ebx = pointer to file name
+;          filename can be full path if first character is '/'
+;          filename can be local if first char. is non '/' alpha
+;    edx = file permissions or zero to use default 
+;    ecx = buffer pointer
+;    esi = buffer size
+  mov	ebx,path3
+  mov	edx,666q
+  mov	ecx,out_data
+  mov	esi,8
+  call	block_write_home_all
+;    ebx = pointer to file name
+;    ecx = buffer pointer
+;    edx = buffer max size
+  mov	ebx,path3
+  mov	ecx,buffer
+  mov	edx,20
+  call	block_read_home_all
+  ret  
+
+  [section .data]
+path3	db	'x',0
+out_data db 'boopers',0
+  [section .text]
+;------------------------------
+update_test:
+  mov	ebx,path4
+  mov	edx,666q
+  call	block_open_update
+
+  mov	ecx,data_x
+  mov	edx,6
+  call	block_write
+
+  call	block_close
+  ret
+
+  [section .data]
+path4	db	'/usr/share/asmmgr/project.tbl',0
+data_x db 'boopers',0
+  [section .text]  
+;------------------------------
+open_write_test:
+  mov	ebx,path2
+  mov	edx,646q
+  call	block_open_home_write
+
+  mov	eax,3
+  mov	ecx,buffer
+  mov	edx,40
+  int	80h			;read data
+
+  mov	eax,4
+  mov	ecx,path1		;data to write
+  mov	edx,8			;write 8 bytes
+  int	80h
+
+  call	block_close
+  ret
+
+  [section .data]
+path2: db "x",0
+buffer: times 50 db 0
+  [section .text]
+
+;------------------------------
+open_test:
+  mov	ebx,path1
+  call	block_open_read
+
+  call	block_close
+  ret
+
+ [section .data]
+path1: db 'Makefile',0
+ [section .text]
+;-------------------------------
+

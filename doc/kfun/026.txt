@@ -1,0 +1,301 @@
+
+----------------------------------------------------------------------------
+  26 ptrace        - process trace
+----------------------------------------------------------------------------
+  mov  eax,026
+  mov  ebx,request
+  mov  ecx,pid
+  mov  edx,addr
+  mov  esi,data
+  int  80h
+
+
+DESCRIPTION
+
+   The ptrace system call provides a means by which a parent process may
+   observe and control the execution of another process, and examine and
+   change its core image and registers. It is primarily used to implement
+   breakpoint debugging and system call tracing.
+
+   The parent can initiate a trace by calling fork and having the
+   resulting child do a PTRACE_TRACEME, followed (typically) by an
+   exec . Alternatively, the parent may commence trace of an
+   existing process using PTRACE_ATTACH.
+
+   While being traced, the child will stop each time a signal is
+   delivered, even if the signal is being ignored. (The exception is
+   SIGKILL, which has its usual effect.) The parent will be notified
+   at its next "wait" and may inspect and modify the child process
+   while it is stopped. The parent then causes the child to continue,
+   optionally ignoring the delivered signal (or even delivering a
+   different signal instead).
+
+   When the parent is finished tracing, it can terminate the child with
+   PTRACE_KILL or cause it to continue executing in a normal, untraced
+   mode via PTRACE_DETACH.
+
+   The value of request determines the action to be performed:
+
+    0 PEEKTEXT     pid,addr,data    read dword at location addr.
+    1 PEEKDATA     pid,addr,data    read dword at location addr
+    2 PEEKUSR      pid,addr,data    read data from user records in kernel
+    3 POKETEXT     pid,addr,data    write dword to location addr.
+    4 POKEDATA     pid,addr,data    write dword to location addr.
+    5 POKEUSR      pid,addr,data    write dword to user records in kernel
+    6 TRACEME                        set the ptrace bit in the process flags.
+    7 CONTiNUE     pid,,signo        restart after signal.
+    8 KILL         pid               make the child exit, send it a sigkill.
+    9 SINGLESTEP   pid               set the trap flag.
+   10 
+   11 
+   12 GETREGS      pid,,*data        get all regs from the child
+   13 SETREGS      pid,,*data        set all regs in the child.
+   14 GETFPREGS    pid,,*data        get the child FPU state.
+   15 SETFPREGS    pid,,*data        set the child FPU state.
+   16 ATTACH       pid               attach to already running process
+   17 DETACH       pid               detach a process that was attached.
+   18 GETFPXREGS   pid,,*data        get the child extended FPU state.
+   19 SETFPXREGS   pid,,*data        set the child extended FPU state.
+   20 
+   21 SETOPTIONS   pid,,data         (option 'PTRACE_O_TRACESYSGOOD' or none)
+   22 
+   23 
+   24 SYSCALL      pid,,signo         continue and stop at next (return from) syscall
+
+
+   PTRACE_TRACEME (0)
+          Indicates that this process is to be traced by its parent. Any
+          signal (except SIGKILL) delivered to this process will cause it
+          to stop and its parent to be notified via wait. Also, all
+          subsequent calls to exec by this process will cause a SIGTRAP
+          to be sent to it, giving the parent a chance to gain control
+          before the new program begins execution. A process probably
+          shouldn't make this request if its parent isn't expecting to
+          trace it. (pid, addr, and data are ignored.)
+
+       The above request is used only by the child process; the 
+       rest are used only by the parent. In the following
+       requests, pid specifies the child process to be acted on.
+       For requests other than PTRACE_KILL, the child process
+       must be stopped.
+
+       example:  mov eax,26
+                 mov ebx,0
+                 int 80h
+
+   PTRACE_PEEKTEXT(1), PTRACE_PEEKDATA (2)
+          Reads a word at the location addr in the child's memory,
+          returning the word as the result of the ptrace call. Linux does
+          not have separate text and data address spaces, so the two
+          requests are currently equivalent.
+
+          example:  mov eax,26
+                    mov ebx,2          ;peek
+                    mov ecx,<value>    ;childs process id
+                    mov edx,<value>    ;address within child
+                    mov esi,<value>    ;our buffer
+                    int 80h
+
+                    note: man pages are wrong, example above is
+                    correct.  No indirect pointers are used in
+                    call.
+                    
+   PTRACE_PEEKUSER (3)
+          Reads a word at offset addr in the child's USER area, which
+          holds the registers and other information about the process
+          (see ptrace call. Typically the offset must be word-aligned,
+          though this might vary by architecture. (data is ignored.)
+
+   PTRACE_POKETEXT(4), PTRACE_POKEDATA (5)
+          Copies a word from location data in the parent's memory to
+          location addr in the child's memory. As above, the two requests
+          are currently equivalent.
+
+          example:  mov eax,26
+                    mov ebx,5          ;peek
+                    mov ecx,<value>    ;childs process id
+                    mov edx,<value>    ;address within child
+                    mov esi,<value>    ;data for child memory
+                    int 80h
+
+                    note: man pages are wrong, example above is
+                    correct.  No indirect pointers are used in
+                    call.
+                    
+
+   PTRACE_POKEUSER(6)
+          Copies a word from location data in the parent's memory to
+          offset addr in the child's USER area. As above, the offset must
+          typically be word-aligned. In order to maintain the integrity
+          of the kernel, some modifications to the USER area are
+          disallowed.
+
+   PTRACE_GETREGS(12), PTRACE_GETFPREGS (??)
+          Copies the child's general purpose or floating-point registers,
+          respectively, to location data in the parent. See addr is
+          ignored.)
+
+          example:  mov  eax,26        ;ptrace kernel call
+                    mov  ebx,12        ;getregs function
+                    mov	 ecx,<value>   ;childs process id
+                    mov  esi,buffer    ;storage area for registers
+                    int  80h
+
+          See asmlib function trace_regsget for buffer content after
+          registers are stored.
+                       EBX
+                       ECX
+                       EDX
+                       ESI
+                       EDI
+                       EBP
+                       EAX
+                       DS
+                       ES
+                       FS
+                       GS
+                       ORIG_EAX
+                       EIP
+                       CS
+                       EFL
+                       UESP
+                       SS
+                       FRAME_SIZE
+
+   PTRACE_SETREGS(13), PTRACE_SETFPREGS (??)
+          Copies the child's general purpose or floating-point registers,
+          respectively, from location data in the parent. As for
+          PTRACE_POKEUSER, some general purpose register modifications
+          may be disallowed. (addr is ignored.)
+
+          example:  mov  eax,26        ;ptrace kernel code
+                    mov  ebx,13        ;regsget operation
+                    mov	 ecx,<value>   ;childs process id
+                    mov  esi,buffer    ;storage area with registers
+                    int  80h
+
+          See asmlib function trace_regsget for buffer content after
+          registers are stored.
+
+   PTRACE_CONT (7)
+          Restarts the stopped child process. If data is non-zero and not
+          SIGSTOP, it is interpreted as a signal to be delivered to the
+          child; otherwise, no signal is delivered. Thus, for example,
+          the parent can control whether a signal sent to the child is
+          delivered or not. (addr is ignored.)
+
+          example:  mov  eax,26       ;ptrace kernel call
+                    mov  ebx,7        ;this is a Continue
+                    mov  ecx,<value>  ;child process id
+                    mov  esi,0        ;do not send signal to child
+                    int  80h
+
+   PTRACE_SYSCALL(24), PTRACE_SINGLESTEP (9)
+          Restarts the stopped child as for PTRACE_CONT, but arranges for
+          the child to be stopped at the next entry to or exit from a
+          system call, or after execution of a single instruction,
+          respectively. (The child will also, as usual, be stopped upon
+          receipt of a signal.) From the parent's perspective, the child
+          will appear to have been stopped by receipt of a SIGTRAP. So,
+          for PTRACE_SYSCALL, for example, the idea is to inspect the
+          arguments to the system call at the first stop, then do another
+          PTRACE_SYSCALL and inspect the return value of the system call
+          at the second stop. (addr is ignored.)
+
+          example:  mov  eax,26        ;ptrace kernel call
+                    mov  ebx,24        ;syscall function
+                    mov  ecx,<value>   ;child process id
+                    mov  edx,0
+                    mov  esi,<value>   ;optional signal to deliver
+                    int  80h
+
+   PTRACE_KILL (8)
+          Sends the child a SIGKILL to terminate it. (addr and data are
+          ignored.)
+
+          example:  mov  eax,26        ;ptrace kernel call
+                    mov  ebx,8         ;kill function
+                    mov  ecx,<value>   ;childs process id
+                    int  80h
+
+   PTRACE_ATTACH (16)
+          Attaches to the process specified in pid, making it a traced
+          [14]ps(1) output as the child's parent), but a [15]getpid(2) by
+          the child will still return the pid of the original parent. The
+          child is sent a [16]SIGSTOP, but will not necessarily have
+          stopped by the completion of this call; use wait to wait for
+          the child to stop. (addr and data are ignored.)
+
+          example:  mov  eax,26        ;ptrace kernel call
+                    mov  ebx,16        ;attach function
+                    mov  ecx,<value>   ;childs process id
+                    int  80h
+
+   PTRACE_DETACH (17)
+          Restarts the stopped child as for PTRACE_CONT, but first
+          detaches from the process, undoing the reparenting effect of
+          PTRACE_ATTACH, and the effects of PTRACE_TRACEME. Although
+          perhaps not intended, under Linux a traced child can be
+          detached in this way regardless of which method was used to
+          initiate tracing. (addr is ignored.)
+
+          example:  mov  eax,26        ;ptrace kernel call
+                    mov  ebx,17        ;detatch function
+                    mov  ecx,<value>   ;childs process id
+                    int  80h
+
+NOTES
+
+   the process with pid 1, may not be traced.
+
+   The layout of the contents of memory and the USER area are quite OS-
+   and architecture-specific.
+
+   The size of a of a "word" is determined by the OS variant (e.g., for
+   32-bit Linux it's 32 bits, etc.).
+
+   Tracing causes a few subtle differences in the semantics of traced
+   processes. For example, if a process is attached to with
+   PTRACE_ATTACH, its original parent can no longer receive notification
+   via wait when it stops, and there is no way for the new parent to
+   effectively simulate this notification.
+
+   This page documents the way the ptrace call works currently in Linux.
+   Its behavior differs noticeably on other flavors of Unix. In any case,
+   use of ptrace is highly OS- and architecture-specific.
+
+RETURN VALUE
+
+   On success, PTRACE_PEEK* requests return the requested data, while
+   other requests return zero. On error, all requests return a negative
+   value.
+
+ERRORS
+
+   EPERM (-1)
+          The specified process cannot be traced. This could be because
+          the parent has insufficient privileges; non-root processes
+          cannot trace processes that they cannot send signals to or
+          those running setuid/setgid programs, for obvious reasons.
+          Alternatively, the process may already be being traced, or be
+          init (pid 1).
+
+   ESRCH (-3)
+          The specified process does not exist, or is not currently being
+          traced by the caller, or is not stopped (for requests that
+          require that).
+
+   EIO (-5)
+          request is invalid, or an attempt was made to read from or
+          write to an invalid area in the parent's or child's memory, or
+          there was a word-alignment violation, or an invalid signal was
+          specified during a restart request.
+
+   EFAULT (-14)
+          There was an attempt to read from or write to an invalid area
+          in the parent's or child's memory, probably because the area
+          wasn't mapped or accessible. Unfortunately, under Linux,
+          different variations of this fault will return [24]EIO or
+          EFAULT more or less arbitrarily.
+
+

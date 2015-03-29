@@ -1,0 +1,24 @@
+
+-------------------------------------------------------------------
+291 inotify_init  - initialize inotify
+-------------------------------------------------------------------
+
+  mov  eax,291
+  int  80h
+
+   Initializes a new inotify instance and returns a file descriptor
+   associated with a new inotify event queue.
+
+
+   If the system call succeeds the return value is a new file descriptor.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EMFILE The user limit on the total number of inotify instances has
+     been reached.
+   -ENFILE The system limit on the total number of file descriptors has
+     been reached.
+   -ENOMEM Insufficient kernel memory is available.
+
+
+   Available since 2.6.13

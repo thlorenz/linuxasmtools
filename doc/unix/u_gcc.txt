@@ -1,0 +1,21 @@
+
+ gcc - GNU compilers
+
+gcc tries to guess what the user wants and can be
+confusing.  It calls preprocessors, compilers and
+the linker depending upon what parameters look like.
+For standard "c" programs the following usually
+produces an executable file:
+
+  gcc <input-file> -o <output-file>
+
+For assembler we don't want the library wrappers
+around our program and need to specify:
+
+  -nostartfiles
+
+Also we sometimes want to see the "as" assembler
+output.  This requires the -S control.
+
+  -S
+

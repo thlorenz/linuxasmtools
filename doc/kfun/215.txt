@@ -1,0 +1,11 @@
+
+----------------------------------------------------------------------------
+215 setfsuid32       - set uid for filesystem checks
+----------------------------------------------------------------------------
+
+  This function is same as setfsuid
+
+  Used for "access" and, for the NFS daemon letting nfsd stay at any selected uid.
+  Often shadows "euid", except when explicitly set by setfsuid or, for access.
+
+

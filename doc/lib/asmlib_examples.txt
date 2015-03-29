@@ -1,0 +1,105 @@
+The example programs can be found in directory /example.
+Additionally, ainfo and format_doc are part of the AsmFunc
+archive.
+
+-----------------------------------------------------------------------
+1 Ainfo - view .info files by wrapping "info" program
+-----------------------------------------------------------------------
+    Ainfo provides a simple interface to view
+    .info format files.  
+ INPUTS
+    usage: ainfo <in-file>
+    The input file must be in .info format as
+    recognized by the "info" executable.     
+ OUTPUT
+    none
+ NOTES
+   source file:  ainfo.asm
+    
+   Ainfo calls the library function sys_wrap to
+   execute "info" and feed it keystrokes.  This
+   allows the user interface to be modified and
+   the keyboard redefined.
+
+   The arrow keys now move to topics as follows:
+   UP - move up to topic within page
+   DOWN - move down to topic within page
+   RIGHT - enter topic
+   LEFT - return to previous topic
+
+   PGDN - move down within page
+   PGUP - move up with page
+   ESC - exit (also "q" exits)
+
+   Ainfo is called by AsmMgr to view .info files.
+
+
+-----------------------------------------------------------------------
+2 format_doc - process text file
+-----------------------------------------------------------------------
+ INPUTS
+    usage format_doc <in-file> <out-file>
+     
+    a format_doc.ini file must also exist in
+    the local directory, see file format_doc.ini
+ OUTPUT
+    the out-file will written with all match-strings
+    replaced with replace-strings
+ NOTES
+   file:  format_doc.asm
+    
+   format_doc first finds the match string and then
+   begins executing the actions at end of each entry
+   in format_doc.ini
+   If repeat code is placed at end of actions, they
+   are repeated till the match string is not found.
+   It is important to keep the match string beyond
+   its last match to avoid infinite loops when using
+   the repeat action.
+format_doc.ini - control table for format_doc
+ INPUTS
+  * table entries are repetitions of the following
+  * three fields:
+  * "match-string" "replacement-string" "actions"
+  * -
+  * the code \n in strings can be used for new-line (0ah)
+  * -
+  * The actions available are:
+  * 1 replace the match string with replace-string
+  * 2 move up one line
+  * 3 move down one line
+  * 4 replace whole line rather than just the match-string
+  * -  (line needs 0ah at end)
+  * 5 insert line above current line
+  * -  (line needs 0ah at end)
+  * 6 insert line below current line
+  * -  (line needs 0ah at end)
+  * 7 insert replace-string at front of current line
+  * 8 delete right to end of line
+  * - (place at start of actions to remove match ->)
+  * 9 do actions till end of file reached
+ OUTPUT
+  * if program hangs or aborts this is almost always due
+  * to infinite loops caused by impossible actions.  Most
+  * problems can be avoided by keeping the match string
+  * pointer beyond last action.  This avoids finding the
+  * same string over and over when repeating actions.
+  * Use the code 3 to move match pointer down.
+ NOTES
+ * file:  format_doc.ini
+ * The format_doc.ini file needs to be in current directory
+
+-------------------------------------------------------------
+3 sort - sort line in file and write to file
+-------------------------------------------------------------
+
+ sort program, called as:   sort <infile> <outfile>
+
+ sorts infile and stores at outfile.  This version
+ does not allocate memory, so file and index must
+ fit in 300k
+
+ The sort key length and location within a line is
+ fixed, but easy to change.  See call to "sort"
+
+ 

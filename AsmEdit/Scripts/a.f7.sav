@@ -1,0 +1,102 @@
+#! /bin/bash
+DIALOG=${DIALOG=dialog}
+tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/test$$
+trap "rm -f $tempfile" 0 1 2 5 15
+
+$DIALOG --default-item "1up" --clear --title "Print Format" \
+        --menu "We are about to format an ascii file\n\
+for printing.  Select style of formatting.\n\n" \
+26 61 16 \
+        "1up"   "1up +                   (90col 65rows)" \
+        "1upT"  "1up + title             (90col 63rows)" \
+        "1upB"  "1up +       big-font    (74col 55rows)" \
+        "2up"   "2up +                   (71col 62rows)" \
+        "2upT"  "2up + title             (71col 60rows)" \
+        "1upM"  "1up +      Mini-font    (  col   rows)" \
+        "2upM"  "2up +      Mini-font    (  col   rows)" \
+        "lan1"  "lanscape  small-font    (  col   rows)" \
+        "lan2"  "lanscape medium-font    (  col   rows)" \
+        "lan3"  "lanscape    big-font    (  col   rows)" 2> $tempfile
+
+retval=$?
+
+#echo "`cat $tempfile` chosen."
+choice=`cat $tempfile`
+#echo $choice
+if [ $retval = 0 ]; then
+ {
+    if [ $choice = '1up' ]; then
+       # print bold without title
+       enscript $HOME/.asmide/edit/$1 --no-header -f Courier-Bold10 -M Letterdj -c 
+    fi
+    if [ $choice = '1upT' ]; then
+       # print  with title
+       enscript $HOME/.asmide/edit/$1 --fancy-header -f Courier-Bold10 -M Letterdj -c
+    fi
+    if [ $choice = '1upB' ]; then
+       # print big type without headers
+       enscript $HOME/.asmide/edit/$1 --no-header -f Courier-Bold12 -M Letterdj -c
+       echo "1upB"
+    fi
+    if [ $choice = '2up' ]; then
+       # print bold without title
+       enscript $HOME/.asmide/edit/$1 --no-header -f Courier-Bold8 -M Letterdj -c -2r
+       echo "2up"
+    fi
+    if [ $choice = '2upT' ]; then
+       # print bold with title
+       enscript $HOME/.asmide/edit/$1 --fancy-header -f Courier-Bold8 -M Letterdj -c -2r
+       echo "2upT"
+    fi
+    if [ $choice = '2upB' ]; then
+       # print bold without headers
+       enscript $HOME/.asmide/edit/$1 --no-header -f Courier-Bold10 -M Letterdj -c -2r
+       echo "2upB"
+    fi
+    if [ $choice = '1upM' ]; then
+       # print bold without headers
+       enscript $HOME/.asmide/edit/$1 --no-header -f Courier-Bold8 -M Letterdj -c
+       echo "2upB"
+    fi
+    if [ $choice = '2upM' ]; then
+       # print bold without headers
+       enscript $HOME/.asmide/edit/$1 --no-header -f Courier-Bold6 -M Letterdj -c -2r
+       echo "2upB"
+    fi
+    if [ $choice = 'lan1' ]; then
+       # print bold without headers
+       enscript $HOME/.asmide/edit/$1 --no-header -f Courier-Bold8 -M Letterdj -c -r
+       echo "2upB"
+    fi
+    if [ $choice = 'lan2' ]; then
+       # print bold without headers
+       enscript $HOME/.asmide/edit/$1 --no-header -f Courier-Bold10 -M Letterdj -c -r
+       echo "2upB"
+    fi
+    if [ $choice = 'lan3' ]; then
+       # print bold without headers
+       enscript $HOME/.asmide/edit/$1 --no-header -f Courier-Bold12 -M Letterdj -c -r
+       echo "2upB"
+    fi
+ }
+fi
+
+
+#
+# NAME
+#>1 script
+#  a.f7 - example print script
+# INPUTS
+#  $1 is base name of file to print.
+# OUTPUT
+#  printer is called, but edit file unouched.
+# NOTES
+# * file: a.f7  <- tied to function key f7
+# *
+# * This example script only works for the HP 500
+# * printer.  It does show how enscript can be used
+# * with a menu program to print two pages side by
+# * side.
+#<
+# * ----------------------------------------------
+

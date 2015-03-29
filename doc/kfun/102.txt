@@ -1,0 +1,1769 @@
+
+
+----------------------------------------------------------------------------
+system 102 socketcall              - socket system calls
+----------------------------------------------------------------------------
+  mov  eax,102
+  mov  ebx,callop
+  mov  ecx,args
+  int  80h
+
+       socketcall  is a common kernel entry point for the socket system calls.
+       callop determines which socket function to  invoke.   args  points  to  a
+       block  containing the actual arguments, which are passed through to the
+       appropriate call.
+
+callop
+------
+
+ ebx  name            description
+ ---  -------------   -------------------------------------
+   1  SYS_SOCKET      Create an endpoint for communication.
+   2  SYS_BIND        Bind a name to a socket.
+   3  SYS_CONNECT     Initiate a connection on a socket.
+   4  SYS_LISTEN      Listen for connections on a socket.
+   5  SYS_ACCEPT      Accept a connection on a socket.
+   6  SYS_GETSOCKNAME Get socket name.
+   7  SYS_GETPEERNAME Get name of connected peer socket.
+   8  SYS_SOCKETPAIR  Create a pair of connected sockets.
+   9  SYS_SEND        Transmit data to another coonected socket.
+   10 SYS_RECV       Receive data on a connected socket.
+   11 SYS_SENDTO     Transmit data to another socket.
+   12 SYS_RECVFROM   Receive messages from a socket.
+   13 SYS_SHUTDOWN   Shut down part of a full-duplex connection.
+   14 SYS_SETSOCKOPT Set options on sockets.
+   15 SYS_GETSOCKOPT Get options on sockets.
+   16 SYS_SENDMSG    Send messages to a socket.
+   17 SYS_RECVMSG    Receive messages from a socket.
+
+args
+----
+   ecx points to a data block containing the actual arguments (each
+   argument is 32bit wide), which are passed through to the appropriate
+   call.  Call descriptions follow
+
+
+
+CONFORMING TO
+       This call is specific to Linux, and should  not  be  used  in  programs
+       intended to be portable.
+
+
+
+----------------------------------------------------------------
+SYS_ACCEPT  (callop = 5)
+
+   This system call is used with connection-based socket types
+   (SOCK_STREAM, SOCK_SEQPACKET). It extracts the first connection
+   request on the queue of pending connections, creates a new connected
+   socket, and returns a new file descriptor referring to that socket.
+   The newly created socket is not in the listening state.
+   If no pending connections are present on the queue, and the socket is
+   not marked as non-blocking, SYS_ACCEPT blocks the caller until a
+   connection is present. If the socket is marked non-blocking and no
+   pending connections are present on the queue, SYS_ACCEPT fails with
+   -EAGAIN.
+
+   In order to be notified of incoming connections on a socket, you can
+   use sys_select or sys_poll. A readable event will be delivered
+   when a new connection is attempted and you may then call SYS_ACCEPT to
+   get a socket for that connection. Alternatively, you can set the
+   socket to deliver SIGIO when activity occurs on a socket.
+   For certain protocols which require an explicit confirmation, such as
+   DECNet, SYS_ACCEPT can be thought of as merely dequeuing the next
+   connection request and not implying confirmation. Confirmation can be
+   implied by a normal read or write on the new file descriptor, and
+   rejection can be implied by closing the new socket. Currently only
+   DECNet has these semantics on Linux.
+
+ args
+ ----
+
+ ECX points to the following structure:
+
+   struc args
+    .fd  resd  1 ;listener fd
+    .adr resd  1 ;ptr to adr structure (dw family, path/port)
+    .buf resd  1 ;ptr to ?
+   endstruc
+
+ .fd  Socket descriptor of a socket that has been created with
+   SYS_SOCKET, bound to a local address with SYS_BIND, and is
+   listening for connections after a SYS_LISTEN. This socket
+   descriptor is unaffected by SYS_ACCEPT.
+
+ .adr pointer to a sockaddr structure. This structure is filled in
+   with the address of the peer socket, as known to the communications
+   layer. The exact format of the address is determined by the socket's
+   address family (see SYS_SOCKET and the respective protocol man
+   pages). When this argument is NULL nothing is filled in.
+   sockaddr defined as follows:
+
+   struc sockaddr
+   .sa_family resw 1
+   .sa_data   resb 14
+   endstruc
+
+ .buf is pointer to blank storage space for (size?) or raw address
+
+ Return values
+ -------------
+
+   If the system call succeeds the return value is a non-negative integer
+   that is a descriptor for the accepted socket.
+   If the system call fails the return value is one of the following
+   errno values:
+   -EAGAIN,
+   -EWOULDBLOCK The socket is marked non-blocking and no connections are
+     present to be accepted.
+   -EBADF The descriptor is invalid.
+   -ECONNABORTED A connection has been aborted.
+   -EINTR The system call was interrupted by a signal that was caught
+     before a valid connection arrived.
+   -EINVAL Socket is not listening for connections, or 3rd argument is
+      invalid (e.g., is negative).
+   -EMFILE The per-process limit of open file descriptors has been
+     reached.
+   -ENFILE The system limit on the total number of open files has been
+     reached.
+   -ENOTSOCK The descriptor references a file, not a socket.
+   -EOPNOTSUPP The referenced socket is not of type SOCK_STREAM.
+   -EFAULT 2nd argument doesn't point to a writable part of the user
+     address space.
+   -ENOBUFS,
+   -ENOMEM Not enough free memory. This often means that the memory
+     allocation is limited by the socket buffer limits, not by the system
+     memory.
+   -EPROTO Protocol error.
+   -EPERM Firewall rules forbid connection.
+
+   Also it's important to note that SYS_ACCEPT passes already-pending
+   network errors on the new socket as an error code from SYS_ACCEPT.
+   This behaviour differs from other BSD socket implementations. For
+   reliable operation the application should detect the network errors
+   defined for the protocol after SYS_ACCEPT and treat them like -EAGAIN
+   by retrying. In case of TCP/IP these are ENETDOWN, EPROTO,
+   ENOPROTOOPT, EHOSTDOWN, ENONET, EHOSTUNREACH, EOPNOTSUPP, and
+   ENETUNREACH.
+
+ Remarks
+ -------
+
+   The new socket returned by SYS_ACCEPT does not inherit file status
+   flags such as O_NONBLOCK and O_ASYNC from the listening socket.
+   There may not always be a connection waiting after a SIGIO is
+   delivered or sys_select or sys_poll return a readability event
+   because the connection might have been removed by an asynchronous
+   network error or another thread before SYS_ACCEPT is called. If this
+   happens then the call will block waiting for the next connection to
+   arrive. To ensure that SYS_ACCEPT never blocks, the passed socket
+   descriptor (1st argument) needs to have the O_NONBLOCK flag set.
+
+
+----------------------------------------------------------------
+
+;bind to port
+ibind:	mov	ecx,[fd]	;socket file descriptor
+	mov	[sparms+p0],ecx	;socket file descriptor
+	mov	dword [sparms+p1],sin	;socket address
+structure mov	dword [sparms+p2],sinl	;length of structure
+	mov	eax,__NR_socketcall
+	mov	ebx,SYS_BIND
+	mov	ecx,sparms
+	syscall
+
+;--------------------------------------------
+;network fields & structures=20
+;--------------------------------------------
+fd	dd	0	;listening socket fd
+paddrl	dd	16	;length of active structure
+sin	dw	PF_INET	;address family
+	dw	4206h	;port 1602
+	dd	0	;INADDR_ANY
+	dq	0	;padding
+sinl equ $-sin
+apin	dw	0	;address family
+	dw	0	;port
+	dd	0	;address
+	dq	0	;padding
+apinl equ $-apin
+sparms	times	6 dd 0	;sys_socketcall parm list
+;------------------------------------------------
+;structure definitions
+;------------------------------------------------
+struc parmlist
+	p0:	resd	1
+	p1:	resd	1
+	p2:	resd	1
+	p3:	resd	1
+	p4:	resd	1
+	p5:	resd	1
+endstruc
+SYS_BIND
+
+   Binds a name to a socket.
+
+ args
+ ----
+
+ ECX points to the following structure
+
+ args struc
+  .fd   resd 1
+  .adr  resd 1 ;address structure ptr
+  .len  resd 1 ;length of structure
+ endstruc
+
+  .fd  is Socket descriptor.
+  
+  .adr is Pointer to an address family specific sockaddr* structure.
+   See bind man page for more information.
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+
+   errno values:
+   -EACCES     The address is protected, and the user is not the superuser.
+   -EADDRINUSE The given address is already in use.
+   -EBADF      1st argument is not a valid descriptor.
+   -EINVAL     The socket is already bound to an address.
+   -ENOTSOCK   1st argument is a descriptor for a file, not a socket.
+     The following errors are specific to UNIX domain (AF_UNIX) sockets:
+   -EACCES Search permission is denied on a component of the path prefix.
+   -EADDRNOTAVAIL A non-existent interface was requested or the requested
+     address was not local.
+   -EFAULT 2nd argument points outside the user's accessible address
+     space.
+   -EINVAL 3rd argument is wrong, or the socket was not in the AF_UNIX
+     family.
+   -ELOOP Too many symbolic links were encountered in resolving
+     sockaddr_un.sun_path
+   -ENAMETOOLONG sockaddr_un is too long.
+   -ENOENT The file does not exist.
+   -ENOMEM Insufficient kernel memory was available.
+   -ENOTDIR A component of the path prefix is not a directory.
+   -EROFS The socket inode would reside on a read-only file system.
+
+
+----------------------------------------------------------------
+SYS_CONNECT
+
+   Initiates a connection on a socket.
+
+ args
+ ----
+
+ ECX points to the following structure:
+
+ args struc
+  .fd   resd 1
+  .adr  resd 1 ;ptr to addr struc
+  .size resd 1 ;size of .adr
+ endstruc
+
+  .fd is Socket descriptor.
+  
+  .adr is Pointer to a properly initialized sockaddr_* (depends on the
+   address family) structure.
+   If the socket specified by 1st argument is of type SOCK_DGRAM then
+   sockaddr_* is the address to which datagrams are sent by default, and
+   the only address from which datagrams are received.
+   If the socket is of type SOCK_STREAM or SOCK_SEQPACKET, this call
+   attempts to make a connection to the socket that is bound to the
+   address specified by 2nd argument.
+  
+ .sie is Size of the structure pointed by 2nd argument.
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+
+   errno values:
+   -EACCES For Unix domain sockets, which are identified by pathname:
+     Write permission is denied on the socket file, or search permission is
+     denied for one of the directories in the path prefix.
+   -EACCES,
+   -EPERM The user tried to connect to a broadcast address without having
+     the socket broadcast flag enabled or the connection request failed
+     because of a local firewall rule.
+   -EADDRINUSE Local address is already in use.
+   -EAFNOSUPPORT The passed address didn't have the correct address
+     family in its sa_family field.
+   -EAGAIN No more free local ports or insufficient entries in the
+     routing cache. For PF_INET see the net.ipv4.ip_local_port_range sysctl
+     in ip (man 7 ip) on how to increase the number of local ports.
+   -EALREADY The socket is non-blocking and a previous connection attempt
+     has not yet been completed.
+   -EBADF The file descriptor is not a valid index in the descriptor
+     table.
+   -ECONNREFUSED No one listening on the remote address.
+   -EFAULT The socket structure address is outside the user's address
+     space.
+   -EINPROGRESS The socket is non-blocking and the connection cannot be
+     completed immediately. It is possible to sys_select or sys_poll
+     for completion by selecting the socket for writing. After
+     sys_select indicates writability, use SYS_SETSOCKOPT to read the
+     SO_ERROR option at level SOL_SOCKET to determine whether SYS_CONNECT
+     completed successfully (SO_ERROR is zero) or unsuccessfully (SO_ERROR
+     is one of the usual error codes listed here, explaining the reason for
+     the failure).
+   -EINTR The system call was interrupted by a signal that was caught.
+   -EISCONN The socket is already connected.
+   -ENETUNREACH Network is unreachable.
+   -ENOTSOCK The file descriptor is not associated with a socket.
+   -ETIMEDOUT Timeout while attempting connection. The server may be too
+     busy to accept new connections. Note that for IP sockets the timeout
+     may be very long when syncookies are enabled on the server.
+
+ Remarks
+
+   Generally, connection-based protocol sockets may successfully
+   SYS_CONNECT only once; connectionless protocol sockets may use
+   SYS_CONNECT multiple times to change their association. Connectionless
+   sockets may dissolve the association by connecting to an address with
+   the sa_family member of sockaddr set to AF_UNSPEC.
+
+
+----------------------------------------------------------------
+SYS_GETPEERNAME
+
+   Returns the name of the peer connected to a socket.
+
+ args
+ ----
+
+ ECX is pointer to args structure:
+
+ args struc
+  .fd   resd 1
+  .buf  resd 1 ;pointer to buffer
+  .size resd 1 ;size of buffer
+ endstruc
+
+  .fd is Socket descriptor
+  
+  .buf is Pointer to a buffer which will receive the name.
+  
+  .size is Size of the buffer pointed by 2nd argument. On return it will
+   contain the actual size of the data copied to the buffer.
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+
+   errno values:
+   -EBADF The 1st argumentis not a valid descriptor.
+   -EFAULT 2nd argument parameter points to memory not in a valid part of
+     the process address space.
+   -EINVAL 3rd agument is invalid (e.g., is negative).
+   -ENOBUFS Insufficient resources were available in the system to
+     perform the operation.
+   -ENOTCONN The socket is not connected.
+   -ENOTSOCK The 1st argument is a file, not a socket.
+
+----------------------------------------------------------------
+SYS_GETSOCKNAME
+
+   Returns the current name for the specified socket.
+
+ args
+ ----
+
+ ECX points to args struc
+
+ args struc
+  .fd   resd 1
+  .buf  resd 1
+  .size resd 1
+ endstruc
+
+ ,fd is Socket descriptor.
+ 
+ ,buf is Pointer to a buffer which will receive the name.
+ 
+ .size is Size of the buffer pointed by 2nd argument. On return it will
+   contain the actual size of the data copied to the buffer.
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+
+   errno values:
+   -EBADF The 1st argument is not a valid descriptor.
+   -EFAULT The 2nd argument points to memory not in a valid part of the
+     process address space.
+   -EINVAL 3rd argument is invalid (e.g., is negative).
+   -ENOBUFS Insufficient resources were available in the system to
+     perform the operation.
+   -ENOTSOCK The 1st argument is a file, not a socket.
+
+
+----------------------------------------------------------------
+SYS_GETSOCKOPT
+
+   Retrives the options associated with a socket.
+
+ args
+ ----
+
+ ECX points to args strucure
+
+ args struc
+  .fd   resd 1
+  .level resd 1
+  .opt   resd 1
+  .buf   resd 1
+  .size  resd 1
+ endstruc
+  
+ .fd is Socket descriptor.
+ 
+ .level is Protocol level where the option described by 3rd argument is
+   present.
+   To manipulate options at the socket level, SOL_SOCKET is used. To
+   manipulate options at any other level the protocol number of the
+   appropriate protocol controlling the option is supplied. For example,
+   to indicate that an option is to be interpreted by the TCP protocol,
+   2nd argument should be set to the protocol number of TCP.
+
+ .opt is Option to retrieve. For socket level (SOL_SOCKET) options it may
+   be one of the following values:
+   SO_DEBUG Socket debugging. Only allowed for processes with the
+   CAP_NET_ADMIN capability or an effective user ID of 0.
+   SO_REUSEADDR Indicates that the rules used in validating addresses
+   supplied in a SYS_BIND call should allow reuse of local addresses.
+   For PF_INET sockets this means that a socket may bind, except when
+   there is an active listening socket bound to the address. When the
+   listening socket is bound to INADDR_ANY with a specific port then it
+   is not possible to bind to this port for any local address.
+   SO_TYPE *to be documented*
+   SO_ERROR Get and clear the pending socket error. Expects an integer.
+   SO_DONTROUTE Don't send via a gateway, only send to directly connected
+   hosts. The same effect can be achieved by setting the MSG_DONTROUTE
+   flag on a socket SYS_SEND operation. Expects an integer boolean
+   flag.
+   SO_BROADCAST Set or get the broadcast flag. When enabled, datagram
+   sockets receive packets sent to a broadcast address and they are
+   allowed to send packets to a broadcast address. This option has no
+   effect on stream-oriented sockets.
+   SO_SNDBUF Sets or gets the maximum socket send buffer in bytes. The
+   kernel doubles this value (to allow space for bookkeeping overhead)
+   when it is set using SYS_SETSOCKOPT, and this doubled value is
+   returned by SYS_GETSOCKOPT. The default value is set by the
+   wmem_default sysctl and the maximum allowed value is set by the
+   wmem_max sysctl. The minimum (doubled) value for this option is 2048.
+   SO_RCVBUF Sets or gets the maximum socket receive buffer in bytes. The
+   kernel doubles this value (to allow space for bookkeeping overhead)
+   when it is set using SYS_SETSOCKOPT, and this doubled value is
+   returned by SYS_GETSOCKOPT. The default value is set by the
+   rmem_default sysctl and the maximum allowed value is set by the
+   rmem_max sysctl. The minimum (doubled) value for this option is 256.
+   SO_SNDBUFFORCE (since Linux 2.6.14)
+   Using this socket option, a privileged (CAP_NET_ADMIN) process can
+   perform the same task as SO_SNDBUF, but the wmem_max limit can be
+   overridden.
+   SO_RCVBUFFORCE (since Linux 2.6.14)
+   Using this socket option, a privileged (CAP_NET_ADMIN) process can
+   perform the same task as SO_RCVBUF, but the rmem_max limit can be
+   overridden.
+   SO_KEEPALIVE Enable sending of keep-alive messages on
+   connection-oriented sockets. Expects an integer boolean flag.
+   SO_OOBINLINE If this option is enabled, out-of-band data is directly
+   placed into the receive data stream. Otherwise out-of-band data is
+   only passed when the MSG_OOB flag is set during receiving.
+   SO_NO_CHECK Gets the socket type as an integer (like SOCK_STREAM).
+   SO_PRIORITY Set the protocol-defined priority for all packets to be
+   sent on this socket. Linux uses this value to order the networking
+   queues: packets with a higher priority may be processed first
+   depending on the selected device queueing discipline. For IP level ,
+   this also sets the IP type-of-service (TOS) field for outgoing
+   packets. Setting a priority outside the range 0 to 6 requires the
+   CAP_NET_ADMIN capability.
+   SO_LINGER Set or gets the SO_LINGER option. The argument is a linger
+   structure.
+
+   struc linger
+   .l_onoff  resd 1 ; linger active
+   .l_linger resd 1 ; how many seconds to linger for
+   endstruc
+
+   When enabled, a sys_close or SYS_SHUTDOWN will not return until
+   all queued messages for the socket have been successfully sent or the
+   linger timeout has been reached. Otherwise, the call returns
+   immediately and the closing is done in the background. When the socket
+   is closed as part of sys_exit, it always lingers in the background.
+   SO_PASSCRED Enable or disable the receiving of the SCM_CREDENTIALS
+   control message. For more information see man 7 unix.
+   SO_PEERCRED Return the credentials of the foreign process connected to
+   this socket. This is only possible for connected PF_UNIX stream
+   sockets and PF_UNIX stream and datagram socket pairs created using
+   SYS_SOCKETPAIR; see man 7 unix. The returned credentials are those
+   that were in effect at the time of the call to SYS_CONNECT or
+   SYS_SOCKETPAIR. Argument is a ucred structure:
+
+   struc ucred
+   .pid resd 1
+   .uid resd 1
+   .gid resd 1
+   endstruc
+
+   SO_RCVLOWAT Specify the minimum number of bytes in the buffer until
+   the socket layer will pass the data to the user on receiving. This
+   value is initialised to 1. The sys_select and sys_poll system
+   calls currently do not respect the SO_RCVLOWAT setting on Linux, and
+   mark a socket readable when even a single byte of data is available. A
+   subsequent read from the socket will block until SO_RCVLOWAT bytes are
+   available.
+   SO_RCVTIMEO Specify the receiving timeouts until reporting an error.
+   The parameter is a timeval struct. If an input function blocks for
+   this period of time, and data has been received, the return value of
+   that function will be the amount of data transferred; if no data has
+   been transferred and the timeout has been reached then -1 is returned
+   with -EAGAIN or -EWOULDBLOCK just as if the socket was specified to be
+   nonblocking. If the timeout is set to zero (the default) then the
+   operation will never timeout.
+   SO_SNDTIMEO Specify the sending timeouts until reporting an error. The
+   parameter is a timeval struct. If an output function blocks for this
+   period of time, and data has been sent, the return value of that
+   function will be the amount of data transferred; if no data has been
+   transferred and the timeout has been reached then -1 is returned with
+   -EAGAIN or -EWOULDBLOCK just as if the socket was specified to be
+   nonblocking. If the timeout is set to zero (the default) then the
+   operation will never timeout.
+
+ .buf is Pointer to a buffer which will receive the option value.
+ 
+ .size is Size of the buffer pointed by 4th argument. On return it will
+   contain the actual size of the data copied to the buffer.
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+
+   errno values:
+   -EBADF The 1st argument is not a valid descriptor.
+   -EFAULT The address pointed to by 4th argument is not in a valid part
+     of the process address space.
+   -ENOPROTOOPT The option is unknown at the level indicated.
+   -ENOTSOCK The 1st argument is a file, not a socket.
+
+----------------------------------------------------------------
+SYS_LISTEN
+
+   Listens for connections on a socket.
+   To accept connections, a socket is first created with SYS_SOCKET, a
+   willingness to accept incoming connections and a queue limit for
+   incoming connections are specified with SYS_LISTEN, and then the
+   connections are accepted with SYS_ACCEPT. The SYS_LISTEN call
+   applies only to sockets of type SOCK_STREAM or SOCK_SEQPACKET.
+
+ args
+ ----
+
+ ECX points to  args struc
+
+ args struc
+  .fd    resd 1
+  .length resd 1
+ endstruc
+
+ .fd is Socket descriptor.
+
+ .length is Queue length for completely established sockets waiting to be
+   accepted. The maximum length of the queue for incomplete sockets can
+   be set using the tcp_max_syn_backlog sysctl. When syncookies are
+   enabled there is no logical maximum length and this sysctl setting is
+   ignored. See man 7 tcp for more information.
+   If the socket is of type AF_INET, and this argument is greater than
+   the constant SOMAXCONN (128 in Linux 2.6), it is silently truncated to
+   SOMAXCONN.
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+
+   errno values:
+   -EADDRINUSE Another socket is already listening on the same port.
+   -EBADF The 1st argument is not a valid descriptor.
+   -ENOTSOCK The 1st argument is not a socket.
+   -EOPNOTSUPP The socket is not of a type that supports the SYS_LISTEN
+     operation.
+
+----------------------------------------------------------------
+SYS_RECVFROM
+
+   Receive messages from a socket, and may be used to receive data on a
+   socket whether or not it is connection-oriented.
+
+ args
+ ----
+
+ ECX points to args struc
+
+ args struc
+  .fd    resd 1
+  .buf   resd 1
+  .bsize resd 1
+  .flags resd 1
+  .adr   resd 1
+  .size  resd 1
+ endstruc
+
+ .fd is Socket descriptor.
+
+ .buf is Pointer to a buffer which will receive the data.
+
+ ,bsize is Size of the buffer pointed by 2nd argument.
+
+ .flags is formed by bitwise-or'ing one or more of the following values:
+   MSG_OOB This flag requests receipt of out-of-band data that would not
+   be received in the normal data stream. Some protocols place expedited
+   data at the head of the normal data queue, and thus this flag cannot
+   be used with such protocols.
+   MSG_PEEK This flag causes the receive operation to return data from
+   the beginning of the receive queue without removing that data from the
+   queue. Thus, a subsequent receive call will return the same data.
+   MSG_DONTROUTE *to be documented*
+   MSG_TRYHARD *to be documented*
+   MSG_CTRUNC *to be documented*
+   MSG_PROBE *to be documented*
+   MSG_TRUNC Return the real length of the packet, even when it was
+   longer than the passed buffer. Only valid for packet sockets.
+   MSG_DONTWAIT Enables non-blocking operation; if the operation would
+   block, -EAGAIN is returned (this can also be enabled using the
+   O_NONBLOCK with the F_SETFL sys_fcntl).
+   MSG_EOR *to be documented*
+   MSG_WAITALL This flag requests that the operation block until the full
+   request is satisfied. However, the call may still return less data
+   than requested if a signal is caught, an error or disconnect occurs,
+   or the next data to be received is of a different type than that
+   returned.
+   MSG_FIN *to be documented*
+   MSG_SYN *to be documented*
+   MSG_CONFIRM *to be documented*
+   MSG_RST *to be documented*
+   MSG_ERRQUEUE This flag specifies that queued errors should be received
+   from the socket error queue. The error is passed in an ancillary
+   message with a type dependent on the protocol (for IPv4 IP_RECVERR).
+   The user should supply a buffer of sufficient size. See man 3 cmsg and
+   man 7 ip for more information. The payload of the original packet that
+   caused the error is passed as normal data via msg_iovec. The original
+   destination address of the datagram that caused the error is supplied
+   via msg_name.
+   For local errors, no address is passed (this can be checked with the
+   cmsg_len member of the cmsghdr). For error receives, the MSG_ERRQUEUE
+   is set in the msghdr. After an error has been passed, the pending
+   socket error is regenerated based on the next queued error and will be
+   passed on the next socket operation.
+
+   The error is supplied in a sock_extended_err structure:
+
+   struc sock_extended_err
+   .ee_errno  resd 1
+   .ee_origin resb 1
+   .ee_type   resb 1
+   .ee_code   resb 1
+   .ee_pad    resb 1
+   .ee_info   resd 1
+   .ee_data   resd 1
+   endstruc
+
+   sock_extended_err members:
+   ee_errno
+   Error number. Curreently defined values are:
+   SO_EE_ORIGIN_NONE  *to be documented*
+   SO_EE_ORIGIN_LOCAL *to be documented*
+   SO_EE_ORIGIN_ICMP  *to be documented*
+   SO_EE_ORIGIN_ICMP6 *to be documented*
+   ee_origin
+   Origin code of where the error originated.
+   ee_type
+   This field is protocol specific. *to be documented*
+   ee_code
+   This field is protocol specific. *to be documented*
+   ee_pad
+   Padding.
+   ee_info
+   This field is protocol specific. *to be documented*
+   ee_data
+   This field is protocol specific. *to be documented*
+   MSG_NOSIGNAL *to be documented*
+   MSG_MORE *to be documented*
+
+ .adr is A pointer to a sockaddr structure which will be filled with source
+   address in case underlying protocol provides one.
+
+ ,size is Size of structure pointed by 5th argument. It will contain the
+   actual size of data copied upon return.
+
+   Return values
+
+   If the system call succeeds the return value is the number of bytes
+   received.
+   If the system call fails the return value is one of the following
+   errno values (These are some standard errors generated by the socket
+   layer. Additional errors may be generated and returned from the
+   underlying protocol modules):
+
+   -EAGAIN The socket is marked non-blocking and the receive operation
+     would block, or a receive timeout had been set and the timeout expired
+     before data was received.
+   -EBADF The 1st argument is an invalid descriptor.
+   -ECONNREFUSED A remote host refused to allow the network connection
+     (typically because it is not running the requested service).
+   -EFAULT The receive buffer pointer(s) point outside the process's
+     address space.
+   -EINTR The receive was interrupted by delivery of a signal before any
+     data were available.
+   -EINVAL Invalid argument passed.
+   -ENOTCONN The socket is associated with a connection-oriented protocol
+     and has not been connected (see SYS_CONNECT and SYS_ACCEPT).
+   -ENOTSOCK The 1st argument does not refer to a socket.
+
+
+----------------------------------------------------------------
+SYS_RECV
+
+   Receives data on a connected socket.
+   This call is identical to SYS_RECVFROM with 5th argument set to 0.
+
+ args
+ ----
+
+ ECX points to args struc
+
+ args struc
+  .fd    resd 1
+  .buf   resd 1
+  .size  resd 1
+  .flags resd 1
+ endstruc
+
+ .fd is Socket descriptor.
+
+ .buf is Pointer to a buffer which will receive the data.
+
+ .size is Size of the buffer pointed by 2nd argument.
+
+ .flags are defined as follows:
+   MSG_OOB This flag requests receipt of out-of-band data that would not
+   be received in the normal data stream. Some protocols place expedited
+   data at the head of the normal data queue, and thus this flag cannot
+   be used with such protocols.
+   MSG_PEEK This flag causes the receive operation to return data from
+   the beginning of the receive queue without removing that data from the
+   queue. Thus, a subsequent receive call will return the same data.
+   MSG_DONTROUTE *to be documented*
+   MSG_TRYHARD *to be documented*
+   MSG_CTRUNC *to be documented*
+   MSG_PROBE *to be documented*
+   MSG_TRUNC Return the real length of the packet, even when it was
+   longer than the passed buffer. Only valid for packet sockets.
+   MSG_DONTWAIT Enables non-blocking operation; if the operation would
+   block, -EAGAIN is returned (this can also be enabled using the
+   O_NONBLOCK with the F_SETFL sys_fcntl).
+   MSG_EOR *to be documented*
+   MSG_WAITALL This flag requests that the operation block until the full
+   request is satisfied. However, the call may still return less data
+   than requested if a signal is caught, an error or disconnect occurs,
+   or the next data to be received is of a different type than that
+   returned.
+   MSG_FIN *to be documented*
+   MSG_SYN *to be documented*
+   MSG_CONFIRM *to be documented*
+   MSG_RST *to be documented*
+   MSG_ERRQUEUE This flag specifies that queued errors should be received
+   from the socket error queue. The error is passed in an ancillary
+   message with a type dependent on the protocol (for IPv4 IP_RECVERR).
+   The user should supply a buffer of sufficient size. See man 3 cmsg and
+   man 7 ip for more information. The payload of the original packet that
+   caused the error is passed as normal data via msg_iovec. The original
+   destination address of the datagram that caused the error is supplied
+   via msg_name.
+   For local errors, no address is passed (this can be checked with the
+   cmsg_len member of the cmsghdr). For error receives, the MSG_ERRQUEUE
+   is set in the msghdr. After an error has been passed, the pending
+   socket error is regenerated based on the next queued error and will be
+   passed on the next socket operation.
+
+   The error is supplied in a sock_extended_err structure:
+
+   struc sock_extended_err
+   .ee_errno  resd 1
+   .ee_origin resb 1
+   .ee_type   resb 1
+   .ee_code   resb 1
+   .ee_pad    resb 1
+   .ee_info   resd 1
+   .ee_data   resd 1
+   endstruc
+
+   sock_extended_err members:
+   ee_errno
+   Error number. Curreently defined values are:
+   SO_EE_ORIGIN_NONE  *to be documented*
+   SO_EE_ORIGIN_LOCAL *to be documented*
+   SO_EE_ORIGIN_ICMP  *to be documented*
+   SO_EE_ORIGIN_ICMP6 *to be documented*
+   ee_origin
+   Origin code of where the error originated.
+   ee_type
+   This field is protocol specific. *to be documented*
+   ee_code
+   This field is protocol specific. *to be documented*
+   ee_pad
+   Padding.
+   ee_info
+   This field is protocol specific. *to be documented*
+   ee_data
+   This field is protocol specific. *to be documented*
+   MSG_NOSIGNAL *to be documented*
+   MSG_MORE *to be documented*
+
+   Return values
+
+   If the system call succeeds the return value is the number of bytes
+   received.
+   If the system call fails the return value is one of the following
+   errno values (These are some standard errors generated by the socket
+   layer. Additional errors may be generated and returned from the
+   underlying protocol modules):
+
+   -EAGAIN The socket is marked non-blocking and the receive operation
+     would block, or a receive timeout had been set and the timeout expired
+     before data was received.
+   -EBADF The 1st argument is an invalid descriptor.
+   -ECONNREFUSED A remote host refused to allow the network connection
+     (typically because it is not running the requested service).
+   -EFAULT The receive buffer pointer(s) point outside the process's
+     address space.
+   -EINTR The receive was interrupted by delivery of a signal before any
+     data were available.
+   -EINVAL Invalid argument passed.
+   -ENOTCONN The socket is associated with a connection-oriented protocol
+     and has not been connected (see SYS_CONNECT and SYS_ACCEPT).
+   -ENOTSOCK The 1st argument does not refer to a socket.
+
+
+----------------------------------------------------------------
+SYS_RECVMSG
+
+   Receive messages from a socket, and may be used to receive data on a
+   socket whether or not it is connection-oriented.
+
+ args
+ ----
+
+ ECX points to args structure
+
+ args struc
+  .fd     resd 1
+  .msghdr resd 1
+  .flags  resd 1
+ endstruc
+
+ .fd is Socket descriptor.
+
+ .msghdr is Pointer to a properly initialized msghdr structure:
+
+   struc msghdr
+   .msg_name       resd 1
+   .msg_namelen    resd 1
+   .msg_iov        resd 1
+   .msg_iovlen     resd 1
+   .msg_control    resd 1
+   .msg_controllen resd 1
+   .msg_flags      resd 1
+   endstruc
+
+   msghdr members:
+   msg_name
+   Pointer to a sockaddr structure specifying the source address if the
+   socket is unconnected. It may be 0.
+   msg_namelen
+   Size of the structure pointed by msg_namelen
+   msg_iov
+   Pointer to an array of iovec structures describe scatter-gather
+   locations, as discussed in sys_readv.
+   msg_iovlen
+   Number of elements in the iovec array.
+   msg_control
+   Pointer to a buffer for other protocol control related messages or
+   miscellaneous ancillary data.
+   msg_controllen
+   Size of the buffer pointed by msg_control. Upon return this member
+   will contain the length of the control message sequence.
+   msg_flags
+   This member is set on return of SYS_RECVMSG. It can contain several
+   flags:
+   MSG_EOR Indicates end-of-record; the data returned completed a record
+   (generally used with sockets of type SOCK_SEQPACKET).
+   MSG_TRUNC Indicates that the trailing portion of a datagram was
+   discarded because the datagram was larger than the buffer supplied.
+   MSG_CTRUNC Indicates that some control data were discarded due to lack
+   of space in the buffer for ancillary data.
+   MSG_OOB Is returned to indicate that expedited or out-of-band data
+   were received
+   MSG_ERRQUEUE Indicates that no data was received but an extended error
+   from the socket error queue.
+
+ .flags
+   MSG_OOB This flag requests receipt of out-of-band data that would not
+   be received in the normal data stream. Some protocols place expedited
+   data at the head of the normal data queue, and thus this flag cannot
+   be used with such protocols.
+   MSG_PEEK This flag causes the receive operation to return data from
+   the beginning of the receive queue without removing that data from the
+   queue. Thus, a subsequent receive call will return the same data.
+   MSG_DONTROUTE *to be documented*
+   MSG_TRYHARD *to be documented*
+   MSG_CTRUNC *to be documented*
+   MSG_PROBE *to be documented*
+   MSG_TRUNC Return the real length of the packet, even when it was
+   longer than the passed buffer. Only valid for packet sockets.
+   MSG_DONTWAIT Enables non-blocking operation; if the operation would
+   block, -EAGAIN is returned (this can also be enabled using the
+   O_NONBLOCK with the F_SETFL sys_fcntl).
+   MSG_EOR *to be documented*
+   MSG_WAITALL This flag requests that the operation block until the full
+   request is satisfied. However, the call may still return less data
+   than requested if a signal is caught, an error or disconnect occurs,
+   or the next data to be received is of a different type than that
+   returned.
+   MSG_FIN *to be documented*
+   MSG_SYN *to be documented*
+   MSG_CONFIRM *to be documented*
+   MSG_RST *to be documented*
+   MSG_ERRQUEUE This flag specifies that queued errors should be received
+   from the socket error queue. The error is passed in an ancillary
+   message with a type dependent on the protocol (for IPv4 IP_RECVERR).
+   The user should supply a buffer of sufficient size. See man 3 cmsg and
+   man 7 ip for more information. The payload of the original packet that
+   caused the error is passed as normal data via msg_iovec. The original
+   destination address of the datagram that caused the error is supplied
+   via msg_name.
+   For local errors, no address is passed (this can be checked with the
+   cmsg_len member of the cmsghdr). For error receives, the MSG_ERRQUEUE
+   is set in the msghdr. After an error has been passed, the pending
+   socket error is regenerated based on the next queued error and will be
+   passed on the next socket operation.
+
+   The error is supplied in a sock_extended_err structure:
+
+   struc sock_extended_err
+   .ee_errno  resd 1
+   .ee_origin resb 1
+   .ee_type   resb 1
+   .ee_code   resb 1
+   .ee_pad    resb 1
+   .ee_info   resd 1
+   .ee_data   resd 1
+   endstruc
+
+   sock_extended_err members:
+   ee_errno
+   Error number. Curreently defined values are:
+   SO_EE_ORIGIN_NONE  *to be documented*
+   SO_EE_ORIGIN_LOCAL *to be documented*
+   SO_EE_ORIGIN_ICMP  *to be documented*
+   SO_EE_ORIGIN_ICMP6 *to be documented*
+   ee_origin
+   Origin code of where the error originated.
+   ee_type
+   This field is protocol specific. *to be documented*
+   ee_code
+   This field is protocol specific. *to be documented*
+   ee_pad
+   Padding.
+   ee_info
+   This field is protocol specific. *to be documented*
+   ee_data
+   This field is protocol specific. *to be documented*
+   MSG_NOSIGNAL *to be documented*
+   MSG_MORE *to be documented*
+
+   Return values
+
+   If the system call succeeds the return value is the number of bytes
+   received.
+   If the system call fails the return value is one of the following
+   errno values (These are some standard errors generated by the socket
+   layer. Additional errors may be generated and returned from the
+   underlying protocol modules):
+
+   -EAGAIN The socket is marked non-blocking and the receive operation
+     would block, or a receive timeout had been set and the timeout expired
+     before data was received.
+   -EBADF The 1st argument is an invalid descriptor.
+   -ECONNREFUSED A remote host refused to allow the network connection
+      (typically because it is not running the requested service).
+   -EFAULT The receive buffer pointer(s) point outside the process's
+     address space.
+   -EINTR The receive was interrupted by delivery of a signal before any
+     data were available.
+   -EINVAL Invalid argument passed.
+   -ENOTCONN The socket is associated with a connection-oriented protocol
+     and has not been connected (see SYS_CONNECT and SYS_ACCEPT).
+   -ENOTSOCK The 1st argument does not refer to a socket.
+   -ENOMEM Could not allocate memory.
+
+----------------------------------------------------------------
+SYS_SEND
+
+   Transmits data to another connected (the intended recipient is known)
+   socket.
+   SYS_SEND with .flags (see args struc) set to 0 is identical to sys_write
+   system call.
+
+ args
+ ----
+
+ ECX is pointer to args struc
+
+ args struc
+  .fd    resd 1
+  .buf   resd 1
+  .size  resd 1
+  .flags resd 1
+ endstruc
+
+ .fd is Socket descriptor.
+ 
+ .buf is Pointer to a buffer containing the data to send.
+
+ .size is Size of the data in the buffer pointed by 2nd argument.
+   If the message is too long to pass atomically through the underlying
+   protocol, the error -EMSGSIZE is returned, and the message is not
+   transmitted.
+   When the message does not fit into the send buffer of the socket,
+   SYS_SEND normally blocks, unless the socket has been placed in
+   non-blocking I/O mode. In non-blocking mode it would return -EAGAIN in
+   this case. The sys_select call may be used to determine when it is
+   possible to send more data.
+
+ .flags
+   MSG_CONFIRM Tell the link layer that forward progress happened: you
+   got a successful reply from the other side. If the link layer doesn't
+   get this it will regularly reprobe the neighbour (e.g. via a unicast
+   ARP). Only valid on SOCK_DGRAM and SOCK_RAW sockets and currently only
+   implemented for IPv4 and IPv6. See man 7 arp for details.
+   MSG_DONTROUTE Don't use a gateway to send out the packet, only send to
+   hosts on directly connected networks. This is usually used only by
+   diagnostic or routing programs. This is only defined for protocol
+   families that route; packet sockets don't.
+   MSG_DONTWAIT Enables non-blocking operation; if the operation would
+   block, EAGAIN is returned (this can also be enabled using the
+   O_NONBLOCK with the F_SETFL sys_fcntl).
+   MSG_EOR Terminates a record (when this notion is supported, as for
+   sockets of type SOCK_SEQPACKET).
+   MSG_MORE The caller has more data to send. This flag is used with TCP
+   sockets to obtain the same effect as the TCP_CORK socket option (see
+   man 7 arp), with the difference that this flag can be set on a
+   per-call basis.
+   This flag is also supported for UDP sockets, and informs the kernel to
+   package all of the data sent in calls with this flag set into a single
+   datagram which is only transmitted when a call is performed that does
+   not specify this flag. (See also the UDP_CORK socket option described
+   in man 7 arp.)
+   MSG_NOSIGNAL Requests not to send SIGPIPE on errors on stream oriented
+   sockets when the other end breaks the connection. The -EPIPE error is
+   still returned.
+   MSG_OOB Sends out-of-band data on sockets that support this notion
+   (e.g. of type SOCK_STREAM); the underlying protocol must also support
+   out-of-band data.
+
+   Return values
+
+   If the system call succeeds the return value is the number of
+   characters sent.
+   If the system call fails the return value is one of the following
+   errno values (These are some standard errors generated by the socket
+   layer. Additional errors may be generated and returned from the
+   underlying protocol modules.):
+
+   -EACCES (For Unix domain sockets, which are identified by pathname)
+     Write permission is denied on the destination socket file, or search
+     permission is denied for one of the directories the path prefix.
+   -EAGAIN,
+   -EWOULDBLOCK The socket is marked non-blocking and the requested
+     operation would block.
+   -EBADF An invalid descriptor was specified.
+   -ECONNRESET Connection reset by peer.
+   -EDESTADDRREQ The socket is not connection-mode, and no peer address
+     is set.
+   -EFAULT An invalid user space address was specified for a parameter.
+   -EINTR A signal occurred before any data was transmitted.
+   -EINVAL Invalid argument passed.
+   -EISCONN The connection-mode socket was connected already but a
+     recipient was specified. (Now either this error is returned, or the
+     recipient specification is ignored.)
+   -EMSGSIZE The socket type requires that message be sent atomically,
+     and the size of the message to be sent made this impossible.
+   -ENOBUFS The output queue for a network interface was full. This
+     generally indicates that the interface has stopped sending, but may be
+     caused by transient congestion. (Normally, this does not occur in
+     Linux. Packets are just silently dropped when a device queue
+     overflows.)
+   -ENOMEM No memory available.
+   -ENOTCONN,
+   -EPIPE The socket is not connected, and no target has been given.
+   -ENOTSOCK The 1st argument is not a socket.
+   -EOPNOTSUPP Some bit in the 4th argument is inappropriate for the
+     socket type.
+   -EPIPE The local end has been shut down on a connection oriented
+     socket. In this case the process will also receive a SIGPIPE unless
+   MSG_NOSIGNAL is set.
+
+
+----------------------------------------------------------------
+SYS_SENDMSG
+
+   Transmits a message to another socket. It also allows sending
+   ancillary data (also known as control information).
+
+ args
+ ----
+
+ ECX is pointer to args struc
+
+ args struc
+  .fd    resd 1
+  .msghdr resd 1
+  .flags  resd 1
+ endstruc
+
+ .fd is Socket descriptor.
+
+ .msghdr is pointer to a properly initialized msghdr structure:
+
+   struc msghdr
+   .msg_name       resd 1
+   .msg_namelen    resd 1
+   .msg_iov        resd 1
+   .msg_iovlen     resd 1
+   .msg_control    resd 1
+   .msg_controllen resd 1
+   .msg_flags      resd 1
+   endstruc
+
+   msghdr members:
+   msg_name
+   Pointer to a sockaddr structure specifying the source address if the
+   socket is unconnected. It may be 0.
+   msg_namelen
+   Size of the structure pointed by msg_namelen
+   msg_iov
+   Pointer to an array of iovec structures describe scatter-gather
+   locations, as discussed in sys_readv.
+   msg_iovlen
+   Number of elements in the iovec array.
+   msg_control
+   Pointer to a buffer for other protocol control related messages or
+   miscellaneous ancillary data.
+   msg_controllen
+   Size of the buffer pointed by msg_control. Upon return this member
+   will contain the length of the control message sequence.
+   msg_flags
+   This member is set on return of SYS_RECVMSG. It can contain several
+   flags:
+   MSG_EOR Indicates end-of-record; the data returned completed a record
+   (generally used with sockets of type SOCK_SEQPACKET).
+   MSG_TRUNC Indicates that the trailing portion of a datagram was
+   discarded because the datagram was larger than the buffer supplied.
+   MSG_CTRUNC Indicates that some control data were discarded due to lack
+   of space in the buffer for ancillary data.
+   MSG_OOB Is returned to indicate that expedited or out-of-band data
+   were received
+   MSG_ERRQUEUE Indicates that no data was received but an extended error
+   from the socket error queue.
+
+ .flags is a bitwise-or of zero or more of the
+   following flags:
+   MSG_CONFIRM Tell the link layer that forward progress happened: you
+   got a successful reply from the other side. If the link layer doesn't
+   get this it will regularly reprobe the neighbour (e.g. via a unicast
+   ARP). Only valid on SOCK_DGRAM and SOCK_RAW sockets and currently only
+   implemented for IPv4 and IPv6. See man 7 arp for details.
+   MSG_DONTROUTE Don't use a gateway to send out the packet, only send to
+   hosts on directly connected networks. This is usually used only by
+   diagnostic or routing programs. This is only defined for protocol
+   families that route; packet sockets don't.
+   MSG_DONTWAIT Enables non-blocking operation; if the operation would
+   block, EAGAIN is returned (this can also be enabled using the
+   O_NONBLOCK with the F_SETFL sys_fcntl).
+   MSG_EOR Terminates a record (when this notion is supported, as for
+   sockets of type SOCK_SEQPACKET).
+   MSG_MORE The caller has more data to send. This flag is used with TCP
+   sockets to obtain the same effect as the TCP_CORK socket option (see
+   man 7 arp), with the difference that this flag can be set on a
+   per-call basis.
+   This flag is also supported for UDP sockets, and informs the kernel to
+   package all of the data sent in calls with this flag set into a single
+   datagram which is only transmitted when a call is performed that does
+   not specify this flag. (See also the UDP_CORK socket option described
+   in man 7 arp.)
+   MSG_NOSIGNAL Requests not to send SIGPIPE on errors on stream oriented
+   sockets when the other end breaks the connection. The -EPIPE error is
+   still returned.
+   MSG_OOB Sends out-of-band data on sockets that support this notion
+   (e.g. of type SOCK_STREAM); the underlying protocol must also support
+   out-of-band data.
+
+   Return values
+
+   If the system call succeeds the return value is the number of
+   characters sent.
+   If the system call fails the return value is one of the following
+   errno values (These are some standard errors generated by the socket
+   layer. Additional errors may be generated and returned from the
+   underlying protocol modules.):
+
+   -EACCES (For Unix domain sockets, which are identified by pathname)
+     Write permission is denied on the destination socket file, or search
+     permission is denied for one of the directories the path prefix.
+   -EAGAIN,
+   -EWOULDBLOCK The socket is marked non-blocking and the requested
+     operation would block.
+   -EBADF An invalid descriptor was specified.
+   -ECONNRESET Connection reset by peer.
+   -EDESTADDRREQ The socket is not connection-mode, and no peer address
+     is set.
+   -EFAULT An invalid user space address was specified for a parameter.
+   -EINTR A signal occurred before any data was transmitted.
+   -EINVAL Invalid argument passed.
+   -EISCONN The connection-mode socket was connected already but a
+     recipient was specified. (Now either this error is returned, or the
+     recipient specification is ignored.)
+   -EMSGSIZE The socket type requires that message be sent atomically,
+     and the size of the message to be sent made this impossible.
+   -ENOBUFS The output queue for a network interface was full. This
+     generally indicates that the interface has stopped sending, but may be
+     caused by transient congestion. (Normally, this does not occur in
+     Linux. Packets are just silently dropped when a device queue
+     overflows.)
+   -ENOMEM No memory available.
+   -ENOTCONN,
+   -EPIPE The socket is not connected, and no target has been given.
+   -ENOTSOCK The 1st argument is not a socket.
+   -EOPNOTSUPP Some bit in the 3rd argument is inappropriate for the
+     socket type.
+   -EPIPE The local end has been shut down on a connection oriented
+     socket. In this case the process will also receive a SIGPIPE unless
+   MSG_NOSIGNAL is set.
+
+
+----------------------------------------------------------------
+SYS_SENDTO
+
+   Transmits data to another socket.
+
+ args
+ ----
+
+ ECX is a pointer to args struc
+
+ args struc
+  .fd    resd 1
+  .buf   resd 1
+  .size  resd 1
+  .flags resd 1
+  .addr  resd 1
+  .asize resd 1
+ endstruc
+
+ .fd is Socket descriptor.
+
+ .buf is Pointer to a buffer containing the data to send.
+
+ .size is Size of the data in the buffer pointed by 2nd argument.
+   If the message is too long to pass atomically through the underlying
+   protocol, the error -EMSGSIZE is returned, and the message is not
+   transmitted.
+   When the message does not fit into the send buffer of the socket,
+   SYS_SEND normally blocks, unless the socket has been placed in
+   non-blocking I/O mode. In non-blocking mode it would return -EAGAIN in
+   this case. The sys_select call may be used to determine when it is
+   possible to send more data.
+ 
+ .flags is a bitwise-or of zero or more of the
+   following flags:
+   MSG_CONFIRM Tell the link layer that forward progress happened: you
+   got a successful reply from the other side. If the link layer doesn't
+   get this it will regularly reprobe the neighbour (e.g. via a unicast
+   ARP). Only valid on SOCK_DGRAM and SOCK_RAW sockets and currently only
+   implemented for IPv4 and IPv6. See man 7 arp for details.
+   MSG_DONTROUTE Don't use a gateway to send out the packet, only send to
+   hosts on directly connected networks. This is usually used only by
+   diagnostic or routing programs. This is only defined for protocol
+   families that route; packet sockets don't.
+   MSG_DONTWAIT Enables non-blocking operation; if the operation would
+   block, EAGAIN is returned (this can also be enabled using the
+   O_NONBLOCK with the F_SETFL sys_fcntl).
+   MSG_EOR Terminates a record (when this notion is supported, as for
+   sockets of type SOCK_SEQPACKET).
+   MSG_MORE The caller has more data to send. This flag is used with TCP
+   sockets to obtain the same effect as the TCP_CORK socket option (see
+   man 7 arp), with the difference that this flag can be set on a
+   per-call basis.
+   This flag is also supported for UDP sockets, and informs the kernel to
+   package all of the data sent in calls with this flag set into a single
+   datagram which is only transmitted when a call is performed that does
+   not specify this flag. (See also the UDP_CORK socket option described
+   in man 7 arp.)
+   MSG_NOSIGNAL Requests not to send SIGPIPE on errors on stream oriented
+   sockets when the other end breaks the connection. The -EPIPE error is
+   still returned.
+   MSG_OOB Sends out-of-band data on sockets that support this notion
+   (e.g. of type SOCK_STREAM); the underlying protocol must also support
+   out-of-band data.
+
+ .addr is pointer to a sockaddr structure specifying the address in case
+   underlying protocol provides one.
+
+ .asize is Size of structure pointed by .addr argument.
+
+   Return values
+
+   If the system call succeeds the return value is the number of
+   characters sent.
+   If the system call fails the return value is one of the following
+   errno values (These are some standard errors generated by the socket
+   layer. Additional errors may be generated and returned from the
+   underlying protocol modules.):
+
+   -EACCES (For Unix domain sockets, which are identified by pathname)
+     Write permission is denied on the destination socket file, or search
+     permission is denied for one of the directories the path prefix.
+   -EAGAIN,
+   -EWOULDBLOCK The socket is marked non-blocking and the requested
+     operation would block.
+   -EBADF An invalid descriptor was specified.
+   -ECONNRESET Connection reset by peer.
+   -EDESTADDRREQ The socket is not connection-mode, and no peer address
+     is set.
+   -EFAULT An invalid user space address was specified for a parameter.
+   -EINTR A signal occurred before any data was transmitted.
+   -EINVAL Invalid argument passed.
+   -EISCONN The connection-mode socket was connected already but a
+     recipient was specified. (Now either this error is returned, or the
+     recipient specification is ignored.)
+   -EMSGSIZE The socket type requires that message be sent atomically,
+     and the size of the message to be sent made this impossible.
+   -ENOBUFS The output queue for a network interface was full. This
+     generally indicates that the interface has stopped sending, but may be
+     caused by transient congestion. (Normally, this does not occur in
+     Linux. Packets are just silently dropped when a device queue
+     overflows.)
+   -ENOMEM No memory available.
+   -ENOTCONN,
+   -EPIPE The socket is not connected, and no target has been given.
+   -ENOTSOCK The 1st argument is not a socket.
+   -EOPNOTSUPP Some bit in the 4th argument is inappropriate for the
+     socket type.
+   -EPIPE The local end has been shut down on a connection oriented
+     socket. In this case the process will also receive a SIGPIPE unless
+     MSG_NOSIGNAL is set.
+
+
+----------------------------------------------------------------
+SYS_SETSOCKOPT
+
+   Sets the options associated with a socket.
+
+ args
+ ----
+
+ ECX is pointer to args structure
+
+ args struc
+  .fd    resd 1
+  .prot  resd 1
+  .opt   resd 1
+  .buf   resd 1
+  .size	 resd 1
+ endstruc
+
+ .fd is Socket descriptor.
+
+ .prot is Protocol level where the options described by 3rd argument are
+   present.
+   To manipulate options at the socket level, SOL_SOCKET is used. To
+   manipulate options at any other level the protocol number of the
+   appropriate protocol controlling the option is supplied. For example,
+   to indicate that an option is to be interpreted by the TCP protocol,
+   and should be set to the protocol number of TCP.
+
+ .opt is Option to retrieve. For socket level (SOL_SOCKET) options it may
+   be one of the following values:
+   SO_DEBUG Socket debugging. Only allowed for processes with the
+   CAP_NET_ADMIN capability or an effective user ID of 0.
+   SO_REUSEADDR Indicates that the rules used in validating addresses
+   supplied in a SYS_BIND call should allow reuse of local addresses.
+   For PF_INET sockets this means that a socket may bind, except when
+   there is an active listening socket bound to the address. When the
+   listening socket is bound to INADDR_ANY with a specific port then it
+   is not possible to bind to this port for any local address.
+   SO_TYPE *to be documented*
+   SO_DONTROUTE Don't send via a gateway, only send to directly connected
+   hosts. The same effect can be achieved by setting the MSG_DONTROUTE
+   flag on a socket SYS_SEND operation. Expects an integer boolean
+   flag.
+   SO_BROADCAST Set or get the broadcast flag. When enabled, datagram
+   sockets receive packets sent to a broadcast address and they are
+   allowed to send packets to a broadcast address. This option has no
+   effect on stream-oriented sockets.
+   SO_SNDBUF Sets or gets the maximum socket send buffer in bytes. The
+   kernel doubles this value (to allow space for bookkeeping overhead)
+   when it is set using SYS_SETSOCKOPT, and this doubled value is
+   returned by SYS_GETSOCKOPT. The default value is set by the
+   wmem_default sysctl and the maximum allowed value is set by the
+   wmem_max sysctl. The minimum (doubled) value for this option is 2048.
+   SO_RCVBUF Sets or gets the maximum socket receive buffer in bytes. The
+   kernel doubles this value (to allow space for bookkeeping overhead)
+   when it is set using SYS_SETSOCKOPT, and this doubled value is
+   returned by SYS_GETSOCKOPT. The default value is set by the
+   rmem_default sysctl and the maximum allowed value is set by the
+   rmem_max sysctl. The minimum (doubled) value for this option is 256.
+   SO_SNDBUFFORCE (since Linux 2.6.14)
+   Using this socket option, a privileged (CAP_NET_ADMIN) process can
+   perform the same task as SO_SNDBUF, but the wmem_max limit can be
+   overridden.
+   SO_RCVBUFFORCE (since Linux 2.6.14)
+   Using this socket option, a privileged (CAP_NET_ADMIN) process can
+   perform the same task as SO_RCVBUF, but the rmem_max limit can be
+   overridden.
+   SO_KEEPALIVE Enable sending of keep-alive messages on
+   connection-oriented sockets. Expects an integer boolean flag.
+   SO_OOBINLINE If this option is enabled, out-of-band data is directly
+   placed into the receive data stream. Otherwise out-of-band data is
+   only passed when the MSG_OOB flag is set during receiving.
+   SO_PRIORITY Set the protocol-defined priority for all packets to be
+   sent on this socket. Linux uses this value to order the networking
+   queues: packets with a higher priority may be processed first
+   depending on the selected device queueing discipline. For IP level ,
+   this also sets the IP type-of-service (TOS) field for outgoing
+   packets. Setting a priority outside the range 0 to 6 requires the
+   CAP_NET_ADMIN capability.
+   SO_LINGER Set or gets the SO_LINGER option. The argument is a linger
+   structure.
+
+   struc linger
+   .l_onoff  resd 1 ; linger active
+   .l_linger resd 1 ; how many seconds to linger for
+   endstruc
+
+   When enabled, a sys_close or SYS_SHUTDOWN will not return until
+   all queued messages for the socket have been successfully sent or the
+   linger timeout has been reached. Otherwise, the call returns
+   immediately and the closing is done in the background. When the socket
+   is closed as part of sys_exit, it always lingers in the background.
+   SO_BSDCOMPAT This option is obsolete Linux will generate a kernel
+   warning (printk()) if a program uses this option.
+   SO_PASSCRED Enable or disable the receiving of the SCM_CREDENTIALS
+   control message. For more information see man 7 unix.
+   SO_RCVLOWAT Specify the minimum number of bytes in the buffer until
+   the socket layer will pass the data to the user on receiving. This
+   value is initialised to 1. SO_RCVLOWAT is changeable only since Linux
+   2.4. The sys_select and sys_poll system calls currently do not
+   respect the SO_RCVLOWAT setting on Linux, and mark a socket readable
+   when even a single byte of data is available. A subsequent read from
+   the socket will block until SO_RCVLOWAT bytes are available.
+   SO_SNDLOWAT This option is not implemented and SYS_SETSOCKOPT will
+   always fail with -ENOPROTOOPT.
+   SO_RCVTIMEO Specify the receiving timeouts until reporting an error.
+   The parameter is a timeval struct. If an input function blocks for
+   this period of time, and data has been received, the return value of
+   that function will be the amount of data transferred; if no data has
+   been transferred and the timeout has been reached then -1 is returned
+   with -EAGAIN or -EWOULDBLOCK just as if the socket was specified to be
+   nonblocking. If the timeout is set to zero (the default) then the
+   operation will never timeout.
+   SO_SNDTIMEO Specify the sending timeouts until reporting an error. The
+   parameter is a timeval struct. If an output function blocks for this
+   period of time, and data has been sent, the return value of that
+   function will be the amount of data transferred; if no data has been
+   transferred and the timeout has been reached then -1 is returned with
+   -EAGAIN or -EWOULDBLOCK just as if the socket was specified to be
+   nonblocking. If the timeout is set to zero (the default) then the
+   operation will never timeout.
+
+ .buf is Pointer to a buffer containing parameters for the option specified
+   in .opt argument.
+
+ .size is Size of the buffer pointed by .buf argument.
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EBADF The 1st argument is not a valid descriptor.
+   -EFAULT The address pointed to by 4th argument is not in a valid part
+     of the process address space.
+   -ENOPROTOOPT The option is unknown at the level indicated.
+   -ENOTSOCK The 1st argument is a file, not a socket.
+
+-----------------------------------------------------------------
+SYS_SHUTDOWN
+
+   Shuts down part of a full-duplex connection.
+
+ args
+ ----
+
+ ECX is pointer to args strucure
+
+ args struc
+  .fd    resd 1
+  .cmd   resd 1
+ endstruc
+
+ .fd is  Socket descriptor.
+
+ .cmd provides Direction to shutdown. Currently this argument is discarded
+   (actually always treated as READ+WRITE)
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EBADF    1st argument is not a valid descriptor.
+   -ENOTCONN The specified socket is not connected.
+   -ENOTSOCK 1st argument is a file, not a socket.
+
+
+----------------------------------------------------------------
+SYS_SOCKET
+
+   Create an endpoint for communication.
+
+ args
+ ----
+
+ ECX is pointer to args strucure
+
+ args struc
+  .family resd 1
+  .flags  resd 1
+  .prot   resd 1
+ endstruc
+
+
+ .family is Protocol family which will be used for communication. The
+   currently understood formats include: *should add more*
+   PF_UNIX,
+   PF_LOCAL Local communication.
+            PF_INET             IPv4 Internet protocols.
+            PF_INET6            IPv6 Internet protocols.
+            PF_IPX              IPX - Novell protocols.
+            PF_NETLINK          Kernel user interface device.
+            PF_X25              ITU-T X.25 / ISO-8208 protocol.
+            PF_AX25             Amateur radio AX.25 protocol.
+            PF_ATMPVC           Access to raw ATM PVCs.
+            PF_APPLETALK        Appletalk.
+            PF_PACKET           Low level packet interface.
+
+ .flags provides Communication semantics. Currently defined types are:
+   SOCK_STREAM Provides sequenced, reliable, two-way, connection-based
+   byte streams. An out-of-band data transmission mechanism may be
+   supported.
+   Such sockets types are full-duplex byte streams, similar to pipes.
+   They do not preserve record boundaries. A stream socket must be in a
+   connected state before any data may be sent or received on it. A
+   connection to another socket is created with a SYS_CONNECT call.
+   Once connected, data may be transferred using sys_read and
+   sys_write calls or some variant of the SYS_SEND and SYS_RECV
+   calls. When a session has been completed a sys_close may be
+   performed.
+   The communications protocols which implement a SOCK_STREAM ensure that
+   data is not lost or duplicated. If a piece of data for which the peer
+   protocol has buffer space cannot be successfully transmitted within a
+   reasonable length of time, then the connection is considered to be
+   dead. When SO_KEEPALIVE is enabled on the socket the protocol checks
+   in a protocol-specific manner if the other end is still alive. A
+   SIGPIPE signal is raised if a process sends or receives on a broken
+   stream; this causes naive processes, which do not handle the signal,
+   to exit.
+   SOCK_DGRAM Supports datagrams (connectionless, unreliable messages of
+   a fixed maximum length).
+   Datagrams are sent to correspondents named in SYS_SENDTO calls.
+   Datagrams are generally received with SYS_RECVFROM, which returns
+   the next datagram along with the address of its sender.
+   SOCK_RAW Provides raw network protocol access and allows sending of
+   datagrams to correspondents named in SYS_SENDTO calls. Datagrams
+   are generally received with SYS_RECVFROM, which returns the next
+   datagram along with the address of its sender.
+   SOCK_RDM Provides a reliable datagram layer that does not guarantee
+   ordering.
+   SOCK_SEQPACKET Provides a sequenced, reliable, two-way
+   connection-based data transmission path for datagrams of fixed maximum
+   length; a consumer is required to read an entire packet with each read
+   system call.
+   SOCK_SEQPACKET sockets employ the same system calls as SOCK_STREAM
+   sockets. The only difference is that sys_read calls will return
+   only the amount of data requested, and any data remaining in the
+   arriving packet will be discarded. Also all message boundaries in
+   incoming datagrams are preserved.
+   SOCK_DCCP *to be documented*
+   SOCK_PACKET Obsolete and should not be used in new programs; see man 7
+   packet.
+   SCOK_PACKET allowed to receive raw packets directly from the device
+   driver.
+   Some socket types may not be implemented by all protocol families; for
+   example, SOCK_SEQPACKET is not implemented for AF_INET.
+
+ .prot is Protocol to be used with the socket.
+   Normally only a single protocol exists to support a particular socket
+   type within a given protocol family, in which case this argument can
+   be specified as 0. However, it is possible that many protocols may
+   exist, in which case a particular protocol must be specified in this
+   manner. The protocol number to use is specific to the "communication
+   domain" in which communication is to take place. See /etc/protocols
+   for a list of available protocols.
+
+   Return values
+
+   If the system call succeeds the return value is a file descriptor for
+   the new socket.
+   If the system call fails the return value is one of the following
+   errno values (other errors may be generated by the underlying protocol
+   modules.):
+
+   -EACCES Permission to create a socket of the specified type and/or
+     protocol is denied.
+   -EAFNOSUPPORT The implementation does not support the specified
+     address family.
+   -EINVAL Unknown protocol, or protocol family not available.
+   -EMFILE Process file table overflow.
+   -ENFILE The system limit on the total number of open files has been
+     reached.
+   -ENOBUFS,
+   -ENOMEM Insufficient memory is available. The socket cannot be created
+     until sufficient resources are freed.
+   -EPROTONOSUPPORT The protocol type or the specified protocol is not
+     supported within this domain.
+
+   Remarks
+
+   An sys_fcntl F_SETOWN operation can be used to specify a process
+   or process group to receive a SIGURG signal when the out-of-band data
+   arrives or SIGPIPE signal when a SOCK_STREAM connection breaks
+   unexpectedly. This operation may also be used to set the process or
+   process group that receives the I/O and asynchronous notification of
+   I/O events via SIGIO. Using F_SETOWN is equivalent to an sys_ioctl
+   call with the FIOSETOWN or SIOCSPGRP argument.
+   When the network signals an error condition to the protocol module
+   (e.g., using a ICMP message for IP) the pending error flag is set for
+   the socket. The next operation on this socket will return the error
+   code of the pending error. For some protocols it is possible to enable
+   a per-socket error queue to retrieve detailed information about the
+   error; see IP_RECVERR in man 7 ip.
+
+
+----------------------------------------------------------------
+SYS_SOCKETPAIR
+
+   Creates an unnamed pair of connected sockets.
+
+ args
+ ----
+
+ ECX is pointer to args structure
+
+ args struc
+  .domain  resd 1
+  .flags   resd 1
+  .prot   resd 1
+  .buf     resd 1
+ endstruc
+
+ .domain is Socket domain. Currently the only supported domain for this call
+   is AF_UNIX (or synonymously, AF_LOCAL).
+
+ .flags provides Communication semantics. Currently defined types are:
+   SOCK_STREAM Provides sequenced, reliable, two-way, connection-based
+   byte streams. An out-of-band data transmission mechanism may be
+   supported.
+   Such sockets types are full-duplex byte streams, similar to pipes.
+   They do not preserve record boundaries. A stream socket must be in a
+   connected state before any data may be sent or received on it. A
+   connection to another socket is created with a SYS_CONNECT call.
+   Once connected, data may be transferred using sys_read and
+   sys_write calls or some variant of the SYS_SEND and SYS_RECV
+   calls. When a session has been completed a sys_close may be
+   performed.
+   The communications protocols which implement a SOCK_STREAM ensure that
+   data is not lost or duplicated. If a piece of data for which the peer
+   protocol has buffer space cannot be successfully transmitted within a
+   reasonable length of time, then the connection is considered to be
+   dead. When SO_KEEPALIVE is enabled on the socket the protocol checks
+   in a protocol-specific manner if the other end is still alive. A
+   SIGPIPE signal is raised if a process sends or receives on a broken
+   stream; this causes naive processes, which do not handle the signal,
+   to exit.
+   SOCK_DGRAM Supports datagrams (connectionless, unreliable messages of
+   a fixed maximum length).
+   Datagrams are sent to correspondents named in SYS_SENDTO calls.
+   Datagrams are generally received with SYS_RECVFROM, which returns
+   the next datagram along with the address of its sender.
+   SOCK_RAW Provides raw network protocol access and allows sending of
+   datagrams to correspondents named in SYS_SENDTO calls. Datagrams
+   are generally received with SYS_RECVFROM, which returns the next
+   datagram along with the address of its sender.
+   SOCK_RDM Provides a reliable datagram layer that does not guarantee
+   ordering.
+   SOCK_SEQPACKET Provides a sequenced, reliable, two-way
+   connection-based data transmission path for datagrams of fixed maximum
+   length; a consumer is required to read an entire packet with each read
+   system call.
+   SOCK_SEQPACKET sockets employ the same system calls as SOCK_STREAM
+   sockets. The only difference is that sys_read calls will return
+   only the amount of data requested, and any data remaining in the
+   arriving packet will be discarded. Also all message boundaries in
+   incoming datagrams are preserved.
+   SOCK_DCCP *to be documented*
+   SOCK_PACKET Obsolete and should not be used in new programs; see man 7
+   packet.
+   SCOK_PACKET allowed to receive raw packets directly from the device
+   driver.
+
+ .prot is Protocol to be used with the socket.
+   Normally only a single protocol exists to support a particular socket
+   type within a given protocol family, in which case this argument can
+   be specified as 0. However, it is possible that many protocols may
+   exist, in which case a particular protocol must be specified in this
+   manner. The protocol number to use is specific to the "communication
+   domain" in which communication is to take place. See /etc/protocols
+   for a list of available protocols.
+
+ .buf is Pointer to 8 byte long buffer which will receive the two socket
+   descriptors. The two sockets are indistinguishable.
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EAFNOSUPPORT The specified address family is not supported on this
+     machine.
+   -EFAULT The address pointed by 4th argument does not specify a valid
+     part of the process address space.
+   -EMFILE Too many descriptors are in use by this process.
+   -ENFILE The system limit on the total number of open files has been
+     reached.
+   -EOPNOTSUPP The specified protocol does not support creation of socket
+     pairs.
+   -EPROTONOSUPPORT The specified protocol is not supported on this
+     machine.
+

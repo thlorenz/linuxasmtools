@@ -1,0 +1,19 @@
+
+  [section .text]
+  extern raw_set1
+  extern read_stdin
+  extern kbuf
+  extern crt_str
+
+global main,_start
+
+main:
+_start
+  nop
+  call	read_stdin
+  mov	al,[kbuf]
+  mov	ecx,kbuf
+  call	crt_str
+  mov	ebx,0
+  mov	eax,1
+  int	80h

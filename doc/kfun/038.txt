@@ -1,0 +1,106 @@
+
+----------------------------------------------------------------------------
+ 38 rename         - change the name or location of a file
+----------------------------------------------------------------------------
+  mov  eax,038
+  mov  ebx,oldpath   ;ptr to asciiz file path
+  mov  ecx,newpath   ;ptr to new asciiz file path
+  int  80h
+
+       rename renames a file, moving it between directories if required.
+
+       Any  other  hard links to the file (as created using link) are
+       unaffected.
+
+       If newpath already exists it will be atomically replaced (subject to  a
+       few  conditions - see ERRORS below), so that there is no point at which
+       another process attempting to access newpath will find it missing.
+
+       If newpath exists but the operation fails for some reason rename  guar-
+       antees to leave an instance of newpath in place.
+
+       However, when overwriting there will probably be a window in which both
+       oldpath and newpath refer to the file being renamed.
+
+       If oldpath refers to a symbolic link the link is  renamed;  if  newpath
+       refers to a symbolic link the link will be overwritten.
+
+RETURN VALUE
+       On  success,  zero is returned, else a negative error code
+
+ERRORS
+       EISDIR newpath is an existing directory, but oldpath is  not  a  direc-
+              tory.
+
+       EXDEV  oldpath and newpath are not on the same filesystem.
+
+       ENOTEMPTY or EEXIST
+              newpath  is  a non-empty directory, i.e., contains entries other
+              than "." and "..".
+
+       EBUSY  The rename fails because oldpath or newpath is a directory  that
+              is in use by some process (perhaps as current working directory,
+              or as root directory, or because it was open for reading) or  is
+              in  use  by  the  system (for example as mount point), while the
+              system considers this an error.  (Note that there is no require-
+              ment to return EBUSY in such cases - there is nothing wrong with
+              doing the rename anyway - but it is allowed to return  EBUSY  if
+              the system cannot otherwise handle such situations.)
+
+       EINVAL The  new  pathname  contained a path prefix of the old, or, more
+              generally, an attempt was made to make a directory  a  subdirec-
+              tory of itself.
+
+       EMLINK oldpath already has the maximum number of links to it, or it was
+              a directory and the directory containing newpath has the maximum
+              number of links.
+
+       ENOTDIR
+              A component used as a directory in oldpath or newpath is not, in
+              fact, a directory.  Or, oldpath  is  a  directory,  and  newpath
+              exists but is not a directory.
+
+       EFAULT oldpath or newpath points outside your accessible address space.
+
+       EACCES Write access to the directory containing oldpath or  newpath  is
+              not  allowed  for  the  process's  effective  uid, or one of the
+              directories in oldpath or newpath did not allow search (execute)
+              permission,  or  oldpath was a directory and did not allow write
+              permission (needed to update the ..  entry).
+
+       EPERM or EACCES
+              The directory containing oldpath has the sticky bit set and  the
+              process's  effective  uid is neither that of root nor the uid of
+              the file to be deleted nor that of the directory containing  it,
+              or  newpath  is an existing file and the directory containing it
+              has the sticky bit set and the process's effective uid  is  nei-
+              ther  that  of  root  nor the uid of the file to be replaced nor
+              that of the directory containing it, or the filesystem  contain-
+              ing pathname does not support renaming of the type requested.
+
+       ENAMETOOLONG
+              oldpath or newpath was too long.
+
+       ENOENT A  directory component in oldpath  or  newpath does not exist or
+              is a dangling symbolic link.
+
+       ENOMEM Insufficient kernel memory was available.
+
+       EROFS  The file is on a read-only filesystem.
+
+       ELOOP  Too many symbolic links were encountered in resolving oldpath or
+              newpath.
+
+       ENOSPC The device containing the file has no room for the new directory
+              entry.
+
+BUGS
+       On NFS filesystems, you can not assume that if the operation failed the
+       file was not renamed.  If the server does the rename operation and then
+       crashes, the retransmitted RPC which will be processed when the  server
+       is up again causes a failure.  The application is expected to deal with
+       this.  See link(2) for a similar problem.
+
+SEE ALSO
+       link, unlink, symlink
+

@@ -1,0 +1,45 @@
+######################################################
+#
+# modify the following as needed
+# select assembler, nasm, fasm, as, yasm
+#
+assembler = nasm
+#input file name xxxx.yyy is converted to base.ext in following:
+base = cmos
+                                          
+ext = asm
+  
+  
+######################################################
+all:  touch $(base)
+
+touch:
+	touch $(base).$(ext)
+
+ifeq "$(assembler)" "nasm"
+$(base):	$(base).o
+	ld -static -o $(base) $(base).o /usr/lib/asmlib.a
+$(base).o:	$(base).$(ext)
+	nasm -g -felf $(base).$(ext)
+endif
+
+ifeq "$(assembler)" "as"
+$(base):	$(base).o
+	ld -static -o $(base) $(base).o /usr/lib/asmlib.a
+$(base).o:	$(base).$(ext)
+	as --gstabs $(base).$(ext) -o $(base).o
+endif
+
+ifeq "$(assembler)" "yasm"
+$(base):	$(base).o
+	ld -static -o $(base) $(base).o /usr/lib/asmlib.a
+$(base).o:	$(base).$(ext)
+	yasm -g stabs -f elf -o $(base).o $(base).$(ext)
+endif
+
+ifeq "$(assembler)" "fasm"
+$(base):	$(base).o
+	ld -static -o $(base) $(base).o /usr/lib/asmlib.a
+$(base).o:	$(base).$(ext)
+	fasm  $(base).$(ext)  $(base).o
+endif

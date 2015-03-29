@@ -1,0 +1,16 @@
+----------------------------------------------------------------------------
+ 24 getuid         - get real user identity 
+----------------------------------------------------------------------------
+  mov  eax,024
+  int  80h
+       getuid returns the real user ID of the current process.
+
+       The  real  ID corresponds to the ID of the calling process.  The
+       effective ID corresponds to the set ID bit on the file being executed.
+ERRORS
+       These functions are always successful.
+
+SEE ALSO
+       setreuid, setuid
+
+

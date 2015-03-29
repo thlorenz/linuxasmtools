@@ -1,0 +1,103 @@
+  extern hash_setup
+  extern hash_add
+  extern hash_lookup
+  extern hash_lookup_next
+  extern hash_remove
+
+  extern hash_archive
+  extern hash_restore
+
+ [section .text]
+
+  global _start
+  global main
+_start:
+main:
+  nop
+  mov	edi,buf
+  mov	ecx,buf+20000
+  mov	al,1		;mask
+  mov	ebx,4		;minimum entry size
+  call	hash_setup
+;
+;  esi = ptr to data entry.
+;  note: function hash_setup must be called before
+;        using this function.         
+  mov	esi,new0	;top of hash
+  call	hash_add
+  mov	esi,new1
+  call	hash_add
+  mov	esi,new2
+  call	hash_add
+  mov	esi,new3	;end of hash
+  call	hash_add
+  mov	esi,new1
+  call	hash_add
+;
+; search using hash
+;
+  mov	edi,new1
+  mov	ecx,4		;size
+  mov	edx,0		;offset=0
+  call	hash_lookup
+
+  call	hash_lookup_next
+;
+; search full table
+;
+  mov	edi,new1+4
+  mov	ecx,4
+  mov	edx,4
+  call	hash_lookup
+
+  call	hash_lookup_next
+;
+; remove entery new1
+;
+  mov	edi,new1
+  mov	ecx,4
+  mov	edx,0
+;;  call	hash_remove
+;
+; archive hashfile
+;
+  mov	ebx,hashfile_path
+  call	hash_archive
+
+; read hashfile back
+
+;  ebx = hash file path
+;  ecx = buffer
+;  edx = buffer length
+;  [hash_table_ptr] - initialized by hashfile_setup
+  mov	ebx,hashfile_path
+  mov	ecx,buf2
+  mov	edx,2000
+  call	hash_restore
+
+  mov	edi,new2+4
+  mov	ecx,4
+  mov	edx,4		;offset to name
+  call	hash_lookup
+
+
+  mov	eax,1		;exit
+  int	80h
+;------------------------------------------------------------
+  [section .data]
+new0:	dd	0		;top of hash table
+	db	'new0',0
+new1:	dd	01234567h	;location
+	db	'new1',0
+new2:	dd	01234567h
+	db	'new2',0
+new3:	dd	0ffffffh	;last hash
+	db	'new3',0
+
+hashfile_path	db	'/home/jeff/hashfile',0
+	
+;------------------------------------------------------------
+  [section .bss]
+buf	resb	20000
+buf2	resb	20000
+;-------------------------------------------------------------

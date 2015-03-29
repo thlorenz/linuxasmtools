@@ -1,0 +1,62 @@
+
+  extern process_info_us
+  extern process_info_pid
+  extern process_walk
+  extern process_search
+ 
+ [section .text]
+
+
+  global _start
+  global main
+
+_start:
+main:
+  call	process_search_test
+  call	process_walk_test
+  call	process_info_pid_test
+  call	process_info_us_test
+
+  mov	eax,1		;exit
+  int	80h
+;-------------------------------------------------------------
+process_search_test:
+  mov	eax,buffer
+  mov	ebx,200
+  mov	ecx,match_name
+  call	process_search
+  ret
+
+match_name: db "test",0
+;-------------------------------------------------------------
+process_walk_test:
+  mov	eax,buffer
+  mov	ebx,200
+  call	process_walk
+pw_loop:
+  xor	eax,eax
+  call	process_walk
+  or	eax,eax
+  jnz	pw_loop
+
+  ret  
+;-------------------------------------------------------------
+process_info_pid_test:
+  mov	esi,target
+  call	process_info_pid
+  ret
+
+target	db	'1',0
+
+;-------------------------------------------------------------
+process_info_us_test:
+  call	process_info_us
+  ret			;lib_buf has path
+
+;-------------------------------------------------------------
+;------------------------------------------------------
+
+ [section .data]
+buffer:
+  times 200 db 0
+  [section .text]

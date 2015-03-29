@@ -1,0 +1,69 @@
+
+----------------------------------------------------------------------------
+memory 150 mlock          - disable paging for some parts of memory 
+----------------------------------------------------------------------------
+  mov  eax,150
+  mov  ebx,addr  ;start of range to lock
+  mov  ecx,len   ;lenght of lock
+  int  80h
+
+       mlock disables paging for the memory in the range starting at addr with
+       length len bytes. All pages which contain a part of the specified  mem-
+       ory  range are guaranteed be resident in RAM when the mlock system call
+       returns successfully and they are guaranteed to stay in RAM  until  the
+       pages  are  unlocked  by  munlock  or  munlockall,  until the pages are
+       unmapped via munmap, or until the process terminates or starts  another
+       program  with exec.  Child processes do not inherit page locks across a
+       fork.
+
+       Memory locking has two  main  applications:  real-time  algorithms  and
+       high-security data processing. Real-time applications require determin-
+       istic timing, and, like scheduling, paging is one major cause of  unex-
+       pected  program  execution  delays. Real-time applications will usually
+       also switch to a real-time scheduler with sched_setscheduler.   Crypto-
+       graphic  security  software often handles critical bytes like passwords
+       or secret keys as data structures. As a result of paging, these secrets
+       could  be  transferred  onto a persistent swap store medium, where they
+       might be accessible to the enemy long after the security  software  has
+       erased  the secrets in RAM and terminated.  (But be aware that the sus-
+       pend mode on laptops and some desktop computers will save a copy of the
+       system's RAM to disk, regardless of memory locks.)
+
+       Memory  locks  do not stack, i.e., pages which have been locked several
+       times by calls to mlock or mlockall will be unlocked by a  single  call
+       to  munlock  for the corresponding range or by munlockall.  Pages which
+       are mapped to several locations or by  several  processes  stay  locked
+       into  RAM  as long as they are locked at least at one location or by at
+       least one process.
+
+       On POSIX systems on which mlock and munlock are available,  _POSIX_MEM-
+       LOCK_RANGE  is  defined in <unistd.h> and the value PAGESIZE from <lim-
+       its.h> indicates the number of bytes per page.
+
+NOTES
+       With the Linux system call, addr is automatically rounded down  to  the
+       nearest  page boundary.  However, POSIX 1003.1-2001 allows an implemen-
+       tation to require that addr is page aligned, so  portable  applications
+       should ensure this.
+
+RETURN VALUE
+       On success, mlock returns zero.  On error a negative code is returned
+
+ERRORS
+       ENOMEM Some  of  the  specified  address  range  does not correspond to
+              mapped pages in the address space of the process or the  process
+              tried to exceed the maximum number of allowed locked pages.
+
+       EPERM  The  calling  process does not have appropriate privileges. Only
+              root processes are allowed to lock pages.
+
+       EINVAL (Not on Linux) addr was not a multiple of the page size.
+
+       Linux adds
+
+       EINVAL len was negative.
+
+
+SEE ALSO
+       mlockall, munlock, munlockall, munmap, setrlimit
+

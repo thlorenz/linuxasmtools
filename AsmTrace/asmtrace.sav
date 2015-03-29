@@ -1,0 +1,642 @@
+
+  [section .text align=1]
+;------------- asmtrace.asm ----------------------------------
+
+; --------- design notes -------------------
+; Traceing a single process uses the standard
+; kernel calls as follows:
+;  kernel function tracme is called before forking process
+;  functions trace_syscall and trace_wait are used to start
+;  and wait for process stop.  The kernel
+;  will stop at start of process function and at end of
+;  process function.  The table "pid_table" tracks the
+;  progress of all trace operations.
+; The pid_table can track multiple traced process and
+; this gets a little tricky.  When we see the process
+; do a fork,vfork,clone this starts a small kluge that
+; inserts a ptrace bit into the call to start tracing
+; the forked process.  If the process does a fork we
+; convert it to a clone so the ptrace bit can be set.
+; The following occurs with a process fork:
+;  1. detect start of process fork.
+;  2. modify the call for clone and ptrace
+;  3. restart parent process (trace_syscall)
+;  4. wait for new child process to stop
+;  5. wait for parent to stop
+;  6. restore the registers (undo clone and ptrace) for parent
+;  7. restart child (ptrace_syscall)
+;  8. restart parent (ptrace_syscall)
+;  9. wait for any process to stop
+;
+; The "pids" structure describes one active process and is
+; placed in the "pid_table".  The process start, stop, and
+; results and all controlled from this table.  
+;
+; The strace program was used as a model for tracing multiple
+; processes.  It is possible to strace the strace program
+; and watch its operation with:
+;  #!/bin/bash
+;  strace -o out_file1 strace -v -i -f -o out_file2 test_elf
+;
+; AsmTrace output is controlled by the include file asmtrace_decode.inc
+; The asmtrace_decode_inc file is built by program "compiler" using
+; data taken from /usr/share/doc/asmref 
+
+;enabling (remove comment character) will produce a file called
+;"log" each time asmtrace is run.  It contains debugging info.
+
+%define DEBUG
+
+  extern env_stack
+  extern sys_run_die
+
+  extern child_pid
+  extern traceme
+  extern trace_wait
+  extern trace_regsget,trace_regsset
+  extern trace_peek_bytes,trace_poke_bytes
+  extern trace_peek
+  extern trace_syscall
+  extern log_eol
+  extern log_hex
+  extern log_regtxt
+  extern trace_pid
+;  extern trace_continue
+  extern lib_buf
+  extern str_move
+  extern block_open_update,block_write,block_close
+  extern file_delete
+  extern dword_to_l_ascii
+  extern mouse_enable
+  extern read_window_size
+  extern trace_step
+  extern dword_to_hexascii
+
+extern form
+;%include "form.inc"
+  [section .text]
+
+struc pids
+.pid		resd 1 ;traced process id (pid)
+.pid_status	resd 1 ;1=fork 2=stop1 4=stop2 8=dead 10h=run
+                       ;20h=forked child  40h=show 80h=signal
+.wait_status	resd 1 ;status from the "trace_wait" function
+.r_sav_old_eax	resd 1
+
+.r_sav_ebx resd 1
+.r_sav_ecx resd 1
+;-- regsiter block start
+.r_ebx	resd	1 
+.r_ecx	resd	1
+
+.r_edx	resd	1
+.r_esi	resd	1
+.r_edi	resd	1
+.r_ebp	resd	1
+
+.r_eax	resd	1 ;at start of fuction trap this register
+                  ;contains 0ffffffdah (documented?).  We
+                  ;use this information to detect starts.
+.r_ds	resd	1
+
+.r_es	resd	1
+.r_fs	resd	1
+
+.r_gs	resd	1
+.r_old_eax resd	1 ;at start of function trap this register
+                  ;contains function code (documented?)
+.r_eip	resd	1
+.r_cs	resd	1
+
+.r_efl	resd	1
+.r_esp	resd	1
+.r_ss	resd	1
+pids_struc_size:
+endstruc
+;-------------------------------------------------------------
+  [section .text]
+
+  global main, _start
+main:
+_start:
+  call	env_stack		;save stack for exec sys call
+  call	parse			;get parameters
+  jnc	skip_menu
+  call	menu
+  cmp	al,1			;esc pressed
+  je	exit2
+skip_menu:
+  call	outfile_open
+  call	index_structures	;index structures for speed
+
+;check if this is attach and if true, do attach and
+;jmp to t_parent
+
+;fork and start application 
+  mov	eax,2
+  int	80h			;fork
+  or	eax,eax
+  jnz	t_parent		;jmp if this is us
+;-----------  child process  -----------------
+  call	traceme			;start ptrace
+  mov	esi,traced_file
+  call	sys_run_die		;start program to be traced
+;-------------- parent process --------------
+t_parent:
+  call	wait_for_stops	;wait for any process to stop
+  call	show_trace	;show accumulated results
+  call	start_pids	;restart all stopped process's
+  jnz	t_parent	;jmp if any process running
+  call	outfile_close
+exit2:
+  mov	eax,1
+  mov	ebx,0
+  int	80h
+
+;-----------------------------------------------
+; use table pid_table to show results for all functions
+; with the show flag bit set (40h)
+show_trace:
+  mov	ebp,pid_table
+st_loop:
+  cmp	[ebp+pids.pid],dword 0
+  je	st_exit				;exit if done
+  test	[ebp+pids.pid_status],dword 40h	;trace request?
+  jz	st_tail		;jmp if not stopped
+  call	logit
+  call	report
+  and	[ebp+pids.pid_status],dword ~40h
+st_tail:
+  add	ebp,pids_struc_size
+  jmp	short st_loop
+st_exit:
+  ret
+;------------------------
+; input: ebp = pointer to control structure (pids)
+; output: data logged to file
+logit:
+%ifdef DEBUG
+  mov	eax,'pid='
+  call	log_regtxt
+  mov	eax,[ebp+pids.pid]
+  call	log_hex
+
+  mov	eax,'eax1'
+  call	log_regtxt
+  mov	eax,[ebp+pids.r_eax]
+  call	log_hex
+
+  mov	eax,'eax2'
+  call	log_regtxt
+  mov	eax,[ebp+pids.r_old_eax]
+  call	log_hex
+
+  mov	eax,'eip='
+  call	log_regtxt
+  mov	eax,[ebp+pids.r_eip]
+  call	log_hex
+
+  mov	eax,'stat'
+  call	log_regtxt
+  mov	eax,[ebp+pids.wait_status]
+  call	log_hex
+
+  mov	eax,'flag'
+  call	log_regtxt
+  mov	eax,[ebp+pids.pid_status]
+  and	eax,~40h			;remove log flag
+  call	log_hex
+
+  call	log_eol
+%endif
+  ret
+
+;-----------------------------------------------
+;use pid_table to start all stopped process
+start_pids:
+  mov	[pids_running],dword 0
+  mov	ebp,pid_table
+;move to end of pid table
+sp_loop1:
+  cmp	[ebp+pids.pid],dword 0
+  je	sp_loop2  	;jmp if end of table found
+  add	ebp,pids_struc_size
+  jmp	short sp_loop1
+;start process from end of table to beginning
+sp_loop2:
+  sub	ebp,pids_struc_size		;move to next pid
+;check if this pid needs starting
+  test	[ebp+pids.pid_status],dword 1 + 2 + 4 + 20h + 80h ;stopped?
+  jz	sp_tail		;jmp if dead or running pid
+  test	[ebp+pids.pid_status],dword 8  ;dead
+  jnz	sp_tail
+;start this pid
+  mov	eax,[ebp+pids.pid]	;setup for ptrace call
+  mov	[trace_pid],eax
+  mov	esi,0			;set no special signal flag
+  cmp	byte [parse_show_disasm],0 ;check if function trace on
+  jz	sp_function		;jmp if function trace
+;we are single stepping, start step
+  call	trace_step
+  jmp	short sp_started
+sp_function:  
+  call	trace_syscall	;start pid
+sp_started:
+  js	sp_exit		;jmp if error
+  mov	[ebp+pids.pid_status],dword 10h ;set running
+sp_tail:
+  mov	eax,[ebp+pids.pid_status]
+  and	eax,dword ~10		;isolate running flag
+  or	[pids_running],eax	;set running flag
+  cmp	ebp,pid_table
+  jne	sp_loop2	;jmp if more pids to check
+sp_exit:
+  mov	eax,[pids_running]
+  or	eax,eax		;if any pids running set eax non-zero
+  ret
+;-----------
+  [section .data]
+pids_running: dd 0
+  [section .text]
+;-----------------------------------------------
+; wait for process stop and handle forked processes
+; returns carry if error or all processes dead
+wait_for_stops:
+  call	trace_wait		;wait for any child stop
+;decode child stop status
+;         if eax negative then error, else ebx is:
+;         ebx = child status if eax = child pid
+;            bl=status (7fh)-normal trace stop
+;                      (00) -exception code in status
+;            bh=signal if status non zero else exception
+;                      signal was not caught
+;
+;    The format of status in ebx if eax positive:
+;
+;    byte 1                   byte 2
+;    (bl in trace_wait call)  (bh in trace_wait call)
+;    -----------------------  -----------------------
+;    0   =process exited      kernel exit call reg "bl"
+;    1-7e=process killed      signal# that killed process
+;    7f  =process stopped     signal# that stopped process
+;    ff  =process continued   singal# that continued process
+;
+;         examples:  ebx=0200 exception signal occured
+;                    ebx=0b7f illegal segment register set by code
+;                    ebx=087f divide by zero
+;                    ebx=0037 unknown signal 37h sent by ptrace_step
+;                    ebx=normal if int3 is encountered and no handler
+;                               has been setup.
+;
+  mov	[trace_wait_pid],eax
+  mov	[wait_stat],ebx
+;check if this pid is in table
+  mov	ebp,pid_table
+pid_table_loop:
+  cmp	[ebp+pids.pid],dword 0
+  je	new_pid		;jmp if not in table
+  cmp	eax,[ebp + pids.pid]
+  je	found_pid
+  add	ebp,pids_struc_size
+  jmp	short pid_table_loop
+;this is either initial process stop, or traceing a fork
+;ebp points to new pid entry
+new_pid:
+  push	eax
+  push	ebx
+  mov	[trace_pid],eax
+  mov	[ebp+pids.pid],eax ;insert pid#
+  mov	[ebp+pids.wait_status],ebx
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsget
+  pop	ebx
+  pop	eax
+  or	eax,eax
+  js	dead_pid	;jmp if error
+  cmp	ebx,dword 137fh
+  je	np_temp
+  cmp	ebx,dword 117fh
+  je	dead_pid
+  cmp	ebx,dword 057fh	;expected stop
+  jne	dead_pid
+np_temp:
+  mov	[ebp+pids.pid_status],byte 1 + 40h + 80h
+;  mov	[ebp+pids.pid_status],byte 1
+  cmp	[ebp+pids.r_old_eax],dword 120 ;is a fork in process
+  je	wait_for_stops		;jmp if fork inprocess
+  mov	al,1 +40h		;status for initial stop
+  jmp	wfs_exit2
+dead_pid:
+  mov	al,8 + 40h		;dead status
+  jmp	wfs_exit2
+;existing pid was found, process it
+found_pid:
+  mov	[trace_pid],eax	;set this pid for library call
+  mov	[ebp+pids.wait_status],ebx
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsget
+;check if dead
+  mov	eax,[trace_wait_pid]	;get wait eax
+  or	eax,eax
+  js	dead_pid
+  mov	eax,[wait_stat]		;get wait ebx
+  or	eax,eax
+  jz	dead_pid		;jmp if process exit
+;check if this is signal
+  cmp	al,7fh			;nornal signal
+  jne	dead_pid		;jmp if unexpected signal
+  cmp	ah,05			;break signal
+  je	found_break		;jmp if break signal
+  cmp	ah,11h			;stop?
+  jne	signal			;jmp if signal
+;this is a child stop, the child pid is in child eax
+;register?
+
+;  mov	al, 40h + 80h + 8
+signal:
+  mov	al, 40h + 80h
+  jmp	wfs_exit2
+;this is existing pid at normal break,
+;check if front or back
+found_break:
+  cmp	[ebp+pids.r_eax],dword 0ffffffdah
+  je	front
+;this is a normal trace stop at end of function
+back:
+  cmp	[ebp+pids.r_old_eax],dword 120	;back end of fork?
+  jne	back2	;jmp if not fork back end
+  call	fork_restore
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsset
+back2:
+  call	check_triggers		;returns al set for .pid_status
+  jmp	wfs_exit2
+;this is normal trace stop at start of function
+front:
+  inc	dword [sequence]	;bump sequence number
+;save regs
+  mov	eax,[ebp+pids.r_ebx]
+  mov	[ebp+pids.r_sav_ebx],eax
+  mov	eax,[ebp+pids.r_ecx]
+  mov	[ebp+pids.r_sav_ecx],eax
+  mov	eax,[ebp+pids.r_old_eax]
+  mov	[ebp+pids.r_sav_old_eax],eax
+
+;  mov	eax,[ebp+pids.r_old_eax]	;get function number
+; check if fork(2) clone(120) or vfork(190)
+  cmp	eax,2		;fork?
+  jne	wfs_20		;jmp if not fork
+;fork found
+  mov	[ebp+pids.r_old_eax],dword 120	;force clone
+  mov	[ebp+pids.r_ebx],dword 2011h	;ptrace bit + sig 11h = stop
+  mov	[ebp+pids.r_ecx],dword 0
+  jmp	short wfs_24
+wfs_20:
+  cmp	eax,120
+  jne	wfs_22
+;clone found
+  or	[ebp+pids.r_ebx],dword 2000h	;set ptrace bit
+  jmp	short wfs_24
+wfs_22:
+  cmp	eax,190
+  mov	al,2+40h		;preload function start (front)
+;  mov	al,2			;preload function start (front)
+  jne	wfs_exit2		;jmp if not vfork
+;vfork found
+  mov	[ebp+pids.r_old_eax],dword 120	;force clone
+  mov	[ebp+pids.r_ebx],dword 2011h	;ptrace bit + sig 11h = stop
+  mov	[ebp+pids.r_ecx],dword 0
+wfs_24:
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsset
+  mov	al,20h+40h	;get fork status
+;  mov	al,20h		;get fork status
+  jmp	short wfs_exit2
+
+wfs_exit1:
+  lea	esi,[ebp+pids.r_ebx]
+  call	trace_regsset
+  mov	al,4 + 40h
+wfs_exit2:
+  mov	[ebp+pids.pid_status],al
+  ret
+;-------------
+  [section .data]
+trace_wait_pid: dd 0	;returned pid, or error code
+wait_stat:	dd 0	;from ebx
+  [section .text]
+
+;-----------------------------------------------
+;Restore munged fork,vfork,clone data.
+fork_restore:
+  mov	eax,[ebp+pids.r_sav_old_eax]	;get function number
+; check if fork(2) clone(120) or vfork(190)
+  cmp	eax,2		;fork?
+  jne	fr_02		;jmp if not fork
+;fork found
+  mov	[ebp+pids.r_old_eax],eax	;restore fork
+  mov	eax,[ebp+pids.r_sav_ebx]
+  mov	[ebp+pids.r_ebx],eax
+  mov	eax,[ebp+pids.r_sav_ecx]
+  mov	[ebp+pids.r_ecx],eax
+  jmp	short fr_10
+fr_02:
+  cmp	eax,120
+  jne	fr_04
+;clone found
+  mov	eax,[ebp+pids.r_sav_ebx]
+  mov	[ebp+pids.r_ebx],eax
+  jmp	short fr_10
+fr_04:
+  cmp	eax,190
+  jne	fr_10		;jmp if not vfork
+;vfork found
+  mov	[ebp+pids.r_old_eax],eax	;restore vfork 
+  mov	eax,[ebp+pids.r_sav_ebx]
+  mov	[ebp+pids.r_ebx],eax
+fr_10:
+  ret
+
+
+;------------------------------------------------------------------
+; check if any start/stop trigger has occured
+; inputs: parse_start_flag: db 1 ;0=beginning 1=sequence 2=adr 3=process 4=funct.type 
+;         parse_start       dd 1 ;see flag above
+;         parse_end_flag:   db 0 ;0=end 1=sequence 2=adr 3=process 4=function.type
+;         parse_end         dd 0 ;see flag above
+; output:  al= pid_status setting
+;          [show_triggered] set to 1 if trace on
+check_triggers:
+  cmp	byte [show_triggered],0	;are we triggered?
+  jnz	ct_active
+;we are not tracing, check if time to start
+  mov	ebx,[parse_start]	;get value of trigger
+  mov	al,[parse_start_flag]
+  cmp	al,1		;sequence trace?
+  je	ct_10		;jmp if seq trace
+  jb	ct_on		;jmp if constant trace
+  cmp	al,3
+  jb	ct_20		;jmp if adr trace
+  je	ct_30		;jmp if process trace
+;this must be a function type trace
+  cmp	ebx,[ebp+pids.r_old_eax]	;function match?
+  je	ct_on   
+  jmp	short ct_off
+;seq trigger on?
+ct_10:
+  jmp	ct_off	;; temp
+
+
+;address trigger on?
+ct_20:
+  cmp	ebx,[ebp+pids.r_eip]
+  je	ct_on
+  jmp	short ct_off
+;process trace on?
+ ct_30:
+  jmp	ct_off	;; temp
+
+;we are tracing, check if time to stop
+ct_active:
+  mov	ebx,[parse_end]	;get value of trigger
+  mov	al,[parse_end_flag]
+  cmp	al,1		;sequence trace?
+  je	ct_40		;jmp if seq trace
+  jb	ct_on		;jmp if constant trace
+  cmp	al,3
+  jb	ct_50		;jmp if adr trace
+  je	ct_60		;jmp if process trace
+;use function to trigger off
+  cmp	ebx,[ebp+pids.r_old_eax]
+  je	ct_off
+  jmp	short ct_on
+;seq trigger off?
+ct_40:
+  jmp	ct_off		;;temp
+
+;address trigger off?
+ct_50:
+  cmp	ebx,[ebp+pids.r_eip]
+  jne	ct_on
+  jmp	short ct_off
+;process trigger for off
+ct_60:
+  jmp	ct_on	;;; temp
+ct_off:
+  mov	al,4
+  mov	[show_triggered],byte 0
+  jmp	ct_exit2
+ct_on:
+  mov	al,4 + 40h	;get .pid_status setting
+  mov	[show_triggered],byte 1 ;trace on
+ct_exit2:
+  ret
+
+;-----------
+  [section .data]
+show_triggered:	db 0 ;set to 1 if start trigger active
+  [section .text]
+;------------------------------------------------------------------
+; build output file name, parse input file, get parameters
+; output: carry set if error/no parameters (starts menu)
+;
+parse:
+  stc
+  ret
+;----------
+  [section .data]
+
+traced_file:
+ db 'test',0,0
+ times 100 db 0
+outfile_name:
+ times 100 db 0
+
+parse_start_flag: db 0 ;0=beginning 1=sequence 2=adr 3=process 4=funct.type 
+parse_start	  dd 0 ;see flag above
+parse_end_flag:	  db 0 ;0=end 1=sequence 2=adr 3=process 4=function.type
+parse_end	  dd 0 ;see flag above
+
+parse_attach:     db 0
+
+parse_show_adr:	  db 1 ;0=no adr
+parse_show_seq:	  db 1 ;
+parse_show_level: db 1 ;
+parse_show_regs:  db 1
+parse_show_data:  db 1
+parse_show_disasm: db 0
+
+  [section .text]
+;------------------------------------------------------------------
+%include "asmtrace_menu.inc"
+%include "asmtrace_report.inc"
+;------------------
+
+  [section .text]
+;------------------------------------------------------------------
+; table struc_defs has length of each entry as first byte of entry
+index_structures:
+  mov	edi,struc_index
+  mov	eax,struc_defs
+  cld
+  xor	ebx,ebx
+is_loop:
+  stosd	
+  mov	bl,[eax]	;get entry lenght
+  add	eax,ebx
+  cmp	byte [eax],0	;end of table?
+  jne	is_loop
+  ret
+;---------
+  [section .data]
+struc_index: times 400 dd 0 ;pointers into table struc_defs
+  [section .text]
+;------------------------------------------------------------------
+;input: outfile_name
+;output:
+; returns flags for js/jns  js=error
+outfile_open:
+  mov	esi,traced_file
+  mov	edi,outfile_name
+  call	str_move
+  mov	eax,'.tra'
+  stosd
+
+  mov	ebx,outfile_name
+  push	ebx
+  call	file_delete
+  pop	ebx
+  xor	edx,edx			;default permissions
+  call	block_open_update
+  mov	[outfile_handle],eax
+  ret
+;------
+  [section .data]
+outfile_handle: dd 0
+  [section .text]
+;------------------------------------------------------------------
+; input: ecx=buffer
+;        edx=length of write
+; output: eax=write count or error
+;         flags set for js(error)
+outfile_write:
+  mov	ebx,[outfile_handle]
+  call	block_write
+  ret
+;------------------------------------------------------------------
+outfile_close:
+  mov	ebx,[outfile_handle]
+  call	block_close
+  ret
+;------------------------------------------------------------------
+  [section .data]
+
+pid_table:
+  times 400 dd 0
+
+%include "asmtrace_decode.inc"
+
+
+
+
+  

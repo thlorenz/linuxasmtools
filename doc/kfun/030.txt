@@ -1,0 +1,34 @@
+
+----------------------------------------------------------------------------
+ 30 utime          - change file access and/or modification times
+----------------------------------------------------------------------------
+  mov  eax,030
+  mov  ebx,filename
+  mov  ecx,utimbuf
+  int  80h
+
+       utime  changes the access and modification times of the inode specified
+       by filename to the actime and modtime fields of buf  respectively.   If
+       buf is NULL, then the access and modification times of the file are set
+       to the current time.  The utimbuf structure is:
+
+       utimbuf:
+       actime	dd 0	;seconds
+                dd 0	;microseconds
+       modtime  dd 0	;seconds
+                dd 0	;microseconds
+
+RETURN VALUE
+       On success, zero is returned.  On error a negative code is returned
+
+ERRORS
+       Other errors may occur.
+
+       EACCES Permission to write the file is denied.
+
+       ENOENT filename does not exist.
+
+SEE ALSO
+       stat
+
+

@@ -1,0 +1,68 @@
+#!/bin/bash
+#
+# example file for xhelper
+# operates as follows:
+#  1. connect modem
+#  2. load editor (bookmarks and passwords)
+#  3. load browser
+#  4. resize and move windows
+#  5. wait for browser to die
+#  6. kill editor when browser dies, leave modem connected
+#
+# the following starts xhelper and feeds it this file as input
+xhelper $0
+# stop script using "exit 0"
+exit 0
+
+#xhelper starts processing here
+#connect modem
+^if_program ("kppp")
+^show ("kppp found")
+^endif
+^if_no_program ("kppp")
+^show ("starting kppp")
+^run ("kppp -c bsn1")
+^endif
+
+#load a editor with bookmarks and passwords
+^if_program ("gtkedit")
+^show ("gtkedit found")
+^endif
+
+^if_no_program ("gtkedit")
+^show ("starting gtkedit")
+^run ("gtkedit /home/jeff/passwords")
+^endif
+
+^if_program ("iceape")
+^show ("iceape found")
+^endif
+
+^if_no_program ("iceape")
+^show ("starting iceape")
+^run ("iceape")
+^endif
+
+#wait for initial browser window
+^wait_window ("bookmarks")
+^show ("bookmark window found")
+
+#position and resize widows.  The "width=" and "height="
+#statements are comments.  Comments can be added anywhere.
+
+^resize_window ("pass") width=("500") height=("849") <- editor window
+^resize_window ("bookmarks") width=("1400") height=("873")
+^show ("windows resized")
+
+^move_window ("bookmarks") col=("36") row("23")
+^show ("bookmark window moved to col=36 row=23")
+
+#force browser window to top
+^activate_window ("bookmarks")
+^wait_no_program ("iceape-bin")
+^show ("no iceape program")
+
+^show ("iceape dead, killing gtkedit")
+^kill ("gtkedit")
+^stop
+

@@ -1,0 +1,153 @@
+
+ It can be done is Assembler
+
+The view of most UNIX geeks is that you
+can do just about anything quickly with
+basic commands and shell programming.  If
+that doesn't work there is Perl, Python,
+sed, awk, forth, vi marco's or a  special
+program.  Linux has the flexability and
+breadth to handle just about anything.
+
+My problem was over 400 files that needed
+one line added. The job
+was too big for one at a time editing and
+appeared ideal for a "find" and "sed"
+command combo.  First I tried a web search
+in hope of avoiding a lot of man page
+study.  After a hour of googling, my
+quick job was still not done.  On to
+the man pages.  Another 30 minutes and
+a few attempts later, the job was still
+not done.  At this point I was sure there
+was a simple answer somewhere but it still
+eluded me.
+
+I did know of one way to solve the problem
+that most programmers would call absurd.  Write
+the whole thing in assembler... and 15 minutes
+later the job was done. All it took was small
+assembler program that could easily be converted to a
+useful utility.
+
+Is there a message here?  Probably not, but it
+does suggest assembler isn't as absurd as
+one might think.
+
+The tools needed are numerous and choosing one
+takes more time than some jobs.  The assemblers
+in use are:  nasm,fasm,yasm, and gas.  Their
+output goes to a linker "ld" and that produces
+the executable.  If you need a debugger to test
+the executable, another choice is needed.
+There are too many to list, the one I prefer
+is asmbug.  OK, so I also wrote asmbug, but it
+is a good debugger.
+
+Before using the assembler we need to use any
+text editor and write the program.  We begin by
+listing all the external library calls needed.
+In this case AsmLib is used and the following
+calls entered:
+
+
+  extern dir_walk
+  extern dir_current
+  extern str_move
+  extern memory_init
+  extern block_read_all
+  extern block_write_all
+
+Next, comes the entry point for the program followed
+by assembler code.
+
+
+ global _start
+_start:
+  call	dir_current	;get current directory
+  mov	esi,ebx		;get ptr to path
+  mov	edi,our_path
+  call	str_move	;move path name to our_path
+;setup to walk path
+  call	memory_init   ;set eax to buffer location
+  mov	esi,our_path
+  mov	ebx,file_mask
+  mov	ch,2		;return masked files
+  mov	cl,3		;depth
+  mov	edx,file_process ;process to handle each file
+  call	dir_walk	;go get the files
+  mov	eax,1		;kernel exit function#
+  int	80h		;all done, exit
+
+The code sets up to call the dir_walk library function
+then exits.  dir_walk will provide each file to the
+process we specified in register edx.  In this example
+the process is called "file_process"  All file process
+does is add one line to the file and return to dir_walk.
+
+;---------------------------------------------
+;input: eax=ptr to path with filename to process
+;output: eax=0 says continue
+file_process:
+  push	eax
+  mov	ebx,eax		;path to ecx
+  mov	ecx,file_buffer ;setup to read file
+  mov	edx,file_buffer_size
+  call	block_read_all	;read file
+
+  mov	esi,eax		;save size of file
+  add	esi,append_size	;compute new file size
+  pop	ebx		;get filename
+  xor	edx,edx		;default write premissions
+  mov	ecx,out_buffer	;buffer with modified file
+  call	block_write_all	;write modified file
+  xor	eax,eax		;tell dir_walk to continue
+  ret			;return
+	    
+;------------------
+  section .data
+file_mask: db '*asm',0
+our_path: times 100 db 0
+out_buffer:
+  db 0ah,'  [section .text align=1]',0ah
+append_size equ $ - out_buffer
+file_buffer_size equ 200000
+file_buffer:
+  times file_buffer_size db 0
+
+;----------------------
+  section .bss
+
+If we name our file add_line.asm, it can be assembled
+with the command:
+
+ nasm -f elf -g add_line.asm
+
+the file type is specified with "-f elf" and the
+-g says to include debug information.  Next, it is
+linked with:
+
+  ld add_line.o -o add_line /usr/lib/asmlib.a
+
+The only requirement to link is the library file
+at /usr/lib.  The library and debugger are available
+at:
+
+  http://sourceforge.net/projects/asmbug
+  http://sourceforge.net/projects/asmlib
+
+The assembler and linker are included with most
+linux distributions.  If the debugger is needed
+it can be started with:
+
+  asmbug add_line
+
+The asmbug program is completly self contained and
+is installed by copying anywhare on the executable
+path.  AsmLIb can be anywhere reachable by the
+linker.
+
+The web site http://linuxasmtools.net/
+has more information, examples and tutorials.
+
+ 

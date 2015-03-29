@@ -1,0 +1,107 @@
+
+----------------------------------------------------------------------------
+ 22 umount         - unmount filesystems
+----------------------------------------------------------------------------
+
+  mov  eax,052
+  mov  ebx,path
+  mov  ecx,umountflags
+
+  -or- the following was also found?  This needs to
+       be tested
+
+  mov  eax,052
+  mov  ebx,specialfile     ;path of device
+  mov  ecx,dir             ;mount point
+  mov  edx,filesystemtype  ;?
+  mov  esi,mountflags      ;?
+  mov  edi,data            ;?
+  int  80h
+
+       umount and umount2 remove the attachment of  the  (topmost)  filesystem
+       mounted on target.
+
+       Only the super-user may unmount filesystems.  Since Linux 2.4
+       a single filesystem can be visible at multiple mount points, and multi-
+       ple mounts can be stacked on the same mount point.
+
+       Values  for  the  filesystemtype  argument  supported by the kernel are
+       listed in /proc/filesystems (like  "minix",  "ext2",  "msdos",  "proc",
+       "nfs",  "iso9660"  etc.).   Further types may become available when the
+       appropriate modules are loaded.
+
+       Linux  2.1.116  added  the umount2() system call, which, like umount(),
+       unmounts a target, but allows additional flags controlling  the  behav-
+       iour of the operation:
+
+       MNT_FORCE
+              Force  unmount  even  if  busy.   (Since  2.1.116.  Only for NFS
+              mounts.)
+
+       MNT_DETACH
+              Perform a lazy unmount: make the mount point unavailable for new
+              accesses,  and actually perform the unmount when the mount point
+              ceases to be busy. (Since 2.4.11.)
+
+RETURN VALUE
+       On success, zero is returned.  On error a negative error code.
+
+ERRORS
+       The  error  values  given below result from filesystem type independent
+       errors. Each filesystem type may have its own special  errors  and  its
+       own special behavior.  See the kernel source code for details.
+
+
+       EPERM  The user is not the super-user.
+
+       ENODEV Filesystemtype not configured in the kernel.
+
+       ENOTBLK
+              Source is not a block device (and a device was required).
+
+       EBUSY  Source is already mounted. Or, it cannot be remounted read-only,
+              because it still holds files open for writing.  Or, it cannot be
+              mounted  on target because target is still busy (it is the work-
+              ing directory of some task, the mount point of  another  device,
+              has open files, etc.).  Or, it could not be unmounted because it
+              is busy.
+
+       EINVAL Source had an invalid superblock.  Or, a remount was  attempted,
+              while  source was not already mounted on target.  Or, a move was
+              attempted, while source was not a mount point, or was '/'.   Or,
+              an umount was attempted, while target was not a mount point.
+
+       ENOTDIR
+              The second argument, or a prefix of the first argument, is not a
+              directory.
+
+       EFAULT One of the pointer arguments points  outside  the  user  address
+              space.
+
+       ENOMEM The  kernel  could not allocate a free page to copy filenames or
+              data into.
+
+       ENAMETOOLONG
+              A pathname was longer than MAXPATHLEN.
+
+       ENOENT A pathname was empty or had a nonexistent component.
+
+       ELOOP  Too many link encountered during  pathname  resolution.   Or,  a
+              move was attempted, while target is a descendant of source.
+
+       EACCES A component of a path was not searchable.
+              Or, mounting a read-only filesystem was attempted without giving
+              the MS_RDONLY flag.
+              Or, the block device Source is located on a  filesystem  mounted
+              with the MS_NODEV option.
+
+       ENXIO  The major number of the block device source is out of range.
+
+       EMFILE (In case no block device is required:) Table of dummy devices is
+              full.
+
+
+SEE ALSO
+       mount, umount
+
+

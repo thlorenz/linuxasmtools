@@ -1,0 +1,112 @@
+#!/bin/bash
+#asmbug ../xhelper $0
+#../xhelper $0 > log
+../xhelper $0
+exit 0
+
+#---- dump  test ----
+^dump
+
+#---- timeout tests ----
+^set_timeout ("1")
+^if_no_timeout
+^show ("timeout test started ok")
+^endif
+^if_timeout
+^show ("timeout startup failure")
+^endif
+^wait_program ("xxxx")
+^if_no_timeout
+^show ("timeout test failed wait_program")
+^endif
+^if_timeout
+^show ("timeout passed wait_program")
+^endif
+
+#---- sleep test ----
+^show ("starting sleep 2 seconds")
+^sleep ("1")
+^show ("sleep done")
+
+#---- run/kill test ----
+^show ("starting xlogo")
+^set_timeout ("0") wait forever
+^run ("xlogo")
+^wait_program ("xlogo")
+^show ("xlogo started ok")
+^show ("xlogo kill request")
+^kill ("xlogo")
+^wait_no_program ("xlogo")
+^show ("xlogo killed, test passed")
+
+#---- window activate tests ----
+^show ("starting programs xlogo,xclock for activate test")
+^run ("xlogo")
+^run ("xclock")
+^show ("sleeping one second")
+^sleep ("1")
+^activate_window ("xlogo")  this should be xlogo window
+^show ("xlogo window activated")
+^sleep ("1")
+^activate_window ("xclock") this should be xclock window
+^show ("xclock window activated")
+^sleep ("1")
+^kill ("xlogo")
+^kill ("xclock")
+^show ("activate test done, all widows removed")
+
+#---- window move and resize tests ----
+^run ("xclock")
+^run ("xlogo")
+^sleep ("1")
+^wait_window ("xlogo")
+^wait_window ("xclock")
+
+^if_window ("xclock")
+^show ("found xclock")
+^endif
+^if_no_window ("xclock")
+^show ("xclock not found")
+^endif
+^sleep ("1")
+^move_window ("xclock") ("1320") ("100")
+^move_window ("xlogo") ("1320") ("100")
+^sleep ("1")
+^move_window ("xclock") ("1320") ("200")
+^move_window ("xlogo") ("1320") ("200")
+
+^activate_window ("xclock")
+^sleep ("1")
+^activate_window ("xlogo")
+^sleep ("1")
+^activate_window ("xclock")
+^sleep ("1")
+
+^kill ("xclock")
+^kill ("xlogo")
+
+#---- send key test ----------
+^run ("gedit dumbo")
+^show ("running gedit dumbo")
+^set_timeout ("0")
+^wait_window ("dumbo")
+^sleep ("1")
+^if_window ("dumbo")
+^show ("window dumbo found")
+^endif
+^if_no_window ("dumbo")
+^show ("window dumbo not found, test failed")
+^stop
+^endif
+^dump
+^activate_window ("dumbo")
+^sleep ("2")
+^send_key  ("01") ("2b")  send h
+^send_key  ("00") ("1a")
+^send_key  ("00") ("2e")
+^send_key  ("00") ("2e")
+^send_key  ("00") ("20")
+^sleep ("2")
+^kill ("gedit")
+
+^stop

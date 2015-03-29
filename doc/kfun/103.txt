@@ -1,0 +1,108 @@
+
+----------------------------------------------------------------------------
+system 103 syslog                  - read and/or clear kernel message ring buffer
+----------------------------------------------------------------------------
+  mov  eax,103
+  mov  ebx,Type  ;type command  code
+  mov  ecx,bufp  ;buffer pointer
+  mov  edx,len   ;length of buffer
+  int  80h
+
+       The type argument determines the action taken by this function.
+
+        * type commands
+        *
+        *      0 -- Close the log.  Currently a NOP.
+        *      1 -- Open the log. Currently a NOP.
+        *      2 -- Read from the log.
+        *      3 -- Read up to the last 4k of messages in the ring buffer.
+        *      4 -- Read and clear last 4k of messages in the ring buffer
+        *      5 -- Clear ring buffer.
+        *      6 -- Disable printk's to console
+        *      7 -- Enable printk's to console
+        *      8 -- Set level of messages printed to console
+        *      9 -- Return number of unread characters in the log buffer
+
+       Only  function  3  is  allowed  to non-root processes.  (Function 9 was
+       added in 2.4.10.)
+
+       The kernel log buffer
+       The kernel has a cyclic  buffer  of  length  LOG_BUF_LEN  (4096,  since
+       1.3.54:  8192,  since 2.1.113: 16384; in recent kernels the size can be
+       set at compile time) in which messages given as argument to the  kernel
+       function printk() are stored (regardless of their loglevel).
+
+       The  call  syslog  (2,buf,len)  waits  until  this kernel log buffer is
+       nonempty, and then reads at most len bytes  into  the  buffer  buf.  It
+       returns  the  number  of  bytes read. Bytes read from the log disappear
+       from the log buffer: the information can only be read  once.   This  is
+       the  function  executed  by  the  kernel  when  a  user  program  reads
+       /proc/kmsg.
+
+       The call syslog (3,buf,len) will read the last len bytes from  the  log
+       buffer (nondestructively), but will not read more than was written into
+       the buffer since the last `clear ring buffer' command (which  does  not
+       clear the buffer at all).  It returns the number of bytes read.
+
+       The  call syslog (4,buf,len) does precisely the same, but also executes
+       the `clear ring buffer' command.
+
+       The call syslog (5,dummy,idummy) only executes the `clear ring  buffer'
+       command.
+
+       The loglevel
+       The  kernel  routine printk() will only print a message on the console,
+       if it has  a  loglevel  less  than  the  value  of  the  variable  con-
+       sole_loglevel (initially DEFAULT_CONSOLE_LOGLEVEL (7), but set to 10 if
+       the kernel commandline contains the word `debug', and to 15 in case  of
+       a  kernel  fault  - the 10 and 15 are just silly, and equivalent to 8).
+       This variable is set (to a value in the range 1-8) by the  call  syslog
+       (8,dummy,value).   The calls syslog (type,dummy,idummy) with type equal
+       to 6 or 7, set it to 1 (kernel panics only) or 7 (all except  debugging
+       messages), respectively.
+
+       Every  text  line  in  a  message  has  its own loglevel. This level is
+       DEFAULT_MESSAGE_LOGLEVEL - 1 (6) unless the line starts with <d>  where
+       d  is  a digit in the range 1-7, in which case the level is d. The con-
+       ventional meaning of the loglevel is  defined  in  <linux/kernel.h>  as
+       follows:
+
+       #define KERN_EMERG    "<0>"  /* system is unusable               */
+       #define KERN_ALERT    "<1>"  /* action must be taken immediately */
+       #define KERN_CRIT     "<2>"  /* critical conditions              */
+       #define KERN_ERR      "<3>"  /* error conditions                 */
+       #define KERN_WARNING  "<4>"  /* warning conditions               */
+       #define KERN_NOTICE   "<5>"  /* normal but significant condition */
+       #define KERN_INFO     "<6>"  /* informational                    */
+       #define KERN_DEBUG    "<7>"  /* debug-level messages             */
+
+
+RETURN VALUE
+       In case of error a negative code is returned, and errno is set. Otherwise,
+       for types 2, 3 or 4, syslog() returns the number of bytes read, otherwise
+       0.
+
+ERRORS
+       EPERM  An attempt was made to change console_loglevel or clear the ker-
+              nel message ring buffer by a process without root permissions.
+
+       EINVAL Bad parameters.
+
+       ERESTARTSYS
+              System call was interrupted by a  signal  -  nothing  was  read.
+              (This can be seen only during a trace.)
+
+CONFORMING TO
+       This  system  call is Linux specific and should not be used in programs
+       intended to be portable.
+
+NOTES
+       From the very start people noted that it  is  unfortunate  that  kernel
+       call  and  library routine of the same name are entirely different ani-
+       mals.  In libc4 and libc5 the  number  of  this  call  was  defined  by
+       SYS_klog.  In glibc 2.0 the syscall is baptised klogctl.
+
+
+SEE ALSO
+       syslog
+

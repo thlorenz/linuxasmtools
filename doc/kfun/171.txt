@@ -1,0 +1,23 @@
+----------------------------------------------------------------------------
+171 getresgid      - get real/effective/saved group ID
+----------------------------------------------------------------------------
+
+  mov  eax,171
+  mov  ebx,rgid  ;ptr to dword for real group id
+  mov  ecx,egid  ;ptr to dword for effective group id
+  mov  edx,sgid  ;ptr to dword for saved effective group id
+  int  80h
+
+       getresgid get the real, effective and saved  group  ID's
+       of  the  current process.
+
+RETURN VALUE
+       On  success, zero is returned. On error a negative code is returned
+
+ERRORS
+       EFAULT One of the arguments specified an address  outside  the  calling
+              program's address space.
+
+SEE ALSO
+       getuid, setuid, setreuid, setresuid
+

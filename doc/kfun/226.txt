@@ -1,0 +1,84 @@
+
+----------------------------------------------------------------------------
+226 setxattr           - Set an extended atribute
+----------------------------------------------------------------------------
+
+  mov  eax,226
+  mov  ebx,path    ;pointer to path string
+  mov  ecx,name    ;pointer to name string
+  mov  edx,value   ;pointer to value
+  mov  esi,size    ;
+  mov  edi,flags   ;
+  int  80h
+
+
+
+SYNOPSIS
+       #include <sys/types.h>
+       #include <attr/xattr.h>
+
+       int setxattr(const char *path, const char *name,
+                     const void *value, size_t size, int flags);
+
+DESCRIPTION
+       Extended attributes are name:value pairs associated with inodes (files,
+       directories, symbolic links, etc).  They are extensions to  the  normal
+       attributes  which  are  associated with all inodes in the system (i.e.,
+       the stat(2) data).  A complete overview of extended attributes concepts
+       can be found in attr(5).
+
+       setxattr()  sets the value of the extended attribute identified by name
+       and associated with the given path in the filesystem.  The size of  the
+       value must be specified.
+
+       An  extended  attribute  name  is a simple null-terminated string.  The
+       name includes a namespace prefix; there may be several, disjoint names‐
+       paces  associated  with  an individual inode.  The value of an extended
+       attribute is a chunk of arbitrary textual or binary data  of  specified
+       length.
+
+       The  flags  parameter can be used to refine the semantics of the opera‐
+       tion.  XATTR_CREATE specifies a pure create, which fails if  the  named
+       attribute exists already.  XATTR_REPLACE specifies a pure replace oper‐
+       ation, which fails if the named attribute does not already  exist.   By
+       default  (no flags), the extended attribute will be created if need be,
+       or will simply replace the value if the attribute exists.
+
+flags
+-----
+        XATTR_CREATE	0x1	/* set value, fail if attr already exists */
+        XATTR_REPLACE	0x2	/* set value, fail if attr does not exist */
+
+	 We can never set or remove an extended attribute on a read-only
+	 filesystem  or on an immutable / append-only inode.
+
+
+RETURN VALUE
+       On success, zero is returned.  On failure a negative code is returned
+
+       If  XATTR_CREATE  is specified, and the attribute exists already, errno
+       is set to EEXIST.  If XATTR_REPLACE is  specified,  and  the  attribute
+       does not exist, errno is set to ENOATTR.
+
+       If  there  is  insufficient  space  remaining  to  store  the  extended
+       attribute, errno is set to either ENOSPC, or EDQUOT if  quota  enforce‐
+       ment was the cause.
+
+       If extended attributes are not supported by the filesystem, or are dis‐
+       abled, errno is set to ENOTSUP.
+
+       The errors documented for the stat(2) system call are  also  applicable
+       here.
+
+VERSIONS
+       These system calls have been available on Linux since kernel 2.4; glibc
+       support is provided since version 2.3.
+
+CONFORMING TO
+       These system calls are Linux specific.
+
+SEE ALSO
+       getfattr, setfattr, getxattr, listxattr, open
+       attr, stat, attr
+
+

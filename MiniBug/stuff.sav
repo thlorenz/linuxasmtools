@@ -1,0 +1,62 @@
+;-----------------------------------------------------------
+; launch - start shell using sys_wrap
+;  inputs:  eax = shell string, or zero for interactive shell
+;           ebx = key table
+;                 format:  key-string1,0,feed-keys,0
+;                          key-string2,0,feed-keys,0
+;                          0 (end of table)
+;                 if the feed-key is a ctrl-c (03h) then it
+;                 is not feed to child, instead the child is
+;                 aborted.  This allows us to abort some
+;                 programs with ctrl-o by giving it a feed-key
+;                 of 03h.
+;  output:  none
+;
+launch:
+  mov	[shell_cmd_ptr],eax
+  mov	[shell_keys_ptr],ebx
+
+  mov	edx,lib_buf+600		;shell storage point
+  call	env_shell
+  mov	esi,[shell_cmd_ptr]     ;is this an interactive shell?
+  xor	eax,eax
+  stosd				;terminate shell string
+  mov	eax,lib_buf+600
+  mov	ebx,shell_feed_watch
+  xor	ecx,ecx			;no output capture
+  call	sys_wrap
+  ret
+
+;------------
+  [section .data]
+cursor_save times 12 db 0
+shell_cmd_ptr dd	0	;shell command string or zero if interactive
+shell_keys_ptr dd	0	;ptr to table of watch keya
+;ignore_error_flag:  db	0	;0=error not expected 1=ignore error (expected)
+  [section .text]
+
+;-------------------------------------------------------
+shell_feed_watch:
+; input: ecx=buffer edx=read length
+  ret
+;----------------------------------------------------------
+;input: none
+;output: none
+; modified eax
+get_semaphore:
+  mov	al,1
+  xchg	[semaphore],al
+  or	al,al
+  jz	gs_exit		;exit if we got control
+  mov	eax,200
+  call	delay
+  jmp	short get_semaphore
+gs_exit:
+  ret
+;----------------------------------------------------------
+release_semaphore:
+  mov	[semaphore],byte 0
+  ret
+touch *.asm
+nasm -felf -g -DDEBUG sbug.asm
+ld sbug.o  -o sbug /usr/lib/asmlibx.a /usr/lib/asmlib.a

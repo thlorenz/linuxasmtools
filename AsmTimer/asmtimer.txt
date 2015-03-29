@@ -1,0 +1,77 @@
+NAME
+
+ asmtimer - time program execution
+
+SYNOPSIS
+ 
+ asmtimer <executable file>
+
+ if the <executable file> is omitted, a file
+ browser will allow selection of file.
+
+DESCRIPTION
+
+ asmtimer executes a file a specified number of
+ times. Each execution is timed using data supplied
+ by the kernel and by manually recording start and
+ stop times. All these time are collected and
+ averages computed. The results are displayed.
+
+ the program being timed is most accurate if
+ no keyboard waits (key pressing) are required
+ and program output is piped to a file.
+
+ also, it helps to run the timer several times
+ in quick secession to get a sampling of times.
+
+ Linux is a difficult system to get accurate
+ timing information without patching the kernel
+ and writing special programs. Asmtimer tries
+ to solve this problem by using averages and
+ repeated executions. It appears to be useful
+ for comparing programs.
+
+OPERATION
+
+asmTimer reads the system time before executing a
+program and again after it completes. This time
+is saved in an array for each time a program is
+timed. Also information from the kernel is collected
+and stored in the same array.
+
+the timed program is executed in a shell (such as bash)
+and the time to load the shell is included. The shell
+load time can be calculated and subtracted out if
+necessary, see hints.
+
+after all timing runs have been completed the averages
+are computed and the array sorted. Information from
+the array is then displayed.
+
+to remove the load times for a shell or the program
+being timed, it is necessary to determine times and
+subtract them out. To find a shells load time, run
+it and divide by two. Essentially, we are calling
+the shell to run the shell and then exit.
+
+to get more accurate timing it helps to do 8 or more
+timing runs. Eventually, the program will run with
+little interference from the kernel and we will have
+a more accurate timing. This does not work as well
+for programs that take seconds or even minutes, but
+it does get close to the real time.
+
+it is possible to use shell commands to time programs.
+for example in bash type:
+
+  time ls > any_file
+
+The output appears to be kernel information and
+somewhat confusing.
+
+AUTHOR
+ Jeff Owens <jko@bsn1.net>
+
+COPYRIGHT
+ Copyright (C) 2007 Jeff Owens
+ This program comes with absolutely NO WARRANTY

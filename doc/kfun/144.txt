@@ -1,0 +1,39 @@
+
+----------------------------------------------------------------------------
+memory 144 msync          - synchronize a file with a memory map
+----------------------------------------------------------------------------
+  mov  eax,144
+  mov  ebx,start  ;range base address
+  mov  ecx,length ;size of  ange to synchronize
+  mov  edx,flags  ;zero or MS_ASYNC, MS_SYNC, MS_INVALIDATE
+  int  80h
+
+
+       msync  flushes  changes  made  to  the  in-core copy of a file that was
+       mapped into memory using mmap(2) back to disk.   Without  use  of  this
+       call  there  is  no guarantee that changes are written back before mun-
+       map(2) is called.  To be more precise, the part of the file that corre-
+       sponds to the memory area starting at start and having length length is
+       updated.  The flags argument may have the bits  MS_ASYNC,  MS_SYNC  and
+       MS_INVALIDATE  set, but not both MS_ASYNC and MS_SYNC.  MS_ASYNC speci-
+       fies that an update be scheduled, but  the  call  returns  immediately.
+       MS_SYNC asks for an update and waits for it to complete.  MS_INVALIDATE
+       asks to invalidate other mappings of the same file (so that they can be
+       updated with the fresh values just written).
+
+        MS_ASYNC	1		/* sync memory asynchronously */
+        MS_INVALIDATE	2		/* invalidate the caches */
+        MS_SYNC		4		/* synchronous memory sync */
+
+RETURN VALUE
+       On  success,  zero is returned.  On error a negative code is returned
+
+ERRORS
+       EINVAL start is not a multiple of  PAGESIZE,  or  any  bit  other  than
+              MS_ASYNC | MS_INVALIDATE | MS_SYNC is set in flags.
+
+       ENOMEM The indicated memory (or part of it) was not mapped.
+
+SEE ALSO
+       mmap,  B.O. Gallmeister, POSIX.4, O'Reilly, pp. 128-129 and 389-391.
+

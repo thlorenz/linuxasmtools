@@ -1,0 +1,47 @@
+
+----------------------------------------------------------------------------
+132 getpgid        - get process group
+----------------------------------------------------------------------------
+  mov  eax,132
+  mov  ebx,pid
+  int  80h
+
+       getpgid returns the process group ID of the process specified  by  pid.
+       If pid is zero, the process ID of the current process is used.
+
+       Process  groups  are used for distribution of signals, and by terminals
+       to arbitrate requests for their input: Processes  that  have  the  same
+       process group as the terminal are foreground and may read, while others
+       will block with a signal if they attempt to read.  These calls are thus
+       used  by programs such as csh(1) to create process groups in implement-
+       ing job control.   The  TIOCGPGRP  and  TIOCSPGRP  calls  described  in
+       termios(3)  are used to get/set the process group of the control termi-
+       nal.
+
+       If a session has a controlling terminal, CLOCAL is not set and a hangup
+       occurs,  then  the  session  leader  is  sent a SIGHUP.  If the session
+       leader exits, the SIGHUP signal will be sent to  each  process  in  the
+       foreground process group of the controlling terminal.
+
+       If  the  exit of the process causes a process group to become orphaned,
+       and if any member of the newly-orphaned process group is stopped,  then
+       a  SIGHUP  signal  followed  by  a  SIGCONT signal will be sent to each
+       process in the newly-orphaned process group.
+
+
+RETURN VALUE
+       getpgid  returns a process group on success.  On error a negative code
+       is returned
+
+ERRORS
+
+       ESRCH  For getpgid: pid does not match any process.
+
+NOTES
+       POSIX  took  setpgid  from  the  BSD function setpgrp.  Also SysV has a
+       function with the same name, but it is identical to setsid(2).
+
+SEE ALSO
+       getuid, setsid, tcgetpgrp, tcsetpgrp
+
+

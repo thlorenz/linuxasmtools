@@ -1,0 +1,26 @@
+
+----------------------------------------------------------------------------
+memory 152 mlockall       - disable paging for calling process
+----------------------------------------------------------------------------
+  mov  eax,152
+  mov  ebx,flags
+  int  80h
+
+       munlockall reenables paging for all pages mapped into the address space
+       of the calling process.
+
+       Memory locks do not stack, i.e., pages which have been  locked  several
+       times  by  calls to mlock or mlockall will be unlocked by a single call
+       to munlockall.  Pages which are mapped to several locations or by  sev-
+       eral processes stay locked into RAM as long as they are locked at least
+       at one location or by at least one process.
+
+       On POSIX systems  on  which  mlockall  and  munlockall  are  available,
+       _POSIX_MEMLOCK is defined in <unistd.h> .
+
+RETURN VALUE
+       On success, munlockall returns zero. On error a negative code is returned
+
+SEE ALSO
+       mlockall, mlock, munlock
+

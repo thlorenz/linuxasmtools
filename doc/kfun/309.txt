@@ -1,0 +1,83 @@
+
+----------------------------------------------------------------------
+309 ppoll  - wait till signal
+----------------------------------------------------------------------
+
+  mov  eax,309
+  mov  ebx,pollfd   ;pointer to pollfd
+  mov  ecx,num      ;number of elements in pollfd
+  mov  edx,timspec  ;pointer to timespec struc
+  mov  esi,mask     ;pointer to mask 
+  int  80h
+
+   Waits for an event on a file descriptor or until a signal is caught.
+
+SYNOPSIS
+
+ #define _GNU_SOURCE
+ #include <poll.h>
+
+ int ppoll(struct pollfd *fds , nfds_t  nfds , 
+         const struct timespec *timeout , const sigset_t * sigmask );
+
+
+args
+----
+
+ ebx A pointer to an array of a pollfd structures
+
+   struct pollfd
+   .fd      resd ?
+   .events  resw ?
+   .revents resw ?
+   endstruc
+
+   pollfd members:
+
+   fd -  File descriptor of an open file.
+   events -  A bit-mask specifying the events the application is interested in.
+
+   Available flags are:
+   POLLIN     There is data to read
+   POLLPRI    There is urgent data to read
+   POLLOUT    Writing now will not block
+   POLLERR    Error condition
+   POLLHUP    Hung up
+   POLLNVAL   Invalid request: fd not open
+   POLLRDNORM Normal data may be read
+   POLLRDBAND Priority data may be read
+   POLLWRNORM Writing now will not block
+   POLLWRBAND Priority data may be written
+   POLLMSG    *to be documented*
+   POLLREMOVE *to be documented*
+   POLLRDHUP  *to be documented*
+
+   revents - This member is filled by the kernel with the events that actually
+             occurred.
+
+ ecx Specifies the number of elements in the array of pollfd
+   structures. *to be verified*
+
+ edx A pointer toa timespec strcutre which specifies an upper limit on
+   the amount of time that sys_ppoll will block If edx is specified as
+   NULL, then sys_ppoll can block indefinitely.
+
+ esi bit mask couresponding to events, see poll and select
+
+   If the system call succeeds the return value is a positive number
+   which denotes the number of structures which have non-zero revents
+   fields (in other words, those descriptors with events or errors
+   reported). A value of 0 indicates that the call timed out and no file
+   descriptors have been selected.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EBADF An invalid file descriptor was given in one of the sets.
+   -ENOMEM There was no space to allocate file descriptor tables.
+   -EFAULT The array given as argument was not contained in the calling
+     program's address space.
+   -EINTR A signal occurred before any requested event.
+   -EINVAL The ecx value exceeds the RLIMIT_NOFILE value.
+
+
+   Available since 2.6.16

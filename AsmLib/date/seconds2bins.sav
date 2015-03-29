@@ -1,0 +1,209 @@
+;****f* date/seconds2bins *
+;
+; NAME
+;  * seconds2bins - convert seconds to year,month,day,hr, etc.
+; INPUTS
+;  *      ebp = ptr to time structure, see time.inc
+;  *      [ebp + time.at] = adjusted seconds
+;  *
+; OUTPUT
+;  * the time structure is filled in as follows:
+;  *       [ebp + time.sc current seconds
+;  *       [ebp + time.mn current minute
+;  *       [ebp + time.hr current hour
+;  *       [ebp + time.mr meridian 0=AM
+;  *       [ebp + time.dc days since last epoch
+;  *       [ebp + time.yr current year
+;  *       [ebp + time.cy year of century
+;  *       [ebp + time.ce century, zero based
+;  *       [ebp + time.dy day of month
+;  *       [ebp + time.mo month number, one based 
+;  *       [ebp + time.ws week of year, sunday based
+;  *       [ebp + time.wm week of year, monday based
+;  *       [ebp + time.wi week of year, ISO
+;  *       [ebp + time.yi year for the week ISO
+;  *       [ebp + time.yd day of the year
+; NOTES
+;  * source file: seconds2bins.asm
+;  * ----------------------------------------------
+;*******
+;-----------------------------------------------------------------
+;
+%include "time.inc"
+; eax holds the number of seconds since the Epoch. This is divided by
+; 60 to get the current number of seconds, by 60 again to get the
+; current number of minutes, and then by 24 to get the current number
+; of hours.
+  global seconds2bins
+seconds2bins:
+  mov	eax,[ebp + time.at]	;get adjusted seconds
+  mov	esi,4			;get epoch day of week
+  cdq
+  lea	ebx, [byte edx + 60]
+  div	ebx
+  mov	[ebp + time.sc], edx	;save current second
+  cdq
+  div	ebx
+  mov	[ebp + time.mn], edx	;save current minute
+  mov	bl, 24
+  cdq
+  div	ebx
+  mov	[ebp + time.hr], edx	;save current hour
+
+; The hours are also tested to determine the current side of the
+; meridian, and the hours of the meridian.
+
+  sub	edx, byte 12
+  setae	byte [ebp + time.mr]	;save maridian 0=AM
+
+; eax now holds the number of days since the Epoch. This is divided
+; by seven, after offsetting by the value in esi, to determine the
+; current day of the week.
+
+  mov	[ebp + time.dc],eax	;save days since last Epoch
+  add	eax, esi
+  mov	bl, 7
+  cdq
+  div	ebx
+  mov	[ebp + time.wd], edx	;save day of week 0=sunday
+  mov	eax,[ebp + time.dc]	;get days since last Epoch
+
+; A year's worth of days are successively subtracted from eax until
+; the current year is determined. The program takes advantage of the
+; fact that every 4th year is a leap year within the range of our
+; Epoch.
+
+  mov	bh, 1
+  mov	ecx,1969		;get epoch year-1
+.yrloop:
+  mov	bl, 110
+  inc	ecx
+  test	cl, 3
+  jz	.leap
+  dec	ebx
+.leap:
+  sub	eax, ebx
+  jge	.yrloop
+  add	eax, ebx
+  mov	[ebp + time.yr], ecx	;save current year
+
+; 1900 or 2000 is subtracted to determined the century and the year
+; of the century.
+
+  mov	ch, 20
+  sub	cl, 208
+  jnc	.twentieth
+  dec	ch
+  add	cl, 100
+.twentieth:
+  mov	[ebp + time.cy], cl	;century year
+  mov	[ebp + time.ce], ch	;century (zeor based)
+
+; eax now holds the day of the year, and this is saved in esi. ebx is
+; altered to hold a string of pairs of bits indicating the length of
+; each month over 28 days. Each month's worth of days are
+; successively subtracted from eax until the current month, and thus
+; the current day of the month, is determined.
+
+  mov	esi, eax
+  add	ebx, 11000000001110111011111011101100b - 365
+  xor	ecx, ecx
+  cdq
+.moloop:
+  mov	dl, 7
+  shld	edx, ebx, 2
+  ror	ebx, 2
+  inc	ecx
+  sub	eax, edx
+  jge	.moloop
+  add	eax, edx
+  inc	eax
+  lea	edi,[ebp + time.dy] ;get storage address for .dy
+;  mov	ebp,edi
+;  add	edi, time.dy
+  stosd			;.dy day of month
+  xchg	eax, ecx
+  stosd			;.mo month, one based
+
+; The program retrieves from the stack the day of the year, the
+; number of days since the Epoch, and the day of the week at the
+; start of the Epoch, respectively. These are used to calculate the
+; day of the week of January 1st of the current year.
+
+  mov	eax,[ebp + time.dc]	;number of days since last epoch
+;  mov	ebx,[ebp + time.adw]    ;epoch day of week
+  mov	ebx,4			;epoch day of week
+  sub	eax, esi
+  add	eax, ebx
+  mov	bl, 7
+  cdq
+  div	ebx
+  mov	ecx, edx
+
+; Using this, the program now determines the current week of the year
+; according to three different measurements. The first uses Sunday as
+; the start of the week, and a partial week at the beginning of the
+; year is considered to be week zero. The second is the same, except
+; that it uses Monday as the start of the week.
+
+  xor	eax, eax
+  cmpxchg	ecx, ebx
+  lea	eax, [esi + ecx]
+  cdq
+  div	ebx
+  stosd			;.ws week of year, sunday based
+  dec	ecx
+  jnz	.mondaynot1st
+  mov	cl, bl
+.mondaynot1st:
+  lea	eax, [esi + ecx]
+  cdq
+  div	ebx
+  stosd			;.wm week of year, monday based
+
+; Finally, the ISO-8601 week number uses Monday as the start of the
+; week, and requires every week counted to be the full seven days. A
+; partial week at the end of the year of less than four days is
+; counted as week 1 of the following year; likewise, a partial week
+; at the start of the year of less than four days is counted as week
+; 52 or 53 of the previous year. In order to cover all possibilities,
+; the program must examine the current day of the week, and whether
+; the current year and/or the previous year was a leap year. Outside
+; of these special cases, the ISO-8601 week number will either be
+; equal to or one more than the value previously calculated.
+
+  mov	ebx,[ebp + time.yr]	;current year
+  mov	dl, 3
+  and	dl, bl
+  sub	ecx, byte 4
+  adc	al, 0
+  jnz	.fullweek
+  dec	ebx
+  mov	al, 52
+  or	ecx, ecx
+  jz	.add1stweek
+  dec	ecx
+  jnz	.wifound
+  dec	edx
+  jnz	.wifound
+.add1stweek:
+  inc	eax
+.fullweek:
+  cmp	al, 53
+  jnz	.wifound
+  cmp	dl, 1
+  mov	edx, esi
+  sbb	dl, 104
+  cmp	dl, [ebp + time.wd]	;compare to day of week sunday=0
+  jle	.wifound
+  mov	al, 1
+  inc	ebx
+.wifound:
+  stosd			;.wi week of year, ISO
+  xchg	eax, ebx
+  stosd			;.yi year for week ISO
+  inc	esi
+  xchg	eax, esi
+  stosd			;.yd day of year
+  ret
+;-------------------------------------------------------------

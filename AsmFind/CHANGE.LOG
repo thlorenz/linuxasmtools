@@ -1,0 +1,9 @@
+This file started on 5-04-2008 to record history
+
+
+5-04-2008 Removed match menu item "o" that called asmnano and
+          added "e" that calls script called "a".  Ths allows
+          anyone to insert their favorite editor into script.
+
+
+ 

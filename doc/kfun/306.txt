@@ -1,0 +1,100 @@
+
+---------------------------------------------------------------------
+306 fchmodat  - chmod relative
+---------------------------------------------------------------------
+
+  mov  eax,306
+  mov  ebx,path fd   ;
+  mov  ecx,filename  ;pointer to file name
+  mov  edx,mode
+  int  80h
+
+   Changes S_ISUID, S_ISGID, S_ISVTX, and the file permission bits of a
+   file relative to a directory file descriptor.
+   The sys_fchmodat system call operates in exactly the same way as
+   sys_chmod, except for the differences described below.
+
+args
+----
+
+ ebx If the pathname pointed by ecx is relative, then it is interpreted
+   relative to the directory referred to by the file descriptor ebx
+   (rather than relative to the current working directory of the calling
+   process, as is done by sys_chmod for a relative pathname).
+   If the pathname pointed by ecx is relative and ebx is the special
+   value AT_FDCWD, then path is interpreted relative to the current
+   working directory of the calling process.
+   If the pathname pointed by ecx is absolute, then ebx is ignored.
+
+ ecx A pointer to a null-terminated string that specifies the name of a
+   file.
+
+ edx Mode to set. It may be one or bitwise-or operation of a number of
+   the following values:
+
+   S_ISUID - set user ID on execution
+   S_ISGID - set group ID on execution
+   S_ISVTX - sticky bit
+   S_IRWXU - read/write/execute/search by user
+   S_IRUSR - read by owner
+   S_IWUSR - write by owner
+   S_IXUSR - execute/search by owner
+   S_IRWXG - read/write/execute/search by group
+   S_IRGRP - read by group
+   S_IWGRP - write by group
+   S_IXGRP - execute/search by group
+   S_IRWXO - read/write/execute/search by others
+   S_IROTH - read by others
+   S_IWOTH - write by others
+   S_IXOTH - execute/search by others
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values (depending on the file systems other error values may be
+   returned):
+
+   -EPERM The effective UID does not match the owner of the file, and the
+     process is not privileged (i.e.: it does not have the CAP_FOWNER
+     capability).
+   -EROFS The named file resides on a read-only file system.
+   -EIO An I/O error occurred while reading from or writing to the file
+     system.
+   -EACCES Search permission is denied for one of the directories in the
+     path prefix of the path.
+   -ENOTDIR ebx doesn't refer to a directory.
+   -EIO An I/O error occurred while reading from or writing to the file
+     system.
+   -ELOOP Too many symbolic links were encountered in path resolving. 
+   -ENAMETOOLONG Path is too long.
+   -ENOMEM Insufficient kernel memory was available.
+   -ENOENT The file does not exist.
+   -EFAULT Path points outside your accessible address space.
+   -EBADF ebx is not a valid file descriptor.
+   -ENOTDIR path is a relative path and ebx is a file descriptor
+     referring to a file other than a directory.
+
+   The effective UID of the calling process must match the owner of the
+   file, or the process must be privileged (it must have the CAP_FOWNER
+   capability).
+   If the calling process is not privileged (does not have the CAP_FSETID
+   capability), and the group of the file does not match the effective
+   group ID of the process or one of its supplementary group IDs, the
+   S_ISGID bit will be turned off, but this will not cause an error to be
+   returned.
+   As a security measure, depending on the file system, the set-user-ID
+   and set-group-ID execution bits may be turned off if a file is
+   written. (this occurs if the writing process does not have the
+   CAP_FSETID capability.) On some file systems, only the superuser can
+   set the sticky bit, which may have a special meaning. For the sticky
+   bit, and for set-user-ID and set-group-ID bits on directories, see
+   sys_stat.
+   On NFS file systems, restricting the permissions will immediately
+   influence already open files, because the access control is done on
+   the server, but open files are maintained by the client. Widening the
+   permissions may be delayed for other clients if attribute caching is
+   enabled on them.
+
+   Available since 2.6.16
+

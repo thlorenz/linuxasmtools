@@ -1,0 +1,102 @@
+
+--------------------------------------------------------------------
+262 timer_getoverrun  - Get the number of overruns of a POSIX.1b interval timer
+--------------------------------------------------------------------
+
+  mov  eax,262
+  mov  ebx,timer_id
+  int  80h
+
+NAME
+       timer_getoverrun - get a POSIX timer’s overrun count
+
+SYNOPSIS
+       #include <time.h>
+
+       int timer_getoverrun(timer_t timer_id);
+
+DESCRIPTION
+       timer_getoverrun returns the current overrun count for the timer speci‐
+       fied by timer_id.  The overrun count is the number of timer expirations
+       not  delivered  to  the process, since the last notification, due to an
+       already pending signal from timer_id.  Overruns  may  occur  because  a
+       timer can only post one signal per process at a time.
+
+       The maximum overrun value is INT_MAX.
+
+       The Linux timer implementation also allows retrieving the overrun count
+       from the si_overrun member of the siginfo  structure  (see  siginfo.h).
+       This  is an extension to the POSIX standard that avoids the system call
+       overhead.
+
+RETURN VALUE
+       On success, timer_getoverrun returns the overrun count  for  the  given
+       timer_id.   If  the return value is 0, there were no overruns since the
+       last notification.
+
+       On failure, timer_getoverrun returns the value  -1  and  errno  is  set
+       appropriately.
+
+ERRORS
+       EINVAL The timer specified by timer_id is invalid.
+
+CONFORMING TO
+       POSIX 1003.1b (formerly POSIX.4) as ammended by POSIX 1003.1j-2000.
+
+SEE ALSO
+       clock_getres(3),           clock_gettime(3),          clock_settime(3),
+       clock_nanosleep(3), timer_create(3), timer_delete(3), timer_settime(3),
+       timer_gettime(3)
+
+Periodic Timer Overrun and Resource Allocation
+
+   The specified timer facilities may deliver realtime signals (that is,
+   queued signals) on implementations that support this option. Since
+   realtime applications cannot afford to lose notifications of
+   asynchronous events, like timer expirations or asynchronous I/O
+   completions, it must be possible to ensure that sufficient resources
+   exist to deliver the signal when the event occurs. In general, this is
+   not a difficulty because there is a one-to-one correspondence between
+   a request and a subsequent signal generation. If the request cannot
+   allocate the signal delivery resources, it can fail the call with an
+   [EAGAIN] error.
+
+   Periodic timers are a special case. A single request can generate an
+   unspecified number of signals. This is not a problem if the requesting
+   process can service the signals as fast as they are generated, thus
+   making the signal delivery resources available for delivery of
+   subsequent periodic timer expiration signals. But, in general, this
+   cannot be assured-processing of periodic timer signals may "overrun'';
+   that is, subsequent periodic timer expirations may occur before the
+   currently pending signal has been delivered.
+
+   Also, for signals, according to the POSIX.1-1990 standard, if
+   subsequent occurrences of a pending signal are generated, it is
+   implementation-defined whether a signal is delivered for each
+   occurrence. This is not adequate for some realtime applications. So a
+   mechanism is required to allow applications to detect how many timer
+   expirations were delayed without requiring an indefinite amount of
+   system resources to store the delayed expirations.
+
+   The specified facilities provide for an overrun count. The overrun
+   count is defined as the number of extra timer expirations that
+   occurred between the time a timer expiration signal is generated and
+   the time the signal is delivered. The signal-catching function, if it
+   is concerned with overruns, can retrieve this count on entry. With
+   this method, a periodic timer only needs one "signal queuing resource"
+   that can be allocated at the time of the timer_create() function call.
+
+   A function is defined to retrieve the overrun count so that an
+   application need not allocate static storage to contain the count, and
+   an implementation need not update this storage asynchronously on timer
+   expirations. But, for some high-frequency periodic applications, the
+   overhead of an additional system call on each timer expiration may be
+   prohibitive. The functions, as defined, permit an implementation to
+   maintain the overrun count in user space, associated with the timerid.
+   The timer_getoverrun() function can then be implemented as a macro
+   that uses the timerid argument (which may just be a pointer to a user
+   space structure containing the counter) to locate the overrun count
+   with no system call overhead. Other implementations, less concerned
+   with this class of applications, can avoid the asynchronous update of
+   user space by maintaining the count in a system structure at the cost
+   of the extra system call to obtain it.

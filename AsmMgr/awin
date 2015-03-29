@@ -1,0 +1,5 @@
+#! /bin/bash
+# normal window
+
+alt='\E[?47h'
+echo -e $alt

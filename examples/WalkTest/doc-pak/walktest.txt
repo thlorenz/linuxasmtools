@@ -1,0 +1,29 @@
+
+NAME
+
+  walktest - compute aerobic health
+
+OPERATION
+
+   The one mile walk can be on any level one mile
+   streach.  Most highschool tracks are a quater
+   mile and make ideal way to measure a mile.
+   
+   Measuring the after walk pulse can be simply
+   counting a pulse for 10 seconds and multiplying
+   by 6.  A easier way is to use one of the many
+   electronic pulse measures.  These are built into
+   some watches.  Also, some pluse measures are
+   part of stop watches and monitor pulse constantly.
+   
+   After completing the mile walk, your pulse will
+   slow quickly and return to its resting state.  To
+   check this it is useful to take the resting pulse
+   before starting.
+   
+   The output of this test measures aerobic capacity
+   this is sometimes refered to as MET or VO2max.
+   MET is short for "metabolic equivalent tasks"
+   
+   The rating data is taken from National Institute
+   of Health data.

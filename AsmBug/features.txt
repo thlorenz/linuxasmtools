@@ -1,0 +1,90 @@
+
+Is AsmBug better than the others?  Check the
+feature list below.
+
+AsmBug's biggest advantage is front end analysis and
+not relying on source files.  Other debuggers either show
+source for scrolling or present a small window around
+the point of execution.  AsmBug will scroll all memory
+and learns as it goes.
+
+Here is a partial list of unique features:
+
+1. Breakpoints are saved between debug sessions (if
+    they stay aligned with start of instruction and the data
+    at break remains unchanged).
+
+ 2. One click register tracking in memory window.  Register
+     is assumed to be a pointer and will control the contents
+     of memory window.
+
+ 3. One click change of memory window format (byte,word,
+     dword)
+
+ 4. Continuous analysis to determine code and data areas.
+     Some code areas will start as data and the code appear
+     as debugging progresses. 
+
+ 5. Memory and code scrolling allowed for all program memory
+     all the time.
+
+ 6. Attach uses smart lookup of process by name.  It includes 
+     any source or debugging information found in current
+     directory.
+
+ 7. Programs without labels will have a symbol table created
+     for them, and the new symbols appear in code and memory
+     window.
+
+ 8. Source comments are appended to disassembly.  This insures
+     the display always matches executable.  If source is out of
+     sync, the comments will not align and this is usually obvious.
+
+ 9. Smart step-over command that checks instruction type and
+     refuses to step over jumps and returns.  This avoids frustrating
+     run away debugging sessions. 
+
+ 10. Pop up menus that operate on just about anything visible.
+      This includes operands, memory data, registers, breakpoints.
+
+ 11. Simple label search in both code and memory windows.
+
+ 12.  Memory and code entry window also acts as calculator
+      and hex converter.
+
+ 13. One click history retrieval in the memory window (goes
+    back to previous selections).
+
+ 14. One click set/clear of breakpoints anywhere they appear.
+     This includes code,break, memory windows.
+
+ 15. Small 56k load size.  (fast load)
+
+ 16. Very fast execution, with fast stepping of code using
+     space bar.
+
+ 17. Single load file without any dependencies, dynamic libraries,
+      or other files.  Program can be moved or installed by copying.
+
+ 18. Single click editting of memory or registers.
+
+ 19. Ability to debug any ELF executable.  For example:
+      "asmbug ls" would work.
+
+ 20. Data presented as it was loaded into memory, not as
+     it appears in source.  This shows overflow problems and
+     avoids irritating popup's with warnings.
+
+ 21. Automatic processing of STABS debug data.  Tested
+     with nasm and gcc compilers.
+
+ The bad news is AsmBug's beta status.  It probably has a
+ some bugs that will appear in the future.
+
+all the best, jeff
+
+ http://linuxasmtools.net/
+
+
+
+

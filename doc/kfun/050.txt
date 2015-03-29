@@ -1,0 +1,16 @@
+----------------------------------------------------------------------------
+ 50 getegid        - get group identity
+----------------------------------------------------------------------------
+  mov  eax,50
+  int  80h
+
+       getegid returns the effective group ID of the current process.
+       The  real ID corresponds to the ID of the calling process.  The effec-
+       tive ID corresponds to the set ID bit on the file being executed.
+
+ERRORS
+       This function is always successful.
+
+SEE ALSO
+       setregid, setgid
+

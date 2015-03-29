@@ -1,0 +1,14 @@
+
+------------------------------------------------------------------
+243 set_thread_area   - Set a Thread Local Storage (TLS) area
+------------------------------------------------------------------
+
+  mov  eax,243
+  mov  ebx,u_info ;pointer to array u_info
+  int  80h
+
+RETURN
+  returns zero on success else a negative error code
+
+
+

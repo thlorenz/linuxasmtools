@@ -1,0 +1,71 @@
+
+----------------------------------------------------------------------
+276 set_mempolicy  - set NUMA memory policy
+----------------------------------------------------------------------
+
+  mov  eax,276
+  mov  ebx,mpol
+  mov  ecx,bfield ;pointer to bit field
+  mov  edx,num
+  int  80h
+
+   Sets the NUMA memory policy of the calling process.
+   A NUMA machine has different memory controllers with different
+   distances to specific CPUs. The memory policy defines in which node
+   memory is allocated for the process.
+   This system call defines the default policy for the process; in
+   addition a policy can be set for specific memory ranges using
+   sys_mbind. The policy is only applied when a new page is allocated
+   for the process. For anonymous memory this is when the page is first
+   touched by the application.
+
+args
+----
+
+ ebx policy mode (mpol)
+
+        MPOL_DEFAULT	0
+        MPOL_PREFERRED	1
+        MPOL_BIND	2
+        MPOL_INTERLEAVE	3
+
+   MPOL_DEFAULT This is the default and means to allocate memory locally,
+   i.e., on the node of the CPU that triggered the allocation. ecx should
+   be specified as NULL.
+
+   MPOL_PREFERRED Sets the preferred node for allocation. The kernel will
+   try to allocate in this node first and fall back to other nodes if the
+   preferred node is low on free memory. Only the first node in the
+   bitmask pointed by ecx is used. If no node is set in the mask, then
+   the memory is allocated on the node of the CPU that triggered the
+   allocation allocation (like MPOL_DEFAULT).
+
+   MPOL_BIND A strict policy that restricts memory allocation to the
+   nodes specified in the bitmask pointed by ecx . There won't be
+   allocations on other nodes.
+
+   MPOL_INTERLEAVE Interleaves allocations to the nodes specified in the
+   bitmask pointed by ecx. This optimizes for bandwidth instead of
+   latency. To be effective the memory area should be fairly large, at
+   least 1MB or bigger.
+
+ ecx A pointer to a bit field of nodes specifying the nodes to which
+   the policy applies. The bit field size is rounded to the next multiple
+   of dword, but the kernel will only use bits up to edx.
+
+ edx Number of bits in the bit field pointed by ecx.
+
+Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EINVAL Unrecognized policy (ebx).
+   -EFAULT ecx points to an invalid location.
+
+   The memory policy is inherited by child processes created using
+   sys_fork or clone.
+
+   Available since 2.6.7
+

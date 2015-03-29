@@ -1,0 +1,53 @@
+
+----------------------------------------------------------------------------
+175 rt_sigprocmask  - real time sigprocmask
+----------------------------------------------------------------------------
+
+  mov  eax,175
+  mov  ebx,how    ; 0=block (or)  1=unblock (and)  2=set (store)
+  mov  ecx,sigset ;pointer to sigset
+  mov  edx,oset   ;pointer to oset
+  mov  esi,size   ;size of sigset/oset in bytes
+  int  80h
+
+how
+---
+
+  The "how" field is:
+
+    0  SIG_BLOCK - The "set" bits are added (or) with current mask
+    1  SIG_UNBLOCK - The "set" bits are removed from current mask
+    2  SIG_SETMASK - The "set" bits are store into current blocked signals
+                     and replaces previous contents.
+
+sigset,oset
+-----------
+
+  struc sigset
+  .mask resd 1  ;signal mask (one bit for each signal)
+  endstruc
+
+
+  If  oldset is non-null, the previous value of the signal mask is stored
+  in oldset.
+
+The calls sigprocmask and rt_sigprocmask differ as follows:
+  sys_rt_sigprocmask(int how, sigset_t __user     *set, sigset_t __user     *oset, size_t sigsetsize)
+  sys_sigprocmask   (int how, old_sigset_t __user *set, old_sigset_t __user *oset)
+
+RETURN VALUE
+       The functions sigaction, sigprocmask, and sigpending return 0  on  suc-
+       cess  and -1 on error.  The function sigsuspend always returns -1, nor-
+       mally with the error EINTR.
+
+
+ERRORS
+       EINVAL An invalid signal was specified.  This will also be generated if
+       (22)   an  attempt is made to change the action for SIGKILL or SIGSTOP,
+              which cannot be caught.
+
+       EFAULT act, oldact, set, oldset or mask point to memory which is not  a
+       (14)      valid part of the process address space.
+
+       EINTR (4)  System call was interrupted.
+

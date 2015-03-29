@@ -1,0 +1,96 @@
+
+----------------------------------------------------------------------------
+system 131 quotactl                - manipulate disk quotas
+----------------------------------------------------------------------------
+  mov  eax,131
+  mov  ebx,cmd
+  mov  ecx,special
+  mov  edx,id
+  mov  esi,addr
+  int  80h
+
+
+   Manipulates disk quota.
+   The quota system defines for each user and/or group a soft limit and a
+   hard limit bounding the amount of disk space that can be used on a
+   given file system. The hard limit cannot be crossed. The soft limit
+   can be crossed, but warnings will ensue. Moreover, the user cannot be
+   above the soft limit for more than one week (by default) at a time:
+   after this week the soft limit counts as hard limit.
+
+args
+----
+
+ ebx Operation to perform. This argument is constructed as follows:
+   ((cmd shl SUBCMDSHIFT) or (type and SUBCMDMASK))
+   Where cmd is one of the following:
+
+        SUBCMDMASK  0x00ff
+        SUBCMDSHIFT 8
+        QCMD(cmd, type)  (((cmd) << SUBCMDSHIFT) | ((type) & SUBCMDMASK))
+
+        Q_SYNC     0x800001	/* sync disk copy of a filesystems quotas */
+        Q_QUOTAON  0x800002	/* turn quotas on */
+        Q_QUOTAOFF 0x800003	/* turn quotas off */
+        Q_GETFMT   0x800004	/* get quota format used on given filesystem */
+        Q_GETINFO  0x800005	/* get information about quota files */
+        Q_SETINFO  0x800006	/* set information about quota files */
+        Q_GETQUOTA 0x800007	/* get user quota structure */
+        Q_SETQUOTA 0x800008	/* set user quota structure */
+
+   Q_SYNC Sync disk copy of a filesystem's quota.
+   Q_QUOTAON Enable quota. The esi argument is the a pointer to a
+    null-terminated string specifying the pathname of the file containing
+    the quota for the filesystem.
+   Q_QUOTAOFF Disable quota.
+    esi is ignored.
+   Q_GETFMT *to be documented*
+   Q_GETINFO *to be documented*
+   Q_SETINFO *to be documented*
+   Q_GETQUOTA Get limits and current usage of disk space. The esi
+    argument is a pointer to a if_dqblk structure which will receive the
+    information:
+ 
+  struct if_dqblk
+   dqb_bhardlimit dq ?
+   dqb_bsoftlimit dq ?
+   dqb_curspace   dq ?
+   dqb_ihardlimit dq ?
+   dqb_isoftlimit dq ?
+   dqb_curinodes  dq ?
+   dqb_btime      dq ?
+   dqb_itime      dq ?
+   dqb_valid      dd ?
+  endstruc
+
+
+ ecx A pointer to a null-terminated string specifying the block special
+   device these quota apply to. It must be mounted.
+
+ edx User or group ID these quota apply to.
+
+ esi This argument depends on the cmd used See above.
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EACCES The quota file is not an ordinary file.
+   -EBUSY Q_QUOTAON was asked, but quotas were enabled already.
+   -EFAULT Bad esi value.
+   -EINVAL type is not a known quota type. Or, pathname pointed by ecx
+     could not be found.
+   -EIO Cannot read or write the quota file.
+   -EMFILE Too many open files: cannot open quota file.
+   -ENODEV Pathname pointed by ecx cannot be found in the mount table.
+   -ENOPKG The kernel was compiled without quota support.
+   -ENOTBLK Pathname pointed by ecx is not a block special device.
+   -EPERM The process was not root (for the file system), and Q_GETQUOTA
+     was asked for another id than that of the process itself, or anything
+     other than Q_SYNC was asked.
+   -ESRCH Q_GETQUOTA or Q_SETQUOTA was asked for a file system that
+     didn't have quota enabled.
+
+

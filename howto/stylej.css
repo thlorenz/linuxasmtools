@@ -1,0 +1,45 @@
+
+P, DIV, TABLE, TD, TH, DL, UL, OL, FORM, BLOCKQUOTE, CAPTION
+	{ font-family: Verdana, Geneva, Arial, Helvetica, Sans-Serif; font-size: 118%; } 
+
+BODY	{ font-family: Verdana, Geneva, Arial, Helvetica, Sans-Serif; font-size: 120%; color: white; background: #0066ff; } 
+
+H1, H2, H3 { font-family: Verdana, Geneva, Arial, Helvetica, Sans-Serif; }
+H4, H5, H6 { font-family: Verdana, Geneva, Arial, Helvetica, Sans-Serif; }
+
+
+H1 	{ font-size: 140%; }
+H2 	{ font-size: 130%; } 
+H1 { margin-bottom: 2px;} /* may need to get all HR's out of all H2's */
+
+/*	a:link 		{ color: #003399; }
+	a:visited 	{ color: #800080; }
+	a:active 	{ color: #ff0000; } */
+
+	
+.menuleft	{ font-family: Arial, Helvetica, Sans-Serif;
+			  font-size: 100%;
+			  color:#000000;
+			  border-color : #336699;
+			  border-style : solid;
+			  border-width : 1px 1px 0px 1px;
+			  background: #6699ff;} 
+
+
+/* this section controls the link colors over the left menubar  */
+/* original colors  link=0000FF  active=FF0000  visited=800080  */
+	.menuleft a:link 	{ color: #000099;}
+/*	.menuleft a:visited	{ color: #800080; }   leave at original color */
+/*	.menuleft a:active	{ color: #ff0000; }   leave at original color */
+
+/* hover is only supported by msie */
+	 a:hover	{ color: #FF3300;     }  /* orangish-red */
+	.menuleft  a:hover	{ color: #FFFFFF;    }  /* white */
+
+.headerA 	{ 	color: #FFCC66;  
+				background-color :  #000080;  
+				padding :  4px;  
+				font-weight :  bold;  
+				border :  none; }
+
+

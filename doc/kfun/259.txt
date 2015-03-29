@@ -1,0 +1,226 @@
+
+------------------------------------------------------------
+259 timer_create  -  Create a POSIX.1b interval timer
+------------------------------------------------------------
+
+  mov  eax,259
+  mov  ebx,which_clock       ;type of timer
+  mov  ecx,timer_event_spec  ;pointer to timer_event_spec
+  mov  edx,created_timer_id  ;pointer to created timer id
+  int  80h
+
+   The timer_create() function shall create a per-process timer of
+   type which_clock.
+
+which_clock values from time.h
+------------------------------
+
+    #define CLOCK_REALTIME		0
+    #define CLOCK_MONOTONIC		1
+    #define CLOCK_PROCESS_CPUTIME_ID	2
+    #define CLOCK_THREAD_CPUTIME_ID	3
+    /*
+     * The IDs of various hardware clocks:
+     */
+    #define CLOCK_SGI_CYCLE		10
+    #define MAX_CLOCKS			16
+    #define CLOCKS_MASK			(CLOCK_REALTIME | CLOCK_MONOTONIC)
+    #define CLOCKS_MONO			CLOCK_MONOTONIC
+
+    This setting determines the type of  timer created.
+
+   CLOCK_REALTIME
+
+      This virtual clock represents the real-time clock of the
+      systemessentially the value of the xtime variable (see the
+      earlier section "[8]Updating the Time and Date"). The
+      resolution returned by the clock_getres( ) system call is
+      999,848 nanoseconds, which corresponds to roughly 1000 updates
+      of xtime in a second.
+
+   CLOCK_MONOTONIC
+
+      This virtual clock represents the real-time clock of the system
+      purged of every time warp due to the synchronization with an
+      external time source. Essentially, this virtual clock is
+      represented by the sum of the two variables xtime and
+      wall_to_monotonic (see the earlier section "[9]Timekeeping
+      Architecture in Uniprocessor Systems"). The resolution of this
+      POSIX clock, returned by clock_getres( ), is 999,848
+      nanoseconds.
+
+timer_event_spec from signal.h
+------------------------------
+
+   The signal delivered upon timer expiration is defined
+   by a structure.  timer_event_spec points to structure.
+   If timer_event_spec is zero the SIGEV signal is assumed.
+
+    sigevent struc
+    .sigev_value	resd 1  ;passed to handler?
+    .sigev_signo	resd 1	;signal number
+    .sigev_notify	resd 1  ;see below
+    .sigev_compat	resd 1  ;union! ,threads? see siginfo.h  
+    endstruc
+
+   sigev_notify
+
+     SIGEV_SIGNAL    0	/* notify via signal
+     SIGEV_NONE      1	/* other notification: meaningless
+     SIGEV_THREAD    2	/* deliver via thread creation
+     SIGEV_THREAD_ID 4	/* deliver to thread
+
+
+created_timer_id
+----------------
+
+   This is a pointer to dword to store created timer id
+
+
+description
+-----------
+  
+Using the specified clock, clock_id, as the timing base. The
+timer_create() function shall return, in the location referenced
+by timerid, a timer ID of type timer_t used to identify the
+timer in timer requests. This timer ID shall be unique within
+the calling process until the timer is deleted. The particular
+clock, clock_id, is defined in <time.h>. The timer whose ID is
+returned shall be in a disarmed state upon return from
+timer_create().
+
+The evp argument, if non-NULL, points to a sigevent structure.
+This structure, allocated by the application, defines the
+asynchronous notification to occur as specified in Signal
+Generation and Delivery when the timer expires. If the evp
+argument is NULL, the effect is as if the evp argument pointed
+to a sigevent structure with the sigev_notify member having the 
+value SIGEV_SIGNAL, the sigev_signo having a default signal
+number, and the sigev_value member having the value of the timer
+ID.
+
+Each implementation shall define a set of clocks that can be
+used as timing bases for per-process timers. All implementations
+shall support a clock_id of CLOCK_REALTIME. If the Monotonic
+Clock option is supported, implementations shall support a
+clock_id of CLOCK_MONOTONIC.
+
+Per-process timers shall not be inherited by a child process
+across a fork() and shall be disarmed and deleted by an exec.
+
+If _POSIX_CPUTIME is defined, implementations shall support
+clock_id values representing the CPU-time clock of the calling
+process.
+
+If _POSIX_THREAD_CPUTIME is defined, implementations shall
+support clock_id values representing the CPU-time clock of the
+calling thread.
+
+It is implementation-defined whether a timer_create() function
+will succeed if the value defined by clock_id corresponds to the
+CPU-time clock of a process or thread different from the process
+or thread invoking the function.
+
+
+The Linux kernel implements the POSIX timers by means of
+dynamic timers. Thus, they are similar to the traditional
+interval timers. however, are much more flexible and reliable
+than traditional interval timers.
+
+   A couple of significant differences between them are:
+     * When a traditional interval timer decays, the kernel always sends
+       a SIGALRM signal to the process that activated the timer. Instead,
+       when a POSIX timer decays, the kernel can send every kind of
+       signal, either to the whole multithreaded application or to a
+       single specified thread. The kernel can also force the execution
+       of a notifier function in a thread of the application, or it can
+       even do nothing (it is up to a User Mode library to handle the
+       event).
+     * If a traditional interval timer decays many times but the User
+       Mode process cannot receive the SIGALRM signal (for instance
+       because the signal is blocked or the process is not running), only
+       the first signal is received: all other occurrences of SIGALRM are
+       lost. The same holds for POSIX timers, but the process can invoke
+       the timer_getoverrun( ) system call to get the number of times the
+       timer decayed since the generation of the first signal.
+
+Another description of timer_create
+-----------------------------------
+
+     timer_create creates an interval timer based on the POSIX 1003.1b stan‐
+   dard  using  the  clock type specified by which_clock.  The timer ID is
+   stored in the timer_t value pointed to by created_timer_id.  The  timer
+   is started by timer_settime(3).
+
+   If  timer_event_spec  is  non-NULL,  it specifies the behavior on timer
+   expiration.   If  the  sigev_notify  member  of   timer_event_spec   is
+   SIGEV_SIGNAL  then  the  signal specified by sigev_signo is sent to the
+   process on expiration.
+
+   If the value is SIGEV_THREAD_ID then the sigev_notify_thread_id  member
+   of  timer_event_spec should contain the pthread_t id of the thread that
+   is to receive the signal.
+
+   If the value is SIGEV_THREAD then the  specified  sigev_notify_function
+   is created in a new thread with sigev_value as the argument.
+
+   If the value is SIGEV_NONE then no signal is sent.
+
+   SIGEV_THREAD_ID  and  SIGEV_SIGNAL  are  compatible  and  may  be  ORed
+   together.
+
+   If timer_event_spec is NULL, SIGALRM is sent to the process upon  timer
+   expiration with the value of the timer ID, timer_id.
+
+   The maximum number of timers is a system-wide value, set at kernel con‐
+   figure time, which is generally quite high.
+
+   Each timer is owned by a specific thread.  The owning thread is  either
+   the  calling  thread  or  the thread specified by SIGEV_THREAD_ID.  The
+   owning thread receives the signal on timer expiration.  If  the  owning
+   thread exits all of its timers are disabled and deleted.  Any thread in
+   a process, however, may make calls on the timer.  Timers are not inher‐
+   ited  by  a child process across a fork(2) and are disabled and deleted
+   by a call to one of the exec functions.
+
+   For a listing of valid clocks, see clock_gettime(3).   Note  CLOCK_PRO�‐
+   CESS_CPUTIME_ID   and  CLOCK_THREAD_CPUTIME_ID  are  not  supported  by
+   timer_create(3).
+
+
+   Thread support
+   Note SIGEV_THREAD_ID support requires  thread  groups.   Currently  the
+   linuxthreads  package does not use thread groups.  NG-threads, based on
+   GNU-pth, does use thread groups and is compatible.
+
+
+Return Value
+------------
+
+If the call succeeds, timer_create() shall return zero and
+update the location referenced by timerid to a timer_t, which
+can be passed to the per-process timer calls. If an error
+occurs, the function shall return a value of -1 and set errno to
+indicate the error. The value of timerid is undefined if an
+error occurs.
+
+Errors
+
+   The timer_create() function shall fail if:
+   EAGAIN
+      The system lacks sufficient signal queuing resources to honor
+      the request.
+   EAGAIN
+      The calling process has already created all of the timers it is
+      allowed by this implementation.
+   EINVAL
+      The specified clock ID is not defined.
+   ENOTSUP
+      The implementation does not support the creation of a timer
+      attached to the CPU-time clock that is specified by clock_id
+      and associated with a process or thread different from the
+      process or thread invoking timer_create().
+
+
+
+

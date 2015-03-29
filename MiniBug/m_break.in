@@ -1,0 +1,309 @@
+  [section .text]
+;-------------  m_break.in -------------------------------
+
+show_break_win:
+  mov	eax,break_header
+  call	show_header_line
+  mov	eax,brk_menu_txt	;get text for main menu
+  call	show_menu_line
+
+  mov	[found_break_flag],byte 0
+  mov	eax,[aux_win_color]
+  call	crt_set_color
+
+  mov	al,[mini_win_top_line2] ;get row
+  mov	[brk_row],al
+  mov	esi,breaks	;get ptr to breaks
+sbw_lp:
+  mov	edi,lib_buf+100	;get build area
+  lodsd			;get break
+  inc	esi		;move past save byte
+  push	esi
+  or	eax,eax
+  jz	sbw_pad
+  mov	[brk_adr],eax	;save break address
+  call	dwordto_hexascii
+  mov	[found_break_flag],byte 1
+  mov	al,' '
+  stosb
+;show label if present
+  push	edi		;save stuff ptr
+  mov	edi,brk_adr		;get address to look up
+  mov	ecx,4
+  xor	edx,edx		;use hash
+  call	hash_lookup
+  pop	edi		;restore stuff ptr
+  or	eax,eax
+  jnz	scl_50		;jmp if no label here
+;esi points to symbol name
+  add	esi,byte 5
+  call	str_move
+scl_50:
+
+sbw_pad:
+;pad line to end with blanks
+  mov	ebx,lib_buf+100	;get buffer start
+  add	ebx,[crt_columns]
+sbrk_pad_lp:
+  cmp	ebx,edi
+  jbe	sbrk_pad_done
+  mov	al,' '
+  stosb
+  jmp	sbrk_pad_lp
+sbrk_pad_done:
+  mov	ah,[brk_row]
+  mov	al,1
+  call	move_cursor
+
+  call	write_aux_line
+
+  inc	dword [brk_row]
+  pop	esi
+  mov	al,[brk_row]
+  cmp	al,[mini_win_end_line]	;menu_line
+  jb	sbw_lp
+;check if any breaks found
+  cmp	byte [found_break_flag],0
+  jnz	sbw_exit		;jmp if breaks found
+;no breaks, show message
+  mov	ah,[brk_row]
+  sub	ah,4
+  mov	al,1
+  call	move_cursor
+  mov	ecx,no_breaks_msg
+  mov	edx,no_breaks_msg_len
+  call	crt_write
+  cmp	[pop_help_flag],byte 0
+  je	sbw_exit
+  mov	ecx,break_help
+  call	show_mini_help
+sbw_exit:
+  ret
+;------------
+  [section .data]
+brk_adr: dd 0
+  [section .text]
+;-------------------------------------------------------
+break_clear_all:
+  call	cmd_clear_breaks
+  ret
+;-------------------------------------------------------
+break_add_entry:
+  mov	eax,mem_blank_line	;get text for main menu
+  call	show_menu_line
+
+  mov	eax,pre_brk_msg
+  mov	ebx,work_buf
+  mov	cl,8		;window size
+  call	edit_user_string
+
+  mov	esi,work_buf
+  call	hexascii_to_dword	;result to ecx
+  mov	ebx,ecx
+  push	ebx
+  call	find_break
+  pop	ebx
+  or	ecx,ecx
+  jnz	bad_exit	;exit if break found
+  mov	eax,ebx
+  call	_check_range
+  jc	bad_exit	;exit if out of range
+  call	add_break
+bad_exit:
+  ret
+;------------------
+  [section .data]
+pre_brk_msg: db 'enter addr: ',0
+  [section .text]
+
+;-------------------------------------------------------
+;-------------------------------------------------------
+;---------------
+;input: ebx=break address
+add_break:
+;add this break
+  mov	esi,breaks
+  mov	ecx,10
+cbh_lp:
+  cmp	[esi],dword 0
+  je	stuff_break
+  add	esi,5
+  loop	cbh_lp
+  jmp	short ab_exit
+stuff_break:
+  mov	[esi],ebx
+;get break restore data
+  mov	edx,ebx		;address to edx
+  add	esi,4		;compute stuff ptr
+  mov	edi,1		;read one byte
+  call	trace_peek_bytes
+  or	[app_mode],byte 10h	;force display update
+ab_exit:
+  ret
+
+;----------------------------------------------------------
+cmd_clear_breaks:
+  mov	edi,breaks
+  xor	eax,eax
+  mov	ecx,10
+  rep	stosd
+  mov	ecx,10
+  rep	stosb
+  ret
+;--------------------------------------------------
+; input: ebx = break to remove
+;       
+remove_break:
+  call	find_break
+  jecxz	rbb_exit		;exit if not found
+;break found at [ebx]
+rbb_10:
+  mov	edi,eax ;top of delete area
+  mov	eax,5			;remove 5 bytes
+  lea	ebp,[breaks + (5 * 10)] 
+  call	blk_del_bytes
+  xor	eax,eax
+  mov	[breaks + (5*(10 -1))],eax
+rbb_exit:
+  ret
+;--------------------------------------------------
+; input:  ebx = absolute break address
+; output: ecx=0 if not found
+;         ecx=x if found & ebp=shared memory ptr
+;                          [ebx] = break ptr
+find_break:
+  mov	ecx,10
+  mov	eax,breaks
+rbb_lp:
+  cmp	[eax],ebx
+  je	fb_exit			;jmp if break found
+  add	eax,5
+  loop	rbb_lp			;loop till break found
+fb_exit:
+  ret
+
+;-----------------------------------------------------------------
+;insert breaks into app code before execution
+insert_breaks:
+  mov	esi,breaks
+  mov	ecx,10
+ib_lp:
+  mov	edx,[esi]			;get poke address
+  or	edx,edx
+  jz	ib_done				;jmp if end of breaks
+  push	esi
+  mov	esi,trap_code			;get pointer to data
+  mov	edi,1				;get number of bytes
+  push	ecx
+  call	trace_poke_bytes
+  pop	ecx
+  pop	esi
+  add	esi,5
+  loop	ib_lp
+ib_done:
+  ret
+;-------------
+  [section .data]
+trap_code db 0cch
+  [section .text]
+;----------------------------------------------------------
+;restore app to non-break state
+remove_breaks:
+  mov	esi,breaks
+  mov	ecx,10
+rb_lp:
+  mov	edx,[esi]			;get poke address
+  or	edx,edx
+  jz	rb_done				;jmp if end of breaks
+  add	esi,4				;move to restore byte
+  push	esi
+  mov	edi,1				;get number of bytes
+  push	ecx
+  call	trace_poke_bytes
+  pop	ecx
+  pop	esi
+  inc	esi
+  loop	rb_lp
+rb_done:
+  ret
+
+
+
+;-------------------------------------------------------
+  [section .data]
+
+break_help:
+ db '?-local help            '
+ db 'w-next operational win  '
+ db 'q-quit this window      '
+ db 'a-add break             '
+ db 'c-clear all breaks      '
+ db '                        '
+ db 'alt-(win first letter)  '
+ db '    select another win  '
+ db '                        '
+ db '                        '
+ db '                        ',0
+
+
+
+break_header:
+ db ' -- BREAKPOINTS --',0
+
+brk_menu_txt:
+ db ' win add clear-all quit',0
+
+break_win_decode_tbl:
+  db 0	;pad
+  db 2	;flag
+
+  db 'w',0
+  dd next_window
+
+  db '?',0
+  dd enable_mini_help
+
+  db 'q',0
+  dd win_quit
+
+  db 'a',0
+  dd break_add_entry
+
+  db 'c',0
+  dd break_clear_all
+
+
+  db 1bh,'r',0
+  dd select_reg_win
+  db 0c3h,0b2h,0
+  dd select_reg_win
+
+  db 1bh,'m',0
+  dd select_mem_win
+  db 0c3h,0adh,0
+  dd select_mem_win
+
+  db 1bh,'b',0
+  dd select_break_win
+  db 0c3h,0a2h,0
+  dd select_break_win
+
+  db 1bh,'s',0
+  dd select_stack_win
+  db 0c3h,0b3h,0
+  dd select_stack_win
+
+  db 1bh,'h',0
+  dd select_help_win
+  db 0c3h,0a8h,0
+  dd select_help_win
+
+;add numbers + here
+
+  db 0	;end of table
+
+
+breaks:	times (11*5) db 0	;array of break addresses
+
+
+  [section .text]

@@ -1,0 +1,68 @@
+
+------------------------------------------------------------------------
+266 clock_getres   - get clock resolution
+------------------------------------------------------------------------
+
+  mov  eax,266
+  mov  ebx,which_clock
+  mov  ecx,tp            ;pointer to timespec struc
+  int  80h
+
+
+SYNOPSIS
+       #include <time.h>
+
+       int clock_getres(clockid_t which_clock, struct timespec *resolution);
+
+     #define CLOCK_REALTIME			0
+     #define CLOCK_MONOTONIC			1
+     #define CLOCK_PROCESS_CPUTIME_ID	2
+     #define CLOCK_THREAD_CPUTIME_ID		3
+
+     struct timespec {
+	time_t	tv_sec;		/* seconds */
+	long	tv_nsec;	/* nanoseconds */
+     };
+
+DESCRIPTION
+       clock_getres retrieves the resolution (granularity) of the clock speci‐
+       fied by which_clock.  The retrieved value is placed in  the  (non-NULL)
+       timespec structure pointed to by resolution.
+
+       The  resolution  returned  by  this  function is the resolution used in
+       timer and clock_nanosleep(3) calls using the  same  clock.   Clock_get�‐
+       time(3)  , on the other hand, will always return the best resolution it
+       can given the clock source.  This resolution is usually better than one
+       microsecond,      except      for      CLOCK_PROCESS_CPUTIME_ID     and
+       CLOCK_THREAD_CPUTIME_ID which will be the same as returned here.
+
+       The clock resolutions are system-dependent and can not be  set  by  the
+       user.
+
+       For a listing of valid clocks, see clock_gettime(3).
+
+RETURN VALUE
+       On  success,  clock_getres returns the value 0 and places the requested
+       resolution in the specified structure.
+
+       On failure, clock_getres returns the value -1 and errno is  set  appro‐
+       priately.
+
+ERRORS
+       EFAULT A  specified  memory address is outside the address range of the
+              calling process.
+
+       EINVAL The clock specified by which_clock is invalid.
+
+       ENOSYS The function is not supported on this implementation.
+
+CONFORMING TO
+       POSIX 1003.1b (formerly POSIX.4) as ammended by POSIX 1003.1j-2000.
+
+SEE ALSO
+       clock_getcpuclockid(3),       clock_gettime(3),       clock_settime(3),
+       clock_nanosleep(3),      pthread_getcpuclockid(3),     timer_create(3),
+       timer_delete(3), timer_settime(3), timer_gettime(3)
+
+
+

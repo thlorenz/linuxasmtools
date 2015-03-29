@@ -1,0 +1,67 @@
+
+
+----------------------------------------------------------------------------
+186 sigaltstack     - set alternate signal stack for handlers
+----------------------------------------------------------------------------
+  mov  eax,186
+  mov  ebx,sss  ;pointer to new stack definition
+  mov  ecx,oss  ;pointer to default stack def
+  mov  edx,adr  ;address of new stack ptr
+  int  80h
+
+  sigaltstack(2) stores the signal in an
+  alternate stack structure ss where its execution status may be examined
+  prior to processing.
+
+  The sss struct is defined as follows:
+
+  struc sss
+  .ss_sp     resd 1 ;ptr to stack structure
+  .ss_flags  resd 1
+  .ss_size   resd 1 ;stack size
+  endstruc
+
+  ss_sp points to the stack structure.
+  ss_flags specifies the stack state to signals.ss_disable or
+  signals.ss_onstack as follows:
+
+  If ss is not NULL,the new state may be set to signals.ss_disable, which
+  specifies that the stack is to be disabled and ss_sp and ss_size are
+  ignored.
+
+  If signals.ss_disable is not set, the stack will be enabled.
+ 
+ If oss is not NULL, the stack state may be either signals.ss_onstack or sig-
+  nals.ss_disable. The value signals.ss_onstack indicates that the process
+  is currently exe cuting on the alternate stack and that any attempt to
+  modify it during execution will fail. The value signals.ss_disable
+  indicates that the current signal stack is disabled.
+
+  ss_size specifies the size of the stack.
+
+  The value signals.sigstksz defines the average number of bytes used when
+  allocating an alternate stack area.
+
+  The value signals.minsigstksz
+  defines the minimum stack size for a signal handler. When processing an
+  alternate stack size, your program should include these values in the
+  stack requirement to plan for the overhead of the operating system.
+ 
+return value
+
+  sigaltstack(2) returns 0 on success and an appropriate negative error
+  code in EAX on error.
+
+errors
+
+  sigaltstack(2) sets EAX for the following conditions:
+  errno.einval ss is not a null pointer the ss_flags member pointed to by
+  ss contains flags
+  other than signals.ss_disable.
+  errno.enomem The size of the alternate stack area is less than
+  signals.minsigstksz.
+  errno.eperm An attempt was made to modify an active stack.
+
+see also
+  getcontext, sigaction, sigsetjmp.
+

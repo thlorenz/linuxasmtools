@@ -1,0 +1,58 @@
+
+----------------------------------------------------------------------
+310 unshare  - unshare context
+----------------------------------------------------------------------
+
+  mov  eax,310
+  mov  ebx,mask
+  int  80h
+
+   Allows a process to disassociate parts of its execution context that
+   are currently being shared with other processes. Part of the execution
+   context, such as the namespace, is shared implicitly when a new
+   process is created using sys_fork or sys_vfork, while other
+   parts, such as virtual memory, may be shared by explicit request when
+   creating a process using sys_clone.
+   The main use of sys_unshare is to allow a process to control its
+   shared execution context without creating a new process.
+
+args
+----
+
+ ebx Bit-mask that specifies which parts of the execution context
+   should be unshared. This argument is specified by ORing together zero
+   or more of the following constants (ebx may be 0):
+   CLONE_FILES Reverse the effect of the sys_clone CLONE_FILES flag.
+   Unshare the file descriptor table, so that the calling process no
+   longer shares its file descriptors with any other process.
+   CLONE_FS Reverse the effect of the sys_clone CLONE_FS flag. Unshare
+   file system attributes, so that the calling process no longer shares
+   its root directory, current directory, or umask attributes with any
+   other process. sys_chroot, sys_chdir, or sys_umask.
+   CLONE_NEWNS This flag has the same effect as the sys_clone
+   CLONE_NEWNS flag. Unshare the namespace, so that the calling process
+   has a private copy of its namespace which is not shared with any other
+   process. Specifying this flag automatically implies CLONE_FS as well.
+
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EPERM ebx specified CLONE_NEWNS but the calling process was not
+     privileged (did not have the CAP_SYS_ADMIN capability).
+   -ENOMEM Cannot allocate sufficient memory to copy parts of caller's
+     context that need to be unshared.
+   -EINVAL An invalid bit was specified in ebx.
+
+
+   Not all of the process attributes that can be shared when a new
+   process is created using sys_clone can be unshared using
+   sys_unshare. In particular, as at kernel 2.6.16, sys_unshare does not
+   implement flags that reverse the effects of CLONE_SIGHAND,
+   CLONE_SYSVSEM, CLONE_THREAD, or CLONE_VM. Such functionality may be
+   added in the future, if required.
+
+
+   Available since 2.6.16
+

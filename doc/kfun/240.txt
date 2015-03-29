@@ -1,0 +1,150 @@
+
+---------------------------------------------------------------------------
+240 futex       - fast userspace locking system call (watchpoint)
+---------------------------------------------------------------------------
+
+  mov  eax,240
+  mov  ebx,futex  ;pointer to uaddr
+  mov  ecx,val    ;
+  mov  edx,timespec ;r/o ptr to timeout timespec array
+  int  80h
+
+SYNOPSIS
+       #include <linux/futex.h>
+       #include <sys/time.h>
+
+       int futex(int *uaddr, int op, int val, const struct timespec *timeout,
+                 int *uaddr2, int val3);
+
+DESCRIPTION
+       The  futex()  system call provides a method for a program to wait for a
+       value at a given address to change, and a  method  to  wake  up  anyone
+       waiting  on a particular address (while the addresses for the same mem‐
+       ory in separate processes may not be equal, the kernel maps them inter‐
+       nally  so the same memory mapped in different locations will correspond
+       for futex() calls).  It is typically used to  implement  the  contended
+       case of a lock in shared memory, as described in futex(7).
+
+       When  a  futex(7)  operation did not finish uncontended in userspace, a
+       call needs to be made to the  kernel  to  arbitrate.   Arbitration  can
+       either mean putting the calling process to sleep or, conversely, waking
+       a waiting process.
+
+       Callers of this function are expected to adhere to the semantics as set
+       out  in  futex(7).   As  these  semantics  involve writing non-portable
+       assembly instructions, this in turn probably means that most users will
+       in fact be library authors and not general application developers.
+
+       The  uaddr  argument  needs to point to an aligned integer which stores
+       the counter.  The operation to execute is passed via the op  parameter,
+       along with a value val.
+
+       Five operations are currently defined:
+
+       FUTEX_WAIT
+              This  operation atomically verifies that the futex address uaddr
+              still contains the value val, and sleeps awaiting FUTEX_WAKE  on
+              this  futex  address.   If the timeout argument is non-NULL, its
+              contents describe the maximum duration of  the  wait,  which  is
+              infinite  otherwise.  The arguments uaddr2 and val3 are ignored.
+
+              For futex(7), this call is executed if  decrementing  the  count
+              gave  a  negative  value (indicating contention), and will sleep
+              until another  process  releases  the  futex  and  executes  the
+              FUTEX_WAKE operation.
+
+       FUTEX_WAKE
+              This operation wakes at most val processes waiting on this futex
+              address (ie. inside FUTEX_WAIT).  The arguments timeout,  uaddr2
+              and val3 are ignored.
+
+              For  futex(7), this is executed if incrementing the count showed
+              that there were waiters, once the futex value has been set to  1
+              (indicating that it is available).
+
+       FUTEX_FD
+              To  support  asynchronous  wakeups,  this operation associates a
+              file descriptor with a futex.  If  another  process  executes  a
+              FUTEX_WAKE,  the process will receive the signal number that was
+              passed in val.  The calling process must close the returned file
+              descriptor  after  use.   The arguments timeout, uaddr2 and val3
+              are ignored.
+
+              To prevent race conditions, the caller should test if the  futex
+              has been upped after FUTEX_FD returns.
+
+              Because it is inherently racy, FUTEX_FD is scheduled for removal
+              in June 2007; any applications that use it should be fixed  now.
+
+       FUTEX_REQUEUE (since Linux 2.5.70)
+              This  operation  was  introduced in order to avoid a "thundering
+              herd" effect when FUTEX_WAKE is used and all processes woken  up
+              need  to  acquire  another  futex.   This call wakes up val pro‐
+              cesses, and requeues all other waiters on the futex  at  address
+              uaddr2.  The arguments timeout and val3 are ignored.
+
+       FUTEX_CMP_REQUEUE (since Linux 2.6.7)
+              There  was  a  race  in  the  intended  use of FUTEX_REQUEUE, so
+              FUTEX_CMP_REQUEUE  was   introduced.    This   is   similar   to
+              FUTEX_REQUEUE, but first checks whether the location uaddr still
+              contains the value val3.  If not, an error EAGAIN  is  returned.
+              The argument timeout is ignored.
+
+RETURN VALUE
+       Depending  on which operation was executed, the returned value can have
+       differing meanings.
+
+       FUTEX_WAIT
+              Returns 0 if the process was woken by  a  FUTEX_WAKE  call.   In
+              case  of  timeout,  ETIMEDOUT is returned.  If the futex was not
+              equal to the expected value, the operation fails with the  error
+              EWOULDBLOCK.    Signals   (or   other  spurious  wakeups)  cause
+              FUTEX_WAIT to return EINTR.
+
+       FUTEX_WAKE
+              Returns the number of processes woken up.
+
+       FUTEX_FD
+              Returns the new file descriptor associated with the futex.
+
+       FUTEX_REQUEUE
+              Returns the number of processes woken up.
+
+       FUTEX_CMP_REQUEUE
+              Returns the number of processes woken up.
+
+ERRORS
+       EACCES No read access to futex memory.
+
+       EAGAIN FUTEX_CMP_REQUEUE found an unexpected futex value.  (This proba‐
+              bly indicates a race; use the safe FUTEX_WAKE now.)
+
+       EFAULT Error in getting timeout information from userspace.
+
+       EINVAL An operation was not defined or error in page alignment.
+
+       ENFILE The  system  limit  on  the  total number of open files has been
+              reached.
+
+VERSIONS
+       Initial futex support was merged in  Linux  2.5.7  but  with  different
+       semantics  from  what  was  described above.  A 4-parameter system call
+       with the semantics given here was introduced in Linux 2.5.40.  In Linux
+       2.5.70  one  parameter was added.  In Linux 2.6.7 a sixth parameter was
+       added — messy, especially on the s390 architecture.
+
+CONFORMING TO
+       This system call is Linux specific.
+
+NOTES
+       To reiterate, bare futexes are not intended as an easy to use  abstrac‐
+       tion  for end-users.  Implementors are expected to be assembly literate
+       and to have read the sources of the futex userspace library  referenced
+       below.
+
+SEE ALSO
+       futex(7),  Fuss,  Futexes and Furwocks: Fast Userlevel Locking in Linux
+       (proceedings  of  the  Ottawa  Linux  Symposium  2002),  futex  example
+       library,   futex-*.tar.bz2  <URL:ftp://ftp.nl.kernel.org/pub/linux/ker‐
+       nel/people/rusty/>.
+

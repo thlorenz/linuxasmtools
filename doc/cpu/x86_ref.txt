@@ -1,0 +1,1034 @@
+               The 8086 / 80286 / 80386 / 80486 Instruction Set
+
+index:
+  section 1 instruction list
+  section 2 instruction descriptions
+  section 3 flags
+  section 4 instruction details
+
+------------------------------------------------------------------
+section 1 instruction list
+
+AAA	      AAD	   AAM	       AAS	   ADC
+ADD	      AND	   ARPL	       BOUND	   BSF
+BSR	      BSWAP        BT	       BTC	   BTR
+BTS	      CALL	   CBW	       CDQ	   CLC
+CLD	      CLI	   CLTS	       CMC	   CMP
+CMPS	      CMPXCHG      CWD	       CWDE	   DAA
+DAS	      DEC	   DIV	       ENTER	   ESC
+HLT	      IDIV	   IMUL	       IN	   INC
+INS	      INT	   INTO	       INVD	   INVLPG
+IRET/IRETD    Jxx	   JCXZ/JECXZ  JMP	   LAHF
+LAR	      LDS	   LEA	       LEAVE	   LES
+LFS	      LGDT	   LIDT	       LGS	   LLDT
+LMSW	      LOCK	   LODS	       LOOP	   LOOPE/LOOPZ
+LOOPNZ/LOOPNE LSL          LSS	       LTR	   MOV
+MOVS	      MOVSX        MOVZX       MUL         NEG
+NOP	      NOT	   OR	       OUT         OUTS
+POP	      POPA/POPAD   POPF/POPFD  PUSH        PUSHA/PUSHAD
+PUSHF/PUSHFD  RCL	   RCR	       REP         REPE/REPZ
+REPNE/REPNZ   RET/RETF     ROL	       ROR         SAHF
+SAL/SHL       SAR	   SBB	       SCAS        SETAE/SETNB
+SETB/SETNAE   SETBE/SETNA  SETE/SETZ   SETNE/SETNZ SETL/SETNGE
+SETGE/SETNL   SETLE/SETNG  SETG/SETNLE SETS	   SETNS
+SETC	      SETNC        SETO	       SETNO	   SETP/SETPE
+SETNP/SETPO   SGDT         SIDT	       SHL	   SHR
+SHLD/SHRD     SLDT	   SMSW	       STC	   STD
+STI	      STOS	   STR	       SUB	   TEST
+VERR	      VERW	   WAIT/FWAIT  WBINVD	   XCHG
+XLAT/XLATB
+
+----------------------------------------------------------------
+section 2 instruction descriptions
+
+
+AAA - Ascii Adjust for Addition 
+AAD - Ascii Adjust for Division 
+AAM - Ascii Adjust for Multiplication 
+AAS - Ascii Adjust for Subtraction 
+ADC - Add With Carry 
+ADD - Arithmetic Addition 
+AND - Logical And 
+ARPL - Adjusted Requested Privilege Level of Selector
+BOUND - Array Index Bound Check (80188+) 
+BSF - Bit Scan Forward (386+) 
+BSR - Bit Scan Reverse (386+) 
+BSWAP - Byte Swap (486+) 
+BT - Bit Test (386+) 
+BTC - Bit Test with Compliment (386+) 
+BTR - Bit Test with Reset (386+) 
+BTS - Bit Test and Set (386+) 
+CALL - Procedure Call 
+CBW - Convert Byte to Word 
+CDQ - Convert Double to Quad (386+) 
+CLC - Clear Carry 
+CLD - Clear Direction Flag 
+CLI - Clear Interrupt Flag (disable) 
+CLTS - Clear Task Switched Flag (286+ privileged) 
+CMC - Complement Carry Flag 
+CMP - Compare 
+CMPS - Compare String (Byte, Word or Doubleword) 
+CMPXCHG - Compare and Exchange 
+CWD - Convert Word to Doubleword 
+CWDE - Convert Word to Extended Doubleword (386+) 
+DAA - Decimal Adjust for Addition 
+DAS - Decimal Adjust for Subtraction 
+DEC - Decrement 
+DIV - Divide 
+ENTER - Make Stack Frame (80188+) 
+ESC - Escape 
+HLT - Halt CPU 
+IDIV - Signed Integer Division 
+IMUL - Signed Multiply 
+IN - Input Byte or Word From Port 
+INC - Increment 
+INS - Input String from Port (80188+) 
+INT - Interrupt 
+INTO - Interrupt on Overflow 
+INVD - Invalidate Cache (486+) 
+INVLPG - Invalidate Translation Look-Aside Buffer Entry (486+)
+IRET/IRETD - Interrupt Return 
+Jxx - Jump Instructions Table 
+JCXZ/JECXZ - Jump if Register (E)CX is Zero 
+JMP - Unconditional Jump 
+LAHF - Load Register AH From Flags 
+LAR - Load Access Rights (286+ protected) 
+LDS - Load Pointer Using DS 
+LEA - Load Effective Address 
+LEAVE - Restore Stack for Procedure Exit (80188+) 
+LES - Load Pointer Using ES 
+LFS - Load Pointer Using FS (386+) 
+LGDT - Load Global Descriptor Table (286+ privileged) 
+LIDT - Load Interrupt Descriptor Table (286+ privileged) 
+LGS - Load Pointer Using GS (386+) 
+LLDT - Load Local Descriptor Table (286+ privileged) 
+LMSW - Load Machine Status Word (286+ privileged) 
+LOCK - Lock Bus 
+LODS - Load String (Byte, Word or Double) 
+LOOP - Decrement CX and Loop if CX Not Zero 
+LOOPE/LOOPZ - Loop While Equal / Loop While Zero 
+LOOPNZ/LOOPNE - Loop While Not Zero / Loop While Not Equal 
+LSL - Load Segment Limit (286+ protected) 
+LSS - Load Pointer Using SS (386+) 
+LTR - Load Task Register (286+ privileged) 
+MOV - Move Byte or Word
+MOVS - Move String (Byte or Word) 
+MOVSX - Move with Sign Extend (386+) 
+MOVZX - Move with Zero Extend (386+) 
+MUL - Unsigned Multiply 
+NEG - Two's Complement Negation 
+NOP - No Operation (90h) 
+NOT - One's Compliment Negation (Logical NOT) 
+or> OR - Inclusive Logical OR 
+OUT - Output Data to Port 
+OUTS - Output String to Port (80188+) 
+POP - Pop Word off Stack 
+POPA/POPAD - Pop All Registers onto Stack (80188+) 
+POPF/POPFD - Pop Flags off Stack 
+PUSH - Push Word onto Stack 
+PUSHA/PUSHAD - Push All Registers onto Stack (80188+) 
+PUSHF/PUSHFD - Push Flags onto Stack 
+RCL - Rotate Through Carry Left 
+RCR - Rotate Through Carry Right 
+REP - Repeat String Operation 
+REPE/REPZ - Repeat Equal / Repeat Zero 
+REPNE/REPNZ - Repeat Not Equal / Repeat Not Zero 
+RET/RETF - Return From Procedure 
+ROL - Rotate Left 
+ROR - Rotate Right 
+SAHF - Store AH Register into FLAGS 
+SAL/SHL - Shift Arithmetic Left / Shift Logical Left 
+SAR - Shift Arithmetic Right 
+SBB - Subtract with Borrow/Carry 
+SCAS - Scan String (Byte, Word or Doubleword) 
+SETAE/SETNB - Set if Above or Equal / Set if Not Below (386+)
+SETB/SETNAE - Set if Below / Set if Not Above or Equal (386+)
+SETBE/SETNA - Set if Below or Equal / Set if Not Above (386+)
+SETE/SETZ - Set if Equal / Set if Zero (386+) 
+SETNE/SETNZ - Set if Not Equal / Set if Not Zero (386+) 
+SETL/SETNGE - Set if Less / Set if Not Greater or Equal
+SETGE/SETNL - Set if Greater or Equal / Set if Not Less
+SETLE/SETNG - Set if Less or Equal / Set if Not greater or
+SETG/SETNLE - Set if Greater / Set if Not Less or Equal
+SETS - Set if Signed (386+) 
+SETNS - Set if Not Signed (386+) 
+SETC - Set if Carry (386+) 
+SETNC - Set if Not Carry (386+) 
+SETO - Set if Overflow (386+) 
+SETNO - Set if Not Overflow (386+) 
+SETP/SETPE - Set if Parity / Set if Parity Even (386+) 
+SETNP/SETPO - Set if No Parity / Set if Parity Odd (386+) 
+SGDT - Store Global Descriptor Table (286+ privileged) 
+SIDT - Store Interrupt Descriptor Table (286+ privileged) 
+SHL - Shift Logical Left 
+SHR - Shift Logical Right 
+SHLD/SHRD - Double Precision Shift (386+) 
+SLDT - Store Local Descriptor Table (286+ privileged) 
+SMSW - Store Machine Status Word (286+ privileged) 
+STC - Set Carry 
+STD - Set Direction Flag 
+STI - Set Interrupt Flag (Enable Interrupts) 
+STOS - Store String (Byte, Word or Doubleword) 
+STR - Store Task Register (286+ privileged) 
+SUB - Subtract 
+TEST - Test For Bit Pattern 
+VERR - Verify Read (286+ protected) 
+VERW - Verify Write (286+ protected) 
+WAIT/FWAIT - Event Wait 
+WBINVD - Write-Back and Invalidate Cache (486+) 
+XCHG - Exchange 
+XLAT/XLATB - Translate 
+OR - Exclusive OR 
+
+----------------------------------------------------------------
+section 3 flags
+
+   Bit # (in hex) Acronym             Description
+   0              CF      Carry flag
+   1                      1
+   2              PF      Parity
+   3                      0
+   4              AF      Auxiliary flag
+   5                      0
+   6              ZF      Zero flag
+   7              SF      Sign flag
+   8              TP      Trap flag (single step)
+   9              IF      Interrupt flag
+   A              DF      Direction flag
+   B              OF      Overflow flag
+   C,D            IOPL    IOPL I/O Privilege Level (286+ only)
+   E              NT      Nested Task Flag (286+ only)
+   F              0
+   10             RF      Resume Flag (386+ only)
+   11             VM      Virtual Mode Flag (386+ only)
+   12             AC      Alignment Check (486SX+ only)
+   13             VIF     Virtual Interrupt Flag (Pentium+)
+   14             VIP     Virtual Interrupt Pending (Pentium+)
+   15             ID      Indentification (Pentium+)
+
+-----------------------------------------------------------------
+section 4 instruction details
+
+aaa     ASCII adjust after addition
+  Syntax:       aaa
+  Dest:         al,ah
+  Src:          al
+  Changes contents of AL to valid unpacked decimal.  The high order
+  nibble is zeroed.
+  Flags: OF, SF, ZF, AF, PF CF
+
+aad     ASCII adjust before division
+  Syntax:       aad
+  Dest:         ax
+  Src:          al
+  Used before dividing unpacked decimal numbers.   Multiplies AH by
+  10 and the adds result into AL.  Sets AH to zero.  This instruction
+  is also known to have an undocumented behavior.
+        AL := 10*AH+AL
+        AH := 0
+  Flags: OF, SF, ZF, AF, PF, CF
+
+aam     ASCII adjust after multiply
+  Syntax:       aam
+  Dest:         AX
+  Src:          al
+  Used after multiplication of two unpacked decimal numbers, this
+  instruction adjusts an unpacked decimal number.  The high order
+  nibble of each byte must be zeroed before using this instruction.
+  This instruction is also known to have an undocumented behavior.
+       AH := AL / 10
+       AL := AL mod 10
+  Flags: OF, SF, ZF, AF, PF, CF
+
+aas     ASCII adjust after subtraction
+  Syntax:       aas
+  Dest:         AX
+  Src:          al
+  Corrects result of a previous unpacked decimal subtraction in AL.
+  High order nibble is zeroed.
+  convert bin in AL to BCD in AX
+  Flags: OF, SF, ZF, AF, PF, CF
+
+adc     Add with carry flag
+  Syntax:       adc     dest, src
+  dest: memory or register
+  src:  memory, register, or immediate
+   dest = dest + src + CF
+  Flags: OF, SF, ZF, AF, PF, CF
+
+
+add     Add two numbers
+  Syntax:       add     dest, src
+  dest: register or memory
+  src: register, memory, or immediate
+   dest = dest + src
+  Flags: OF, SF, ZF, AF, PF, CF
+
+
+and     Bitwise logical AND
+  Syntax:       and     dest, src
+  dest: register or memory
+  src: register, memory, or immediate
+   dest = dest & src
+  Flags: OF=0, SF, ZF, AF=?, PF, CF=0
+
+arpl    adjust privilege level
+  Syntax:       arpl    dest, src
+  dest: register or memory
+  Src:  register
+   set privilege level in protected mode
+  Flags: ZF
+
+bound   check array bounds
+  Syntax:       bound reg,mem
+  dest: register
+  src:  memory
+  Array index in source register is checked against upper and lower
+  bounds in memory source.  The first word located at "limit" is
+  the lower boundary and the word at "limit+2" is the upper array bound.
+  Interrupt 5 occurs if the source value is less than or higher than
+  the source.
+  Flags: none
+
+bsf     bit scan forward
+  Syntax:       bsf reg,reg ;scan forward
+  dest: index of first set bit encountered
+  src:  reg with bits to scan
+  Scans source operand for first bit set.  Sets ZF if a bit is found
+  set and loads the destination with an index to first set bit.  Clears
+  ZF is no bits are found set.  BSF scans forward across bit pattern
+  (0-n) while BSR scans in reverse (n-0).
+  Flags: ZF
+
+bsr     bit scan
+  Syntax:       bsr reg,reg ;scan back
+  dest: index of first set bit encountered
+  src:  reg with bits to scan
+  Scans source operand for first bit set.  Sets ZF if a bit is found
+  set and loads the destination with an index to first set bit.  Clears
+  ZF is no bits are found set.  BSF scans forward across bit pattern
+  (0-n) while BSR scans in reverse (n-0).
+  Flags: ZF
+
+bswap   byte swap
+  Syntax:       bswap reg
+  src:          32 bit reg
+  Changes the byte order of a 32 bit register from big endian to
+  little endian or vice versa.   Result left in destination register
+  is undefined if the operand is a 16 bit register.
+  Flags: none
+
+bt,btc,btr,bts  bit tests
+  Syntax:       btx dest,src
+  bt - The destination bit indexed by the source value is copied into the
+  Carry Flag.
+  btc - The destination bit indexed by the source value is copied into the
+  Carry Flag after being complimented (inverted).
+  btr- The destination bit indexed by the source value is copied into the
+  Carry Flag and then cleared in the destination.
+  bts - The destination bit indexed by the source value is copied into the
+  Carry Flag and then set in the destination.
+  Flags: CF
+  
+call    Call procedure or function
+  Syntax:       call    addr
+  addr: register, memory, or immediate
+  Pushes Instruction Pointer (and Code Segment for far calls) onto
+  stack and loads Instruction Pointer with the address of proc-name.
+  Code continues with execution at EIP.
+  Flags: None
+
+
+cbw     Convert byte to word (signed)
+  Syntax:       cbw
+  Converts byte in AL to word Value in AX by extending sign of AL
+  throughout register AH.
+  Flags: None
+
+cdq     convert double to quad
+  Syntax:       cdq
+   extend sign eax > edx:eax
+
+clc     clear carry flag
+  Syntax:       clc
+  Flags: CF
+
+cld     clear direction flag
+  Syntax:       cld
+  Clears the Direction Flag causing string instructions to increment
+  the SI and DI index registers.
+  Flags: DF
+
+cli     Clear interrupt flag (disable interrupts)
+  Syntax:       cli
+  Disables the maskable hardware interrupts by clearing the Interrupt
+  flag.  NMI's and software interrupts are not inhibited.
+  Flags: IF=0
+
+cmc     compliment carry flag
+  Syntax:       cmc
+  Toggles (inverts) the Carry Flag
+  Flags: CF
+
+cmp     Compare two operands
+  Syntax:       cmp     op1, op2
+  op1: register or memory
+  op2: register, memory, or immediate
+   Perform op1-op2, discarding the result but setting the flags.
+  Flags: OF, SF, ZF, AF, PF, CF
+
+cmps,cmpsb,cmpsw,cmpsd - compare strings
+  Syntax:       cmpsb
+                rep cmpsw
+  src: memory (esi)
+  dest: memory (edi)
+  Subtracts destination value from source without saving results.
+  Updates flags based on the subtraction and  the index registers
+  (E)SI and (E)DI are incremented or decremented depending on the
+  state of the Direction Flag.  CMPSB inc/decrements the index
+  registers by 1, CMPSW inc/decrements by 2, while CMPSD increments
+  or decrements by 4.  The REP prefixes can be used to process
+  entire data items.
+  Flags: OF, SF, ZF, AF, PF, CF
+
+cmpxchg - compare and exchange
+  Syntax:       cmpxchg dest,src
+  src: register
+  dest: memory or register
+  Compares the accumulator (8-32 bits) with "dest".  If equal the
+  "dest" is loaded with "src", otherwise the accumulator is loaded
+  with "dest".
+  Flags: OF, SF, ZF, AF, PF, CF
+
+cwd     Convert word to doubleword (signed)
+  Syntax:       cwd
+   Sign extend EAX to fill EDX, creating a dword contained in DX::AX.
+  Flags: None
+
+cwde    Convert word to extended dword
+  Syntax:       cwde
+   convert signed value in AX to EAX value
+  Flags: none
+
+daa     Decimal adjust after addition
+  Syntax:       daa
+  Corrects result (in AL) of a previous BCD addition operation.
+  Contents of AL are changed to a pair of packed decimal digits.
+  Flags: OF SF ZF AF PF CF
+
+das     Decimal adjust after subtraction
+  Syntax:       das
+  Corrects result (in AL) of a previous BCD subtraction operation.
+  Contents of AL are changed to a pair of packed decimal digits.
+  Flags: OF SF ZF AF PF CF
+
+dec     Decrement by 1
+  Syntax:       dec     op
+  op: register or memory
+   op = op - 1
+  Flags: OF, SF, ZF, AF, PF
+
+
+div     Unsigned divide
+  Syntax:       div     op8
+                div     op16
+  op8: 8-bit register or memory
+  op16: 16-bit register or memory
+   If operand is op8, unsigned AL = AX / op8  and  AH = AX % op8
+   If operand is op16, unsigned AX = DX::AX / op16  and  DX = DX::AX % op16
+  Unsigned binary division of accumulator by source.  If the source
+  divisor is a byte value then AX is divided by "src" and the quotient
+  is placed in AL and the remainder in AH.  If source operand is a word
+  value, then DX:AX is divided by "src" and the quotient is stored in AX
+  and the remainder in DX.
+  Flags: OF=?, SF=?, ZF=?, AF=?, PF=?, CF=?
+
+enter   Make stack frame
+  Syntax:       enter immediate,immediate
+   first immed. is bytes to reserve and
+   second immed is nesting level.
+   (see LEAVE instruction)
+  Modifies stack for entry to procedure for high level language.
+  Operand "locals" specifies the amount of storage to be allocated
+  on the stack.   "Level" specifies the nesting level of the routine.
+  Paired with the LEAVE instruction, this is an efficient method of
+  entry and exit to procedures.
+  Flags: none
+
+hlt     Halt
+  syntax:       hlt
+   stop the CPU
+  Flags: none
+
+idiv    Signed divide
+  Syntax:       idiv    op8
+                idiv    op16
+  op8: 8-bit register or memory
+  op16: 16-bit register or memory
+  op32: 32-bit register or memory
+   If operand is op8, signed AL = AX / op8  and  AH = AX % op8
+   If operand is op16, signed AX = DX::AX / op16  and  DX = DX::AX % op16
+  Signed binary division of accumulator by source.  If source is a
+  word value, EAX is divided by "src" and the quotient is stored in
+  AX and the remainder in DX.  If source is a dword value, EDX:EAX is
+  divided by "src", and the quotient is stored in EAX and the
+  remainder in EDX.
+  Flags: OF=?, SF=?, ZF=?, AF=?, PF=?, CF=?
+
+
+imul    Signed multiply
+  Syntax:       imul    op8
+                imul    op16
+                imul    op32
+  op8: 8-bit register or memory
+  op16: 16-bit register or memory
+  op32; 32-bit register or memory
+   If operand is op8, signed AX = AL * op8
+   If operand is op16, signed DX::AX = AX * op16
+  Signed multiplication of accumulator by "src" with result placed
+  in the accumulator.  If the source operand is a byte value, it
+  is multiplied by AL and the result stored in AX.  If the source
+  operand is a word value it is multiplied by AX and the result is
+  stored in DX:AX.  Other variations of this instruction allow
+  specification of source and destination registers as well as a
+  third immediate factor.
+  Flags: OF, SF=?, ZF=?, AF=?, PF=?, CF
+
+
+in      Input (read) from port
+  Syntax:       in      AL, op8
+                in      AX, op8
+  op8: 8-bit immediate or DX
+   If destination is AL, read byte from 8-bit port op8.
+   If destination is AX, read word from 16-bit port op8.
+  Flags: None
+
+
+inc     Increment by 1
+  Syntax:       inc     op
+  op: register or memory
+   op = op + 1
+  Flags: OF, SF, ZF, AF, PF
+
+ins/insb/insw/insd Input from port to string
+  Syntax: inxx dest,port
+  dest: memory address
+  port: value in dx register
+  Flags: none
+
+int     Call to interrupt procedure
+  Syntax:       int     imm8
+  imm8: 8-bit unsigned immediate
+   Push flags, CS, and IP; clear IF and TF (disabling interrupts); load
+   word at address (imm8*4) into IP and word at (imm8*4 + 2) into CS.
+  Flags: IF=0, TF=0
+  Notes: This instruction is usually used to call system routines.
+
+ 
+iret    Interrupt return
+  Syntax:       iret
+   Pop IP, CS, and flags (in that order).
+  Flags: All
+  Notes: This instruction is used at the end of ISRs.
+
+
+j??     Jump if ?? condition met
+  Syntax:       j??     rel8
+  rel8: 8-bit signed immediate
+   If condition ?? met, IP = IP + rel8 (sign extends rel8)
+         ja     jump if above, unsigned >
+         jae    jump if above or equal, unsigned >=
+         jb     jump if below, unsigned <
+         jbe    jump if below or equal, unsigned <=
+         je     jump if equal, ==
+         jne    jump if not equal, !=
+         jg     jump if greater than, signed >
+         jge    jump if greater than or equal, signed >=
+         jl     jump if less than, signed <
+         jle    jump if less than or equal, signed <=
+         jcxz   jump if CX register zero
+         jecxz  jump if ECX register is zero
+  Flags: None
+
+
+jmp     Unconditional jump
+  Syntax:       jump    rel
+                jump    op16
+                jump    seg:off
+  rel: 8 or 16-bit signed immediate
+  op16: 16-bit register or memory
+  seg:off: Immediate 16-bit segment and 16-bit offset
+   If operand is rel, IP = IP + rel
+   If operand is op16, IP = op16
+   If operand is seg:off, CS = seg, IP = off
+  Flags: None
+  Notes: An assembler label should be used in place of the rel8 operand. The
+         assembler will then calculate the relative distance to jump.
+
+lahf    Load flags into AH register
+  Syntax:       lahf
+  Flags: none
+
+lea     Load effective address offset
+  Syntax:       lea     reg16, memref
+  reg16: 16-bit register
+  memref: An effective memory address (e.g., [bx+2])
+   reg16 = address offset of memref
+  Flags: None
+  Notes: This instruction is used to easily calculate the address of data in
+         memory. It does not actually access memory.
+
+leave   Proceedure exit
+  Syntax:       leave
+  reverses action of ENTER instruction.
+  Releases the local variables created by the previous ENTER
+  instruction by restoring SP and BP to their condition before
+  the procedure stack frame was initialized.
+  Flags: none
+
+lodsb/lodsw/lodsd  Load string
+  Syntax:       loadsx
+   memory address in [esi] is moved
+   to accumulator (al,ax,eax)
+  Transfers string element addressed by ESI (even if an operand is
+  supplied) to the accumulator.   ESI is incremented based on the size
+  of the operand or based on the instruction used.  If the Direction
+  Flag is set ESI is decremented, if the Direction Flag is clear ESI
+  is incremented.  Use with REP prefixes.
+  Flags: none
+
+loop    decrement ecx and loop if non zero
+  Syntax:       loop adr
+  Decrements ECX by 1 and transfers control to "label" if ECX is not
+  Zero.  The "label" operand must be within -128 or 127 bytes of the
+  instruction following the loop instruction
+  Flags: none
+
+loope,loopz     Loop if contition met and ecx not zero
+  Syntax:       loopxx adr
+  Decrements ECX by 1 (without modifying the flags) and transfers
+  control to "label" if ECX != 0 and the Zero Flag is set.  The
+  "label" operand must be within -128 or 127 bytes of the instruction
+  following the loop instruction.
+
+mov     Move data
+  Syntax:       mov     dest, src
+  dest: register or memory
+  src: register, memory, or immediate
+  Copies value from the source operand to the destination
+  operand.  If the destination is SS interrupts are disabled except
+  on early buggy 808x CPUs.  Some CPUs disable interrupts if the
+  destination is any of the segment registers
+  Flags: None
+
+movsb,movsw,movsd  Move string
+  Syntax:       movxx
+   move data from [esi] to [edi]
+   and increment both pointers.
+  Copies data from addressed by ESI (even if operands are given) to
+  the location EDI destination and updates ESI and EDI based on the
+  size of the operand or instruction used.  ESI and EDI are incremented
+  when the Direction Flag is cleared and decremented when the Direction
+  Flag is Set.  Use with REP prefixes.
+  Flags: none
+
+movsx,movzx     Move and sign extend
+  Syntax:       movxx
+  Copies the value of the source operand to the destination register
+  with the sign extended(sx) or  zeros extended(zx).
+  Flags: none
+
+mul     Unsigned multiply
+  Syntax:       mul     op8
+                mul     op16
+                mul     op32
+  op8: 8-bit register or memory
+  op16: 16-bit register or memory
+   If operand is op8, unsigned AX = AL * op8
+   If operand is op16, unsigned DX::AX = AX * op16
+  Unsigned multiply of the accumulator by the source.  If "src" is
+  a byte value, then AL is used as the other multiplicand and the
+  result is placed in AX.  If "src" is a word value, then AX is
+  multiplied by "src" and DX:AX receives the result.  If "src" is
+  a double word value, then EAX is multiplied by "src" and EDX:EAX
+  receives the result.  The 386+ uses an early out algorithm which
+  makes multiplying any size value in EAX as fast as in the 8 or 16
+  bit registers.
+  Flags: OF, SF=?, ZF=?, AF=?, PF=?, CF
+
+
+neg     Two's complement negate
+  Syntax:       neg     op
+  op: register or memory
+   op = 0 - op
+  Flags: OF, SF, ZF, AF, PF, CF
+
+
+nop     No operation
+  Syntax:       nop
+   None
+  Flags: None
+
+
+not     One's complement negate
+  Syntax:       not     op
+  op: register or memory
+   op = ~op
+  Inverts the bits of the "dest" operand forming the 1s complement.
+  Flags: None
+
+
+or      Bitwise logical OR
+  Syntax:       or      dest, src
+  dest: register or memory
+  src: register, memory, or immediate
+   dest = dest | src
+  Logical inclusive OR of the two operands returning the result in
+  the destination.  Any bit set in either operand will be set in the
+  destination.
+  Flags: OF=0, SF, ZF, AF=?, PF, CF=0
+
+
+out     Output (write) to port
+  Syntax:       out     op, AL
+                out     op, AX
+  op: 8-bit immediate or DX
+   If source is AL, write byte in AL to 8-bit port op.
+   If source is AX, write word in AX to 16-bit port op.
+  Flags: None
+
+
+pop     Pop word from stack
+  Syntax:       pop     op16
+  reg16: 16-bit register or memory
+   Pop word off the stack and place it in op16 (i.e., op16 = [SS:SP]
+   then SP = SP + 2).
+  Transfers word at the current stack top (ESP) to the destination
+  then increments ESP by two to point to the new stack top.
+  Flags: None
+  Notes: Pushing and popping of SS and SP are allowed but strongly discouraged.
+
+popa,popaw,popad  Pop all registers
+  Syntax:       popxx
+   popaw restores di,si,bp,sp,bx,dx,cx,ax
+   popad restores edi,esi, etc.
+  Pops the top 8 words off the stack into the 8 general purpose 16/32
+  bit registers.
+  Flags: none
+
+popf    Pop flags from stack
+  Syntax:       popf
+   Pop word from stack and place it in flags register.
+  Flags: All
+
+
+push    Push word onto stack
+  Syntax:       push    op16
+  op16: 16-bit register or memory
+   Push op16 onto the stack (i.e., SP = SP - 2 then [SS:SP] = op16).
+  Decrements ESP by the size of the operand (two or four, byte values
+  are sign extended) and transfers one word from source to the stack
+  top (ESP).
+  Flags: None
+  Notes: Pushing and popping of SS and SP are allowed but strongly discouraged.
+
+pushaw,pushad Push all registers
+  Syntax:       pushxx
+  Action;  pushaw does ax,cx,dx,bx,sp,bp,si,di
+           pushad does eax,ecx,etc.
+  Flags: none
+
+pushf   Push flags onto stack
+  Syntax:       pushf
+   Push flags onto stack as a word.
+  Flags: None
+
+rcl     Rotate through carry left
+  Syntax:       rcl dest,count
+  dest: register or memory
+  count: immediate value
+
+     +-+     +---------------+
+  <- |C|<--- |7 <---------- 0|<-+
+  |  +-+     +---------------+  |
+  +-----------------------------+
+
+  Rotates the bits in the destination to the left "count" times with
+  all data pushed out the left side re-entering on the right.  The
+  Carry Flag holds the last bit rotated out.
+  Flags: OF CF
+
+rcr     rotate through carry right
+  Syntax:       rcr dest,count
+  dest: register or memory
+  count: immediate value
+
+     Ú---------------¿     Ú-¿
+  Ú->|7 þ---------> 0|þ--->|C|þ-¿
+  |  +---------------Ù     +-Ù  |
+  +-----------------------------Ù
+
+  Rotates the bits in the destination to the right "count" times with
+  all data pushed out the right side re-entering on the left.  The
+  Carry Flag holds the last bit rotated out.
+  Flags: OF CF
+
+rol     rotate left
+  Syntax:       rol dest,count
+  dest: register or memory
+  count: immediate value
+
+  Ú-¿     Ú---------------¿
+  |C|<þÂ-þ|7 <---------- 0|<-¿
+  +-Ù  |  +---------------Ù  |
+       +---------------------Ù
+
+  Rotates the bits in the destination to the left "count" times with
+  all data pushed out the left side re-entering on the right.  The
+  Carry Flag will contain the value of the last bit rotated out.
+  Flags: OF CF
+
+ror     rotate right
+  Syntax:       ror dest,count
+  dest: register or memory
+  count: immediate value
+
+     Ú---------------¿     Ú-¿
+  Ú->|7 þ---------> 0|þ-Â->|C|   
+  |  +---------------Ù  |  +-Ù   
+  +---------------------Ù        
+
+  Rotates the bits in the destination to the right "count" times with
+  all data pushed out the right side re-entering on the left.  The
+  Carry Flag will contain the value of the last bit rotated out.
+  Flags: OF CF
+
+rep     repeat
+  Syntax:       rep op
+  op: string operation, lodxx,movxx,stoxx,etc.
+  Repeats execution of string instructions while ECX != 0.  After
+  each string operation, ECX is decremented and the Zero Flag is
+  tested.  The combination of a repeat prefix and a segment override
+  on CPU's before the 386 may result in errors if an interrupt occurs
+  before ECX=0.  The following code shows code that is susceptible to
+  this and how to avoid it:
+  Flags: none
+
+repe/repz   Repeat Equal / Repeat Zero
+  Syntax        rep op
+  Repeats execution of string instructions while CX != 0 and the Zero
+  Flag is set.  CX is decremented and the Zero Flag tested after
+  each string operation.   The combination of a repeat prefix and a
+  segment override on processors other than the 386 may result in
+  errors if an interrupt occurs before CX=0.
+  Flags: None
+
+repne/repnz   Repeat Not Equal / Repeat Not Zero
+  Repeats execution of string instructions while CX != 0 and the Zero
+  Flag is clear.   CX is decremented and the Zero Flag tested after
+  each string operation.   The combination of a repeat prefix and a
+  segment override on processors other than the 386 may result in
+  errors if an interrupt occurs before CX=0.
+  Flags: None
+
+ret     Return from procedure or function
+  Syntax:       ret
+  Transfers control from a procedure back to the instruction address
+  saved on the stack.  "n bytes" is an optional number of bytes to
+  release.  Far returns pop the IP followed by the CS, while near
+  returns pop only the IP register.
+  Flags: None
+
+sahf    Store AH into flags
+  Syntax;       sahf
+  Transfers bits 0-7 of AH into the Flags Register.  This includes
+  AF, CF, PF, SF and ZF.
+  Flags: SF,ZF,AF,PF,CF
+
+sal     Bitwise arithmetic left shift (same as shl)
+  Syntax:       sal     op, 1
+                sal     op, CL
+  op: register or memory
+   If operand is 1, op = op << 1
+   If operand is CL, op = op << CL
+
+  Ú-¿     Ú---------------¿     Ú-¿
+  |C|<---þ|7 <---------- 0|<---þ|0|
+  +-Ù     +---------------Ù     +-Ù
+
+  Shifts the destination left by "count" bits with zeroes shifted
+  in on right.  The Carry Flag contains the last bit shifted out.
+  Flags: OF, SF, ZF, AF=?, PF, CF
+
+
+sar     Bitwise arithmetic right shift (signed)
+  Syntax:       sar     op, 1
+                sar     op, CL
+  op: register or memory
+   If operand is 1, signed op = op >> 1 (sign extends op)
+   If operand is CL, signed op = op >> CL (sign extends op)
+
+     Ú---------------¿     Ú-¿
+  Ú-þ|7 ----------> 0|---þ>|C|
+  |  +---------------Ù     +-Ù
+  +---^
+
+  Shifts the destination right by "count" bits with the current sign
+  bit replicated in the leftmost bit.  The Carry Flag contains the
+  last bit shifted out.
+  Flags: OF, SF, ZF, AF=?, PF, CF
+
+
+scasb,scasw,scasd  Scan string and set flags
+  Syntax:       scaxx
+   usually used with REP prfix to scan
+   memory [edi] and compare to AL,AX,EAX.
+  Compares value at [EDI] (even if operand is specified) from the
+  accumulator and sets the flags similar to a subtraction.  DI is
+  incremented/decremented based on the instruction format (or
+  operand size) and the state of the Direction Flag.  Use with REP
+  prefixes.
+  Flags: OF,SF,ZF,AF,PF,CF
+
+sbb     Subtract with borrow
+  Syntax:       sbb     dest, src
+  dest: register or memory
+  src: register, memory, or immediate
+   dest = dest - (src + CF)
+  Flags: OF, SF, ZF, AF, PF, CF
+  Notes: This instruction is used to perform 32-bit subtraction.
+
+setb/setnae set register if CF=1
+setae/setnb set register if CF=0
+setbe/setna set register if CF=1 or ZF=1
+seta/setnbe set register if CF=0 and ZF=0
+sete/setz   set register if ZF=1
+setne/setnz set register if ZF=0
+setl/setnge set register if SF bit equal OF
+setge/setnl set register if SF = OF
+setle/setng set register if ZF=1 or SF not equal OF
+setg/setnle set register if ZF=0 and SF = OF
+sets        set register if SF=1
+setns       set register if SF=0
+setc        set register if CF=1
+setnc       set register if CF=0
+seto        set register if OF=1
+setno       set register if OF=0
+setp/setpe  set register if PF=1
+setnp/setpo set register if PF=0
+  Syntax:       setxx dest
+  dest: byte register or memory
+   set byte to 1 if flags set
+  Flags: none
+
+
+
+shl     Bitwise left shift (same as sal)
+  Syntax:       shl     op, 1
+                shl     op, CL
+  op: register or memory
+   If operand is 1, op = op << 1
+   If operand is CL, op = op << CL
+
+  Ú-¿     Ú---------------¿     Ú-¿
+  |C|<---þ|7 <---------- 0|<---þ|0|
+  +-Ù     +---------------Ù     +-Ù
+
+  Shifts the destination left by "count" bits with zeroes shifted
+  in on right.  The Carry Flag contains the last bit shifted out.
+  Flags: OF, SF, ZF, AF=?, PF, CF
+
+
+shr     Bitwise right shift (unsigned)
+  Syntax:       shr     op, 1
+                shr     op, CL
+  op: register or memory
+   If operand is 1, op = (unsigned)op >> 1
+   If operand is CL, op = (unsigned)op >> CL
+
+  +-+     +---------------+     +-+
+  |0|---þ>|7 ----------> 0|---þ>|C|
+  +-+     +---------------+     +-+
+
+  Shifts the destination right by "count" bits with zeroes shifted
+  in on the left.  The Carry Flag contains the last bit shifted out.
+  Flags: OF, SF, ZF, AF=?, PF, CF
+  Flags: OF, SF, ZF, AF=?, PF, CF
+
+shld,shrd  shift double precision
+  Syntax:       shxx  dest,dest,count
+  dest: shift register pair or memory
+  count: shift amount, register of immediate
+   shift register pair of two  memory words
+   by amount in "count"
+  Flags: OF, SF, ZF, AF, PF, CF
+
+stc     Set carry flag
+  Syntax:       stc
+
+std	Set direction flag
+  Syntax:       std
+  Sets the Direction Flag to 1 causing string instructions to
+  auto-decrement ESI and EDI instead of auto-increment.
+
+sti     Set interrupt flag (enable interrupts)
+  Syntax:       sti
+   Set IF
+  Flags: IF=1
+
+stosb,stosw,stosd  Store string values
+  Syntax:       stoxx
+   Store or repeat store a value
+   in AL,AX,EAX to memory [edi] and
+   increment edi
+  Flags Affected; none
+
+sub     Subtract two numbers
+  Syntax:       sub     dest, src
+  dest: regsiter or memory
+  src: register, memory, or immediate
+   dest = dest - src
+  Flags: OF, SF, ZF, AF, PF, CF
+  Notes: Works for both signed and unsigned numbers.
+
+
+test    Bitwise logical compare
+  Syntax:       test    op1, op2
+  op1: register, memory, or immediate
+  op2: register, memory, or immediate
+   Perform op1 & op2, discarding the result but setting the flags.
+  Performs a logical AND of the two operands updating the flags
+  register without saving the result.
+  Flags: OF=0, SF, ZF, AF=?, PF, CF=0
+
+xadd    Exchange and add
+  Syntax:       xadd dest,src
+  dest: memory or register
+  src: register
+   add src + dest -> dest and get origional dest contents
+  Flags: OF=0, SF, ZF, AF=?, PF, CF=0
+
+xchg    Exchange values
+  Syntax:       xchg dest,src
+  src: register or memory
+  dest: register
+  Flags: none
+
+xlat    Translate
+  Syntax:       xlat
+   a table at [ebx] is indexed by value
+   in AL and put table value in AL
+  Flags: none
+
+xor     Bitwise logical XOR
+  Syntax:       xor     dest, src
+  dest: register or memory
+  src: register, memory, or immediate
+  dest = dest ^ src
+  Flags: OF=0, SF, ZF, AF=?, PF, CF=0
+
+
+----------------------------------------------------------------------
+disclaimer:  This document probably has errors, please report
+errors so corrections can be make.
+

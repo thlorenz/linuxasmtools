@@ -1,0 +1,14 @@
+ ** AsmLIbx Example Programs **
+-------------------------------------------
+<colors> show asmlibx colors
+<event> show events
+<font> display current font
+<multi_window> two simple windows
+<simple_window> single window
+---------------------------------------------
+<colors>=/usr/share/doc/asmref/progs/colors.txt
+<event>=/usr/share/doc/asmref/progs/event.txt
+<font>=/usr/share/doc/asmref/progs/font.txt
+<multi_window>=/usr/share/doc/asmref/progs/multi_window.txt
+<simple_window>=/usr/share/doc/asmref/progs/simple_window.txt
+

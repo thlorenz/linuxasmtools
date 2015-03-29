@@ -1,0 +1,66 @@
+
+----------------------------------------------------------------------------
+177 rt_sigtimedwait - real time sigtimedwait
+----------------------------------------------------------------------------
+
+  mov  eax,177
+  mov  ebx,uthese  ;pointer to signal set
+  mov  ecx,uinfo   ;pointer to return struc (siginfo)
+  mov  edx,uts     ;pointer to timespec (wait for signal durring timespec)
+  mov  esi,size    ;sigset size
+  int  80h
+
+ rt_sigtimedwait synchronously waits for queued signals specified in
+ uthese. The uinfo value, if non-NULL, indicates to the call to return
+ a structure of type  siginfo_t containing information about the signal.
+ The uts variable enables an upper bound on the time for when
+ the process is suspended. sigsetsize should indicate the size of a
+ sigset_t type.
+
+ The above calling sequence was constructed from 'C' code in
+ signal.c.  It has not been verified. 
+
+            sys_rt_sigtimedwait(const sigset_t __user *uthese,
+				siginfo_t __user *uinfo,
+				const struct timespec __user *uts,
+				size_t sigsetsize);
+uthese
+------
+
+  bit mask of signals to wait for
+
+uinfo
+-----
+
+  information about signal
+
+uts
+---
+
+  struct timespec {
+      long    tv_sec;         /* seconds */
+      long    tv_nsec;        /* nanoseconds */
+  }
+
+   If both fields of this structure are specified as 0, a poll is
+   performed: sigtimedwait() returns immediately, either with information
+   about a signal that was pending for the caller, or with an error if
+   none of the signals in set was pending.
+
+RETURN VALUE
+
+ rt_sigtimedwait returns 0 on success; otherwise,
+ returns one of the errors listed below
+
+ERRORS
+
+ -EINVAL  sigsetsize or uts was invalid.
+ -EFAULT  uinfo was invalid.
+ -EAGAIN  No signal in uthese was delivered in the uts time period.
+ -EINTR The wait period was interrupted by a signal handler.
+
+SEE ALSO
+
+   rt_sigaction(2), rt_sigpending(2), rt_sigprocmask(2),
+   rt_sigqueuinfo(2), rt_sigreturn(2),
+   rt_sigsuspend(2)

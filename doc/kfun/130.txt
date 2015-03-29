@@ -1,0 +1,43 @@
+
+
+----------------------------------------------------------------------------
+system 130 get_kernel_syms         - retrieve exported kernel and module symbols 
+----------------------------------------------------------------------------
+  Note:  This function does not appear to be implemented.  Returned error.
+
+  mov  eax,130
+  mov  ebx,table
+  int  80h
+
+       If  table is NULL, get_kernel_syms returns the number of symbols avail-
+       able for query.  Otherwise it fills in a table of structures:
+
+              struct kernel_sym
+                .value  resd 1 ;
+                .name   resb 60 ;
+              endstruc
+
+       The symbols are interspersed with magic symbols of  the  form  #module-
+       name with the kernel having an empty name.  The value associated with a
+       symbol of this form is the address at which the module is loaded.
+
+       The symbols exported from each module follow their magic module tag and
+       the modules are returned in the reverse order they were loaded.
+
+RETURN VALUE
+       Returns the number of symbols returned.  There is no possible error
+       return.
+
+SEE ALSO
+       create_module, init_module, delete_module, query_module.
+
+BUGS
+       There is no way to indicate the size of the buffer allocated for table.
+       If  symbols have been added to the kernel since the program queried for
+       the symbol table size, memory will be corrupted.
+
+       The length of exported symbol names is limited to 59.
+
+       Because of these limitations, this system call is deprecated  in  favor
+       of query_module.
+

@@ -1,0 +1,45 @@
+
+----------------------------------------------------------------------------
+181 pwrite   - write to a file at given offset
+----------------------------------------------------------------------------
+
+  mov  eax,181
+  mov  ebx,fd
+  mov  ecx,buf  ;pointer to buffer
+  mov  edx,len  ;lenght of buffer
+  mov  esi,offset ;offset into file
+  int  80h
+
+DESCRIPTION
+
+   pwrite() writes up to count bytes from the buffer starting at buf to
+   the file descriptor fd at offset offset. The file offset is not
+   changed.
+
+   The file referenced by fd must be capable of seeking.
+
+RETURN VALUE
+
+   On success, the number of bytes read or written is returned (zero
+   indicates that nothing was written,  or a negative code if errors
+   occur.
+
+ERRORS
+
+   pwrite can fail and set errno to any error specified for
+   write or lseek.
+
+CONFORMING TO
+
+   Unix98
+
+HISTORY
+
+   The pread and pwrite system calls were added to Linux in version
+   2.1.60; the entries in the i386 system call table were added in
+   2.1.69. The libc support (including emulation on older kernels without
+   the system calls) was added in glibc 2.1.
+
+SEE ALSO
+
+   read, write, lseek

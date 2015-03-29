@@ -1,0 +1,92 @@
+The kernel calls use various structures to pass
+information to applications.  This file defines
+some of the structures.  For additional information
+see kernel source (if installed may be at /usr/src)
+
+Also, see topics:  includes, termios
+
+  struc	stat_struc
+  .st_dev: resd 1	;device
+  .st_ino: resd 1	;inode
+  .st_mode: resw 1	;see below
+  .st_nlink: resw 1	;number of hard links
+  .st_uid: resw 1	;user ID of owner
+  .st_gid: resw 1	;group ID of owner
+  .st_rdev: resd 1	;device type (if inode device)
+  .st_size: resd 1	;total size in bytes
+  .st_blksize: resd 1;blocksize for filesystem I/O
+  .st_blocks: resd 1	;number of blocks allocated
+  .st_atime: resd 1	;time of last access
+  .__unused1: resd 1	
+  .st_mtime: resd 1	;time of last modification
+  .__unused2: resd 1
+  .st_ctime: resd 1	;time of last change
+  .__unused3: resd 1
+  .__unused4: resd 1
+  .__unused5: resd 1
+  ;  ---  stat_struc_size
+  endstruc
+  -
+  The following flags are defined for the st_mode field
+  -
+  S_IFMT   0170000 bitmask for the file type bitfields
+  S_IFSOCK 0140000 socket
+  S_IFLNK  0120000 symbolic link
+  S_IFREG  0100000 regular file
+  S_IFBLK  0060000 block device
+  S_IFDIR  0040000 directory
+  S_IFCHR  0020000 character device
+  S_IFIFO  0010000 fifo
+  S_ISUID  0004000 set UID bit
+  S_ISGID  0002000 set GID bit (see below)
+  S_ISVTX  0001000 sticky bit (see below)
+  S_IRWXU  0000700 mask for file owner permissions
+  S_IRUSR  0000400 owner has read permission
+  S_IWUSR  0000200 owner has write permission
+  S_IXUSR  0000100 owner has execute permission
+  S_IRWXG  0000070 mask for group permissions
+  S_IRGRP  0000040 group has read permission
+  S_IWGRP  0000020 group has write permission
+  S_IXGRP  0000010 group has execute permission
+  S_IRWXO  0000007 mask for permissions for others (not in group)
+  S_IROTH  0000004 others have read permission
+  S_IWOTH  0000002 others have write permisson
+  S_IXOTH  0000001 others have execute permission
+
+
+
+struc winsize_struc
+.ws_row:resw 1
+.ws_col:resw 1
+.ws_xpixel:resw 1
+.ws_ypixel:resw 1
+endstruc
+;winsize_struc_size
+
+;
+;time.h
+;
+
+struc timespec
+.tv_sec		dword	1
+.tv_nsec	dword	1
+endstruc
+
+struc timeval
+.tv_sec		dword	1
+.tv_usec	dword	1
+endstruc
+
+struc tm
+.tm_sec		dword	1
+.tm_min		dword	1
+.tm_hour	dword	1
+.tm_mday	dword	1
+.tm_mon		dword	1
+.tm_year	dword	1
+.tm_wday	dword	1
+.tm_yday	dword	1
+.tm_isdst	dword	1
+.tm_gmtoff	dword	1	;Seconds east of UTC
+.tm_zone	PCHAR	1	;Timezone abbreviation
+endstruc

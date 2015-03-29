@@ -1,0 +1,25 @@
+
+----------------------------------------------------------------------------
+218 mincode          - return memroy status   
+----------------------------------------------------------------------------
+
+  mov  eax,218
+  mov  ebx,start   ;memory range start
+  mov  ecx,length  ;length of range
+  mov  edx,vec     ;pointer to bit map
+  int  80h
+
+  returns memory residency status of the pages in the current process's address space in
+  range [addr, addr + len]. Status returned in a vector of bytes; l.s. bit of each byte
+  is 1 if the referenced page is in memory, otherwise it is zero. Because the state of a
+  page can change after testing but, before "mincore" returns, the vector may contain stale
+  information. Only locked pages are guaranteed to reside in memory.
+
+ERRORS
+
+  FAULT   vec points to an illegal address.
+  INVAL   addr is not a multiple of PAGE_CACHE_SIZE, or len non-positive.
+  NOMEM   addr in range [addr, addr + len] invalid for the address space
+          of this process or, any pages which are not currently mapped.
+  AGAIN   A kernel resource was temporarily unavailable.
+

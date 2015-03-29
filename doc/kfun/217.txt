@@ -1,0 +1,19 @@
+
+----------------------------------------------------------------------------
+217 pivot_root       - set cwd and root
+----------------------------------------------------------------------------
+
+  mov  eax,217
+  mov  ebx,new_root  ;pointer to new_root
+  mov  ecx,put_old   ;old root save area
+  int  80h
+
+  Moves the current root to put_root, and sets root/cwd of all processes which had them
+  on the old root to new_root.
+
+  Don't move root/cwd if they are not at the root (if something cared enough to change
+  them, it's probably wrong to force them elsewhere) - the 'root' isn't required to be
+  the root of a file system, e.g. /nfs/my_root where /nfs, but, got to be a mountpoint,
+  though, so you may need to do "mount --bind /nfs/my_root /nfs/my_root" first.
+
+

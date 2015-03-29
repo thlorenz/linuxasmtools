@@ -1,0 +1,1446 @@
+The man pages and other documents use symbols as
+they appear in "c" programs.  This file includes
+the numeric value for some of these symbols.  see
+also: structures, errors, termios 
+
+STDIN	0
+STDOUT	1
+STDERR	2
+
+;
+;fcntl.h
+;
+
+ SEEK_SET	0
+ SEEK_CUR	1
+ SEEK_END	2
+
+ O_RDONLY	0
+ O_WRONLY	1
+ O_RDWR		2
+ O_ACCMODE	3
+ O_CREAT	100q
+ O_EXCL		200q
+ O_NOCTTY	400q
+ O_TRUNC	1000q
+ O_APPEND	2000q
+ O_NONBLOCK	4000q
+ O_NDELAY	O_NONBLOCK
+ O_SYNC		 10000q
+ FASYNC		 20000q
+ O_DIRECT	 40000q
+ O_LARGEFILE	100000q
+ O_DIRECTORY	200000q
+ O_NOFOLLOW	400000q
+
+ F_DUPFD	0	;Duplicate file descriptor
+ F_GETFD	1	;Get file descriptor flags
+ F_SETFD	2	;Set file descriptor flags
+ F_GETFL	3	;Get file status flags
+ F_SETFL	4	;Set file status flags
+ F_GETLK	5	;Get record locking info
+ F_SETLK	6	;Set record locking info (non-blocking)
+ F_SETLKW	7	;Set record locking info (blocking)
+
+
+;
+;unistd.h
+;
+
+R_OK	4	; read
+W_OK	2	; write
+X_OK	1	; execute
+F_OK	0	; existence
+
+;
+;signal.h
+;
+
+ SIG_DFL		0
+ SIG_IGN		1
+ SIG_ERR		-1
+
+SIGHUP		1	;Hangup (POSIX)
+SIGINT		2	;Interrupt (ANSI)
+SIGQUIT		3	;Quit (POSIX)
+SIGILL		4	;Illegal instruction (ANSI)
+SIGTRAP		5	;Trace trap (POSIX)
+SIGABRT		6	;Abort (ANSI)
+SIGIOT		6	;IOT trap (4.2 BSD)
+SIGBUS		7	;BUS error (4.2 BSD)
+SIGFPE		8	;Floating-point exception (ANSI)
+SIGKILL		9	;Kill, unblockable (POSIX)
+SIGUSR1		10	;User-defined signal 1 (POSIX)
+SIGSEGV		11	;Segmentation violation (ANSI)
+SIGUSR2		12	;User-defined signal 2 (POSIX)
+SIGPIPE		13	;Broken pipe (POSIX)
+SIGALRM		14	;Alarm clock (POSIX)
+SIGTERM		15	;Termination (ANSI)
+SIGSTKFLT	16	;Stack fault
+SIGCHLD		17	;Child status has changed (POSIX)
+SIGCLD		SIGCHLD	;Same as SIGCHLD (System V)
+SIGCONT		18	;Continue (POSIX)
+SIGSTOP		19	;Stop, unblockable (POSIX)
+SIGTSTP		20	;Keyboard stop (POSIX)
+SIGTTIN		21	;Background read from tty (POSIX)
+SIGTTOU		22	;Background write to tty (POSIX)
+SIGURG		23	;Urgent condition on socket (4.2 BSD)
+SIGXCPU		24	;CPU limit exceeded (4.2 BSD)
+SIGXFSZ		25	;File size limit exceeded (4.2 BSD)
+SIGVTALRM	26	;Virtual alarm clock (4.2 BSD)
+SIGPROF		27	;Profiling alarm clock (4.2 BSD)
+SIGWINCH	28	;Window size change (4.3 BSD, Sun)
+SIGIO		29	;I/O now possible (4.2 BSD)
+SIGPOLL		SIGIO	;Pollable event occurred (System V)
+SIGPWR		30	;Power failure restart (System V)
+ SIGUNUSED	31
+_NSIG		64	;Biggest signal number + 1
+
+;
+;limits.h
+;
+
+NAME_MAX	255
+PATH_MAX	4095
+
+;
+;wait.h
+;
+
+ WNOHANG	1
+ WUNTRACED	2
+
+;
+;sys/ptrace.h
+;
+
+ PT_TRACEME 0
+ PT_PEEKDATA 2
+ PT_POKEDATA 5
+ PT_CONT 7
+ PT_KILL 8
+ PT_SINGLESTEP 9
+ PT_GETREGS 12
+ PT_SETREGS 13
+ PT_ATTACH 16
+ PT_DETACH 17
+ PT_SYSCALL 24
+
+
+;
+;sys/socket.h
+;
+
+ AF_UNSPEC	0
+ AF_UNIX	1	; Unix domain sockets
+ AF_LOCAL	1	; POSIX name for AF_UNIX
+ AF_INET	2	; Internet IP Protocol
+ AF_AX25	3	; Amateur Radio AX.25
+ AF_IPX		4	; Novell IPX
+ AF_APPLETALK	5	; AppleTalk DDP
+ AF_NETROM	6	; Amateur Radio NET/ROM
+ AF_BRIDGE	7	; Multiprotocol bridge
+ AF_ATMPVC	8	; ATM PVCs
+ AF_X25		9	; Reserved for X.25 project
+ AF_INET6	10	; IP version 6
+ AF_ROSE	11	; Amateur Radio X.25 PLP
+ AF_DECnet	12	; Reserved for DECnet project
+ AF_NETBEUI	13	; Reserved for 802.2LLC project
+ AF_SECURITY	14	; Security callback pseudo AF
+ AF_KEY		15	; PF_KEY key management API
+ AF_NETLINK	16
+ AF_ROUTE	AF_NETLINK 	; Alias to emulate 4.4BSD
+ AF_PACKET	17	; Packet family
+ AF_ASH		18	; Ash
+ AF_ECONET	19	; Acorn Econet
+ AF_ATMSVC	20	; ATM SVCs
+ AF_SNA		22	; Linux SNA Project (nutters!)
+ AF_IRDA	23	; IRDA sockets
+ AF_MAX		32	; For now..
+
+ PF_UNSPEC	AF_UNSPEC
+ PF_UNIX	AF_UNIX
+ PF_LOCAL	AF_LOCAL
+ PF_INET	AF_INET
+ PF_AX25	AF_AX25
+ PF_IPX		AF_IPX
+ PF_APPLETALK	AF_APPLETALK
+PF_NETROM	AF_NETROM
+ PF_BRIDGE	AF_BRIDGE
+ PF_ATMPVC	AF_ATMPVC
+ PF_X25		AF_X25
+ PF_INET6	AF_INET6
+ PF_ROSE	AF_ROSE
+ PF_DECnet	AF_DECnet
+ PF_NETBEUI	AF_NETBEUI
+ PF_SECURITY	AF_SECURITY
+ PF_KEY		AF_KEY
+ PF_NETLINK	AF_NETLINK
+ PF_ROUTE	AF_ROUTE
+ PF_PACKET	AF_PACKET
+ PF_ASH		AF_ASH
+ PF_ECONET	AF_ECONET
+ PF_ATMSVC	AF_ATMSVC
+ PF_SNA		AF_SNA
+ PF_IRDA	AF_IRDA
+ PF_MAX		AF_MAX
+
+ SOCK_STREAM    1	;stream (connection) socket
+ SOCK_DGRAM     2	;datagram (conn.less) socket
+ SOCK_RAW       3	;raw socket
+ SOCK_RDM       4	;reliably-delivered message
+ SOCK_SEQPACKET 5	;sequential packet socket
+ SOCK_PACKET    10	;linux specific way of getting packets at the dev level
+
+ IPPROTO_IP		0		; Dummy protocol for TCP
+ IPPROTO_HOPOPTS	0		; IPv6 Hop-by-Hop options
+ IPPROTO_ICMP		1		; Internet Control Message Protocol
+ IPPROTO_IGMP		2		; Internet Group Management Protocol
+ IPPROTO_IPIP		4		; IPIP tunnels (older KA9Q tunnels use 94)
+ IPPROTO_TCP		6		; Transmission Control Protocol
+ IPPROTO_EGP		8		; Exterior Gateway Protocol
+ IPPROTO_PUP		12		; PUP protocol
+ IPPROTO_UDP		17		; User Datagram Protocol
+ IPPROTO_IDP		22		; XNS IDP protocol
+ IPPROTO_TP		29		; SO Transport Protocol Class 4
+ IPPROTO_IPV6		41		; IPv6 header
+ IPPROTO_ROUTING	43		; IPv6 routing header
+ IPPROTO_FRAGMENT 	44		; IPv6 fragmentation header
+ IPPROTO_RSVP		46		; Reservation Protocol
+ IPPROTO_GRE		47		; General Routing Encapsulation
+ IPPROTO_ESP		50		; encapsulating security payload
+ IPPROTO_AH		51		; authentication header
+ IPPROTO_ICMPV6		58		; ICMPv6
+ IPPROTO_NONE		59		; IPv6 no next header
+ IPPROTO_DSTOPTS	60		; IPv6 destination options
+ IPPROTO_MTP		92		; Multicast Transport Protocol
+ IPPROTO_ENCAP		98		; Encapsulation Header
+ IPPROTO_PIM		103		; Protocol Independent Multicast
+ IPPROTO_RAW		255		; Raw IP packets
+
+;
+; netinet/ip_icmp.h
+;
+
+ ICMP_ECHOREPLY          0       ; Echo Reply                   
+ ICMP_DEST_UNREACH       3       ; Destination Unreachable      
+ ICMP_SOURCE_QUENCH      4       ; Source Quench                
+ ICMP_REDIRECT           5       ; Redirect (change route)      
+ ICMP_ECHO               8       ; Echo Request                 
+ ICMP_TIME_EXCEEDED      11      ; Time Exceeded                
+ ICMP_PARAMETERPROB      12      ; Parameter Problem            
+ ICMP_TIMESTAMP          13      ; Timestamp Request            
+ ICMP_TIMESTAMPREPLY     14      ; Timestamp Reply              
+ ICMP_INFO_REQUEST       15      ; Information Request          
+ ICMP_INFO_REPLY         16      ; Information Reply            
+ ICMP_ADDRESS            17      ; Address Mask Request         
+ ICMP_ADDRESSREPLY       18      ; Address Mask Reply           
+ NR_ICMP_TYPES           18
+
+; Codes for UNREACH. 
+ ICMP_NET_UNREACH        0       ; Network Unreachable          
+ ICMP_HOST_UNREACH       1       ; Host Unreachable             
+ ICMP_PROT_UNREACH       2       ; Protocol Unreachable         
+ ICMP_PORT_UNREACH       3       ; Port Unreachable             
+ ICMP_FRAG_NEEDED        4       ; Fragmentation Needed/DF set  
+ ICMP_SR_FAILED          5       ; Source Route failed          
+ ICMP_NET_UNKNOWN        6
+ ICMP_HOST_UNKNOWN       7
+ ICMP_HOST_ISOLATED      8
+ ICMP_NET_ANO            9
+ ICMP_HOST_ANO           10
+ ICMP_NET_UNR_TOS        11
+ ICMP_HOST_UNR_TOS       12
+ ICMP_PKT_FILTERED       13      ; Packet filtered 
+ ICMP_PREC_VIOLATION     14      ; Precedence violation 
+ ICMP_PREC_CUTOFF        15      ; Precedence cut off 
+ NR_ICMP_UNREACH         15      ; instead of hardcoding immediate value 
+
+; Codes for REDIRECT. 
+ ICMP_REDIR_NET          0       ; Redirect Net                 
+ ICMP_REDIR_HOST         1       ; Redirect Host                
+ ICMP_REDIR_NETTOS       2       ; Redirect Net for TOS         
+ ICMP_REDIR_HOSTTOS      3       ; Redirect Host for TOS        
+
+; Codes for TIME_EXCEEDED. 
+ ICMP_EXC_TTL            0       ; TTL count exceeded           
+ ICMP_EXC_FRAGTIME       1       ; Fragment Reass time exceeded 
+
+;
+;time.h
+;
+
+struc timespec
+.tv_sec		dword	1
+.tv_nsec	dword	1
+endstruc
+
+struc timeval
+.tv_sec		dword	1
+.tv_usec	dword	1
+endstruc
+
+struc tm
+.tm_sec		dword	1
+.tm_min		dword	1
+.tm_hour	dword	1
+.tm_mday	dword	1
+.tm_mon		dword	1
+.tm_year	dword	1
+.tm_wday	dword	1
+.tm_yday	dword	1
+.tm_isdst	dword	1
+.tm_gmtoff	dword	1	;Seconds east of UTC
+.tm_zone	PCHAR	1	;Timezone abbreviation
+endstruc
+
+;
+;sys/utsname.h
+;
+
+ SYS_NMLN 65
+ MAXHOSTNAMELEN SYS_NMLN - 1
+
+struc utsname
+.sysname	byte	SYS_NMLN
+.nodename	byte	SYS_NMLN
+.release	byte	SYS_NMLN
+.version	byte	SYS_NMLN
+.machine	byte	SYS_NMLN
+.domainname	byte	SYS_NMLN
+endstruc
+
+;
+;sys/mman.h
+;
+
+ PROT_READ	0x1
+ PROT_WRITE	0x2
+ PROT_EXEC	0x4
+ PROT_NONE	0x0
+
+ MAP_SHARED	0x01
+ MAP_PRIVATE	0x02
+ MAP_TYPE	0x0f
+ MAP_FIXED	0x10
+ MAP_ANONYMOUS	0x20
+
+;
+;sys/stat.h
+;
+
+S_ISUID	0004000q	;set user id on execution
+S_ISGID	0002000q	;set group id on execution
+S_ISTXT	0001000q	;sticky bit
+
+S_IRWXU	0000700q	;RWX mask for owner
+S_IRUSR	0000400q	;R for owner
+S_IWUSR	0000200q	;W for owner
+S_IXUSR	0000100q	;X for owner
+
+S_IREAD		S_IRUSR
+S_IWRITE	S_IWUSR
+S_IEXEC		S_IXUSR
+
+S_IRWXG	0000070q	;RWX mask for group
+S_IRGRP	0000040q	;R for group
+S_IWGRP	0000020q	;W for group
+S_IXGRP	0000010q	;X for group
+
+S_IRWXO	0000007q	;RWX mask for other
+S_IROTH	0000004q	;R for other
+S_IWOTH	0000002q	;W for other
+S_IXOTH	0000001q	;X for other
+
+S_IFMT	 0170000q	;type of file mask
+S_IFIFO	 0010000q	;named pipe (fifo)
+S_IFCHR	 0020000q	;character special
+S_IFDIR	 0040000q	;directory
+S_IFBLK	 0060000q	;block special
+S_IFREG	 0100000q	;regular
+S_IFLNK	 0120000q	;symbolic link
+S_IFSOCK 0140000q	;socket
+S_IFWHT  0160000q	;whiteout
+S_ISVTX	 0001000q	;save swapped text even after use
+
+;
+;sys/poll.h
+;
+
+ POLLIN      0x0001   ;There is data to read
+ POLLPRI     0x0002   ;There is urgent data to read
+ POLLOUT     0x0004   ;Writing now will not block
+ POLLERR     0x0008   ;Error condition
+ POLLHUP     0x0010   ;Hung up
+ POLLNVAL    0x0020   ;Invalid request: fd not open
+
+;
+;sys/resource.h
+;
+
+PRIO_PROCESS	0
+PRIO_PGRP	1
+PRIO_USER	2
+
+;
+;socket.h
+;
+
+struc	sockaddr
+.sa_family_t	word	1		;address family, AF_xxx
+.sa_data	byte	14		;14 bytes of protocol address
+endstruc
+
+;
+;in.h
+;
+
+struc in_addr
+.s_addr		dword	1
+endstruc
+
+;
+;
+;
+
+struc winsize
+.ws_row		word	1
+.ws_col		word	1
+.ws_xpixel	word	1
+.ws_ypixel	word	1
+endstruc
+
+
+;
+;linux/reboot.h
+;
+
+LINUX_REBOOT_MAGIC1	0xfee1dead
+LINUX_REBOOT_MAGIC2	0x28121969
+LINUX_REBOOT_MAGIC2A	85072278
+LINUX_REBOOT_MAGIC2B	369367448
+
+LINUX_REBOOT_CMD_RESTART	0x01234567	;Restart system using default command and mode.
+LINUX_REBOOT_CMD_HALT		0xCDEF0123	;Stop OS and give system control to ROM monitor, if any.
+LINUX_REBOOT_CMD_CAD_ON		0x89ABCDEF	;Ctrl-Alt-Del sequence causes RESTART command.
+LINUX_REBOOT_CMD_CAD_OFF	0x00000000	;Ctrl-Alt-Del sequence sends SIGINT to init task.
+LINUX_REBOOT_CMD_POWER_OFF	0x4321FEDC	;Stop OS and remove all power from system, if possible.
+LINUX_REBOOT_CMD_RESTART2	0xA1B2C3D4	;Restart system using given command string.
+
+ RB_AUTOBOOT	LINUX_REBOOT_CMD_RESTART
+ RB_HALT		LINUX_REBOOT_CMD_HALT
+ RB_ENABLE_CAD	LINUX_REBOOT_CMD_CAD_ON
+ RB_DISABLE_CAD	LINUX_REBOOT_CMD_CAD_OFF
+ RB_POWEROFF	LINUX_REBOOT_CMD_POWER_OFF
+
+;
+;linux/kd.h
+;
+
+ KDGKBTYPE	0x4B33	;get keyboard type
+ KB_84		0x01
+ KB_101		0x02	;this is what we always answer
+ KB_OTHER	0x03
+
+KIOCSOUND	0x4B2F	;start sound generation (0 for off)
+KDMKTONE	0x4B30	;generate tone
+KDFONTOP	0x4B72	;font operations ioctl 
+
+ KD_FONT_OP_SET		0	;Set font 
+ KD_FONT_OP_GET		1	;Get font 
+ KD_FONT_OP_SET_DEFAULT	2	;Set font to default, data points to name 
+ KD_FONT_OP_COPY	3	;Copy from another console 
+
+struc console_font_op
+.op		dword	1
+.flags		dword	1	;should always be 0?
+.width		dword	1
+.height		dword	1
+.charcount	dword	1
+.data		DWORD	1	;pointer to unsigned char
+endstruc
+
+struc	raw_font_type
+.fontdata	byte	16384
+endstruc
+
+;
+;linux/cdrom.h
+;
+
+ CDROMPAUSE		0x5301	;Pause Audio Operation
+ CDROMRESUME		0x5302	;Resume paused Audio Operation
+ CDROMPLAYMSF		0x5303	;Play Audio MSF (struct cdrom_msf)
+ CDROMPLAYTRKIND	0x5304	;Play Audio Track/index (struct cdrom_ti)
+ CDROMREADTOCHDR	0x5305	;Read TOC header (struct cdrom_tochdr)
+ CDROMREADTOCENTRY	0x5306	;Read TOC entry (struct cdrom_tocentry)
+ CDROMSTOP		0x5307	;Stop the cdrom drive
+ CDROMSTART		0x5308	;Start the cdrom drive
+ CDROMEJECT		0x5309	;Ejects the cdrom media
+ CDROMVOLCTRL		0x530a	;Control output volume (struct cdrom_volctrl)
+ CDROMSUBCHNL		0x530b	;Read subchannel data (struct cdrom_subchnl)
+ CDROMREADMODE2		0x530c	;Read CDROM mode 2 data (2336 Bytes) (struct cdrom_read)
+ CDROMREADMODE1		0x530d	;Read CDROM mode 1 data (2048 Bytes) (struct cdrom_read)
+ CDROMREADAUDIO		0x530e	;(struct cdrom_read_audio)
+ CDROMEJECT_SW		0x530f	;enable(1)/disable(0) auto-ejecting
+ CDROMMULTISESSION	0x5310	;Obtain the start-of-last-session address of multi session disks (struct cdrom_multisession)
+ CDROM_GET_MCN		0x5311	;Obtain the "Universal Product Code" if available (struct cdrom_mcn)
+ CDROM_GET_UPC		CDROM_GET_MCN	;This one is depricated, but here anyway for compatability
+ CDROMRESET		0x5312	;hard-reset the drive
+ CDROMVOLREAD		0x5313	;Get the drive's volume setting (struct cdrom_volctrl)
+ CDROMREADRAW		0x5314	;read data in raw mode (2352 Bytes)
+ CDROMCLOSETRAY	0x5319
+
+;
+;linux/vt.h
+;
+
+ VT_ACTIVATE	0x5606	;make vt active
+ VT_WAITACTIVE	0x5607	;wait for vt active
+ VT_DISALLOCATE	0x5608	;free memory associated to vt
+
+ VT_GETMODE	0x5601	;get mode of active vt
+ VT_SETMODE	0x5602	;set mode of active vt
+
+struc vt_mode
+.mode		byte	1	;vt mode
+.waitv		word	1	;if set, hang on writes if not active
+.relsig		word	1	;signal to raise on release req
+.acqsig		word	1	;signal to raise on acquisition
+.frsig		word	1	;unused (set to 0)
+endstruc
+
+;
+;asm/termbits.h
+;
+
+; c_cc characters
+ VINTR	0
+ VQUIT	1
+ VERASE	2
+ VKILL	3
+ VEOF	4
+ VTIME	5
+ VMIN	6
+ VSWTC	7
+ VSTART	8
+ VSTOP	9
+ VSUSP	10
+ VEOL	11
+ VREPRINT 12
+ VDISCARD 13
+ VWERASE 14
+ VLNEXT	15
+ VEOL2	16
+
+; c_iflag bits
+ IGNBRK	0000001q
+ BRKINT	0000002q
+ IGNPAR	0000004q
+ PARMRK	0000010q
+ INPCK	0000020q
+ ISTRIP	0000040q
+ INLCR	0000100q
+ IGNCR	0000200q
+ ICRNL	0000400q
+ IUCLC	0001000q
+ IXON	0002000q
+ IXANY	0004000q
+ IXOFF	0010000q
+ IMAXBEL 0020000q
+
+; c_oflag bits
+ OPOST	0000001q
+ OLCUC	0000002q
+ ONLCR	0000004q
+ OCRNL	0000010q
+ ONOCR	0000020q
+ ONLRET	0000040q
+ OFILL	0000100q
+ OFDEL	0000200q
+ NLDLY	0000400q
+   NL0	0000000q
+   NL1	0000400q
+ CRDLY	0003000q
+   CR0	0000000q
+   CR1	0001000q
+   CR2	0002000q
+   CR3	0003000q
+ TABDLY	0014000q
+   TAB0	0000000q
+   TAB1	0004000q
+   TAB2	0010000q
+   TAB3	0014000q
+   XTABS 0014000q
+ BSDLY	0020000q
+   BS0	0000000q
+   BS1	0020000q
+ VTDLY	0040000q
+   VT0	0000000q
+   VT1	0040000q
+ FFDLY	0100000q
+   FF0	0000000q
+   FF1	0100000q
+
+; c_cflag bit meaning
+ CBAUD	0010017q
+  B0	0000000q	;hang up
+  B50	0000001q
+  B75	0000002q
+  B110	0000003q
+  B134	0000004q
+  B150	0000005q
+  B200	0000006q
+  B300	0000007q
+  B600	0000010q
+  B1200	0000011q
+  B1800	0000012q
+  B2400	0000013q
+  B4800	0000014q
+  B9600	0000015q
+  B19200 0000016q
+  B38400 0000017q
+ EXTA	B19200
+ EXTB	B38400
+ CSIZE	0000060q
+   CS5	0000000q
+   CS6	0000020q
+   CS7	0000040q
+   CS8	0000060q
+ CSTOPB	0000100q
+ CREAD	0000200q
+ PARENB	0000400q
+ PARODD	0001000q
+ HUPCL	0002000q
+ CLOCAL	0004000q
+ CBAUDEX 0010000q
+    B57600 0010001q
+   B115200 0010002q
+   B230400 0010003q
+   B460800 0010004q
+   B500000 0010005q
+   B576000 0010006q
+   B921600 0010007q
+  B1000000 0010010q
+  B1152000 0010011q
+  B1500000 0010012q
+  B2000000 0010013q
+  B2500000 0010014q
+  B3000000 0010015q
+  B3500000 0010016q
+  B4000000 0010017q
+ CIBAUD	  002003600000q	;input baud rate (not used)
+ CMSPAR	  010000000000q	;mark or space (stick) parity
+ CRTSCTS  020000000000q	;flow control
+
+; c_lflag bits
+ ISIG	0000001q
+ ICANON	0000002q
+ XCASE	0000004q
+ ECHO	0000010q
+ ECHOE	0000020q
+ ECHOK	0000040q
+ ECHONL	0000100q
+ NOFLSH	0000200q
+ TOSTOP	0000400q
+ ECHOCTL 0001000q
+ ECHOPRT 0002000q
+ ECHOKE	0004000q
+ FLUSHO	0010000q
+ PENDIN	0040000q
+ IEXTEN	0100000q
+
+; tcflow() and TCXONC use these
+TCOOFF		0
+TCOON		1
+TCIOFF		2
+TCION		3
+
+; tcflush() and TCFLSH use these
+TCIFLUSH	0
+TCOFLUSH	1
+TCIOFLUSH	2
+
+; tcsetattr uses these
+TCSANOW		0
+TCSADRAIN	1
+TCSAFLUSH	2
+
+
+struc termios
+.c_iflag	dword	1	;input mode flags
+.c_oflag	dword	1	;output mode flags
+.c_cflag	dword	1	;control mode flags
+.c_lflag	dword	1	;local mode flags
+.c_line		byte	1	;line discipline
+.c_cc		byte	NCCS	;control characters
+endstruc
+
+;
+;asm/ioctls.h
+;
+
+ TCGETS		0x5401
+ TCSETS		0x5402
+ TCSETSW	0x5403
+ TCSETSF	0x5404
+ TCGETA		0x5405
+ TCSETA		0x5406
+ TCSETAW	0x5407
+ TCSETAF	0x5408
+ TCSBRK		0x5409
+ TCXONC		0x540A
+ TCFLSH		0x540B
+ TIOCEXCL	0x540C
+ TIOCNXCL	0x540D
+ TIOCSCTTY	0x540E
+ TIOCGPGRP	0x540F
+ TIOCSPGRP	0x5410
+ TIOCOUTQ	0x5411
+ TIOCSTI	0x5412
+ TIOCGWINSZ	0x5413
+ TIOCSWINSZ	0x5414
+ TIOCMGET	0x5415
+ TIOCMBIS	0x5416
+ TIOCMBIC	0x5417
+ TIOCMSET	0x5418
+ TIOCGSOFTCAR	0x5419
+ TIOCSSOFTCAR	0x541A
+ FIONREAD	0x541B
+ TIOCINQ	FIONREAD
+ TIOCLINUX	0x541C
+ TIOCCONS	0x541D
+ TIOCGSERIAL	0x541E
+ TIOCSSERIAL	0x541F
+ TIOCPKT	0x5420
+ FIONBIO	0x5421
+ TIOCNOTTY	0x5422
+ TIOCSETD	0x5423
+ TIOCGETD	0x5424
+ TCSBRKP	0x5425	;Needed for POSIX tcsendbreak()
+ TIOCTTYGSTRUCT	0x5426  ;For debugging only
+ TIOCSBRK	0x5427  ;BSD compatibility
+ TIOCCBRK	0x5428  ;BSD compatibility
+ TIOCGSID	0x5429  ;Return the session ID of FD
+
+;
+;asm/stat.h
+;
+
+struc _stat
+.st_dev		word	1
+.__pad1		word	1
+.st_ino		dword	1
+.st_mode	word	1
+.st_nlink	word	1
+.st_uid		word	1
+.st_gid		word	1
+.st_rdev	word	1
+.__pad2		word	1
+.st_size	dword	1
+.st_blksize	dword	1
+.st_blocks	dword	1
+.st_atime	dword	1
+.__unused1	dword	1
+.st_mtime	dword	1
+.__unused2	dword	1
+.st_ctime	dword	1
+.__unused3	dword	1
+.__unused4	dword	1
+.__unused5	dword	1
+endstruc
+
+;
+;asm/signal.h
+;
+
+ SA_NOCLDSTOP	0x00000001
+ SA_NOCLDWAIT	0x00000002
+ SA_SIGINFO	0x00000004
+ SA_ONSTACK	0x08000000
+ SA_RESTART	0x10000000
+ SA_NODEFER	0x40000000
+ SA_RESETHAND	0x80000000
+ SA_RESTORER	0x04000000
+
+ SA_NOMASK	SA_NODEFER
+ SA_ONESHOT	SA_RESETHAND
+
+struc sigset_t
+dword	_NSIG / 32
+endstruc
+
+struc Sigaction
+.sa_handler	dword	1
+.sa_flags	dword	1
+.sa_restorer	dword	1
+.sa_mask	resb	sigset_t_size
+endstruc
+
+;
+;sys/dirent.h
+;
+
+struc dirent
+.d_ino		dword	1
+.d_off		dword	1
+.d_reclen	word	1
+.d_name		byte	256
+endstruc
+
+
+;
+;linux/fb.h
+;
+
+; ioctl defs for fb
+
+FBIOGET_VSCREENINFO	0x4600	
+FBIOPUT_VSCREENINFO	0x4601	
+FBIOGET_FSCREENINFO	0x4602
+FBIOGETCMAP		0x4604
+FBIOPUTCMAP		0x4605
+FBIOPAN_DISPLAY		0X4606
+
+; activate flags for ioctl on var->activate
+
+FB_ACTIVATE_NOW		0
+FB_ACTIVATE_NXTOPEN	1
+FB_ACTIVATE_TEST	2
+FB_ACTIVATE_MASK	15
+FB_ACTIVATE_VBL		16	;activate changes on next VBL - coool
+FB_CHANGE_CMAP_VBL	32
+FB_ACTIVATE_ALL		64
+
+struc fb_fix
+.id		byte	16
+.smem_start	dword	1
+.smem_len	dword	1
+.type		dword	1
+.type_aux	dword	1
+.visual		dword	1
+.xpanstep	word	1
+.ypanstep	word	1
+.ywrapstep	word	1
+.line_length	dword	1
+.mmio_start	dword	1
+.mmio_len	dword	1
+.accel		dword	1
+.reserved	word	3
+endstruc
+
+struc fb_bitfield
+.offset		dword	1
+.length		dword	1
+.msb_right	dword	1
+endstruc
+
+struc fb_cmap
+.start		dword	1
+.len		dword	1
+.r_ptr		dword	1
+.g_ptr		dword	1
+.b_ptr		dword	1
+.t_ptr		dword	1
+endstruc
+
+struc fb_var
+.xres		dword	1
+.yres		dword	1
+.xres_virtual	dword	1
+.yres_virtual	dword	1
+.xoffset	dword	1
+.yoffset	dword	1
+
+.bits_per_pixel	dword	1
+.grayscale	dword	1
+
+.red_offset	dword	1
+.red_length	dword	1
+.red_msb_right	dword	1
+.green_offset	dword	1
+.green_length	dword	1
+.green_msb_right dword	1
+.blue_offset	dword	1
+.blue_length	dword	1
+.blue_msb_right	dword	1
+.transp_offset	dword	1
+.transp_length	dword	1
+.transp_msb_right dword	1
+
+.nonstd		dword	1
+.activate	dword	1
+.height		dword	1
+.width		dword	1
+
+.accel_flags	dword	1
+
+.pixclock	dword	1
+.left_margin	dword	1
+.right_margin	dword	1
+.upper_margin	dword	1
+.lower_margin	dword	1
+.hsync_len	dword	1
+.vsync_len	dword	1
+.sync		dword	1
+.vmode		dword	1
+.reserved	dword	6																							
+
+endstruc
+
+;
+;linux/time.h
+;
+
+ITIMER_REAL	0
+ITIMER_VIRTUAL	1
+ITIMER_PROF	2
+
+struc itimerval
+.it_interval_sec:	dword	1
+.it_interval_usec:	dword	1
+.it_value_sec:		dword	1
+.it_value_usec:		dword	1
+endstruc
+
+struc itimerspec
+.it_interval_sec:	dword	1
+.it_interval_nsec:	dword	1
+.it_value_sec:		dword	1
+.it_value_nsec:		dword	1
+endstruc
+
+;
+;sys/socket.h
+;
+
+SOL_SOCKET	1
+
+ SO_DEBUG	1
+ SO_REUSEADDR	2
+ SO_TYPE 	3
+ SO_ERROR	4
+ SO_DONTROUTE	5
+ SO_BROADCAST	6
+ SO_SNDBUF	7
+ SO_RCVBUF	8
+ SO_KEEPALIVE	9
+ SO_OOBINLINE	10
+ SO_NO_CHECK	11
+ SO_PRIORITY	12
+ SO_LINGER	13
+ SO_BSDCOMPAT	14
+ SO_REUSEPORT	15
+ SO_PASSCRED	16
+ SO_PEERCRED	17
+ SO_RCVLOWAT	18
+ SO_SNDLOWAT	19
+ SO_RCVTIMEO	20
+ SO_SNDTIMEO	21
+
+;
+;sys/vfs.h
+;
+
+struc Statfs
+.f_type		dword	1	;fs type
+.f_bsize	dword	1	;optimal transfer block size
+.f_blocks	dword	1	;total data blocks
+.f_bfree	dword	1	;free blocks
+.f_bavail	dword	1	;free blocks avail to non-superuser
+.f_files	dword	1	;total file nodes
+.f_free		dword	1	;free file nodes
+.f_fsid		dword	1	;fs id
+.f_namelen	dword	1	;maximum filename length
+.f_reserv	dword  	6	;reserved
+endstruc
+
+;
+;asm/ptrace.h
+;
+
+struc pt_regs
+.ebx	dword	1
+.ecx	dword	1
+.edx	dword	1
+.esi	dword	1
+.edi	dword	1
+.ebp	dword	1
+.eax	dword	1
+.xds	dword	1
+.xes	dword	1
+.orig_eax dword	1
+.eip	dword	1
+.xcs	dword	1
+.eflags	dword	1
+.esp	dword	1
+.xss	dword	1
+endstruc
+
+;
+;asm/unistd.h
+;
+
+ SYS_exit		1
+ SYS_fork		2
+ SYS_read		3
+ SYS_write		4
+ SYS_open		5
+ SYS_close		6
+ SYS_waitpid		7
+ SYS_creat		8
+ SYS_link		9
+ SYS_unlink		10
+ SYS_execve		11
+ SYS_chdir		12
+ SYS_time		13
+ SYS_mknod		14
+ SYS_chmod		15
+ SYS_lchown		16
+ SYS_break		17
+ SYS_oldstat		18
+ SYS_lseek		19
+ SYS_getpid		20
+ SYS_mount		21
+ SYS_umount		22
+ SYS_setuid		23
+ SYS_getuid		24
+ SYS_stime		25
+ SYS_ptrace		26
+ SYS_alarm		27
+ SYS_oldfstat		28
+ SYS_pause		29
+ SYS_utime		30
+ SYS_stty		31
+ SYS_gtty		32
+ SYS_access		33
+ SYS_nice		34
+ SYS_ftime		35
+ SYS_sync		36
+ SYS_kill		37
+ SYS_rename		38
+ SYS_mkdir		39
+ SYS_rmdir		40
+ SYS_dup		41
+ SYS_pipe		42
+ SYS_times		43
+ SYS_prof		44
+ SYS_brk		45
+ SYS_setgid		46
+ SYS_getgid		47
+ SYS_signal		48
+ SYS_geteuid		49
+ SYS_getegid		50
+ SYS_acct		51
+ SYS_umount2		52
+ SYS_lock		53
+ SYS_ioctl		54
+ SYS_fcntl		55
+ SYS_mpx		56
+ SYS_setpgid		57
+ SYS_ulimit		58
+ SYS_oldolduname	59
+ SYS_umask		60
+ SYS_chroot		61
+ SYS_ustat		62
+ SYS_dup2		63
+ SYS_getppid		64
+ SYS_getpgrp		65
+ SYS_setsid		66
+ SYS_sigaction		67
+ SYS_sgetmask		68
+ SYS_ssetmask		69
+ SYS_setreuid		70
+ SYS_setregid		71
+ SYS_sigsuspend		72
+ SYS_sigpending		73
+ SYS_sethostname	74
+ SYS_setrlimit		75
+ SYS_getrlimit		76
+ SYS_getrusage		77
+ SYS_gettimeofday	78
+ SYS_settimeofday	79
+ SYS_getgroups		80
+ SYS_setgroups		81
+ SYS_oldselect		82
+ SYS_symlink		83
+ SYS_oldlstat		84
+ SYS_readlink		85
+ SYS_uselib		86
+ SYS_swapon		87
+ SYS_reboot		88
+ SYS_readdir		89
+ SYS_mmap		90
+ SYS_munmap		91
+ SYS_truncate		92
+ SYS_ftruncate		93
+ SYS_fchmod		94
+ SYS_fchown		95
+ SYS_getpriority	96
+ SYS_setpriority	97
+ SYS_profil		98
+ SYS_statfs		99
+ SYS_fstatfs		100
+ SYS_ioperm		101
+ SYS_socketcall		102
+ SYS_syslog		103
+ SYS_setitimer		104
+ SYS_getitimer		105
+ SYS_stat		106
+ SYS_lstat		107
+ SYS_fstat		108
+ SYS_olduname		109
+ SYS_iopl		110
+ SYS_vhangup		111
+ SYS_idle		112
+ SYS_vm86old		113
+ SYS_wait4		114
+ SYS_swapoff		115
+ SYS_sysinfo		116
+ SYS_ipc		117
+ SYS_fsync		118
+ SYS_sigreturn		119
+ SYS_clone		120
+ SYS_setdomainname	121
+ SYS_uname		122
+ SYS_modify_ldt		123
+ SYS_adjtimex		124
+ SYS_mprotect		125
+ SYS_sigprocmask	126
+ SYS_create_module	127
+ SYS_init_module	128
+ SYS_delete_module	129
+ SYS_get_kernel_syms	130
+ SYS_quotactl		131
+ SYS_getpgid		132
+ SYS_fchdir		133
+ SYS_bdflush		134
+ SYS_sysfs		135
+ SYS_personality	136
+ SYS_afs_syscall	137
+ SYS_setfsuid		138
+ SYS_setfsgid		139
+ SYS_llseek		140
+ SYS_getdents		141
+ SYS_select		142
+ SYS_flock		143
+ SYS_msync		144
+ SYS_readv		145
+ SYS_writev		146
+ SYS_getsid		147
+ SYS_fdatasync		148
+ SYS_sysctl		149
+ SYS_mlock		150
+ SYS_munlock		151
+ SYS_mlockall		152
+ SYS_munlockall		153
+ SYS_sched_setparam	154
+ SYS_sched_getparam	155
+ SYS_sched_setscheduler	156
+ SYS_sched_getscheduler	157
+ SYS_sched_yield	158
+ SYS_sched_get_priority_max	159
+ SYS_sched_get_priority_min	160
+ SYS_sched_rr_get_interval	161
+ SYS_nanosleep		162
+ SYS_mremap		163
+ SYS_setresuid		164
+ SYS_getresuid		165
+ SYS_vm86		166
+ SYS_query_module	167
+ SYS_poll		168
+ SYS_nfsservctl		169
+ SYS_setresgid		170
+ SYS_getresgid		171
+ SYS_prctl		172
+ SYS_rt_sigreturn	173
+ SYS_rt_sigaction	174
+ SYS_rt_sigprocmask	175
+ SYS_rt_sigpending	176
+ SYS_rt_sigtimedwait	177
+ SYS_rt_sigqueueinfo	178
+ SYS_rt_sigsuspend	179
+ SYS_pread		180
+ SYS_pwrite		181
+ SYS_chown		182
+ SYS_getcwd		183
+ SYS_capget		184
+ SYS_capset		185
+ SYS_sigaltstack	186
+ SYS_sendfile		187
+ SYS_getpmsg		188
+ SYS_putpmsg		189
+ SYS_vfork		190
+ SYS_ugetrlimit		191
+ SYS_mmap2		192
+ SYS_truncate64		193
+ SYS_ftruncate64	194
+ SYS_stat64		195
+ SYS_lstat64		196
+ SYS_fstat64		197
+ SYS_lchown32		198
+ SYS_getuid32		199
+ SYS_getgid32		200
+ SYS_geteuid32		201
+ SYS_getegid32		202
+ SYS_setreuid32		203
+ SYS_setregid32		204
+ SYS_getgroups32	205
+ SYS_setgroups32	206
+ SYS_fchown32		207
+ SYS_setresuid32	208
+ SYS_getresuid32	209
+ SYS_setresgid32	210
+ SYS_getresgid32	211
+ SYS_chown32		212
+ SYS_setuid32		213
+ SYS_setgid32		214
+ SYS_setfsuid32		215
+ SYS_setfsgid32		216
+ SYS_pivot_root		217
+ SYS_mincore		218
+ SYS_madvise		219
+ SYS_getdents64		220
+ SYS_fcntl64		221
+
+;
+;linux/net.h (socket calls)
+;
+
+ SYS_SOCKET	1
+ SYS_BIND	2
+ SYS_CONNECT	3
+ SYS_LISTEN	4
+ SYS_ACCEPT	5
+ SYS_GETSOCKNAME 6
+ SYS_GETPEERNAME 7
+ SYS_SOCKETPAIR	8
+ SYS_SEND	9
+ SYS_RECV	10
+ SYS_SENDTO	11
+ SYS_RECVFROM	12
+ SYS_SHUTDOWN	13
+ SYS_SETSOCKOPT	14
+ SYS_GETSOCKOPT	15
+ SYS_SENDMSG	16
+ SYS_RECVMSG	17
+
+;
+;linux/sockios.h
+;
+
+ SIOCADDRT	0x890B		;add routing table entry	
+ SIOCDELRT	0x890C		;delete routing table entry	
+ SIOCRTMSG	0x890D		;call to routing system	
+
+ SIOCGIFNAME	0x8910		;get iface name		
+ SIOCSIFLINK	0x8911		;set iface channel		
+ SIOCGIFCONF	0x8912		;get iface list		
+ SIOCGIFFLAGS	0x8913		;get flags			
+ SIOCSIFFLAGS	0x8914		;set flags			
+ SIOCGIFADDR	0x8915		;get PA address		
+ SIOCSIFADDR	0x8916		;set PA address		
+ SIOCGIFDSTADDR	0x8917		;get remote PA address	
+ SIOCSIFDSTADDR	0x8918		;set remote PA address	
+ SIOCGIFBRDADDR	0x8919		;get broadcast PA address	
+ SIOCSIFBRDADDR	0x891a		;set broadcast PA address	
+ SIOCGIFNETMASK	0x891b		;get network PA mask		
+ SIOCSIFNETMASK	0x891c		;set network PA mask		
+ SIOCGIFMETRIC	0x891d		;get metric			
+ SIOCSIFMETRIC	0x891e		;set metric			
+ SIOCGIFMEM	0x891f		;get memory address (BSD)	
+ SIOCSIFMEM	0x8920		;set memory address (BSD)	
+ SIOCGIFMTU	0x8921		;get MTU size			
+ SIOCSIFMTU	0x8922		;set MTU size			
+ SIOCSIFNAME	0x8923		;set interface name 
+ SIOCSIFHWADDR	0x8924		;set hardware address 	
+ SIOCGIFENCAP	0x8925		;get/set encapsulations       
+ SIOCSIFENCAP	0x8926		
+ SIOCGIFHWADDR	0x8927		;Get hardware address		
+ SIOCGIFSLAVE	0x8929		;Driver slaving support	
+ SIOCSIFSLAVE	0x8930
+ SIOCADDMULTI	0x8931		;Multicast address lists	
+ SIOCDELMULTI	0x8932
+ SIOCGIFINDEX	0x8933		;name -> if_index mapping	
+ SIOGIFINDEX	SIOCGIFINDEX	;misprint compatibility :-)	
+ SIOCSIFPFLAGS	0x8934		;set/get extended flags set	
+ SIOCGIFPFLAGS	0x8935
+ SIOCDIFADDR	0x8936		;delete PA address		
+ SIOCSIFHWBROADCAST 0x8937	;set hardware broadcast addr	
+ SIOCGIFCOUNT	0x8938		;get number of devices 
+
+;
+;linux/module.h
+;
+
+ MOD_UNINITIALIZED	0
+ MOD_RUNNING		1
+ MOD_DELETED		2
+ MOD_AUTOCLEAN		4
+ MOD_VISITED  		8
+ MOD_USED_ONCE		16
+ MOD_JUST_FREED		32
+ MOD_INITIALIZING	64
+
+ QM_MODULES		1
+ QM_DEPS		2
+ QM_REFS		3
+ QM_SYMBOLS		4
+ QM_INFO		5
+
+;
+;linux/sysctl.h
+;
+
+CTL_MAXNAME 10
+
+CTL_KERN	1	;General kernel info and control
+CTL_VM		2	;VM management
+CTL_NET		3	;Networking
+CTL_PROC	4	;Process info
+CTL_FS		5	;Filesystems
+CTL_DEBUG	6	;Debugging
+CTL_DEV		7	;Devices
+CTL_BUS		8	;Busses
+CTL_ABI		9	;Binary emulation
+CTL_CPU		10	;CPU stuff (speed scaling, etc)
+
+KERN_OSTYPE	1	;string: system version
+KERN_OSRELEASE	2	;string: system release
+KERN_OSREV	3	;int: system revision
+KERN_VERSION	4	;string: compile time info
+KERN_SECUREMASK	5	;struct: maximum rights mask
+KERN_PROF	6	;table: profiling information
+KERN_NODENAME	7
+KERN_HOSTNAME	KERN_NODENAME
+KERN_DOMAINNAME	8
+
+KERN_CAP_BSET	14	;int: capability bounding set
+KERN_PANIC	15	;int: panic timeout
+KERN_REALROOTDEV 16	;real root device to mount after initrd
+
+KERN_SPARC_REBOOT 21	;reboot command on Sparc
+KERN_CTLALTDEL	22	;int: allow ctl-alt-del to reboot
+KERN_PRINTK	23	;struct: control printk logging parameters
+KERN_NAMETRANS	24	;Name translation
+KERN_PPC_HTABRECLAIM	25	;turn htab reclaimation on/off on PPC
+KERN_PPC_ZEROPAGED	26	;turn idle page zeroing on/off on PPC
+KERN_PPC_POWERSAVE_NAP	27	;use nap mode for power saving
+KERN_MODPROBE	28
+KERN_SG_BIG_BUFF	29
+KERN_ACCT	30	;BSD process accounting parameters
+KERN_PPC_L2CR	31	;l2cr register on PPC
+
+KERN_RTSIGNR	32	;Number of rt sigs queued
+KERN_RTSIGMAX	33	;Max queuable
+
+KERN_SHMMAX	34	;dword: Maximum shared memory segment
+KERN_MSGMAX	35	;dword: Maximum size of a messege
+KERN_MSGMNB	36	;dword: Maximum message queue size
+KERN_MSGPOOL	37	;dword: Maximum system message pool size
+KERN_SYSRQ	38	;dword: Sysreq enable 
+KERN_MAX_THREADS 39	;dword: Maximum nr of threads in the system
+KERN_RANDOM	40	;Random driver
+KERN_SHMALL	41	;dword: Maximum size of shared memory
+KERN_MSGMNI	42	;dword: msg queue identifiers
+KERN_SEM	43	;struct: sysv semaphore limits
+KERN_SPARC_STOP_A 44	;dword: Sparc Stop-A enable
+KERN_SHMMNI	45	;dword: shm array identifiers
+KERN_OVERFLOWUID 46	;dword: overflow UID
+KERN_OVERFLOWGID 47	;dword: overflow GID
+KERN_SHMPATH	48	;string: path to shm fs
+KERN_HOTPLUG	49	;string: path to hotplug policy agent
+KERN_IEEE_EMULATION_WARNINGS 50 ;dword: unimplemented ieee instructions
+KERN_S390_USER_DEBUG_LOGGING 51 ;dword: dumps of user faults
+KERN_CORE_USES_PID 52	;dword: use core or core.%pid
+KERN_TAdwordED	53	;dword: various kernel tainted flags
+KERN_CADPID	54	;dword: PID of the process to notify on CAD
+
+;
+;linux/mount.h
+;
+
+ MS_RDONLY	 1	;Mount read-only
+ MS_NOSUID	 2	;Ignore suid and sgid bits
+ MS_NODEV	 4	;Disallow access to device special files
+ MS_NOEXEC	 8	;Disallow program execution
+ MS_SYNCHRONOUS	16	;Writes are synced at once
+ MS_REMOUNT	32	;Alter flags of a mounted FS
+ MS_MANDLOCK	64	;Allow mandatory locks on an FS
+ MS_NOATIME	1024	;Do not update access times
+ MS_NODIRATIME	2048	;Do not update directory access times
+ MS_BIND		4096
+ MS_REC		16384
+ MS_VERBOSE	32768
+ MS_ACTIVE	(1<<30)
+ MS_NOUSER	(1<<31)
+
+MS_MGC_VAL	0xc0ed0000
+
+;
+;linux/hdreg.h
+;
+
+HDIO_GETGEO	0x0301  ;get device geometry
+
+;
+;utmp.h
+;
+
+ _PATH_UTMP	"/var/run/utmp"
+
+UT_LINESIZE	32
+UT_NAMESIZE	32
+UT_HOSTSIZE	256
+
+ RUN_LVL	1	;The system's runlevel
+ BOOT_TIME	2	;Time of system boot
+ NEW_TIME	3	;Time after system clock changed
+ OLD_TIME	4	;Time when system clock changed
+ INIT_PROCESS	5	;Process spawned by the init process
+ LOGIN_PROCESS	6	;Session leader of a logged in user
+ USER_PROCESS	7	;Normal process
+ DEAD_PROCESS	8	;Terminated process
+ ACCOUNTING	9
+
+struc exit_status
+.e_termination	word	1	;Process termination status
+.e_exit		word	1	;Process exit status
+endstruc
+
+struc utmp
+.ut_type	word	1		;Type of login
+.__pad1		word	1		
+.ut_pid		dword	1		;Process ID of login process
+.ut_line  	byte	UT_LINESIZE	;Devicename
+.ut_id		byte	4		;Inittab ID
+.ut_user	byte	UT_NAMESIZE	;Username
+.ut_host	byte	UT_HOSTSIZE	;Hostname for remote login
+.ut_exit	word	2		;Exit status of a process marked as DEAD_PROCESS
+.ut_session	dword	1		;Session ID, used for windowing
+.ut_tv		dword	2 		;Time entry was made
+.ut_addr_v6	dword	4		;Internet address of remote host
+.__unused	byte	20		;Reserved for future use
+endstruc
+
+;
+;sys/sysinfo.h
+;
+
+struc sysinfo
+.uptime     dword    1
+.loads      dword   3
+.totalram   dword   1
+.freeram    dword   1
+.sharedram  dword   1
+.bufferram  dword   1
+.totalswap  dword   1
+.freeswap   dword   1
+.procs      word  1
+.pad        byte    22
+.totalhigh  dword   1
+.freehigh   dword   1
+.mem_unit   dword   1
+.pad        byte    8
+endstruc
+

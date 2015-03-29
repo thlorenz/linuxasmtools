@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>small, fast, friendly guidelines</title>
+ <meta name="keywords" content="linux, utilities, tools, programming">
+ <meta name="description" content="When do we want simple and spartan programs">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+</head>
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+   <tbody>
+     <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+<!-- ######################-->
+      <!-- ### content cell #####--><!-- ######################--><td
+ width="100%"><!-- header here --> 
+      <h2>LinuxAsmTools - Small,Fast,Friendly Guide<br>
+      </h2>
+       
+      <hr class="content" noshade="noshade"><!-- begin content here -->
+      
+      <div style="text-align: center;"><br>
+      </div>
+      Tired of bloated programs or complex utilities that
+need endless man
+pages?<br>
+      <br>
+If you want small, simple, fast programs, then help promote this<br>
+guideline by mentioning it or using it when writing programs.<br>
+      <br>
+Overview of SFF (Small Fast Friendly) guideline<br>
+----------------------------------------------------------------------------<br>
+      <br>
+* Program must be&nbsp; easy to install, with minimal dependicies.<br>
+* Small size is design goal<br>
+* Fast program execution.<br>
+* Interactive mode if needed.&nbsp; Triggered by absence of parameters.<br>
+* Only necessary information displayed to avoid cluttered displays.<br>
+* Simplicity prefered to artistic displays.<br>
+      <br>
+Not all programs are cantidates for SFF.&nbsp; Games, entertainment, and<br>
+some applications will want a different interface.&nbsp; Generally,
+utilities<br>
+and programs for basic computer maintainence are cantidates for SFF.<br>
+      <br>
+UNIX style programs that use pipes to chain commands can still use<br>
+&nbsp;SFF by allocating STDIN/STDOUT for UNIX mode and STDERR for<br>
+&nbsp;the interractive mode.&nbsp; The program "less" is an&nbsp;
+example of how this<br>
+&nbsp;can be done.&nbsp; For assembler the program "asmview" is an
+example.<br>
+      <br>
+&nbsp;Another goal of this guildeline is to slow the proliferation of
+dynamic<br>
+&nbsp;library files.&nbsp; Currently there are thousands of libraries
+and each programing<br>
+&nbsp;language tries to create its own library universe.&nbsp; A better
+approach may<br>
+&nbsp;be a few core libraries and use of static programs.&nbsp; The
+dynamic libraries could<br>
+&nbsp;be reseerved for common functions that are needed by many
+programs.<br>
+      <br>
+&nbsp;
+One rational for reduced size and speed is $$$.&nbsp; This is<br>
+&nbsp; most apperant in the business world where time and money are
+closely<br>
+&nbsp; related.&nbsp; Current programs are often large and
+bloated.&nbsp; This costs the<br>
+&nbsp; end user time and money.&nbsp; It may be the easiest path for a
+developer,<br>
+&nbsp; but after we add up all the small costs, delays, and memory
+upgrades<br>
+&nbsp; the eventual penality is in billions of dollars.<br>
+      <br>
+&nbsp; The largest user of computer resources is graphics displays.
+Today<br>
+&nbsp; many diplays are filled with redundant and confusing
+graphics.&nbsp; The<br>
+&nbsp; web is an example of "form" dominating "function".&nbsp; In many
+cases<br>
+&nbsp; it is possible to convey the information faster with
+simple&nbsp; text displays<br>
+&nbsp; and a few graphics.&nbsp; The arguement given is that
+presentation is important,<br>
+&nbsp; and computers are idle most of the time.<br>
+&nbsp; <br>
+&nbsp; This arguement fits some users, but those interested in
+"function" and getting<br>
+&nbsp; work done have other needs.&nbsp; Their computers often are
+compute bound and<br>
+&nbsp; they want efficient displays and programs. <br>
+      <br>
+&nbsp; Design Considerations for SFF<br>
+&nbsp; ------------------------------------------------<br>
+      <br>
+&nbsp; Character oriented displays are efficient.&nbsp; They take less
+code and execute<br>
+&nbsp; quickly.<br>
+      <br>
+&nbsp; Character displays can be used for menus and even buttons.&nbsp;
+The key is<br>
+&nbsp; to use colors and in some cases fonts.<br>
+      <br>
+&nbsp; Generally, simple low level languages produce faster and smaller
+programs.<br>
+&nbsp; Examples of low level languages are: "C", assembler,??<br>
+      <br>
+&nbsp; The user should always have options explained or help
+available.&nbsp;&nbsp; Never<br>
+&nbsp;&nbsp; leave a user in doubt about where to get help or what to
+do next. <br>
+&nbsp; <br>
+&nbsp; The choice of libraries is important.&nbsp; Often a small static
+library produces<br>
+&nbsp;&nbsp; a small fast program.&nbsp; Beware of libraries where most
+functions interconnect.<br>
+&nbsp;&nbsp; An unfortunate example of this is some libc
+functions.&nbsp; Referencing a print<br>
+&nbsp;&nbsp; function causes the library to drag in lots of error
+handling and other functions.<br>
+&nbsp;&nbsp; In the end you have a large program and much unused code.<br>
+      <br>
+&nbsp;&nbsp; Design, design, design.&nbsp; The design almost always
+infulences speed and useability<br>
+&nbsp;&nbsp; more than any other factor.<br>
+      
+      <div style="text-align: center;"><br>
+      </div>
+       <br>
+      <br>
+      <!-- END of the content cell --></td>
+       </tr>
+     
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

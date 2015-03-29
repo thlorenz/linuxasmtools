@@ -1,0 +1,6 @@
+program trace utility, like strace
+asmtrace is a console/X terminal utility
+much like strace.  It also includes
+disassembly and assembler style data
+presentation.
+http://linuxasmtools.net

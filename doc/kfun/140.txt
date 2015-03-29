@@ -1,0 +1,47 @@
+
+----------------------------------------------------------------------------
+140 llseek         - reposition read/write file offset
+----------------------------------------------------------------------------
+
+  mov  eax,140
+  mov  ebx,fd            ;open file descriptor
+  mov  ecx,offet_high    ;high 32 bits of position
+  mov  edx,offset_low    ;low 32 bits of position
+  mov  esi,result        ;ptr to quadword (double dword) file posn
+  mov  edi,whence        ;type of seek
+  int  80h
+
+       The  llseek  function repositions the offset of the file descriptor fd
+       to (offset_high<<32) | offset_low bytes relative to  the  beginning  of
+       the  file,  the  current  position in the file, or the end of the file,
+       depending on whether whence is SEEK_SET, SEEK_CUR, or SEEK_END, respec-
+       tively.  It returns the resulting file position in the argument result.
+
+       whence values are:
+
+        SEEK_SET	0	/* seek relative to beginning of file */
+        SEEK_CUR	1	/* seek relative to current file position */
+        SEEK_END	2	/* seek relative to end of file */
+
+        max file size in ext2 was 2Gig in pre-2.4.-kernel.  This function increases
+        file size beyond 2gig.  Passing a disp such that filepointer would become
+        negative is an error.
+
+RETURN VALUE
+       Upon successful completion, llseek returns 0. Otherwise a negative
+       error code.
+
+ERRORS
+       EBADF  fd is not an open file descriptor.
+
+       EINVAL whence is invalid.
+
+       EFAULT Problem with copying results to user space.
+
+CONFORMING TO
+       This  function  is  Linux-specific,  and should not be used in programs
+       intended to be portable.
+
+SEE ALSO
+       lseek
+

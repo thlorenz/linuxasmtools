@@ -1,0 +1,405 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>assembler programming tips</title>
+ <meta name="keywords" content="tips, hints, assembler, linux, x86, assembly, development, programming">
+ <meta name="description" content="tips for developing assembly programs on Linux">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+ <span
+ style="font-weight: bold;">DesktopLinuxAsm - Tips<img alt="tips"
+ src="h_tips.jpg" style="width: 44px; height: 52px;" align="right"
+ hspace="20"></span><br>
+      <br>
+      <br>
+      <br>
+      <hr style="width: 100%; height: 2px;">
+      <pre><big style="font-weight: bold;"><span
+ style="color: rgb(0, 0, 0);">Coding Tips</span>
+
+<span style="color: rgb(0, 0, 0);">The following coding tips focus on reducing code size.</span>
+<span style="color: rgb(0, 0, 0);">In some cases larger code fragments will run faster,</span>
+<span style="color: rgb(0, 0, 0);">but in general the smaller code will be faster.  This</span>
+<span style="color: rgb(0, 0, 0);">is constantly debated, and often the only way to be sure</span>
+<span style="color: rgb(0, 0, 0);">is to measure execution speed.  It may be that the</span>
+<span style="color: rgb(0, 0, 0);">processor cache can hold short code and run it faster</span>
+<span style="color: rgb(0, 0, 0);">than long code sequences that have faster instructions.  </span>
+
+<span style="color: rgb(0, 0, 0); font-weight: bold;">1. setting registers</span>
+
+<span style="color: rgb(0, 0, 0);">One of the most common operations in assembly is to move</span>
+<span style="color: rgb(0, 0, 0);">a constant value into a register.  Often the value moved</span>
+<span style="color: rgb(0, 0, 0);">is zero.  Here is the obvious instruction to load zero:</span>
+
+<span style="color: rgb(0, 0, 0);">    B800000000                mov	eax,0</span>
+
+<span style="color: rgb(0, 0, 0);">The nasm generated code (on left) says this instruction is</span>
+<span style="color: rgb(0, 0, 0);">five bytes long and uses the operation code "B8". Another</span>
+<span style="color: rgb(0, 0, 0);">way to do this is:</span>
+
+<span style="color: rgb(0, 0, 0);">    31C0                      xor	eax,eax</span>
+
+<span style="color: rgb(0, 0, 0);">This is two bytes long, but modifies the flag states.</span>
+
+<span style="color: rgb(0, 0, 0);">Another common value to load into registers is -1.  Once</span>
+<span style="color: rgb(0, 0, 0);">again the typical way to do this is:</span>
+
+<span style="color: rgb(0, 0, 0);">    B8ffffffff                mov	eax,-1</span>
+
+<span style="color: rgb(0, 0, 0);">Another way to generate -1 using one less byte is:</span>
+
+<span style="color: rgb(0, 0, 0);">    31C0                      xor	eax,eax</span>
+<span style="color: rgb(0, 0, 0);">    F7D0                      not	eax</span>
+
+<span style="color: rgb(0, 0, 0);">A even shorter way to generate -1 is:</span>
+
+<span style="color: rgb(0, 0, 0);">    83C8FF                    or	eax,byte -1</span>
+
+<span style="color: rgb(0, 0, 0);">If we want byte values from 1 to 254 (either negative</span>
+<span style="color: rgb(0, 0, 0);">or positive) the following macro does it in only 3 bytes</span>
+
+
+<span style="color: rgb(0, 0, 0);">                             %macro _mov 2</span>
+<span style="color: rgb(0, 0, 0);">                                push	byte %2</span>
+<span style="color: rgb(0, 0, 0);">                                pop	%1</span>
+<span style="color: rgb(0, 0, 0);">                             %endmacro</span>
+<span style="color: rgb(0, 0, 0);">                                      </span>
+<span style="color: rgb(0, 0, 0);">    _mov	eax,2  ;example of _mov macro usage</span>
+<span style="color: rgb(0, 0, 0);">     6A02                &lt;1&gt;  push byte %2</span>
+<span style="color: rgb(0, 0, 0);">     58                  &lt;1&gt;  pop %1</span>
+
+<span style="color: rgb(0, 0, 0);">Note: To keep code simple, use macro names that clearly</span>
+<span style="color: rgb(0, 0, 0);">describe the operation performed.  This makes reading the</span>
+<span style="color: rgb(0, 0, 0);">source code easier, but beware, debuggers that disassemble</span>
+<span style="color: rgb(0, 0, 0);">the code only see the push and pop. </span>
+
+<span style="color: rgb(0, 0, 0);">2. <span style="font-weight: bold;">checking a register value</span></span>
+
+<span style="color: rgb(0, 0, 0);">A very common operation is to check if register is zero.  The</span>
+<span style="color: rgb(0, 0, 0);">obvious way to do this is:</span>
+
+<span style="color: rgb(0, 0, 0);">    83F800                    cmp	eax,byte 0</span>
+<span style="color: rgb(0, 0, 0);">    740B                      je	match</span>
+
+<span style="color: rgb(0, 0, 0);">A better way to do this and save one byte is:</span>
+
+<span style="color: rgb(0, 0, 0);">    09C0                      or	eax,eax</span>
+<span style="color: rgb(0, 0, 0);">    7410                      jz	match</span>
+
+<span style="color: rgb(0, 0, 0);">An even better way (depending upon the design) is to use</span>
+<span style="color: rgb(0, 0, 0);">the "jecxz" or "loop" instruction and avoid the test:</span>
+
+<span style="color: rgb(0, 0, 0);">    E312                      jecxz	match</span>
+
+<span style="color: rgb(0, 0, 0);">    E210                      loop	match</span>
+
+<span style="color: rgb(0, 0, 0);">The loop instruction is consided slow and avoided by</span>
+<span style="color: rgb(0, 0, 0);">some programmers.  So.. if speed is important, do some</span>
+<span style="color: rgb(0, 0, 0);">code timing.  I've not found the use of "loop" to be</span>
+<span style="color: rgb(0, 0, 0);">slow.</span>
+
+<span style="color: rgb(0, 0, 0);">The the "dec" and "inc" instructions are one byte long on</span>
+<span style="color: rgb(0, 0, 0);">32 bit processors and provide an alternative way to check</span>
+<span style="color: rgb(0, 0, 0);">for registers with "1" or "-1".  Here are the traditional</span>
+<span style="color: rgb(0, 0, 0);">test for 1 and the "dec" test.</span>
+
+
+<span style="color: rgb(0, 0, 0);">    83F801                    cmp	eax,byte 1</span>
+<span style="color: rgb(0, 0, 0);">    740B                      je	match</span>
+
+<span style="color: rgb(0, 0, 0);">The "dec" test (modifies the register)</span>
+
+<span style="color: rgb(0, 0, 0);">    48                        dec	eax		;set zero flag if eax=1</span>
+<span style="color: rgb(0, 0, 0);">    7408                      jz	match		;jmp if eax was = 1</span>
+
+<span style="color: rgb(0, 0, 0);">To check for -1 use:</span>
+
+
+<span style="color: rgb(0, 0, 0);">    40                        inc	eax		;set zero flag if eax=-1</span>
+<span style="color: rgb(0, 0, 0);">    7400                      jz	match<br><br><br>3. <span
+ style="font-weight: bold;">Register math</span><br
+ style="font-weight: bold;"><br></span><span
+ style="color: rgb(0, 0, 0);">The LEA instruction (load effective address) can be useful to multiply</span>
+<span style="color: rgb(0, 0, 0);">registers and add values.  Simple multipies are usually better done</span>
+<span style="color: rgb(0, 0, 0);">with "MUL" or one of the shift instructions.</span>
+
+<span style="color: rgb(0, 0, 0);">    8D0400                    lea	eax,[eax*2]	;eax * 2</span>
+<span style="color: rgb(0, 0, 0);">    8D0440                    lea	eax,[eax+eax*2] ;eax * 3</span>
+<span style="color: rgb(0, 0, 0);">    8D048500000000            lea	eax,[eax*4]	;eax * 4</span>
+<span style="color: rgb(0, 0, 0);">    8D0480                    lea	eax,[eax*4+eax]	;eax * 5</span>
+<span style="color: rgb(0, 0, 0);">    8D04C500000000            lea	eax,[eax*8]	;eax * 8</span>
+<span style="color: rgb(0, 0, 0);">    8D04C0                    lea	eax,[eax*8+eax]	;eax * 9</span>
+
+<span style="color: rgb(0, 0, 0);">If we want to add in a constant value or register </span>
+<span style="color: rgb(0, 0, 0);">then use of LEA becomes a good choice.</span>
+
+<span style="color: rgb(0, 0, 0);">    8D8418F4010000            lea	eax,[eax+ebx+500]</span>
+
+<span style="color: rgb(0, 0, 0);">The best way to do a multiply is using shift and</span>
+<span style="color: rgb(0, 0, 0);">adds as follows:</span>
+
+<span style="color: rgb(0, 0, 0);">    D1E0                      shl	eax,1	;eax * 2</span>
+
+<span style="color: rgb(0, 0, 0);">    89C3                      mov	ebx,eax</span>
+<span style="color: rgb(0, 0, 0);">    D1E0                      shl	eax,1</span>
+<span style="color: rgb(0, 0, 0);">    01D8                      add	eax,ebx ;eax * 3</span>
+<span style="color: rgb(0, 0, 0);">    </span>
+<span style="color: rgb(0, 0, 0);">    C1E002                    shl	eax,2	;eax * 4</span>
+<span style="color: rgb(0, 0, 0);">    </span>
+<span style="color: rgb(0, 0, 0);">    89C3                      mov	ebx,eax</span>
+<span style="color: rgb(0, 0, 0);">    C1E002                    shl	eax,2</span>
+<span style="color: rgb(0, 0, 0);">    01D8                      add	eax,ebx ;eax * 5</span>
+
+<span style="color: rgb(0, 0, 0);">4. <span style="font-weight: bold;">Avoiding branches</span><br
+ style="font-weight: bold;"><br>Programs execute a lot faster if they do not have to jump</span>
+<span style="color: rgb(0, 0, 0);">to a new location very often.  This suggests we use</span>
+<span style="color: rgb(0, 0, 0);">decisions that do not involve the conditional jump</span>
+<span style="color: rgb(0, 0, 0);">instructions.  There are several technques to do this</span>
+<span style="color: rgb(0, 0, 0);">using the "XOR" instruction.  Here is one example:</span>
+
+<span style="color: rgb(0, 0, 0);">choose regiser value without branch</span>
+<span style="color: rgb(0, 0, 0);">if (eax != 0) eax = ebx; else eax = ecx;</span>
+
+<span style="color: rgb(0, 0, 0);">    3D01000000              	cmp	eax,1</span>
+<span style="color: rgb(0, 0, 0);">    19C0                    	sbb	eax,eax</span>
+<span style="color: rgb(0, 0, 0);">    21C1                    	and	ecx,eax</span>
+<span style="color: rgb(0, 0, 0);">    35FFFFFFFF              	xor	eax,-1</span>
+<span style="color: rgb(0, 0, 0);">    21D8                    	and	eax,ebx</span>
+<span style="color: rgb(0, 0, 0);">    09C8                    	or	eax,ecx</span>
+
+<span style="color: rgb(0, 0, 0);">The disadvantage of the above code is complexity.  It</span>
+<span style="color: rgb(0, 0, 0);">makes reading code more difficult and in most</span>
+<span style="color: rgb(0, 0, 0);">cases isn't necessary.</span>
+
+<span style="color: rgb(0, 0, 0);">5. <span style="font-weight: bold;">Creating registers</span><br><br>Programs run a lot faster if all data is kept in registers.</span>
+<span style="color: rgb(0, 0, 0);">This isn't a problem for simple loops, what if we</span>
+<span style="color: rgb(0, 0, 0);">run out of registers.  Our options are:</span>
+
+<span style="color: rgb(0, 0, 0);"> 1. Free up a register by pushing it on the</span>
+<span style="color: rgb(0, 0, 0);">    stack.</span>
+<span style="color: rgb(0, 0, 0);"> 2. Free up a regiser by moving it to memory</span>
+<span style="color: rgb(0, 0, 0);"> 3. Use a CPU special regsiter that is dedicated</span>
+<span style="color: rgb(0, 0, 0);">    for other purposes.</span>
+<span style="color: rgb(0, 0, 0);"> 4. Split a register into two or more regsiters.</span>
+
+<span style="color: rgb(0, 0, 0);">Options 3 and 4 are seldom used, and option</span>
+<span style="color: rgb(0, 0, 0);">4 has promise.  The general registers eax,</span>
+<span style="color: rgb(0, 0, 0);">ebx,ecx,edx can be split into byte or word</span>
+<span style="color: rgb(0, 0, 0);">registers, and ebp,esi,edi can be split into</span>
+<span style="color: rgb(0, 0, 0);">word regisers.  If our application only needs</span>
+<span style="color: rgb(0, 0, 0);">16bit for some registers we can define</span>
+<span style="color: rgb(0, 0, 0);">over 14 word registers.</span>
+<span style="color: rgb(0, 0, 0);"> </span>
+
+<span style="color: rgb(0, 0, 0);">splitting a register into two 16bit registers</span>
+
+<span style="color: rgb(0, 0, 0);">    0FC8                      bswap	eax</span>
+<span style="color: rgb(0, 0, 0);">                          ;  work with "ax #1"</span>
+<span style="color: rgb(0, 0, 0);">    0FC8                      bswap eax</span>
+<span style="color: rgb(0, 0, 0);">                          ;  work with "ax #2"</span>
+
+
+<span style="color: rgb(0, 0, 0);"><br>6. <span
+ style="font-weight: bold;">setting flags</span></span>
+<span style="color: rgb(0, 0, 0);"><br> - mov instructions do not set flags</span>
+<span style="color: rgb(0, 0, 0);"> - lea insruction does not set flags</span>
+<span style="color: rgb(0, 0, 0);"> - to set flags for register use  "or  eax,eax"</span>
+<span style="color: rgb(0, 0, 0);"> - the direction flag is initially set to "cld" and</span>
+<span style="color: rgb(0, 0, 0);">   is assumed by most AsmLib functions.</span>
+
+<span style="color: rgb(0, 0, 0);">7. <span style="font-weight: bold;">looping</span></span>
+<span style="color: rgb(0, 0, 0);"><br>  - loops are most efficient if the loop back test is at end.</span>
+<span style="color: rgb(0, 0, 0);">  - the "loop" instuction works with a count in "ecx"</span>
+<span style="color: rgb(0, 0, 0);">  - the "jecxz" is often a good way to create loops using "ecx"</span>
+<span style="color: rgb(0, 0, 0);">    as a flag</span>
+
+
+<span style="color: rgb(0, 0, 0);">8. <span style="font-weight: bold;">divide error</span></span>
+
+<span style="color: rgb(0, 0, 0);">Divide by zero or division that will overflow is an error</span>
+<span style="color: rgb(0, 0, 0);">and can be detected by the following code.</span>
+
+<span style="color: rgb(0, 0, 0);">   3B15[87000000]            cmp	edx,[divisor]</span>
+<span style="color: rgb(0, 0, 0);">   730A                      jnb	error</span>
+<span style="color: rgb(0, 0, 0);">   F735[87000000]            div	dword [divisor]</span>
+
+
+<span style="color: rgb(0, 0, 0);">9. <span style="font-weight: bold;">Set register to state of carry flag</span></span>
+
+<span style="color: rgb(0, 0, 0);">The following code sets eax to zero if eax=ebx.  If eax</span>
+<span style="color: rgb(0, 0, 0);">does not equal ebx then set it to -1.  This</span>
+<span style="color: rgb(0, 0, 0);">is useful in setting a flag without using a conditional</span>
+<span style="color: rgb(0, 0, 0);">jmp.</span>
+
+<span style="color: rgb(0, 0, 0);">   39D8                      cmp	eax,ebx</span>
+<span style="color: rgb(0, 0, 0);">   19C0                      sbb	eax,eax ;eax=result</span>
+
+<span style="color: rgb(0, 0, 0);">10. <span style="font-weight: bold;">Set edx to 0 or -1</span><br
+ style="font-weight: bold;"><br>Often we know what is in eax and need a constant in edx.  The</span>
+<span style="color: rgb(0, 0, 0);">following code will set edx.</span>
+
+<span style="color: rgb(0, 0, 0);">   B805000000                mov	eax,5</span>
+<span style="color: rgb(0, 0, 0);">   99                        cdq	;set edx to 0 if eax positive</span>
+<span style="color: rgb(0, 0, 0);">   </span>
+<span style="color: rgb(0, 0, 0);">   B8FFFFFFFF                mov	eax,-1</span>
+<span style="color: rgb(0, 0, 0);">   99                        cdq	;set edx to -1 if eax negative</span>
+
+<span style="color: rgb(0, 0, 0);">If we wanted to clear both eax and edx, the shortest code</span>
+<span style="color: rgb(0, 0, 0);">is:</span>
+
+<span style="color: rgb(0, 0, 0);">   31C0                      xor	eax,eax</span>
+<span style="color: rgb(0, 0, 0);">   99                        cdq</span>
+
+<span style="color: rgb(0, 0, 0);">11. <span style="font-weight: bold;">Coding Style</span></span>
+
+<span style="color: rgb(0, 0, 0);">The use of structures allow variables to be kept on</span>
+<span style="color: rgb(0, 0, 0);">the stack and they are essential in describing data</span>
+<span style="color: rgb(0, 0, 0);">records.  The following code defines a structure and</span>
+<span style="color: rgb(0, 0, 0);">sets up a stack frame to hold the structure:</span>
+
+<span style="color: rgb(0, 0, 0);">struc animal</span>
+<span style="color: rgb(0, 0, 0);">.dog resd 1</span>
+<span style="color: rgb(0, 0, 0);">.cat resd 1</span>
+<span style="color: rgb(0, 0, 0);">animal_struc_size:</span>
+<span style="color: rgb(0, 0, 0);">endstruc</span>
+
+<span style="color: rgb(0, 0, 0);">start:</span>
+<span style="color: rgb(0, 0, 0);">   81EC08000000              sub	esp,animal_struc_size		;make room on stack</span>
+<span style="color: rgb(0, 0, 0);">   C7042401000000            mov	[esp+animal.dog],dword 1	;initialize dog</span>
+<span style="color: rgb(0, 0, 0);">   C744240402000000          mov	[esp+animal.cat],dword 2	;initialize cat</span>
+<span style="color: rgb(0, 0, 0);">   (program body here)   </span>
+<span style="color: rgb(0, 0, 0);">   81C408000000              add	esp,animal_struc_size		;destroy struc on stack</span>
+<span style="color: rgb(0, 0, 0);">   C3                        ret</span>
+
+
+<span style="color: rgb(0, 0, 0);">12. <span style="font-weight: bold;">Avoiding spaghetti</span><br><br>Complexity and spaghetti code increases if we:</span>
+<span style="color: rgb(0, 0, 0);"> 1. jump back often</span>
+<span style="color: rgb(0, 0, 0);"> 2. use a lot of pushes and pops</span>
+<span style="color: rgb(0, 0, 0);"> 3. fail to document register states with comments</span>
+<span style="color: rgb(0, 0, 0);"> 4. use large blocks of code rather than small blocks</span>
+<span style="color: rgb(0, 0, 0);">    with inputs and outputs identified.</span>
+
+<span style="color: rgb(0, 0, 0);">13. <span style="font-weight: bold;">Converting C to Asm</span></span>
+
+<span style="color: rgb(0, 0, 0);">It is easy to convert most "c" programs to nasm assembler using</span>
+<span style="color: rgb(0, 0, 0);">the AsmSrc program, but best results are obtained if debug information</span>
+<span style="color: rgb(0, 0, 0);">was provided by the compiler.  Here are some tips to convert</span>
+<span style="color: rgb(0, 0, 0);">"C" programs.</span>
+
+<span style="color: rgb(0, 0, 0);"> - After generating source, strip the library information off.</span>
+<span style="color: rgb(0, 0, 0);"> - Add a _start label at entry and make it a global.</span>
+<span style="color: rgb(0, 0, 0);"> - compile the program and fix any compile errors.</span>
+<span style="color: rgb(0, 0, 0);"> - Test the program and get it working using Asmbug.</span>
+<span style="color: rgb(0, 0, 0);"> - Create a structure describing the stack frame.</span>
+<span style="color: rgb(0, 0, 0);"> - Replace all the "ebp+xx" references with structure references.</span>
+
+
+
+<span style="color: rgb(0, 0, 0);"><br><style="font-weight: bold;">Debugging Tips</span>
+
+<span style="color: rgb(0, 0, 0);">1.<span style="font-weight: bold;"> debuggers</span></span>
+
+<span style="color: rgb(0, 0, 0);">Debuggers come in many styles.  Some show the source files in</span>
+<span style="color: rgb(0, 0, 0);">code window.  Other disassemble the code in memory.  The display</span>
+<span style="color: rgb(0, 0, 0);">can be either a scrolling text window or separate gui windows.</span>
+
+<span style="color: rgb(0, 0, 0);">  debugger     window  code window shows</span>
+<span style="color: rgb(0, 0, 0);">  --------     ------  -----------------</span>
+<span style="color: rgb(0, 0, 0);">  gdb          text    source</span>
+<span style="color: rgb(0, 0, 0);">  ald          text    disassembly</span>
+<span style="color: rgb(0, 0, 0);">  debug        text    disassembly</span>
+<span style="color: rgb(0, 0, 0);">  kdbg         gui     source</span>
+<span style="color: rgb(0, 0, 0);">  insight      gui     source</span>
+<span style="color: rgb(0, 0, 0);">  AsmBug       gui     hybrid</span>
+
+<span style="color: rgb(0, 0, 0);">If you are debugging a program with windows, the "text" debuggers</span>
+<span style="color: rgb(0, 0, 0);">need to be on a separate terminal.  Otherwise the display will</span>
+<span style="color: rgb(0, 0, 0);">be a mess.</span>
+
+<span style="color: rgb(0, 0, 0);">Most source debuggers assume a HLL is in use and expect library</span>
+<span style="color: rgb(0, 0, 0);">code to be appended to start of programs.  For this reason you</span>
+<span style="color: rgb(0, 0, 0);">need to execute the program and run until your code is reached.</span>
+<span style="color: rgb(0, 0, 0);">Some debuggers will fail if you try to do a "step" before running</span>
+<span style="color: rgb(0, 0, 0);">to the start of your program.</span>
+
+<span style="color: rgb(0, 0, 0);">2. <span style="font-weight: bold;">debug functions</span></span>
+
+<span style="color: rgb(0, 0, 0);">AsmLib has many log functions to write data to a file called "log".</span>
+<span style="color: rgb(0, 0, 0);">they are useful in finding difficult bugs or to create a simple</span>
+<span style="color: rgb(0, 0, 0);">trace of program activity.  The following functons are available:</span>
+
+<span style="color: rgb(0, 0, 0);">  log_hex, log_num, log_process, log_signals, log_str</span>
+
+<span style="color: rgb(0, 0, 0);">If these logs are not enought, there are:</span>
+
+<span style="color: rgb(0, 0, 0);">  hex_dump_file and log functions that write to stdout.</span>
+
+      </pre>
+<!-- END of the content cell --></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

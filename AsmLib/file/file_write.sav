@@ -1,0 +1,155 @@
+
+;   Copyright (C) 2007 Jeff Owens
+;
+;   This program is free software: you can redistribute it and/or modify
+;   it under the terms of the GNU General Public License as published by
+;   the Free Software Foundation, either version 3 of the License, or
+;   (at your option) any later version.
+;
+;   This program is distributed in the hope that it will be useful,
+;   but WITHOUT ANY WARRANTY; without even the implied warranty of
+;   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;   GNU General Public License for more details.
+;
+;   You should have received a copy of the GNU General Public License
+;   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+  [section .text align=1]
+  extern file_open,file_write,file_close
+  extern build_homepath,build_current_path
+  extern lib_buf
+  extern file_status_name
+
+ [section .text]
+
+;****f* file/build_write_open *
+; NAME
+;>1 file
+;  build_write_open - build path and open write file
+; INPUTS
+;    ebx = file name ptr           
+;    ebp = ptr to enviornment pointer if flag bit 0010 set
+;    edx = file attributes if flag bit 1000 set 
+;    esi = flags 0000 0001 write to local dir or full path if given
+;                0000 0010 write to $HOME or full path if given
+;                0000 0100 check for existing file and preserve attr
+;                0000 1000 file attr are in edx, ignore 0100 flag
+;                0001 0000 append to existing file if found
+;    Note: file name in ebx can be partial directory (dir/file.inc)
+; OUTPUT
+;    eax = negative error number or positive identifier (handle)
+; NOTES
+;    source file: file_write.asm
+;<
+; * ----------------------------------------------
+;*******
+  global build_write_open
+build_write_open:
+  mov	[name_ptr],ebx		;save file name ptr
+  mov	[wflag],esi
+  mov	[perms],edx
+  
+  cmp	byte [ebx],'/'		;check if full path provided
+  je	fw_20
+
+fw_02:
+  test	byte [wflag],01h			;check if file in current dir
+  jnz	fw_10			; jmp if file in current dir
+;
+; file not local, so must be in $HOME, search path for $HOME
+;
+fw_05:
+  xchg	ebx,ebp			;ebx=env ebp=filename 
+  mov	edi,lib_buf		;edi = buffer to build path
+  call	build_homepath ;in: ebx=env edi=buf ebp=appendStr out: edi=path
+  js	fw_exit_
+  mov	ebx,lib_buf		;move path to ebx
+  jmp	fw_20
+;
+; file is local (current dir) , ask kernel for our location.
+;
+fw_10:
+  mov	ebp,ebx			;move append str to ebp
+  mov	ebx,lib_buf
+  call	build_current_path	;ebx=buf ebp=append
+fw_exit_:
+  js	fw_exit			;jmp if error
+;; is ebx ok here? should equal path ptr
+;
+; ebx points to file path
+;
+fw_20:
+  mov	edx,644q		;set file permissions
+  test	byte [wflag],4
+  jz	fw_30			;jmp if existing attributes ignored
+  call	file_status_name
+  jns	fw_30			;jmp if file exist
+;
+; file permissions  in edx, open file
+;
+fw_30:
+  test	byte [wflag],8h		;check if attributes provided
+  jz	fw_31			;jmp if not provided
+  mov	edx,[perms]		;force file permissions
+fw_31:
+  test  byte [wflag],10h	;check for append
+  jz	fw_32			;jmp if no append
+  mov	ecx,2102q		;get append mode
+  jmp	fw_34
+fw_32:
+  mov	ecx,1102q		;access bits create,truncate
+fw_34:
+  call	file_open
+  or	eax,eax
+  ret
+
+;****f* file/file_write_close *
+; NAME
+;>1 file
+;  file_write_close - open,write, and close file
+; INPUTS
+;    ebx = file name ptr           
+;    eax = buffer
+;    ecx = lenght of write
+;    ebp = ptr to enviornment pointer if flag bit 0010 set
+;    edx = file attributes if flag bit 1000 set 
+;    esi = flags 0000 0001 write to local dir or full path if given
+;                0000 0010 write to $HOME or full path if given
+;                0000 0100 check for existing file and preserve attr
+;                0000 1000 file attr are in edx, ignore 0100 flag
+;                0001 0000 append to existing file if found
+;    Note: file name in ebx can include partial dir  (dir/file.inc)
+; OUTPUT
+;    eax = 0 or + normal
+;        = -x error occured
+; NOTES
+;    source file: file_write.asm
+;<
+; * ----------------------------------------------
+;*******
+;
+  global file_write_close 
+file_write_close:
+  mov	[wfil_len],ecx		;save length of buffer
+  mov	[wbuffer_ptr],eax	;save ptr to buffer
+  call	build_write_open
+  js	fw_exit		;jmp if error
+
+  mov	ebx,eax			;move file descriptor to ebx
+  mov	ecx,[wbuffer_ptr]	;ptr to buffer
+  mov	edx,[wfil_len]		;get file lenght
+  call	file_write
+  js	fw_exit			;jmp if error
+  call	file_close
+fw_exit:
+  ret
+
+  [section .data]
+perms	dd	0
+wfil_len  dd	0		;save file len
+name_ptr  dd	0
+wbuffer_ptr dd	0
+wflag	dd	0
+
+  [section .text]

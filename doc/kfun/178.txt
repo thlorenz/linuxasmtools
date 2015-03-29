@@ -1,0 +1,16 @@
+
+----------------------------------------------------------------------------
+178 rt_sigqueueinfo - real time sigqueueingo
+----------------------------------------------------------------------------
+
+  mov  eax,178
+  mov  ebx,pid
+  mov  ecx,sig
+  mov  edx,uinfo  ;ptr to sig info
+  int  80h
+
+The above calling sequence was taken from code in signal.c and
+has not been verified.
+
+   sys_rt_sigqueueinfo(int pid, int sig, siginfo_t __user *uinfo);
+

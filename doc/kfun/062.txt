@@ -1,0 +1,17 @@
+
+----------------------------------------------------------------------------
+ 62 ustat          - get file system statistics 
+----------------------------------------------------------------------------
+
+  This is reported to be a libc function.  The kernel returns
+  0ffffffeah "invalid arguement" error
+
+
+NOTES
+       ustat  is deprecated and has only been provided for compatibility.  All
+       new programs should use statfs instead.
+
+SEE ALSO
+       statfs, stat
+
+

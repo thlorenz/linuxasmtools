@@ -1,0 +1,70 @@
+This file started on 1-17-2005. For previous history
+see the AsmEdit change.log
+
+1-17-2005 Fixed problem with running as different
+          user or root.  It now give a message about
+          missing setup files.
+
+2-11-2005 comment highlighting was lost after switching
+          files with "other" command.  The fix was to add
+          show_asm, and asm_comment_char to a.ini save.
+          Also, the block flags were added, blockbegin,
+          blockend, showblock.  Now, the status of comment
+          hightlighting is saved at ~/.a/a.ini
+
+          Getting 'a' setup after changing the a.ini file
+          was tough.  Had to recompile a_config and do
+          install over and over.  a_config will not overwrite
+          an old a.ini so it had to be deleted over and
+          over.  It appears to be a problem with order of
+          events.  The a_config needs to happen first?
+
+4-13-2005 Fixed problem writting file without any
+          attributes.
+
+4-13-2005 Fixed problem with macro repeat stopping the
+          second time forever option selected.
+
+10-10-2005 Fixed problem with writting history file a.ini.
+          If first call to asmedit was root user it stored
+          the a.ini file with root permissions in local users
+          directory.  This prevented access by normal users.
+
+11-18-2005 Fixed problem with goto,line.  The buffer pointed
+          at by [edi] had garbage with was displayed.  The fix
+          was to put zero at start of buffer.
+
+11-18-2005 Fixed problem with use of temp files at /tmp/asmedit.tmp.
+          It files were created by root they could not be written
+          by normal user and program would fail.  The solutions was
+          a kludge.  If root user then the files are deleted from
+          /tmp upon exit.  A better solution would be to write files
+          with permission 666, but current file_write can not do this.
+
+09-19-2006 Added clear_block to escape key processing.  This was
+          added to fix problem with highlight of block when it
+          should not be highlighted
+
+09-19-2006 Added winch code to handle resize of window.  See
+          signal.inc
+
+09-19-2006 Changed "g" get command to get buffer if <enter> key and
+          exit if <ESC> or <ctrl-c>
+
+08-18-2007 Modified DeleteByte to check if at end of file.  If true
+           exit with error.  This fixes problems with replace all
+           and possibly other delete-all or repeat-all-macro functions.
+
+08-18-2007 Dumped display size code and just called asmlib to get
+           window size.  This adds a lot of extra code, but was
+           the easy fix.  see set_window_size.
+
+10-09-2007 Changed macro processing again to try and detect end of
+           a macro in the "forever" mode.
+
+           Added tab key in command mode - it now switches to other
+           window.
+
+           Updated documention to mention asmbug.  Left in kdbg mention,
+           even though it doesn't run here anymore.
+ 

@@ -1,0 +1,40 @@
+
+
+----------------------------------------------------------------------------
+164 setresuid      - set real user ID
+----------------------------------------------------------------------------
+  mov  eax,164
+  mov  ebx,ruid  ;real user id
+  mov  ecx,euid  ;effective user id
+  mov  edx,suid  ;saved effective user id
+  int  80h
+
+       setresuid  sets  the real user ID, the effective user ID, and the saved
+       (effective) user ID of the current process.
+
+       Unprivileged user processes (i.e., processes with each of real,  effec-
+       tive  and  saved  user  ID  nonzero) may change the real, effective and
+       saved user ID, each to one of: the current uid, the  current  effective
+       uid or the current saved uid.
+
+       The  super-user  may set real, effective and saved user ID to arbitrary
+       values.
+
+       If one of the parameters equals -1,  the  corresponding  value  is  not
+       changed.
+
+RETURN VALUE
+       On  success,  zero is returned.  On error a negative code is returned
+
+ERRORS
+       EPERM  The current  process  was  not  privileged  (did  not  have  the
+              CAP_SETUID  capability)  and  tried  to  change the IDs is a not
+              allowed way.
+
+       EAGAIN uid does not match the current uid and  this  call  would  bring
+              that userID over its NPROC rlimit.
+
+SEE ALSO
+       getuid, setuid, setreuid, getresuid
+
+

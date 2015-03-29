@@ -1,0 +1,49 @@
+
+
+------------------------------------------------------------------
+asmlib usage hints
+------------------------------------------------------------------
+
+
+AsmLibx assumes some coding conventions as follows:
+
+ 1. the "CLD" flag is set.  Normally, this can be set
+    at the top of a program and forgotten.  It will work
+    even if we forget to do this, but good practice says
+    it should be set.
+
+ 2. Most library routines do not save registers.  This elimiates
+    a lot of stack pushes which are not necessary and speeds
+    up code.  This deviates from most other libraries, they save
+    and restore registers.      
+
+ 3. The following setup programs appear at the top of programs:
+    env_stack - save ptr to the environment stack
+
+
+Portability
+-----------
+
+  Some calls may need a 2.4 kernel or later.  The instructions
+  do not use any newer processor features and should work on
+  any 486+ processor.  It may work with a 386.
+
+  The library is tied to Linux and will not work on BSD or HERD.
+
+Documentation
+-------------
+
+  The library call descriptions are in file asmlibx.txt.
+  The demo programs might be the easiest way to see how it works.
+
+  Basically, a window is created by calling: window_pre
+                                             window_create
+
+  Then writing to the window                 window_write_line
+
+  The window colors and fonts can be changed by:
+                                             window_color
+                                             window_font
+
+       
+    

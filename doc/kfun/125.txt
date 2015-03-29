@@ -1,0 +1,104 @@
+
+----------------------------------------------------------------------------
+memory 125 mprotect       - control allowable accesses to a region of memory
+----------------------------------------------------------------------------
+  mov  eax,125
+  mov  ebx,addr  ;page-aligned start address of memory region
+  mov  ecx,len   ;page-aligned bytes' size of memory region
+  mov  edx,prot  ;protection mode flags (enabling bits):
+  int  80h
+
+  prot is a bitwise-or of the following values:
+
+        PROT_READ	0x1		/* page can be read */
+        PROT_WRITE	0x2		/* page can be written */
+        PROT_EXEC	0x4		/* page can be executed */
+        PROT_NONE	0x0		/* page can not be accessed */
+
+   i386+ "memory protection" is enabled by a cpu write protection bit for
+   exactly that purpose, thus no distinction for 'executing' (i.e. code reading)
+   mode exists. Which results in the possible memory access modes of rwx, r-x or,
+   or no access at all
+
+                map_type        prot (i.e. enabled access)
+                                PROT_NONE       PROT_READ       PROT_WRITE      PROT_EXEC
+                MAP_SHARED      r: (no) no      r: (yes) yes    r: (no) yes     r: (no) yes
+                                w: (no) no      w: (no) no      w: (yes) yes    w: (no) no
+                                x: (no) no      x: (no) yes     x: (no) yes     x: (yes) yes
+
+                MAP_PRIVATE     r: (no) no      r: (yes) yes    r: (no) yes     r: (no) yes
+                                w: (no) no      w: (no) no      w: (copy) copy  w: (no) no
+                                x: (no) no      x: (no) yes     x: (no) yes     x: (yes) yes
+
+
+
+       The  function  mprotect specifies the desired protection for the memory
+       page(s) containing part or all of the interval  [addr,addr+len-1].   If
+       an  access  is  disallowed  by  the  protection  given  it, the program
+       receives a SIGSEGV.
+
+
+       The new protection replaces any existing protection.  For  example,  if
+       the  memory  had previously been marked PROT_READ, and mprotect is then
+       called with prot PROT_WRITE, it will no longer be readable.
+
+RETURN VALUE
+       On success, mprotect returns zero.  On error a negative code is returned
+
+ERRORS
+       EINVAL addr is not a valid pointer, or not a multiple of PAGESIZE.
+
+       EFAULT The memory cannot be accessed.
+
+       EACCES The  memory cannot be given the specified access.  This can hap-
+              pen, for example, if you mmap(2) a file to which you have  read-
+              only access, then ask mprotect to mark it PROT_WRITE.
+
+       ENOMEM Internal kernel structures could not be allocated.
+
+EXAMPLE
+       #include <stdio.h>
+       #include <stdlib.h>
+       #include <errno.h>
+       #include <sys/mman.h>
+
+       #include <limits.h>    /* for PAGESIZE */
+       #ifndef PAGESIZE
+       #define PAGESIZE 4096
+       #endif
+
+       int
+       main(void)
+       {
+           char *p;
+           char c;
+
+           /* Allocate a buffer; it will have the default
+              protection of PROT_READ|PROT_WRITE. */
+           p = malloc(1024+PAGESIZE-1);
+           if (!p) {
+               perror("Couldn't malloc(1024)");
+               exit(errno);
+           }
+
+           /* Align to a multiple of PAGESIZE, assumed to be a power of two */
+           p = (char *)(((int) p + PAGESIZE-1) & ~(PAGESIZE-1));
+
+           c = p[666];         /* Read; ok */
+           p[666] = 42;        /* Write; ok */
+
+           /* Mark the buffer read-only. */
+           if (mprotect(p, 1024, PROT_READ)) {
+               perror("Couldn't mprotect");
+               exit(errno);
+           }
+
+           c = p[666];         /* Read; ok */
+           p[666] = 42;        /* Write; program dies on SIGSEGV */
+
+           exit(0);
+       }
+
+SEE ALSO
+       mmap
+

@@ -1,0 +1,19 @@
+
+  extern log_num
+
+ [section .text]
+
+
+  global _start
+  global main
+
+_start:
+main:
+  mov	eax,123456
+  call	log_num
+;  call	err_msg_test
+;  call	err_number_test
+;  call	install_signals_test
+  mov	eax,1		;exit
+  int	80h
+;-------------------------------------------------------------

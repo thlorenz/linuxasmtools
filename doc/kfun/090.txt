@@ -1,0 +1,198 @@
+----------------------------------------------------------------------------
+memory  90 mmap           - map or unmap files or devices into memory
+----------------------------------------------------------------------------
+
+  mov  ebx,args_struc
+  mov  eax,090
+  int  80h
+
+       The mmap function asks to map length bytes starting  at  offset  offset
+       from  the  file  (or  other object) specified by the file descriptor fd
+       into memory, preferably at address start.  This  latter  address  is  a
+       hint  only,  and is usually specified as 0.  The actual place where the
+       object is mapped is returned by mmap, and is never 0.
+
+args_struc
+----------
+
+  struc args
+  .start  resd 1 ;page aligned prefered adr or NULL
+  .length resd 1 ;file size
+  .prot   resd 1 ;flags describing memory protection
+  .flags  resd 1 ;control flags
+  .fd     resd 1 ;file descriptor
+  .offset resd 1 ;page aligned offset into file
+  endstruc
+
+prot
+----
+       The prot argument describes the desired memory protection (and must not
+       conflict  with the open mode of the file). It is either PROT_NONE or is
+       the bitwise OR of one or more of the other PROT_* flags.
+
+        PROT_READ	0x1		/* page can be read */
+        PROT_WRITE	0x2		/* page can be written */
+        PROT_EXEC	0x4		/* page can be executed */
+        PROT_SEM	0x8		/* page may be used for atomic ops */
+        PROT_NONE	0x0		/* page can not be accessed */
+        PROT_GROWSDOWN	0x01000000	/* mprotect flag: extend change to start of growsdown vma */
+        PROT_GROWSUP	0x02000000	/* mprotect flag: extend change to end of growsup vma */
+
+flags
+-----
+       The flags parameter specifies the type of the  mapped  object,  mapping
+       options  and  whether modifications made to the mapped copy of the page
+       are private to the process or are to be shared with  other  references.
+       It has bits
+
+        MAP_SHARED	0x01		/* Share changes */
+        MAP_PRIVATE	0x02		/* Changes are private */
+        MAP_TYPE	0x0f		/* Mask for type of mapping */
+        MAP_FIXED	0x10		/* Interpret addr exactly */
+        MAP_ANONYMOUS	0x20		/* don't use a file */
+
+       MAP_FIXED  Do  not  select  a different address than the one specified.
+                  If the specified address cannot be used, mmap will fail.  If
+                  MAP_FIXED  is  specified,  start  must  be a multiple of the
+                  pagesize.  Use of this option is discouraged.
+
+       MAP_SHARED Share this mapping with all other processes  that  map  this
+                  object.   Storing  to the region is equivalent to writing to
+                  the file.  The  file  may  not  actually  be  updated  until
+                  msync(2) or munmap(2) are called.
+
+       MAP_PRIVATE
+                  Create  a  private  copy-on-write  mapping.   Stores  to the
+                  region do not affect the original file.  It  is  unspecified
+                  whether  changes  made  to  the file after the mmap call are
+                  visible in the mapped region.
+
+       You must specify exactly one of MAP_SHARED and MAP_PRIVATE.
+
+       The above three flags are described in POSIX.1b (formerly POSIX.4)  and
+       SUSv2.  Linux also knows about the following non-standard flags:
+
+
+        MAP_GROWSDOWN	0x0100		/* stack-like segment */
+        MAP_DENYWRITE	0x0800		/* ETXTBSY */
+        MAP_EXECUTABLE	0x1000		/* mark it as an executable */
+        MAP_LOCKED	0x2000		/* pages are locked */
+        MAP_NORESERVE	0x4000		/* don't check for reservations */
+        MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
+        MAP_NONBLOCK	0x10000		/* do not block on IO */
+
+
+       MAP_DENYWRITE
+              This  flag is ignored.  (Long ago, it signalled that attempts to
+              write to the underlying file should fail with ETXTBUSY. But this
+              was a source of denial-of-service attacks.)
+
+       MAP_EXECUTABLE
+              This flag is ignored.
+
+       MAP_NORESERVE
+              (Used  together  with  MAP_PRIVATE.)  Do  not reserve swap space
+              pages for this mapping. When swap space is reserved, one has the
+              guarantee  that  it  is possible to modify this private copy-on-
+              write region.  When it is not reserved  one  might  get  SIGSEGV
+              upon a write when no memory is available.
+
+       MAP_LOCKED
+              (Linux  2.5.37  and  later)  Lock the pages of the mapped region
+              into memory in the manner of mlock().  This flag is  ignored  in
+              older kernels.
+
+       MAP_GROWSDOWN
+              Used for stacks. Indicates to the kernel VM system that the map-
+              ping should extend downwards in memory.
+
+
+#define MAP_ANONYMOUS	0x20		/* don't use a file */
+#define MAP_ANON	MAP_ANONYMOUS
+#define MAP_FILE	0
+
+       MAP_ANONYMOUS
+              The mapping is not backed by any file; the fd and  offset  argu-
+              ments  are ignored.  This flag in conjunction with MAP_SHARED is
+              implemented since Linux 2.4.
+
+       MAP_ANON
+              Alias for MAP_ANONYMOUS. Deprecated.
+
+       MAP_FILE
+              Compatibility flag. Ignored.
+
+       MAP_32BIT
+              Put the mapping into the first 2GB of the process address space.
+              Ignored  when MAP_FIXED is set. This flag is currently only sup-
+              ported on x86-64 for 64bit programs.
+
+       Some systems document the additional flags MAP_AUTOGROW, MAP_AUTORESRV,
+       MAP_COPY, and MAP_LOCAL.
+
+       fd  should  be a valid file descriptor, unless MAP_ANONYMOUS is set, in
+       which case the argument is ignored.
+
+       offset should be a multiple of the page size as  returned  by  getpage-
+       size(2).
+
+       Memory  mapped  by  mmap  is  preserved  across  fork(2), with the same
+       attributes.
+
+       A file is mapped in multiples of the page size. For a file that is  not
+       a  multiple  of  the  page  size,  the  remaining memory is zeroed when
+       mapped, and writes to that region are not written out to the file.  The
+       effect  of changing the size of the underlying file of a mapping on the
+       pages that correspond to added  or  removed  regions  of  the  file  is
+       unspecified.
+
+
+RETURN VALUE
+       On success, mmap returns a pointer to the mapped area.  On  error,
+       a negative error code is returned.
+
+NOTES
+       It  is  architecture  dependent whether PROT_READ includes PROT_EXEC or
+       not. Portable programs should always set PROT_EXEC if  they  intend  to
+       execute code in the new mapping.
+
+ERRORS
+       EBADF  fd  is  not  a  valid file descriptor (and MAP_ANONYMOUS was not
+              set).
+
+       EACCES A file descriptor refers to a non-regular file.  Or  MAP_PRIVATE
+              was  requested,  but  fd is not open for reading.  Or MAP_SHARED
+              was requested and PROT_WRITE is set,  but  fd  is  not  open  in
+              read/write (O_RDWR) mode.  Or PROT_WRITE is set, but the file is
+              append-only.
+
+       EINVAL We don't like start or length or offset.  (E.g.,  they  are  too
+              large, or not aligned on a PAGESIZE boundary.)
+
+       ETXTBSY
+              MAP_DENYWRITE was set but the object specified by fd is open for
+              writing.
+
+       EAGAIN The file has been locked, or too much memory has been locked.
+
+       ENOMEM No memory is available, or the process's maximum number of  map-
+              pings would have been exceeded.
+
+       ENODEV The underlying filesystem of the specified file does not support
+              memory mapping.
+
+       Use of a mapped region can result in these signals:
+
+       SIGSEGV
+              Attempted write into a region specified to mmap as read-only.
+
+       SIGBUS Attempted access to a portion of the buffer that does not corre-
+              spond  to  the  file  (for  example, beyond the end of the file,
+              including the case  where  another  process  has  truncated  the
+              file).
+
+SEE ALSO
+       getpagesize,  mlock,  mmap2, msync, shm_open,
+       B.O. Gallmeister, POSIX.4, O'Reilly, pp. 128-129 and 389-391.
+
+

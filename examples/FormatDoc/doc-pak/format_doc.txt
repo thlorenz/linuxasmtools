@@ -1,0 +1,62 @@
+
+NAME
+   format_doc - process text file
+
+ INPUTS
+    usage format_doc <in-file> <out-file>
+     
+    a format_doc.ini file must also exist in
+    the local directory, see file format_doc.ini
+
+ OUTPUT
+    the out-file will written with all match-strings
+    replaced with replace-strings
+
+ NOTES
+   file:  format_doc.asm
+    
+   format_doc first finds the match string and then
+   begins executing the actions at end of each entry
+   in format_doc.ini
+   If repeat code is placed at end of actions, they
+   are repeated till the match string is not found.
+   It is important to keep the match string beyond
+   its last match to avoid infinite loops when using
+   the repeat action.
+
+ ----------------------------------------------
+  format_doc.ini - control table for format_doc
+
+INPUTS
+  * table entries are repetitiions of the following
+  * three fields:
+  * "match-string" "replacement-string" "actions"
+
+  * the code \n in strings can be used for new-line (0ah)
+
+  * The actions available are:
+  * 1 replace the match string with replace-string
+  * 2 move up one line
+  * 3 move down one line
+  * 4 replace whole llne rather than just the match-string
+  *    (line needs 0ah at end)
+  * 5 insert line above current line
+  *    (line needs 0ah at end)
+  * 6 insert line below current line
+  *    (line needs 0ah at end)
+  * 7 insert replace-string at front of current line
+  * 8 delete right to end of line
+  *   (place at start of actions to remove match ->)
+  * 9 do actions till end of file reached
+
+OUTPUT
+  * if program hangs or aborts this is almost always due
+  * to infinite loops caused by impossible actions.  Most
+  * problems can be avoided by keeping the match string
+  * pointer beyond last action.  This avoids finding the
+  * same string over and over when repeating actions.
+  * Use the code 3 to move match pointer down.
+
+NOTES
+ * file:  format_doc.ini
+ * The format_doc.ini file needs to be in current directory

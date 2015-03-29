@@ -1,0 +1,7 @@
+assembler source generator
+asmsrc disassembler ELF executables and
+creates assembler source files.  It can
+work with tables from AsmDis to identify
+code and data areas.
+It run in console or X terminal.
+http://linuxasmtools.net

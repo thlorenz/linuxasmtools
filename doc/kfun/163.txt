@@ -1,0 +1,93 @@
+
+----------------------------------------------------------------------------
+memory 163 mremap         - re-map a virtual memory address
+----------------------------------------------------------------------------
+
+  mov  eax,163
+  mov  ebx,old_address ;old address, base of current mapping
+  mov  ecx,old_size    ;size of range to re-map
+  mov  edx,new_size    ;requested size
+  mov  esi,flags       ;see below
+  mov  edi,new_address ;new address, if MREMAP_FIXED flag then this is
+                       ;base address of new mapping
+  int  80h
+
+   flags =  MREMAP_MAYMOVE ( = 1 ) or, zero
+            MREMAP_FIXED ( = 2, ).
+
+
+       the man-page very shortly notes that 'mremap' provides for an efficient
+       'realloc' scheme, an example can be found in the fig-Forth implementation.
+
+       mremap expands (or shrinks) an  existing  memory  mapping,  potentially
+       moving  it  at  the same time (controlled by the flags argument and the
+       available virtual address space).
+
+       old_address is the old address of the virtual  memory  block  that  you
+       want  to  expand  (or  shrink).   Note  that old_address has to be page
+       aligned. old_size  is  the  old  size  of  the  virtual  memory  block.
+       new_size  is  the  requested size of the virtual memory block after the
+       resize.
+
+       The flags argument is a bitmap of flags.
+
+       In Linux the memory is divided into pages.  A user process has (one or)
+       several  linear  virtual  memory segments.  Each virtual memory segment
+       has one or more mappings to real memory  pages  (in  the  page  table).
+       Each  virtual  memory  segment  has its own protection (access rights),
+       which may cause a segmentation violation  if  the  memory  is  accessed
+       incorrectly  (e.g., writing to a read-only segment).  Accessing virtual
+       memory outside of the segments will also cause  a  segmentation  viola-
+       tion.
+
+       mremap  uses  the  Linux page table scheme.  mremap changes the mapping
+       between virtual addresses and memory pages.  This can be used to imple-
+       ment a very efficient realloc.
+
+
+FLAGS
+       MREMAP_MAYMOVE
+              indicates  if  the  operation should fail, or change the virtual
+              address if the resize cannot be  done  at  the  current  virtual
+              address.
+
+
+RETURN VALUE
+       On success mremap returns a pointer to the new virtual memory area.  On
+       error a negative code is returned.
+
+
+ERRORS
+       EINVAL An  invalid  argument was given. Most likely old_address was not
+              page aligned.
+
+       EFAULT "Segmentation fault." Some address in the range  old_address  to
+              old_address+old_size  is  an  invalid virtual memory address for
+              this process.  You can also get EFAULT even if there exist  map-
+              pings  that  cover  the whole address space requested, but those
+              mappings are of different types.
+
+       EAGAIN The memory segment is locked and cannot be re-mapped.
+
+       ENOMEM The memory area  cannot  be  expanded  at  the  current  virtual
+              address,  and  the MREMAP_MAYMOVE flag is not set in flags.  Or,
+              there is not enough (virtual) memory available.
+
+NOTES
+       With current  glibc  includes,  in  order  to  get  the  definition  of
+       MREMAP_MAYMOVE,   you  need  to  define  _GNU_SOURCE  before  including
+       <sys/mman.h>.
+
+CONFORMING TO
+       This call is  Linux-specific,  and  should  not  be  used  in  programs
+       intended  to  be  portable.   4.2BSD had a (never actually implemented)
+       mremap(2) call with completely different semantics.
+
+SEE ALSO
+       getpagesize, realloc, malloc, brk, sbrk, mmap
+
+       Your favorite OS text book for more information on paged memory.  (Mod-
+       ern  Operating Systems by Andrew S. Tannenbaum, Inside Linux by Randolf
+       Bentson, The Design of the UNIX Operating System by Maurice J. Bach.)
+
+

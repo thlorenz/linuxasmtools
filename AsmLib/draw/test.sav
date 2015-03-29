@@ -1,0 +1,25 @@
+  extern draw_on
+  extern draw_off
+  extern draw_table
+  extern draw_box
+
+  global main,_start
+main:
+_start:
+  nop
+
+  mov	esi,box_info
+  call	draw_box
+
+  mov	eax,1
+  int	80h
+
+;---------------
+  [section .data]
+box_info:
+  dd	30003634h	;box color
+  db	2		;row 2
+  db	4		;column 4
+  db	5		;vertical size
+  db	20		;horizontal size
+

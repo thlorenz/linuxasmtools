@@ -1,0 +1,15 @@
+
+--------------------------------------------------------------
+283 kexec_load  - load kernel image
+--------------------------------------------------------------
+
+   mov eax,283
+
+
+note:  This call is related to crash recovery and restoring
+       the kernel.
+
+   Available since 2.6.13
+
+  see kexec_jump relocate_kernel
+

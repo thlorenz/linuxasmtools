@@ -1,0 +1,7 @@
+wraper for "info" program
+ainfo is a example program for
+asmlib's sys_wrap function.  It
+wraps around the info program and
+provides a simple interface.  ainfo
+runs in the console or x terminal
+http://linuxasmtools.net

@@ -1,0 +1,291 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>AsmFile file manager</title>
+ <meta name="keywords" content="file manager, assembler, linux, utilities, x86, assembly, IDE, development, programming">
+ <meta name="description" content="AsmFile a general file manager with features that support assembler programming">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+
+<br>
+NAME<br>
+<br>
+ asmfile - file manager for shell users<br>
+<br>
+DESCRIPTION<br>
+<br>
+asmfile always shows a bash shell window and has<br>
+a optional two pane directory display. It can be<br>
+controlled from the keyboard or a mouse. The mouse<br>
+interface is only available in terminals.<br>
+<br>
+Various support programs can be installed and<br>
+selected with optional script files. A bookmark<br>
+file is kept in the home directory and all other<br>
+support tools are installed anywhere on the<br>
+executable path.<br>
+<br>
+The two pane window display is used to show the<br>
+files operated on (pane 1) and the destination<br>
+for operations (pane 2). One pane is active and<br>
+the target for keys and mouse input. The inactive<br>
+pane has a dimmed color.<br>
+<br>
+STARTUP<br>
+<br>
+  - asmfile<br>
+  - asmfile path1<br>
+  - asmfile path1 path2<br>
+<br>
+Asmfile can be started with a path for pane 1<br>
+and another for pane 2. If no path is provided<br>
+the current directory is used for both panes.<br>
+<br>
+MOUSE CONTROLS<br>
+<br>
+buttons are indicated by color and are mouse<br>
+targets. Files can be selected by clicking on<br>
+them. If a file has already been selected and<br>
+it is clicked, asmfile will try to act as follows:<br>
+<br>
+  - executable files will be executed<br>
+  - directories will be entered<br>
+  - normal files will be viewed<br>
+<br>
+All clicks use the left button with one exception.<br>
+The setting bookmarks uses the right button.<br>
+<br>
+KEYBOARD CONTROLS<br>
+<br>
+The keyboard input may go to the shell window<br>
+or the asmfile window. All alpha keys always<br>
+go to the shell window. When the shell is in<br>
+full screen mode it get all keys except for<br>
+alt-s and alt-r. These two keys are used to<br>
+switch window modes and reset the shell.<br>
+<br>
+FILE COMMANDS<br>
+<br>
+The following keyboard controls are active<br>
+when a small shell window is at top of screen.<br>
+<br>
+right-arrow  enter directory if one is selected<br>
+<br>
+left-arrow   return to previous directory<br>
+<br>
+tab          switch window pane<br>
+<br>
+up-arrow     move selection bar up<br>
+<br>
+down-arrow   move selection bar down<br>
+<br>
+pgup         page active screen up<br>
+<br>
+pgdn         page active screen down<br>
+<br>
+%            insert the selected path into shell<br>
+<br>
+f1           set and view file state<br>
+<br>
+f2           find<br>
+<br>
+f3           view file<br>
+<br>
+f4           edit file<br>
+<br>
+f5           copy file<br>
+<br>
+f6           move file<br>
+<br>
+f7           make directory<br>
+<br>
+f8           delete file or directory<br>
+<br>
+f9           decompress file<br>
+<br>
+f10          tar.gz directory<br>
+<br>
+f11          compare two files<br>
+<br>
+f12          print file<br>
+<br>
+The mouse can not do pgup or pgdn, but all other commands<br>
+are click on button or file.<br>
+<br>
+BOOKMARKS<br>
+<br>
+Bookmarks are set or activated by a single key or mouse action.<br>
+<br>
+  alt-0 -&gt; alt-9  activate bookmarks<br>
+  Shift-F1 -&gt; shift-f12 set bookmarks<br>
+<br>
+To set a bookmark, enter the directory to be set, and right click<br>
+bookmark button or press shift-fXX. The first few letters of path<br>
+will show on bookmark button after the set operation.<br>
+<br>
+SHELL USAGE<br>
+<br>
+Commands can be sent to the shell at any time. Just type them<br>
+in and press enter. In the small shell mode, the enter key<br>
+is also used to execute actions on the selected file. This<br>
+action is disable once a command letter is typed (alpha key).<br>
+<br>
+The swap command (ctrl-o) will switch to a full screen shell.<br>
+In full screen mode, the shell can also run graphical programs<br>
+and accepts the full keyboard input.<br>
+<br>
+To exit full screen mode type ctrl-o<br>
+<br>
+Many commands will call shell programs and their output<br>
+will appear in shell window. The copy, move, and delete<br>
+commands require feedback, and the shell pauses with<br>
+a partial command. The user must accept or modify the<br>
+shell command.<br>
+<br>
+TOOLS AND PLUGINS<br>
+<br>
+If a helper program is not available, the button will have<br>
+four "????" characters on the bottom. This can be changed<br>
+by installing programs or creating a script.<br>
+<br>
+When asmfile starts it looks for user supplied scripts, if<br>
+they are not found it looks for the default helper program.<br>
+If neither is found, the button will have four "????"<br>
+characters.<br>
+<br>
+The default helper programs are:<br>
+<br>
+ status - fileset<br>
+ find   - asmfind<br>
+ view   - asmview<br>
+ edit   - asmedit<br>
+ upak   - script upak install with asmfile<br>
+ pak    - script installed with asmfile<br>
+ compare- xxdiff<br>
+ print  - print script installed with asmfile<br>
+ docs   - asmref<br>
+ colors - asmcolor<br>
+ disasm - asmdis<br>
+ sourcer- asmsrc<br>
+ timer  - asmtimer<br>
+ plan   - asmplan<br>
+ echo   - key_echo<br>
+ project- asmproject<br>
+ make   - make<br>
+ debug  - asmbug<br>
+<br>
+The above defaults can be modified<br>
+by adding scripts named:<br>
+<br>
+   asmfile_chmod   <br>
+   asmfile_docs   <br>
+   asmfile_colors   <br>
+   asmfile_dis   <br>
+   asmfile_src   <br>
+   asmfile_timer   <br>
+   asmfile_plan   <br>
+   asmfile_project   <br>
+   asmfile_make   <br>
+   asmfile_key_echo   <br>
+   asmfile_debug   <br>
+   asmfile_find   <br>
+   asmfile_view   <br>
+   asmfile_edit   <br>
+   asmfile_upak   <br>
+   asmfile_pak   <br>
+   asmfile_compare   <br>
+   asmfile_print   <br>
+<br>
+Added scripts must be on execution search path and<br>
+can be constructed as follows:<br>
+<br>
+   #! /bin/bash<br>
+   executable %1 %2<br>
+<br>
+The first line selects shell to handle script.<br>
+The second line provides command and paramters.<br>
+Not all scripts will need parameters, but if they<br>
+do the parameters must match parameters used<br>
+by origional command or script. <br>
+<br>
+<br>
+DEPENDENCIES<br>
+<br>
+  Optional compile dependency: AsmLib<br>
+<br>
+  asmfile calls numerous UNIX utilities, too many<br>
+  for a short list.  If a feature does not work or<br>
+  a file type will can not be viewed, then install<br>
+  the program that can not be found.  Normally, the<br>
+  most used programs are already installed.<br>
+       <br>
+      </big><br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

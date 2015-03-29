@@ -1,0 +1,3 @@
+touch *.nasm
+nasm -g -felf xx.nasm
+ld -static -o xx xx.o /usr/lib/asmlib.a

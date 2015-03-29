@@ -1,0 +1,6 @@
+;    al = "U" unknown pid
+;    al = "S" sleeping
+;    al = "R" running
+;    al = "T" stopped
+;    al = "Z" zombie
+;    al = "D" uninterruptable wait

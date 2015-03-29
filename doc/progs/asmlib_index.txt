@@ -1,0 +1,876 @@
+
+
+Asmlib is a library of Linux functions for X86
+processors.  All code was written in assembler.
+In general, functions do not preserve registers
+or check for errors.  The CLD flag is assumed
+to be set.  Also, some functions assume other
+functions are called first.  For example, the
+functions mouse_enable, read_window_size are
+setup functions usually called at beginning of
+programs.
+
+Copyrighted by the GNU public liscense.
+----------------------------------------------
+
+TABLE OF CONTENTS
+-----------------
+
+ -- blk -- 
+1 bit_set - set bit in array
+2 bit_set_list - set bits in array
+3 bit_test - test array of bits
+4 blk_bmove - move large block bytes
+5 blk_clear - clear array of bytes
+6 blk_del_bytes - delete area from block of data
+7 blk_dmove - move large block of dwords
+8 blk_fdel_bytes - delete area from block of data
+9 blk_find - search block of text for string
+10 blk_finsert_bytes - insert data into block
+11 blk_fmake_hole - make hole and fill with zeros
+12 blk_freplace - replace first match in buffer
+13 blk_freplace_all - replace all matches in buffer
+14 blk_insert_bytes - insert data into block
+15 blk_make_hole - make hole in data block for insert
+16 blk_move - move block of data
+17 blk_replace - replace first match in buffer
+18 blk_replace_all - replace all matches in buffer
+19 blk_replace_table - replace strings using table
+20 margins - sets margins for paragraph function
+21 paragraph - formats one paragraph
+
+ -- char -- 
+22 is_alpha - check if alpha 20h -> 7eh 
+23 is_number - check if ascii number
+
+ -- compress -- 
+24 decrypt - move ascii data and decrypt
+25 encrypt - simple string encryption
+26 lz_compress - Lempel-Ziv data compressor
+27 lz_decompress - Lempel-Ziv data uncompressor
+28 pak - move ascii data and compress
+29 upak - move ascii data and uncompress
+
+ -- crt -- 
+30 color_cursor - place a colored cursor on the screen
+31 crt_char_at - display one colored char at location.
+32 crt_clear - clear the screen
+33 crt_close
+34 crt_color_at - move cursor and display colored line
+35 crt_horizontal - repeat display character 
+36 crt_line - display line with embedded color codes
+37 crt_open - get crt parameters and setup termios
+38 crt_set_color - set color mode for display
+39 crt_str - display asciiz string at curent cursor position
+40 crt_table - display screen of data using table
+41 crt_table_loc - use table ptr to find crt row/col
+42 crt_vbar - display vertical bar lenght of window
+43 crt_vertical - repeat char vertically
+44 crt_win_from_ptrs - display window using ptrs to lines
+45 crt_window - display one window/page of data
+46 crt_window2 - display window with embedded color
+47 crt_write - display block of data
+48 cursor_hide - hide the cursor
+49 cursor_to_table - find table location from cursor row/col
+50 cursor_unhide - unhide the cursor
+51 mov_color - copy vt100 string to buffer
+52 move_cursor - move cursor
+53 reset_soft - terminal soft reset
+54 reset_terminal - output vt-100 setup strings
+55 restore_cursor - restore cursor position
+56 save_cursor - save current cursor position
+
+ -- database -- 
+57 database_close - close currently active database
+58 database_copy_record - copy record to buffer
+59 database_extract - extract record (cut) and save copy
+60 database_insert - insert record into open database
+61 database_open - open or create a database file
+62 database_record_size - compute size of record in database
+63 database_search - scan the database for string
+
+ -- date -- 
+64 ascii2days - convert ascii year,month,day to days since 1970
+65 ascii2regs - convert ascii year,month,day to bin year,month,day
+66 bins2ascii - format date
+67 day_name - lookup name for day
+68 days2ascii - convert days to week,day,month, etc.
+69 days2dateregs - convert days to week,day,month, etc.
+70 days_in_month - returns number of days in month
+71 get_raw_time - get raw time from kernel
+72 leap_check - check for leap year
+73 leap_count - count leap years from 1970 till target
+74 month_name - lookup name for month
+75 raw2ascii - apply zone adjustment to raw system time
+76 raw2seconds - apply zone adjustment to raw system time
+77 regs2ascii - format date
+78 regs2days - convert day,month,year to days since 1970
+79 seconds2bins - convert seconds to year,month,day,hr, etc.
+80 seconds2dateregs - convert seconds to week,day,month, etc.
+81 seconds2timeregs - seconds to hour,min,sec registers 
+
+ -- dir -- 
+82 dir_access - check if file can be accessed
+83 dir_change - change current working directory
+84 dir_close - close a open directory and release memory
+85 dir_close_file - close a open directory, retain memory
+86 dir_close_memory - release memory allocated by dir_open
+87 dir_create - create a new directory
+88 dir_current - get current working directory
+89 dir_delete - delete an empty directory
+90 dir_index - index an open directory
+91 dir_open - allocate memory and read directory
+92 dir_open_indexed - open a directory and index
+93 dir_open_sorted - open a directory, index, and sort
+94 dir_read - open, read, close a directory structure
+95 dir_read_grow - allocate memory and read directory
+96 dir_sort - sort a opened and indexed directory
+97 dir_sort_by_name - sort a opened and indexed directory
+98 dir_sort_by_type - sort a opened and indexed directory
+99 dir_status - check if directory exists
+100 dir_type - Add type information to indexed directory
+101 dir_walk - traverse directory and return selected paths
+
+ -- draw -- 
+102 draw_box - use line drawing characters to draw a box
+103 draw_off - disable line drawing characters
+104 draw_on - enable line drawing characters
+105 draw_table - draw using table of actions   
+
+ -- env -- 
+106 env_exec - search executable path for program
+107 env_home - search the enviornment for $HOME
+108 env_home2 - search /proc for $HOME
+109 env_shell - search enviornment for SHELL=
+110 env_stack - find stack ptrs to enviornment
+111 find_env_variable - search enviornment for variable name
+112 lib_data - common data used by crt functions  
+
+ -- file -- 
+113 build_current_path - build path using current dir
+114 build_file_open - build path and open file
+115 build_homepath - build path using $HOME
+116 build_write_open - build path and open write file
+117 file_access - check if file can be accessed
+118 file_close - close opened file
+119 file_copy - copy one file
+120 file_delete - delete file
+121 file_exec_path - build full path to executable
+122 file_length_handle - get length of file using descriptor
+123 file_length_name - get length of named file
+124 file_list_copy - copy files on list
+125 file_open - open named file
+126 file_open_rd - open named file
+127 file_read - read n bytes from open file
+128 file_read_all - open,read entire file,close
+129 file_read_grow - open and read entire file, expand buffer if necessary
+130 file_rename - rename a file 
+131 file_simple_read - open & read file to buffer, then close
+132 file_status_handle - check filename exists and get status
+133 file_status_name - check filename exists and get status
+134 file_write - write n bytes to open file
+135 file_write_close - open,write, and close file
+136 filename_extract - extract filename from full path
+137 filepath_extract - extract path from path + name
+138 get_current_path - get default (current) dir
+139 mmap_close - close memory mapped file and release memory
+140 mmap_open_ro - returns a read only pointer to file data
+141 mmap_open_rw - map file into memory for read/write
+
+ -- file2 -- 
+142 block_close - close file
+143 block_open_append - open file for appended writes
+144 block_open_home_append - open file at $HOME for appended writes
+145 block_open_home_read - open existing file as read-only
+146 block_open_home_update - open file at $HOME for reading/writing records
+147 block_open_home_write - open truncated file in $HOME dir for read/write
+148 block_open_read - open existing file as read-only
+149 block_open_update - open file for reading/writing records
+150 block_open_write - open truncated file for read/write
+151 block_read - read file
+152 block_read_all - read file and close it
+153 block_read_home_all - read file and close it
+154 block_seek - seek to location in file
+155 block_write - write file
+156 block_write_all - write file and close it
+157 block_write_home_all - write file to $HOME and close it
+
+ -- hash -- 
+158 hash_add - add entries to hash table
+159 hash_lookup - search data entries for match
+160 hash_lookup_next - search for another match
+161 hash_remove - remove one entry from data set
+162 hash_setup - prepare hash table for use
+163 hashfile_archive - write current hash data to open file
+164 hashfile_restore - read open hash file into buffer
+165 record_add - add entries to record table
+166 record_archive - write current hash data to open file
+167 record_lookup - search records for key
+168 record_restore - read open hash file into buffer
+169 record_setup - prepare record table for use
+170 string_add - add entries to string table
+171 string_archive - write current hash data to open file
+172 string_lookup - search strings for key
+173 string_restore - read open hash file into buffer
+174 string_setup - prepare string table for use
+
+ -- list -- 
+175 list_check_end - check list end, do not remove
+176 list_check_front - check list top, do not remove entry
+177 list_get_from_end - return last list entry
+178 list_get_from_front - return entry from top of list
+179 list_put_at_end - add entry to end of list
+180 list_put_at_front - add entry to front of list
+181 pop_dword - remove dwort from top of list
+182 pop_string - return string at top of list
+183 put_dword - add dword to top of list
+184 put_pop_dword_setup - setup dword list
+185 put_pop_string_setup - setup string list
+186 put_string - add string to top of list
+
+ -- log-error -- 
+187 buffer_hex - build hex line plus ascii in buffer
+188 buffer_hex_line - dump hex line to buffer
+189 err_msg - display error messages
+190 err_number - display error number
+191 hex_dump_file - dump hex to file
+192 hex_dump_stdout - dump hex to stdout
+193 install_signals - install signals
+194 log_eol - write eol (end of line) to "log"
+195 log_fd - log status of file descriptor
+196 log_hex - write hex to file called "log"
+197 log_num - write number to file called "log"
+198 log_process_info - log process pid,ppid,gid,pgid
+199 log_regtxt - write string in -eax- to file called "log"
+200 log_signals - install signal logging
+201 log_str - write string to file called "log"
+202 log_terminal_0 - log termios and win size for stdin
+203 log_terminal_x - log termios and win size for stdin
+204 show_hex - display assorted hex numbers using control table
+205 write_char_to_file - write byte to open fd
+206 write_char_to_stdout - display ascii char
+207 write_hex_byte_stdout - display hex char
+208 write_hex_byte_to_file - write hex for byte to file
+209 write_hex_line_stdout - dump hex line to stdout
+210 write_hex_line_to_file - dump hex line to file
+
+ -- math -- 
+211 dword_divide - divide 32 bit values
+212 quad_add - add 64 bit values
+213 quad_compare - unsigned 64 bit compare
+214 quad_divide - divide 64 bit values
+215 quad_multiply - multiply 64 bit values
+216 quad_negate - negate 64 bit values
+217 quad_subtract - subtract 64 bit values
+
+ -- memory -- 
+218 chain_double - chain (add) to doubly linked list
+219 chain_single - chain (add) link to singly linked list
+220 m_allocate - provide memory to caller
+221 m_close - release memory and disable memory manager
+222 m_release - release previously allocated memory
+223 m_setup  - setup for memory manager use
+224 memory_init - get top of allocated memory
+225 set_memory - adjust memory end point
+226 shared_attach - attach to a shared memory segment
+227 shared_close - close a shared memory segment
+228 shared_open - open a shared memory segment
+229 unchain_double - unchain (remove) link from doubly link list
+230 unchain_single - unchain (remove) link from singly linked list
+
+ -- menu -- 
+231 crt_mouse_line - display line in mouse_decode format
+232 key_decode1 - decode non-aplha key strings and get process
+233 key_decode2 - decode aplha key strings and get process
+234 key_decode3 - decode non-aplha key strings and get process
+235 menu_decode - decode menu key/mouse event
+236 menu_display - display menu specified by structure
+237 mouse_line_decode - find mouse process from display line text
+
+ -- process -- 
+238 change_tty_group - assign tty to new group
+239 check_process - get process status from /proc
+240 create_group - make our process a new group leader
+241 get_group - get group id for process (x)
+242 get_our_group - get group id for our process
+243 get_our_process_id - get our process id
+244 get_parent_process_id - get our process id
+245 get_proc_info - extract info from kernel /proc/./stat
+246 get_tty_group - get group controling the tty
+247 join_group - join a process to (existing) group
+248 kill_process - send kill signal to process
+249 process_info_pid - get information for process (x)
+250 process_info_pidn - get information for process (x)
+251 process_info_us - get our process information
+252 process_search - search names of active process's
+253 process_walk - walk through active process's
+254 process_walk_cleanup - close all walk files 
+
+ -- random -- 
+255 random_dword - generate random dword
+256 random_seed - get low clock bits to use as random number
+257 scale_dword - adjust random number to fit in range
+
+ -- signal -- 
+258 signal_handler_default - set default handler for signal
+259 signal_handler_none - set no handler for signal
+260 signal_handler_status - check if our signal handler installed
+261 signal_install - install signal
+262 signal_install_list - install signals
+263 signal_mask_block - block signal handler (OR) into mask
+264 signal_mask_get - get current signal mask
+265 signal_mask_set - set signal mask (store) bits
+266 signal_mask_unblock - unblock signal handler (AND) with mask
+267 signal_send - send signal
+268 signal_wait - wait for signals
+269 signal_wait_blind - wait for any signal that is handled.
+270 signal_wait_child - wait for child termination signal
+271 signal_wait_setup - optional setup for signal_wait function
+272 signals_ending - get mask for pending signals
+
+ -- sort -- 
+273 sort_bubble - bubble sort a list of ptr to text blocks
+274 sort_dword_array - use bubble sort on array of dwords
+275 sort_dword_array2 - use selection sort on array of dwords
+276 sort_dword_array3 - use selection sort with ptr list
+277 sort_merge - merge sort buffer using index
+278 sort_merge_lines - merge sort buffer using index
+279 sort_selection - use selection sort with ptr list
+
+ -- sound -- 
+280 close_sound_device - close /dev/dsp
+281 compute_samples_per_wave - compute samples per wave
+282 compute_wave_count - compute number of waves
+283 flush_sound_device - write remaining bytes
+284 make_sound - play square wave
+285 metronome - repeat tone until done or key press
+286 open_sound_device - open /dev/dsp
+287 set_sound_device - mono mode, byte data, samp rate 22050
+288 write_sound_device - write to /dev/dsp
+
+ -- str -- 
+289 str_end - scan to end of string
+290 str_index - index into list of asciiz string
+291 str_insert - inserts string into string
+292 str_join - join two strings
+293 str_len - find length of asciiz string
+294 str_move - move asciiz string
+295 strlen1 - get lenght of esi string
+296 strlen2 - get lenght of edi string
+
+ -- str_cmp -- 
+297 compare_mask - compare string to masked template
+298 scan_buf - fast scan of sequential buffers for string
+299 scan_buf_open - setup for scan buffer for string
+300 str_compare - compare two strings, use case
+301 str_match - compare asciiz string to buffer data, use case
+302 str_replace - replace first occurance of str1 in str2
+303 str_replace_all - replace all occurances of str1 in str2
+304 str_search - search string for match
+
+ -- str_conv -- 
+305 ascii_to_dword - convert decimal ascii string to binary
+306 byte2ascii - convert binary 1-255 to 3 ascii chars 
+307 byte2hexascii - convert one byte to hex ascii and store
+308 byte2hexstr - convert one byte to hex ascii and store
+309 byte2octalascii - convert one byte to octal ascii and store
+310 byte_to_ascii - convert binary byte to left justified ascii string
+311 byte_to_hexascii - binary byte to hex ascii
+312 byteto_hexascii - convert one byte to hex ascii and store
+313 dword2hexascii - convert dword to hex ascii and store
+314 dword2hexstr - convert one dword to hex ascii and store
+315 dword2octalascii - convert one dword to octal ascii and store
+316 dword_to_ascii - convert binary dword to left justified ascii string
+317 dword_to_hexascii - binary byte to hex ascii
+318 dword_to_l_ascii - convert binary dword to left justified ascii string
+319 dword_to_lpadded_ascii - binary dword to left justified ascii string
+320 dword_to_r_ascii - convert bin dword to right just ascii str
+321 dwordto_hexascii - convert one dword to hex ascii and store
+322 fdword_to_ascii - convert dword float to ascii string
+323 fqword_to_ascii - convert qword float to ascii string
+324 fst0_to_ascii - convert fst0 to ascii string
+325 ftword_to_ascii - convert tword float to ascii string
+326 hexascii2byte - convert two hex ascii char to byte
+327 hexascii2dword - convert eight hex ascii char to dword
+328 hexascii2nibble - convert one hex ascii char to nibble
+329 hexascii2word - convert four hex ascii char to word
+330 hexascii_to_byte - convert up to 2 hexascii to bin
+331 hexascii_to_dword - convert up to 8 hexascii to bin
+332 hexascii_to_nibble - convert hexascii char to bin
+333 nibble2ascii - convert binary 1-99 to 2 ascii chars 
+334 nibble2hexascii - convert one nibble to hex ascii and store
+335 nibble2hexstr - convert 4-bits to hex ascii and store
+336 nibble2octalascii - convert 3-bits to octal ascii and store
+337 nibbleto_hexascii - convert 4-bits to hex ascii and store
+338 octalascii2dword - convert asciiz octal string to dword
+339 word2hexascii - convert one word to hex ascii and store
+340 word2hexstr - convert one word to hex ascii and store
+341 word2octalascii - convert one word to octal ascii and store
+342 word_to_ascii - convert binary word to left justified ascii string
+343 wordto_hexascii - convert one word to hex ascii and store
+
+ -- str_parse -- 
+344 lookup_token - check if token on list
+345 parse_token - scan buffer for next token
+346 read_setup - read config file and move data
+347 write_setup - write config file
+
+ -- sys -- 
+348 delay - delay microseconds or seconds
+349 is_executable_on_path - check if executable available
+350 launch_app - wrap app and setup for feed with launch_feed
+351 launch_feed - feed data to process started by launch_app
+352 launch_kill - kill a process started by launch_app 
+353 poll_fd - check if data avail.
+354 sys_fork_run - fork and execute program
+355 sys_pipe_capture - launch program and capture its stdout
+356 sys_pipe_feed - launch program and pipe to it's STDIN
+357 sys_run_die - launches executable then dies
+358 sys_run_wait - execute program and wait for completiion
+359 sys_shell - launches local shell
+360 sys_shell_alt - launches local shell in alternate window
+361 sys_shell_cmd - launches local shell
+362 sys_shell_plus - execute shell and restore terminal state
+363 sys_win_alt - switches to Vt100 alt windows
+364 sys_win_normal - selects normal Vt100 windows
+365 sys_wrap - wrap around an executable and capture in/out
+366 sys_wrap_plus - wrap around an executable and capture in/out
+367 sys_wrap_shell - launches command in wrapped shell
+368 wait_event - poll fd input/output status
+369 wait_pid - wait for a process to change state
+
+ -- syscall -- 
+370 sys__llseek - kernel function                             
+371 sys__newselect - kernel function                          
+372 sys__sysctl - kernel function                             
+373 sys_access - kernel function                              
+374 sys_acct - kernel function                                
+375 sys_add_key - kernel function                             
+376 sys_adjtimex - kernel function                            
+377 sys_afs_syscall - kernel function                         
+378 sys_alarm - kernel function                               
+379 sys_bdflush - kernel function                             
+380 sys_break - kernel function                               
+381 sys_brk - kernel function                                 
+382 sys_capget - kernel function                              
+383 sys_capset - kernel function                              
+384 sys_chdir - kernel function                               
+385 sys_chmod - kernel function                               
+386 sys_chown - kernel function                               
+387 sys_chown32 - kernel function                             
+388 sys_chroot - kernel function                              
+389 sys_clone - kernel function                               
+390 sys_close - kernel function                               
+391 sys_creat - kernel function                               
+392 sys_create_module - kernel function                       
+393 sys_delete_module - kernel function                       
+394 sys_dup - kernel function                                 
+395 sys_dup2 - kernel function                                
+396 sys_epoll_create - kernel function                        
+397 sys_epoll_ctl - kernel function                           
+398 sys_epoll_wait - kernel function                          
+399 sys_execve - kernel function                              
+400 sys_exit - kernel function                                
+401 sys_exit_group - kernel function                          
+402 sys_faccessat - kernel function                           
+403 sys_fadvise64 - kernel function                           
+404 sys_fadvise64_64 - kernel function                        
+405 sys_fchdir - kernel function                              
+406 sys_fchmod - kernel function                              
+407 sys_fchmodat - kernel function                            
+408 sys_fchown - kernel function                              
+409 sys_fchown32 - kernel function                            
+410 sys_fchownat - kernel function                            
+411 sys_fcntl - kernel function                               
+412 sys_fcntl64 - kernel function                             
+413 sys_fdatasync - kernel function                           
+414 sys_fgetxattr - kernel function                           
+415 sys_flistxattr - kernel function                          
+416 sys_flock - kernel function                               
+417 sys_fork - kernel function                                
+418 sys_fremovexattr - kernel function                        
+419 sys_fsetxattr - kernel function                           
+420 sys_fstat - kernel function                               
+421 sys_fstat64 - kernel function                             
+422 sys_fstatat64 - kernel function                           
+423 sys_fstatfs - kernel function                             
+424 sys_fstatfs64 - kernel function                           
+425 sys_fsync - kernel function                               
+426 sys_ftime - kernel function                               
+427 sys_ftruncate - kernel function                           
+428 sys_ftruncate64 - kernel function                         
+429 sys_futex - kernel function                               
+430 sys_futimesat - kernel function                           
+431 sys_get_kernel_syms - kernel function                     
+432 sys_get_mempolicy - kernel function                       
+433 sys_get_robust_list - kernel function                     
+434 sys_get_thread_area - kernel function                     
+435 sys_getcwd - kernel function                              
+436 sys_getdents - kernel function                            
+437 sys_getdents64 - kernel function                          
+438 sys_getegid - kernel function                             
+439 sys_getegid32 - kernel function                           
+440 sys_geteuid - kernel function                             
+441 sys_geteuid32 - kernel function                           
+442 sys_getgid - kernel function                              
+443 sys_getgid32 - kernel function                            
+444 sys_getgroups - kernel function                           
+445 sys_getgroups32 - kernel function                         
+446 sys_getitimer - kernel function                           
+447 sys_getpgid - kernel function                             
+448 sys_getpgrp - kernel function                             
+449 sys_getpid - kernel function                              
+450 sys_getpmsg - kernel function                             
+451 sys_getppid - kernel function                             
+452 sys_getpriority - kernel function                         
+453 sys_getresgid - kernel function                           
+454 sys_getresgid32 - kernel function                         
+455 sys_getresuid - kernel function                           
+456 sys_getresuid32 - kernel function                         
+457 sys_getrlimit - kernel function                           
+458 sys_getrusage - kernel function                           
+459 sys_getsid - kernel function                              
+460 sys_gettid - kernel function                              
+461 sys_gettimeofday - kernel function                        
+462 sys_getuid - kernel function                              
+463 sys_getuid32 - kernel function                            
+464 sys_getxattr - kernel function                            
+465 sys_gtty - kernel function                                
+466 sys_idle - kernel function                                
+467 sys_init_module - kernel function                         
+468 sys_inotify_add_watch - kernel function                   
+469 sys_inotify_init - kernel function                        
+470 sys_inotify_rm_watch - kernel function                    
+471 sys_io_cancel - kernel function                           
+472 sys_io_destroy - kernel function                          
+473 sys_io_getevents - kernel function                        
+474 sys_io_setup - kernel function                            
+475 sys_io_submit - kernel function                           
+476 sys_ioctl - kernel function                               
+477 sys_ioperm - kernel function                              
+478 sys_iopl - kernel function                                
+479 sys_ioprio_get - kernel function                          
+480 sys_ioprio_set - kernel function                          
+481 sys_ipc - kernel function                                 
+482 sys_kexec_load - kernel function                          
+483 sys_keyctl - kernel function                              
+484 sys_kill - kernel function                                
+485 sys_lchown - kernel function                              
+486 sys_lchown32 - kernel function                            
+487 sys_lgetxattr - kernel function                           
+488 sys_link - kernel function                                
+489 sys_linkat - kernel function                              
+490 sys_listxattr - kernel function                           
+491 sys_llistxattr - kernel function                          
+492 sys_lock - kernel function                                
+493 sys_lookup_dcookie - kernel function                      
+494 sys_lremovexattr - kernel function                        
+495 sys_lseek - kernel function                               
+496 sys_lsetxattr - kernel function                           
+497 sys_lstat - kernel function                               
+498 sys_lstat64 - kernel function                             
+499 sys_madvise - kernel function                             
+500 sys_madvise1 - kernel function                            
+501 sys_mbind - kernel function                               
+502 sys_migrate_pages - kernel function                       
+503 sys_mincore - kernel function                             
+504 sys_mkdir - kernel function                               
+505 sys_mkdirat - kernel function                             
+506 sys_mknod - kernel function                               
+507 sys_mknodat - kernel function                             
+508 sys_mlock - kernel function                               
+509 sys_mlockall - kernel function                            
+510 sys_mmap - kernel function                                
+511 sys_mmap2 - kernel function                               
+512 sys_modify_ldt - kernel function                          
+513 sys_mount - kernel function                               
+514 sys_move_pages - kernel function                          
+515 sys_mprotect - kernel function                            
+516 sys_mpx - kernel function                                 
+517 sys_mq_open - kernel function                             
+518 sys_mremap - kernel function                              
+519 sys_msync - kernel function                               
+520 sys_munlock - kernel function                             
+521 sys_munlockall - kernel function                          
+522 sys_munmap - kernel function                              
+523 sys_nanosleep - kernel function                           
+524 sys_nfsservctl - kernel function                          
+525 sys_nice - kernel function                                
+526 sys_oldfstat - kernel function                            
+527 sys_oldlstat - kernel function                            
+528 sys_oldolduname - kernel function                         
+529 sys_oldstat - kernel function                             
+530 sys_olduname - kernel function                            
+531 sys_open - kernel function                                
+532 sys_openat - kernel function                              
+533 sys_pause - kernel function                               
+534 sys_personality - kernel function                         
+535 sys_pipe - kernel function                                
+536 sys_pivot_root - kernel function                          
+537 sys_poll - kernel function                                
+538 sys_ppoll - kernel function                               
+539 sys_prctl - kernel function                               
+540 sys_pread64 - kernel function                             
+541 sys_prof - kernel function                                
+542 sys_profil - kernel function                              
+543 sys_pselect6 - kernel function                            
+544 sys_ptrace - kernel function                              
+545 sys_putpmsg - kernel function                             
+546 sys_pwrite64 - kernel function                            
+547 sys_query_module - kernel function                        
+548 sys_quotactl - kernel function                            
+549 sys_read - kernel function                                
+550 sys_readahead - kernel function                           
+551 sys_readdir - kernel function                             
+552 sys_readlink - kernel function                            
+553 sys_readlinkat - kernel function                          
+554 sys_readv - kernel function                               
+555 sys_reboot - kernel function                              
+556 sys_remap_file_pages - kernel function                    
+557 sys_removexattr - kernel function                         
+558 sys_rename - kernel function                              
+559 sys_renameat - kernel function                            
+560 sys_request_key - kernel function                         
+561 sys_restart_syscall - kernel function                     
+562 sys_rmdir - kernel function                               
+563 sys_rt_sigaction - kernel function                        
+564 sys_rt_sigpending - kernel function                       
+565 sys_rt_sigprocmask - kernel function                      
+566 sys_rt_sigqueueinfo - kernel function                     
+567 sys_rt_sigreturn - kernel function                        
+568 sys_rt_sigsuspend - kernel function                       
+569 sys_rt_sigtimedwait - kernel function                     
+570 sys_sched_get_priority_min - kernel function              
+571 sys_sched_get_priority_max - kernel function              
+572 sys_sched_getaffinity - kernel function                   
+573 sys_sched_getparam - kernel function                      
+574 sys_sched_getscheduler - kernel function                  
+575 sys_sched_rr_get_interval - kernel function               
+576 sys_sched_setaffinity - kernel function                   
+577 sys_sched_setparam - kernel function                      
+578 sys_sched_setscheduler - kernel function                  
+579 sys_sched_yield - kernel function                         
+580 sys_select - kernel function                              
+581 sys_sendfile - kernel function                            
+582 sys_sendfile64 - kernel function                          
+583 sys_set_mempolicy - kernel function                       
+584 sys_set_robust_list - kernel function                     
+585 sys_set_thread_area - kernel function                     
+586 sys_set_tid_address - kernel function                     
+587 sys_setdomainname - kernel function                       
+588 sys_setfsgid - kernel function                            
+589 sys_setfsgid32 - kernel function                          
+590 sys_setfsuid - kernel function                            
+591 sys_setfsuid32 - kernel function                          
+592 sys_setgid - kernel function                              
+593 sys_setgid32 - kernel function                            
+594 sys_setgroups - kernel function                           
+595 sys_setgroups32 - kernel function                         
+596 sys_sethostname - kernel function                         
+597 sys_setitimer - kernel function                           
+598 sys_setpgid - kernel function                             
+599 sys_setpriority - kernel function                         
+600 sys_setregid - kernel function                            
+601 sys_setregid32 - kernel function                          
+602 sys_setresgid - kernel function                           
+603 sys_setresgid32 - kernel function                         
+604 sys_setresuid - kernel function                           
+605 sys_setresuid32 - kernel function                         
+606 sys_setreuid - kernel function                            
+607 sys_setreuid32 - kernel function                          
+608 sys_setrlimit - kernel function                           
+609 sys_setsid - kernel function                              
+610 sys_settimeofday - kernel function                        
+611 sys_setuid - kernel function                              
+612 sys_setuid32 - kernel function                            
+613 sys_setxattr - kernel function                            
+614 sys_sgetmask - kernel function                            
+615 sys_sigaction - kernel function                           
+616 sys_sigaltstack - kernel function                         
+617 sys_signal - kernel function                              
+618 sys_sigpending - kernel function                          
+619 sys_sigprocmask - kernel function                         
+620 sys_sigreturn - kernel function                           
+621 sys_sigsuspend - kernel function                          
+622 sys_socketcall - kernel function                          
+623 sys_splice - kernel function                              
+624 sys_ssetmask - kernel function                            
+625 sys_stat - kernel function                                
+626 sys_stat64 - kernel function                              
+627 sys_statfs - kernel function                              
+628 sys_statfs64 - kernel function                            
+629 sys_stime - kernel function                               
+630 sys_stty - kernel function                                
+631 sys_swapoff - kernel function                             
+632 sys_swapon - kernel function                              
+633 sys_symlink - kernel function                             
+634 sys_symlinkat - kernel function                           
+635 sys_sync - kernel function                                
+636 sys_sync_file_range - kernel function                     
+637 sys_sysfs - kernel function                               
+638 sys_sysinfo - kernel function                             
+639 sys_syslog - kernel function                              
+640 sys_tee - kernel function                                 
+641 sys_tgkill - kernel function                              
+642 sys_time - kernel function                                
+643 sys_timer_create - kernel function                        
+644 sys_times - kernel function                               
+645 sys_tkill - kernel function                               
+646 sys_truncate - kernel function                            
+647 sys_truncate64 - kernel function                          
+648 sys_ugetrlimit - kernel function                          
+649 sys_ulimit - kernel function                              
+650 sys_umask - kernel function                               
+651 sys_umount - kernel function                              
+652 sys_umount2 - kernel function                             
+653 sys_uname - kernel function                               
+654 sys_unlink - kernel function                              
+655 sys_unlinkat - kernel function                            
+656 sys_unshare - kernel function                             
+657 sys_uselib - kernel function                              
+658 sys_ustat - kernel function                               
+659 sys_utime - kernel function                               
+660 sys_utimes - kernel function                              
+661 sys_vfork - kernel function                               
+662 sys_vhangup - kernel function                             
+663 sys_vm86 - kernel function                                
+664 sys_vm86old - kernel function                             
+665 sys_vmsplice - kernel function                            
+666 sys_vserver - kernel function                             
+667 sys_wait4 - kernel function                               
+668 sys_waitid - kernel function                              
+669 sys_waitpid - kernel function                             
+670 sys_write - kernel function                               
+671 sys_writev - kernel function                              
+
+ -- terminal -- 
+672 alt_screen - switch to alt terminal screen
+673 get_string - get string in scrolled window line
+674 get_text - get string in scrolled window line
+675 is_raw_term - check if stdin is in raw mode
+676 key_flush - remove keys from stdin
+677 key_mouse1 - flush and read one key string or mouse click
+678 key_poll - check if key avail.
+679 key_string1 - get string (preloaded string in buffer)
+680 key_string2 - get string (no preloaded string displayed)
+681 mouse_check - reformat keyboard data if mouse click info
+682 mouse_enable - enable mouse on x terminals
+683 normal_screen - switch to normal terminal screen
+684 output_term_info_0 - output stdin window size and settings
+685 output_term_info_x - output terminal structure "termios"
+686 output_termios_0 - output stdin terminal structure "termios"
+687 output_termios_x - output terminal structure "termios"
+688 output_winsize_0 - output stdin window size
+689 output_winsize_x - output terminal structure "termios"
+690 raw_set1 - switch stdin to raw mode
+691 raw_set2 - switch stdin to raw mode
+692 raw_unset1 - restore termios saved with raw_set1
+693 raw_unset2 - restore termios saved with raw_set2
+694 read_one_byte - read one byte from stdin
+695 read_stdin - read one key string or mouse click
+696 read_term_info_0 - save stdin window size and settings
+697 read_term_info__x - save terminal structure "termios"
+698 read_termios_0 - save stdin terminal structure "termios"
+699 read_termios_x - save terminal structure "termios"
+700 read_window_size - set global window size info
+701 read_winsize_0 - save stdin window size
+702 read_winsize_x - read (fd) window size
+703 restore_alt_cursor - restore cursor for alt window
+704 restore_cursor_from - restore cursor position
+705 restore_norm_cursor - restore cursor for normal window
+706 save_alt_cursor - save cursor and assume alt window active
+707 save_cursor_at - save cursor position
+708 save_norm_cursor - save cursor and assume normal window active
+709 scroll_region - set scroll limits for terminal
+710 set_screen_size - set scroll limits for terminal
+711 stdout_str - display asciiz string at cursor position
+712 terminal_report - get report using screen codes
+713 terminal_type - check if console or xterm
+714 terminfo_decode_setup - setup to decode keyboard keys
+
+ -- terminfo -- 
+715 terminfo_extract_flag - get boolean from terminfo
+716 terminfo_extract_key - get value from terminfo
+717 terminfo_extract_number - get value from terminfo
+718 terminfo_key_decode1 - decode non-aplha key strings and get process
+719 terminfo_key_decode2 - decode key strings and get process
+720 terminfo_read - search for terminfo and read into memory
+
+ -- timer -- 
+721 timer_create - create posix timer
+722 timer_delete - delete posix timer
+723 timer_getoverrun - get timer overrun count
+724 timer_gettime - get timer state
+725 timer_settime - arm a dynamic timer
+
+ -- trace -- 
+726 dis_one - disassemble one instruction
+727 trace_attach - attach to a running process
+728 trace_continue - restart a stopped process or send signal
+729 trace_detach - detach from a process
+730 trace_fregsget - get registers of traced process
+731 trace_fregsset - set registers of traced process
+732 trace_fxregsget - get registers of traced process
+733 trace_fxregsset - set registers of traced process
+734 trace_kill - kill a process being traced
+735 trace_peek - get data from traced process memory
+736 trace_peek_bytes - get string from traced process memory
+737 trace_poke - store data into traced process menory
+738 trace_poke_bytes - store string into traced process
+739 trace_regsget - get registers of traced process
+740 trace_regsset - set registers of traced process
+741 trace_step - continue execution for one instruction
+742 trace_syscall - continue execution till system call
+743 trace_upeek - get data from kernel(user) memory
+744 trace_upeek_bytes - get string from kernel memory
+745 trace_upoke - store data into kernel menory
+746 trace_upoke_bytes - store string into kernel memory
+747 trace_wait - wait for any child to stop
+748 traceme - enable trace for this process
+
+ -- widget -- 
+749 browse_dir - display and traverse directories
+750 browse_dir_left - browse directories in left half of display
+751 browse_dir_right - browse directories in right half of display
+752 dir_browse - display and traverse directories
+753 dir_browse_left - browse directories in left half of display
+754 dir_browse_right - browse directories in right half of display
+755 edit_file_in_box - edit small file inside box
+756 edit_text_in_box - edit supplied string in a box
+757 form - display and accept user inputs to fill form
+758 form2_input - get string data for form
+759 form2_show - show form for input of data
+760 make_box - display box outline
+761 message_box - display message and wait for key press
+762 popup_menu - popup menu box and wait for key/click
+763 select_1up_list_centered - display select window in center, fit to data size
+764 select_1up_list_full - display selection list as full screen window
+765 select_1up_list_left - display selection list on left half of screen
+766 select_1up_list_right - display selection list on right half of screen
+767 select_buffer_line - view a buffer and select line
+768 select_file_line - view a buffer and select line
+769 select_list_engine - display a list and wait for selection
+770 select_list_setup - setup the select list database
+771 show_box - display boxed message with optional boarder
+772 string_form - get string data for form
+773 view_buffer - display,search,scroll text
+774 view_file - display,search,scroll text  file
+
+ -- xterm -- 
+775 screen_size - report screen size in pixels
+776 win_deiconify - return window to prevous size
+777 win_font - set window font 3,4,5,6 sizes
+778 win_iconify - convert window to icon
+779 win_lines - resize window to x lines
+780 win_lower - lower window to bottom of stack (behind other windows)
+781 win_maximize - fill screen with window
+782 win_move - move window to pixel location
+783 win_posn - report window position in pixels
+784 win_raise - raise window to top of stack (make visible)
+785 win_refresh - redisplay screen
+786 win_resize - resize window to x,y pixels
+787 win_restore - return window to prevous size
+788 win_size - report window size excluding title
+789 win_title - set window title
+790 win_txt_resize - resize text area to rows/columns
+791 win_txt_size - report window size excluding titlebar

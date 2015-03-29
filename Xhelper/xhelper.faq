@@ -1,0 +1,136 @@
+
+FAQ - Frequently Asked Questions - for xhelper
+----------------------------------------------
+
+1. Are there other desktop control programss?
+
+  As of July 2008 the following are available:
+
+  wmctrl & zenity    http://sweb.cz/tripie/utils/wmctrl/
+                     http://ftp.acc.umu.se/pub/GNOME/sources/zenity/
+  xatuomation
+  xcmd
+  xdotool            http://www.semicomplete.com/projects/xdotool
+  xmacro
+  xnee               http://www.gnu.org
+  xprop
+  xse
+  xwit
+
+
+2. Why do we need another desktop control program?
+
+   At present most desktop control programs fail
+   at times and are difficult to use. If the code
+   is ignored for a few months, it becomes difficult
+   to understand.
+
+   Xhelper attempts to be a simple deskop control
+   program that satisifies these requirements:
+
+   -small
+   -fast
+   -simple
+   -reliable
+   -well documented
+
+3. Does xhelper work with all window managers?
+
+   xhelper uses the EWMH specification:
+      http://www.freedesktop.org/standards/wm-spec/
+
+   Many window managers follow this guideline
+   and work with xhelper.
+
+4. Can we add features to xhelper?
+
+   Xhelper has a design philosophy of each command
+   being self contained if possible.  This discourages
+   variables that are set or used by programmers.
+   Features that fit within this philosophy could
+   be added. The bigger problem is feedback from users.
+
+5. How do I request a new feature?
+
+   Join the yahoo group DesktopLinuxAsm and email a
+   request.
+
+6. Why don't we have a lot of good desktop control
+   programs?
+
+   There are three issues that cause developers
+   problems.
+
+   a. Sending data to windows using the "send" protocall
+      command is unreliable. The window can refuse any
+      input.  Capturing the x server communication also
+      fails with programs that check their connection.
+      This leaves the xtest protocall extension which is
+      not well documented.
+
+   b. Activating windows can end up being a fight with the
+      window manager. The programmer can activate the
+      window by calling x functions, and the window manager
+      may decide this is a problem and change things.
+
+   c. Finding windows can be difficult. It is possible to
+      search for class and other information, but all
+      searches fail if multiple copies of the same program
+      a running. It is possible to develop a complex test
+      to locate windows, but this complicates control
+      programs.
+
+7. Are any enhancements planned for xhelper?
+
+   Yes.  Ideas being considered are:
+
+   a. goto command
+   b. simple program selection (library)
+   c. mouse controls
+
+8. Are the other desktop control programs worth looking
+   at.
+
+   Yes, they each fit different needs.  Many work
+   with remote displays and xhelper does not.
+   The xnee program is useful for automating tests
+   and recording inputs. xdotool and wmctrl are
+   also nice programs for sending commands from
+   scripts.
+
+9. How do I add commands to xhelper?
+
+   Xhelper has a table of command names
+   and a table of handler addresses.  Just
+   add you command and process to the
+   table.  Then, write the handler and
+   put a return instruction at the end.
+
+10. When xhelper ends all the programs it started
+   also end. How do I keep programs running after
+   xhelper quits?
+
+   There are several solutions to this problem.
+   
+   1. keep xhelper running with a wait command.
+   2. start programs in a shell with the "nohup"
+      command.
+   3. use the bash shell command "disown" to disconnect
+      a program from shell.
+   4. start programs in a new shell.
+
+11. How can I debug my program?
+
+   Most problems are due to timing.  First insert a
+   lot of ^dump commands and some ^delay commands.  Add
+   a few ^show commands describing what is expected and
+   then send everything to a log file.  The resize_test
+   in /examples has samples of these techniques.
+
+12. Is global warming real?
+
+   We humans are driven by self-interest and
+   distort histoy as needed. We get poor information
+   from the media and science is dominated by the
+   search for profit. The real question should be:
+   Will we wake up and begin to address problems?   

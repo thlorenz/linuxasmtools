@@ -1,0 +1,41 @@
+
+
+----------------------------------------------------------------------------
+ 78 gettimeofday   - get time
+----------------------------------------------------------------------------
+  mov  eax,078
+  mov  ebx,tv
+  mov  ecx,tz
+  int  80h
+
+       The function gettimeofday can get the time as
+       well  as a timezone.  The tv argument is a timeval struct, as specified
+       in <sys/time.h>:
+
+       struct timeval
+               .tv_sec  resd 1 ;  seconds */
+               .tv_usec resd 1 ;  microseconds */
+       endstric
+
+       and gives the number of seconds and microseconds since the  Epoch  (see
+       time).  The tz argument is a timezone :
+
+       struct timezone
+               tz_minuteswest resd 1 ; /* minutes W of Greenwich */
+               tz_dsttime     resd 1 ;     /* type of dst correction */
+       endstruc
+
+       The  use  of  the timezone struct is obsolete; the tz_dsttime field has
+       never been used under Linux
+
+
+RETURN VALUE
+       gettimeofday return 0 for success, or negative error code
+
+ERRORS
+       EFAULT One of tv or tz pointed outside your accessible address space.
+
+SEE ALSO
+       date, adjtimex, time, ctime, ftime
+
+

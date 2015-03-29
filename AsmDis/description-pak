@@ -1,0 +1,6 @@
+disassembler for ELF executables
+asmdis is a console/terminal program to
+interatively disassamble a executable.
+It produces tables that can be utilized
+by AsmSrc to generate source files.
+http://linuxasmtools.net

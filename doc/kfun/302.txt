@@ -1,0 +1,129 @@
+
+-------------------------------------------------------------------
+302 renameat  - rename relative
+-------------------------------------------------------------------
+
+  mov  eax,302
+  mov  ebx,fd
+  mov  ecx,pathname  ;pointer to asciiz path
+  mov  edx,new_fd
+  mov  esi,new_path  ;ponter to new path
+  int  80h
+
+   Renames a file relative to directory file descriptors, moving it
+   between directories if required.
+   This system call operates in exactly the same way as sys_rename,
+   except for the differences described below.
+
+args
+----
+
+ ebx Old directory descriptor.
+
+ ecx A pointer to a null-terminated string specifying the old pathname.
+   If it refers to a symbolic link the link is renamed.
+   If the pathname is relative, then it is interpreted relative to the
+   directory referred to by the file descriptor ebx (rather than relative
+   to the current working directory of the calling process, as is done by
+   sys_rename for a relative pathname).
+   If the pathname is relative and ebx is the special value AT_FDCWD,
+   then old path is interpreted relative to the current working directory
+   of the calling process.
+   If the pathname is absolute, then ebx is ignored.
+
+ edx New directory descriptor.
+
+ esi A pointer to a null-terminated string specifying the new pathname.
+   If it refers to a symbolic link the link is overwritten.
+   If new path already exists it will be atomically replaced (subject to
+   a few conditions; see 'Return values' below), so that there is no
+   point at which another process attempting to access new path will find
+   it missing.
+   If new path exists but the operation fails for some reason sys_rename
+   guarantees to leave an instance of new path in place.
+   However, when overwriting there will probably be a window in which
+   both old path and new path refer to the file being renamed.
+   If the pathname is relative, then it is interpreted relative to the
+   directory referred to by the file descriptor edx (rather than relative
+   to the current working directory of the calling process, as is done by
+   sys_rename for a relative pathname).
+   If the pathname is relative and edx is the special value AT_FDCWD,
+   then new path is interpreted relative to the current working directory
+   of the calling process.
+   If the pathname is absolute, then edx is ignored.
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EACCES Write permission is denied for the directory containing old
+     path or new path, or, search permission is denied for one of the
+     directories in the path prefix of old path or new path, or old path is
+     a directory and does not allow write permission (needed to update the
+     .. entry).
+   -EBUSY The rename fails because old path or new path is a directory
+     that is in use by some process (perhaps as current working directory,
+     or as root directory, or because it was open for reading) or is in use
+     by the system (for example as mount point), while the system considers
+     this an error. (Note that there is no requirement to return EBUSY in
+     such cases --- there is nothing wrong with doing the rename anyway ---
+     but it is allowed to return EBUSY if the system cannot otherwise
+     handle such situations.)
+   -EFAULT Old path or new path points outside your accessible address
+     space.
+   -EINVAL The new pathname contained a path prefix of the old, or, more
+     generally, an attempt was made to make a directory a subdirectory of
+     itself.
+   -EISDIR New path is an existing directory, but old path is not a
+     directory.
+   -ELOOP Too many symbolic links were encountered in resolving old path
+     or new path.
+   -EMLINK Old path already has the maximum number of links to it, or it
+     was a directory and the directory containing new path has the maximum
+     number of links.
+   -ENAMETOOLONG Old path or new path was too long.
+   -ENOENT A directory component in old path or new path does not exist
+     or is a dangling symbolic link
+   -ENOMEM Insufficient kernel memory was available.
+   -ENOSPC The device containing the file has no room for the new
+     directory entry.
+   -ENOTDIR A component used as a directory in old path or new path is
+     not, in fact, a directory. Or, old path is a directory, and new path
+     exists but is not a directory.
+     -or-
+     Old path is a relative path and ebx is a file descriptor referring to
+     a file other than a directory; or similar for new path and edx.
+   -ENOTEMPTY,
+   -EEXIST New path is a non-empty directory, i.e., contains entries
+     other than "." and "..".
+   -EPERM,
+   -EACCES The directory containing old path has the sticky bit (S_ISVTX)
+     set and the process's effective user ID is neither the user ID of the
+     file to be deleted nor that of the directory containing it, and the
+     process is not privileged (does not have the CAP_FOWNER capability);
+     or new path is an existing file and the directory containing it has
+     the sticky bit set and the process's effective user ID is neither the
+     user ID of the file to be replaced nor that of the directory
+     containing it, and the process is not privileged (does not have the
+     CAP_FOWNER capability); or the filesystem containing pathname does not
+     support renaming of the type requested.
+   -EROFS The file is on a read-only filesystem.
+   -EXDEV Old path and new path are not on the same mounted filesystem.
+     (Linux permits a filesystem to be mounted at multiple points, but
+     sys_rename does not work across different mount points, even if the
+     same filesystem is mounted on both.)
+   -EBADF ebx or edx is not a valid file descriptor.
+
+   Any other hard links to the file (as created using sys_link) are
+   unaffected.
+   On NFS filesystems, you can not assume that if the operation failed
+   the file was not renamed. If the server does the rename operation and
+   then crashes, the retransmitted RPC which will be processed when the
+   server is up again causes a failure. The application is expected to
+   deal with this. See sys_link for a similar problem.
+
+
+   Available since 2.6.16
+

@@ -1,0 +1,9 @@
+#!/bin/bash
+rm test1
+rm test2
+nasm -felf -g -o test1.o test1.src
+ld -o test1 test1.o ../../asmliba.a /usr/lib/asmlib.a
+rm test1.o
+nasm -felf -g -o test2.o test2.src
+ld -o test2 test2.o ../../asmliba.a /usr/lib/asmlib.a
+rm test2.o

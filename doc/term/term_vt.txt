@@ -1,0 +1,2293 @@
+              Console & Xterm control sequences
+
+                  xterm__  __console
+                         | |
+type    code             v v description
+------- --------------   - - -----------------------------------------      
+charSet 0eh              x c alternate character set G1 (SO) (ctrl-n)
+charSet 0fh              x c G0 character set (SI)       (ctrl-o)
+charSet 1bh,'[?2h'       x - set US ascii for G0-G3 char. sets
+charSet 1bh,']50;.'BEL   x - set font to "." , BEL is hex 07h char
+charSet 1bh,'%8'         - c select UTF-8 char. set (obsolete)
+charSet 1bh,"(A"         x - G0 set for UK
+charSet 1bh,")A"         x - G1 set for UK
+charSet 1bh,"*A"         x - G2 set for UK
+charSet 1bh,"+A"         x - G3 set for UK
+charSet 1bh,"(B"         x c G0 set for USA, console selects ISO 8859-1
+charSet 1bh,")B"         x - G1 set for USA
+charSet 1bh,"*B"         x - G2 set for USA
+charSet 1bh,"+B"         x - G3 set for USA
+charSet 1bh,'%@'         - c select ISO 8859-1 char. set
+charSet 1bh,'%G'         - c select UTF-8 char. set
+charSet 1bh,")K"         - c user mapping, see mapscrn utility
+charSet 1bh,"N"          x - G2 quick select
+charSet 1bh,'n'          x - select G2 char. set
+charSet 1bh,")0"         x c G1 set for line drawing
+charSet 1bh,"(0"         x - G0 set for line drawing
+charSet 1bh,"*0"         x - G2 set for line drawing
+charSet 1bh,"0"          x - G3 quick select
+charSet 1bh,"+0"         x - G3 set for line drawing
+charSet 1bh,'0'          x - select G3 char. set
+charSet 1bh,")U"         - c null mapping
+
+color   1bh,'[0m'        x c normal character attribute
+color   1bh,'[1;.]'      - c set color '.' for underline
+color   1bh,'[1m'        x c bold
+color   1bh,'[21m'       ? c normal intensity
+color   1bh,'[22m'       ? c normal intensity
+color   1bh,'[24m'       ? c underline off
+color   1bh,'[25m'       ? c blink off
+color   1bh,'[27m'       ? c reverse video off
+color   1bh,'[2;.]'      - c set color '.' for dim color
+color   1bh,'[2m'        - c half bright
+color   1bh,'[30m'       x c black foreground
+color   1bh,'[31m'       x c red foreground
+color   1bh,'[32m'       x c green foreground
+color   1bh,'[33m'       x c brown foreground
+color   1bh,'[34m'       x c blue foreground
+color   1bh,'[35m'       x c magenta foreground
+color   1bh,'[36m'       x c cyan foreground
+color   1bh,'[37m'       x c white foreground
+color   1bh,'[40m'       x c black background
+color   1bh,'[41m'       x c red backgound
+color   1bh,'[42m'       x c green background
+color   1bh,'[43m'       x c brown background
+color   1bh,'[44m'       x c blue background
+color   1bh,'[45m'       x c magenta background
+color   1bh,'[46m'       x c cyan background
+color   1bh,'[47m'       x c white background
+color   1bh,'[4m'        x c underscore
+color   1bh,'[5m'        x c blink
+color   1bh,'[7m'        x c inverse
+color   1bh,'[8]'        - c make current color default
+color   1bh,']P.....'    - c set pallet
+
+editing 1bh,"[0J"        x c erase below
+editing 1bh,"[0K"        x c clear to right in line
+editing 1bh,"[1J"        x c erase above
+editing 1bh,"[1K"        x c clear to left in line
+editing 1bh,"[2J"        x c erase all (clear screen)
+editing 1bh,"[2K"        x c clear line
+editing 1bh,"[.L"        x c insert "." lines, default=1
+editing 1bh,"[.M"        x c delete "." lines, default=1
+editing 1bh,"[.P"        x c delete "." characters, default=1
+editing 1bh,"[.X'"       - c erase "." characters on current line
+editing 1bh,"[.@"        x c insert "." blank characters, default .="1"1
+editing BS               x c backspace char=09h  key=ctrl-h
+
+moving  1bh,'7'          x c save cursor position, saves current state on console
+moving  1bh,'8'          x - restore cursor saved with 1bh,'7', restore state on con
+moving  1bh,'[a'         - c move cursor right "." columns
+moving  1bh,'[.A'        x c cursor up "." times, default .="1"
+moving  1bh,'[.B'        x c cursor down "." times, default .="1"
+moving  1bh,'[.C'        x c cursor forward "." times, default=1
+moving  1bh,'[.d'        - c move cusor to row "." current column
+moving  1bh,'[.D'        x c cursor back "." times, default="1"
+moving  1bh,'[.E'        - c cursor down "." rows to column 1
+moving  1bh,'E'          x c next line
+moving  1bh,'[.F'        - c cursor up "." rows to column 1
+moving  1bh,'[.;.f'      - c move cursor to row,column
+moving  1bh,'F'          x - cursor to lower left corner
+moving  1bh,'.;.f"       x - horizontal and vertical position. default 1;1
+moving  1bh,'[.G'        - c cursor to column "."
+moving  1bh,'[.H'        - c cursor to row "."
+moving  1bh,'[.;.H'      x c move cursor to row;col default 1;1
+moving  1bh,'.;.;.;.;.T" x - mouse highlight tracking start, see mouse text
+moving  CR               x c carriage return, enter. char=0dh  key=ctrl-m
+moving  LF               x c linefeed.  char=0ah key=ctrl-l
+moving  TAB              x c tab to next stop.  char=09h  key=ctrl-i
+
+other   1bh,']0.'BEL     x - change icon name and title to "." , BEL=07h
+other   1bh,'[12;.]'     - c bring console# "." to front
+other   1bh,'[13]'       - c unblank the sceen
+other   1bh,'[14;.]'     - c set VESA powerdown interval to "." minutes
+other   1bh,']1.'BEL     x - change icon name to "." , BEL=07h
+other   1bh,']2.'BEL     x - change title to "." , BEL=07h
+other   1bh,'#8'         x - Screen test, outputs block of "#"
+other   1bh,'c'          x c reset, also clears sceen
+other   1bh,'D'          x c index on xterm?, linefeed on console
+other   1bh,'l'          x - lock memory above cursor
+other   1bh,'M'          x c reverse index ?, reverse linefeed on console
+other   1bh,'m'          x - unlock memory above cursor
+other   BEL              x c beeps, char=07h key=ctrl-g
+
+report  1bh,'[5n'        x c device status report DSR
+report  1bh,'[6n'        x c report cursor position
+report  1bh,'[c'         - c report VT102 
+report  1bh,'[.c'        x - return device attributes
+report  1bh,'[?.n'       x c report settings of "l" and "h" set options
+report  1bh,'[.;.r'      x - set scroll region
+report  1bh,'[.x'        x - request terminal parameters
+report  1bh,'Z'          x c return terminal ID
+
+set     1bh,'[0g'        x c clear current tab column, console omits "0"  
+set     1bh,'[?1000h'    x c send mouse x,y on press and release
+set     1bh,'[?1000l'    x - no mouse x,y on press and release reporting
+set     1bh,'[?1001h'    x - enable highlight mouse tracking
+set     1bh,'[?1001l'    x - no highlight mouse tracking
+set     1bh,'[?1049h'    x ? alternate window
+set     1bh,'[?1049l'    x ? normal window (switch from alternalte window)
+set     1bh,'[10;.]'     - c set BEL frequency to '.'
+set     1bh,'[11;.]'     - c set BEL duration to '.'
+set     1bh,'[?1h'       x c select application cursor keys
+set     1bh,'[?1l'       x c select normal cursor keys
+set     1bh,'[20h'       x c automatic newline, follow 0ah with 0dh
+set     1bh,'[20l'       x - normal linefeed
+set     1bh,'[?25h'      - c make cursor visible
+set     1bh,'[?25l'      - c make cursor invisible
+set     1bh,'[?38h'      x - enter Tek mode
+set     1bh,'[3g'        x c clear all tabs
+set     1bh,'[3h'        ? c display control characters
+set     1bh,'[?3h'       x c 132 column mode
+set     1bh,'[?3l'       x c 80 column mode
+set     1bh,'[?40h'      x - allow 80-132 mode
+set     1bh,'[?40l'      x - do not allow 80-132 mode
+set     1bh,'[?41h'      x - enable ncurses fix
+set     1bh,'[?41l'      x - turn ncurses fix off
+set     1bh,'[?44h'      x - enable margin bell
+set     1bh,'[?44l'      x - no margin bell
+set     1bh,'[?45h'      x - reverse-wraparound mode
+set     1bh,'[?45l'      x - no reverse-wraparound mode
+set     1bh,'[?47h'      x - goto alternate screen
+set     1bh,'[?47l'      x - goto nomral screen with history
+set     1bh,'[4h'        x c set insert mode
+set     1bh,'[?4h'       x   smooth scroll
+set     1bh,'[?4l'       x   normal scroll
+set     1bh,'[4l'        x - replace mode
+set     1bh,'[?5h'       x c reverse video
+set     1bh,'[?5l'       x c normal (not-reverse) video
+set     1bh,'[?6h'       x c origon mode
+set     1bh,'[?6l'       x c normal cursor mode (not origon mode)
+set     1bh,'[?7h'       x c line wrap mode
+set     1bh,'[?7l'       x c no line wrap
+set     1bh,'[?8h'       x c auto repeat keys
+set     1bh,'[?8l'       x c no auto repeat keys
+set     1bh,'[?9h'       x c send mouse x,y on click
+set     1bh,'[?9l'       x c disable mouse x,y reporting on click
+set     1bh,'H'          x c set tab at current column
+set     1bh,'[?.r'       x - restore ".h" or ".l" setting
+set     1bh,'[?.s'       x - save ".h" or ".l" setting
+set     1bh,'='          x c set application keypad
+set     1bh,'>'          x c set normal keypad
+
+Note: to enable line drawing characters output the
+sequence: 1bh,')0',0eh
+Graphic characters are available on most terminal programs.
+rxvt and xterm are good terminal programs.  The program
+"konsole" had problems with some graphics characters.
+The "testcrt" program (part of AsmTools) will display the
+graphic set.
+
+
+If the Graphics set is selected, the character map changes
+as follows:
+
+    ASCII      Special                  ASCII     Special
+   graphic     graphic                 graphic    graphic
+----------------------------------------------------------------------
+     _         Blank                      o       Horiz Line - scan 1
+     '         Diamond                    p       Horiz Line - scan 3
+     a         Checkerboard               q       Horiz Line - scan 5
+     b         Digraph: HT                r       Horiz Line - scan 7
+     c         Digraph: FF                s       Horiz Line - scan 9
+     d         Digraph: CR                t       Left "T" (|-)
+     e         Digraph: LF                u       Right "T" (-|)
+     f         Degree Symbol              v       Bottom "T" (|_)
+     g         +/- Symbol                 w       Top "T" (T)
+     h         Digraph: NL                x       Vertical Bar (|)
+     i         Digraph: VT                y       Less/Equal (<_)
+     j         Lower-right corner         z       Grtr/Egual (>_)
+     k         Upper-right corner         {       Pi symbol
+     l         Upper-left corner          |       Not equal (=/)
+     m         Lower-left corner          }       UK pound symbol
+     n         Crossing lines (+)         ~       Centered dot
+
+Copyright: GPL
+Author: Jeff Owens
+Date: 2005-03-21
+Location: http://sourceforge.net/projects/asmref
+file: vt_term
+
+;----------------the official xterm documentation ----------------------------
+
+			Xterm Control Sequences
+			       Edward Moy
+		   University of California, Berkeley
+			       Revised by
+			     Stephen Gildea
+			  X Consortium (1994)
+			     Thomas Dickey
+		      XFree86 Project (1996-2003)
+
+Definitions
+c     The literal character c.
+C     A single (required) character.
+Ps   A single (usually optional) numeric parameter, composed of one of
+      more digits.
+Pm   A multiple numeric parameter composed of any number of single
+      numeric parameters, separated by ; character(s).
+Pt   A text parameter composed of printable characters.
+
+
+For example, the move cursor entry appears as:
+      ESC [ Ps ; Ps H
+        Cursor Position [row;column] (default = [1,1]) (CUP)
+In assembler this would translate to:
+      db 1bh	;esc
+      db "["    ;5bh
+      db "01"	;row 01
+      db ";"	;separator character, 3bh
+      db "04"	;column 4
+      db "H"	;end of sequence and type code character,48h
+
+The asmref file "ascii" describes the codes for special characters.
+For example: ctrl-G or the Bell character is 07h (hex 07).      
+
+C1 (8-Bit) Control Characters
+
+The xterm program recognizes both 8-bit and 7-bit control characters.
+It generates 7-bit controls (by default) or 8-bit if S8C1T is enabled.
+The following pairs of 7-bit and 8-bit control characters are equiva-
+lent:
+
+ESC D
+     Index (IND  is 0x84)
+ESC E
+     Next Line (NEL  is 0x85)
+ESC H
+     Tab Set (HTS  is 0x88)
+ESC M
+     Reverse Index (RI	is 0x8d)
+ESC N
+     Single Shift Select of G2 Character Set (SS2  is 0x8e): affects
+     next character only
+ESC O
+     Single Shift Select of G3 Character Set (SS3  is 0x8f): affects
+     next character only
+ESC P
+     Device Control String (DCS  is 0x90)
+ESC V
+     Start of Guarded Area (SPA  is 0x96)
+ESC W
+     End of Guarded Area (EPA  is 0x97)
+ESC X
+     Start of String (SOS  is 0x98)
+ESC Z
+     Return Terminal ID (DECID is 0x9a).  Obsolete form of CSI c  (DA).
+ESC [
+     Control Sequence Introducer (CSI  is 0x9b)
+ESC \
+     String Terminator (ST  is 0x9c)
+ESC ]
+     Operating System Command (OSC  is 0x9d)
+ESC ^
+     Privacy Message (PM  is 0x9e)
+ESC _
+     Application Program Command (APC  is 0x9f)
+
+These control characters are used in the vtXXX emulation.
+
+VT100 Mode
+Most of these control sequences are standard VT102 control sequences,
+but there is support for later DEC VT terminals (i.e., VT220 and VT320),
+as well as ISO 6429 and aixterm color controls.  VT102 features not sup-
+ported are auto-repeat and blinking characters.  There are additional
+control sequences to provide xterm-dependent functions, such as the
+scrollbar or window size.  Where the function is specified by DEC or ISO
+6429, the code assigned to it is given in parentheses.	The escape codes
+to designate and invoke character sets are specified by ISO 2022; see
+that document for a discussion of character sets.
+
+Single-character functions
+BEL	       Bell (Ctrl-G)
+BS	       Backspace (Ctrl-H)
+CR	       Carriage Return (Ctrl-M)
+ENQ	       Return Terminal Status (Ctrl-E).  Default response is an
+	       empty string, but may be overridden by a resource answer-
+	       backString.
+FF	       Form Feed or New Page (NP) (Ctrl-L) same as LF
+LF	       Line Feed or New Line (NL) (Ctrl-J)
+SO	       Shift Out (Ctrl-N) -> Switch to Alternate Character Set:
+	       invokes the G1 character set.
+SP	       Space.
+TAB	       Horizontal Tab (HT) (Ctrl-I)
+VT	       Vertical Tab (Ctrl-K) same as LF
+SI	       Shift In (Ctrl-O) -> Switch to Standard Character Set:
+	       invokes the G0 character set (the default).
+
+Controls beginning with ESC (other than those where ESC is part of a
+7-bit equivalent to 8-bit C1 controls), ordered by the final charac-
+ter(s).
+ESC SP F       7-bit controls (S7C1T).
+ESC SP G       8-bit controls (S8C1T).
+ESC SP L       Set ANSI conformance level 1 (dpANS X3.134.1).
+ESC SP M       Set ANSI conformance level 2 (dpANS X3.134.1).
+ESC SP N       Set ANSI conformance level 3 (dpANS X3.134.1).
+ESC # 3        DEC double-height line, top half (DECDHL)
+ESC # 4        DEC double-height line, bottom half (DECDHL)
+ESC # 5        DEC single-width line (DECSWL)
+ESC # 6        DEC double-width line (DECDWL)
+ESC # 8        DEC Screen Alignment Test (DECALN)
+ESC % @        Select default character set, ISO 8859-1 (ISO 2022)
+ESC % G        Select UTF-8 character set (ISO 2022)
+ESC ( C        Designate G0 Character Set (ISO 2022)
+ESC ) C        Designate G1 Character Set (ISO 2022)
+ESC * C        Designate G2 Character Set (ISO 2022)
+ESC + C        Designate G3 Character Set (ISO 2022)
+	       Final character C for designating character sets (0 , A
+	       and B  apply to VT100 and up, the remainder to VT220 and
+	       up):
+		 C = 0	-> DEC Special Character and Line Drawing Set
+		 C = A	-> United Kingdom (UK)
+		 C = B	-> United States (USASCII)
+		 C = 4	-> Dutch
+		 C = C	or 5  -> Finnish
+		 C = R	-> French
+		 C = Q	-> French Canadian
+		 C = K	-> German
+		 C = Y	-> Italian
+		 C = E	or 6  -> Norwegian/Danish
+		 C = Z	-> Spanish
+		 C = H	or 7  -> Swedish
+		 C = =	-> Swiss
+ESC 7	       Save Cursor (DECSC)
+ESC 8	       Restore Cursor (DECRC)
+ESC =	       Application Keypad (DECPAM)
+ESC >	       Normal Keypad (DECPNM)
+ESC F	       Cursor to lower left corner of screen (if enabled by the
+	       hpLowerleftBugCompat resource).
+ESC c	       Full Reset (RIS)
+ESC l	       Memory Lock (per HP terminals).	Locks memory above the
+	       cursor.
+ESC m	       Memory Unlock (per HP terminals)
+ESC n	       Invoke the G2 Character Set (LS2)
+ESC o	       Invoke the G3 Character Set (LS3)
+ESC |	       Invoke the G3 Character Set as GR (LS3R).  Has no visible
+	       effect in xterm.
+ESC }	       Invoke the G2 Character Set as GR (LS2R).  Has no visible
+	       effect in xterm.
+ESC ~	       Invoke the G1 Character Set as GR (LS1R).  Has no visible
+	       effect in xterm.
+
+
+Device-Control functions
+DCS Ps; Ps| Pt ST
+	       User-Defined Keys (DECUDK).  The first parameter:
+		 Ps = 0  -> Clear all UDK definitions before starting
+	       (default)
+		 Ps = 1  -> Erase Below (default)
+	       The second parameter:
+		 Ps = 0  -> Lock the keys (default)
+		 Ps = 1  -> Do not lock.
+	       The third parameter is a ';'-separated list of strings
+	       denoting the key-code separated by a '/' from the hex-
+	       encoded key value.  The key codes correspond to the DEC
+	       function-key codes (e.g., F6=17).
+DCS $ q Pt ST  Request Status String (DECRQSS).  The string following
+	       the "q" is one of the following:
+		 " q	 -> DECSCA
+		 " p	 -> DECSCL
+		 r	 -> DECSTBM
+		 m	 -> SGR
+	       xterm responds with DCS 1 $ r Pt ST for valid requests,
+	       replacing the Pt with the corresponding CSI string, or
+	       DCS 0 $ r Pt ST for invalid requests.
+DCS + q Pt ST  Request Termcap/Terminfo String (xterm, experimental).
+	       The string following the "q" is a list of names encoded
+	       in hexadecimal (2 digits per character) separated by ;
+	       which correspond to termcap or terminfo key names.
+	       xterm responds with DCS 1 + r Pt ST for valid requests,
+	       adding to Pt an = , and the value of the corresponding
+	       string that xterm would send, or DCS 0 + r Pt ST for
+	       invalid requests.  The strings are encoded in hexadecimal
+	       (2 digits per character).
+
+Functions using CSI , ordered by the final character(s)
+CSI Ps @       Insert Ps (Blank) Character(s) (default = 1) (ICH)
+CSI Ps A       Cursor Up Ps Times (default = 1) (CUU)
+CSI Ps B       Cursor Down Ps Times (default = 1) (CUD)
+CSI Ps C       Cursor Forward Ps Times (default = 1) (CUF)
+CSI Ps D       Cursor Backward Ps Times (default = 1) (CUB)
+CSI Ps E       Cursor Next Line Ps Times (default = 1) (CNL)
+CSI Ps F       Cursor Preceding Line Ps Times (default = 1) (CPL)
+CSI Ps G       Cursor Character Absolute  [column] (default = [row,1])
+	       (CHA)
+CSI Ps ; Ps H  Cursor Position [row;column] (default = [1,1]) (CUP)
+CSI Ps I       Cursor Forward Tabulation Ps tab stops (default = 1)
+	       (CHT)
+CSI Ps J       Erase in Display (ED)
+		 Ps = 0  -> Erase Below (default)
+		 Ps = 1  -> Erase Above
+		 Ps = 2  -> Erase All
+		 Ps = 3  -> Erase Saved Lines (xterm)
+CSI ? Ps J     Erase in Display (DECSED)
+		 Ps = 0  -> Selective Erase Below (default)
+		 Ps = 1  -> Selective Erase Above
+		 Ps = 2  -> Selective Erase All
+CSI Ps K       Erase in Line (EL)
+		 Ps = 0  -> Erase to Right (default)
+		 Ps = 1  -> Erase to Left
+		 Ps = 2  -> Erase All
+CSI ? Ps K     Erase in Line (DECSEL)
+		 Ps = 0  -> Selective Erase to Right (default)
+		 Ps = 1  -> Selective Erase to Left
+		 Ps = 2  -> Selective Erase All
+CSI Ps L       Insert Ps Line(s) (default = 1) (IL)
+CSI Ps M       Delete Ps Line(s) (default = 1) (DL)
+CSI Ps P       Delete Ps Character(s) (default = 1) (DCH)
+CSI Ps S       Scroll up Ps lines (default = 1) (SU)
+CSI Ps T       Scroll down Ps lines (default = 1) (SD)
+CSI Ps ; Ps ; Ps ; Ps ; Ps T
+	       Initiate hilite mouse tracking.	Parameters are
+	       [func;startx;starty;firstrow;lastrow].  See the section
+	       Mouse Tracking.
+CSI Ps X       Erase Ps Character(s) (default = 1) (ECH)
+CSI Ps Z       Cursor Backward Tabulation Ps tab stops (default = 1)
+	       (CBT)
+CSI Pm `       Character Position Absolute  [column] (default = [row,1])
+	       (HPA)
+CSI Ps b       Repeat the preceding graphic character Ps times (REP)
+CSI Ps c       Send Device Attributes (Primary DA)
+		 Ps = 0 , 1 or omitted -> request attributes from termi-
+	       nal.  The response depends on the decTerminalID resource
+	       setting.
+		 -> CSI ? 1 ; 2 c  (``VT100 with Advanced Video
+	       Option'')
+		 -> CSI ? 1 ; 0 c  (``VT101 with No Options'')
+		 -> CSI ? 6 c  (``VT102'')
+		 -> CSI ? 6 0 ; 1 ; 2 ; 6 ; 8 ; 9 ; 1 5 ; c  (``VT220'')
+	       The VT100-style response parameters do not mean anything
+	       by themselves.  VT220 parameters do, telling the host
+	       what features the terminal supports:
+		 -> 1  132-columns
+		 -> 2  Printer
+		 -> 6  Selective erase
+		 -> 8  User-defined keys
+		 -> 9  National replacement character sets
+		 -> 1 5  Technical characters
+		 -> 2 2  ANSI color, e.g., VT525
+		 -> 2 9  ANSI text locator (i.e., DEC Locator mode)
+CSI > Ps c     Send Device Attributes (Secondary DA)
+		 Ps = 0 , 1 or omitted -> request the terminal's identi-
+	       fication code.  The response depends on the decTerminalID
+	       resource setting.  It should apply only to VT220 and up,
+	       but xterm extends this to VT100.
+		 -> CSI  > Pp ; Pv ; Pc c
+	       where Pp denotes the terminal type
+		 -> 0  (``VT100'')
+		 -> 1  (``VT220'')
+	       and Pv is the firmware version (for xterm, this is the
+	       XFree86 patch number, starting with 95).  In a DEC termi-
+	       nal, Pc indicates the ROM cartridge registration number
+	       and is always zero.
+CSI Pm d       Line Position Absolute  [row] (default = [1,column])
+	       (VPA)
+CSI Ps ; Ps f  Horizontal and Vertical Position [row;column] (default =
+	       [1,1]) (HVP)
+CSI Ps g       Tab Clear (TBC)
+		 Ps = 0  -> Clear Current Column (default)
+		 Ps = 3  -> Clear All
+CSI Pm h       Set Mode (SM)
+		 Ps = 2  -> Keyboard Action Mode (AM)
+		 Ps = 4  -> Insert Mode (IRM)
+		 Ps = 1 2  -> Send/receive (SRM)
+		 Ps = 2 0  -> Automatic Newline (LNM)
+CSI ? Pm h     DEC Private Mode Set (DECSET)
+		 Ps = 1  -> Application Cursor Keys (DECCKM)
+		 Ps = 2  -> Designate USASCII for character sets G0-G3
+	       (DECANM), and set VT100 mode.
+		 Ps = 3  -> 132 Column Mode (DECCOLM)
+		 Ps = 4  -> Smooth (Slow) Scroll (DECSCLM)
+		 Ps = 5  -> Reverse Video (DECSCNM)
+		 Ps = 6  -> Origin Mode (DECOM)
+		 Ps = 7  -> Wraparound Mode (DECAWM)
+		 Ps = 8  -> Auto-repeat Keys (DECARM)
+		 Ps = 9  -> Send Mouse X & Y on button press.  See the
+	       section Mouse Tracking.
+		 Ps = 1 2  -> Start Blinking Cursor (att610)
+		 Ps = 1 8  -> Print form feed (DECPFF)
+		 Ps = 1 9  -> Set print extent to full screen (DECPEX)
+		 Ps = 2 5  -> Show Cursor (DECTCEM)
+		 Ps = 3 0  -> Show scrollbar (rxvt).
+		 Ps = 3 5  -> Enable font-shifting functions (rxvt).
+		 Ps = 3 8  -> Enter Tektronix Mode (DECTEK)
+		 Ps = 4 0  -> Allow 80 -> 132 Mode
+		 Ps = 4 1  -> more(1) fix (see curses resource)
+		 Ps = 4 2  -> Enable Nation Replacement Character sets
+	       (DECNRCM)
+		 Ps = 4 4  -> Turn On Margin Bell
+		 Ps = 4 5  -> Reverse-wraparound Mode
+		 Ps = 4 6  -> Start Logging (normally disabled by a com-
+	       pile-time option)
+		 Ps = 4 7  -> Use Alternate Screen Buffer (unless dis-
+	       abled by the titeInhibit resource)
+		 Ps = 6 6  -> Application keypad (DECNKM)
+		 Ps = 6 7  -> Backarrow key sends delete (DECBKM)
+		 Ps = 1 0 0 0  -> Send Mouse X & Y on button press and
+	       release.  See the section Mouse Tracking.
+		 Ps = 1 0 0 1  -> Use Hilite Mouse Tracking.
+		 Ps = 1 0 0 2  -> Use Cell Motion Mouse Tracking.
+		 Ps = 1 0 0 3  -> Use All Motion Mouse Tracking.
+		 Ps = 1 0 1 0  -> Scroll to bottom on tty output (rxvt).
+		 Ps = 1 0 1 1  -> Scroll to bottom on key press (rxvt).
+		 Ps = 1 0 3 5  -> Enable special modifiers for Alt and
+	       NumLock keys.
+		 Ps = 1 0 3 6  -> Send ESC when Meta modifies a key
+	       (enables the metaSendsEscape resource).
+		 Ps = 1 0 3 7  -> Send DEL from the editing-keypad
+	       Delete key
+		 Ps = 1 0 4 7  -> Use Alternate Screen Buffer (unless
+	       disabled by the titeInhibit resource)
+		 Ps = 1 0 4 8  -> Save cursor as in DECSC (unless dis-
+	       abled by the titeInhibit resource)
+		 Ps = 1 0 4 9  -> Save cursor as in DECSC and use Alter-
+	       nate Screen Buffer, clearing it first (unless disabled by
+	       the titeInhibit resource).  This combines the effects of
+	       the 1 0 4 7  and 1 0 4 8  modes.  Use this with terminfo-
+	       based applications rather than the 4 7  mode.
+		 Ps = 1 0 5 1  -> Set Sun function-key mode.
+		 Ps = 1 0 5 2  -> Set HP function-key mode.
+		 Ps = 1 0 6 0  -> Set legacy keyboard emulation (X11R6).
+		 Ps = 1 0 6 1  -> Set Sun/PC keyboard emulation of VT220
+	       keyboard.
+CSI Pm i       Media Copy (MC)
+		 Ps = 0  -> Print screen (default)
+		 Ps = 4  -> Turn off printer controller mode
+		 Ps = 5  -> Turn on printer controller mode
+CSI ? Pm i     Media Copy (MC, DEC-specific)
+		 Ps = 1  -> Print line containing cursor
+		 Ps = 4  -> Turn off autoprint mode
+		 Ps = 5  -> Turn on autoprint mode
+		 Ps = 1  0  -> Print composed display, ignores DECPEX
+		 Ps = 1  1  -> Print all pages
+CSI Pm l       Reset Mode (RM)
+		 Ps = 2  -> Keyboard Action Mode (AM)
+		 Ps = 4  -> Replace Mode (IRM)
+		 Ps = 1 2  -> Send/receive (SRM)
+		 Ps = 2 0  -> Normal Linefeed (LNM)
+CSI ? Pm l     DEC Private Mode Reset (DECRST)
+		 Ps = 1  -> Normal Cursor Keys (DECCKM)
+		 Ps = 2  -> Designate VT52 mode (DECANM).
+		 Ps = 3  -> 80 Column Mode (DECCOLM)
+		 Ps = 4  -> Jump (Fast) Scroll (DECSCLM)
+		 Ps = 5  -> Normal Video (DECSCNM)
+		 Ps = 6  -> Normal Cursor Mode (DECOM)
+		 Ps = 7  -> No Wraparound Mode (DECAWM)
+		 Ps = 8  -> No Auto-repeat Keys (DECARM)
+		 Ps = 9  -> Don't Send Mouse X & Y on button press
+		 Ps = 1 2  -> Stop Blinking Cursor (att610)
+		 Ps = 1 8  -> Don't print form feed (DECPFF)
+		 Ps = 1 9  -> Limit print to scrolling region (DECPEX)
+		 Ps = 2 5  -> Hide Cursor (DECTCEM)
+		 Ps = 3 0  -> Don't show scrollbar (rxvt).
+		 Ps = 3 5  -> Disable font-shifting functions (rxvt).
+		 Ps = 4 0  -> Disallow 80 -> 132 Mode
+		 Ps = 4 1  -> No more(1) fix (see curses resource)
+		 Ps = 4 2  -> Disable Nation Replacement Character sets
+	       (DECNRCM)
+		 Ps = 4 4  -> Turn Off Margin Bell
+		 Ps = 4 5  -> No Reverse-wraparound Mode
+		 Ps = 4 6  -> Stop Logging (normally disabled by a com-
+	       pile-time option)
+		 Ps = 4 7  -> Use Normal Screen Buffer
+		 Ps = 6 6  -> Numeric keypad (DECNKM)
+		 Ps = 6 7  -> Backarrow key sends backspace (DECBKM)
+		 Ps = 1 0 0 0  -> Don't Send Mouse X & Y on button press
+	       and release.  See the section Mouse Tracking.
+		 Ps = 1 0 0 1  -> Don't Use Hilite Mouse Tracking
+		 Ps = 1 0 0 2  -> Don't Use Cell Motion Mouse Tracking
+		 Ps = 1 0 0 3  -> Don't Use All Motion Mouse Tracking
+		 Ps = 1 0 1 0  -> Don't scroll to bottom on tty output
+	       (rxvt).
+		 Ps = 1 0 1 1  -> Don't scroll to bottom on key press
+	       (rxvt).
+		 Ps = 1 0 3 5  -> Disable special modifiers for Alt and
+	       NumLock keys.
+		 Ps = 1 0 3 6  -> Don't send ESC when Meta modifies a
+	       key (disables the metaSendsEscape resource).
+		 Ps = 1 0 3 7  -> Send VT220 Remove from the editing-
+	       keypad Delete key
+		 Ps = 1 0 4 7  -> Use Normal Screen Buffer, clearing
+	       screen first if in the Alternate Screen (unless disabled
+	       by the titeInhibit resource)
+		 Ps = 1 0 4 8  -> Restore cursor as in DECRC (unless
+	       disabled by the titeInhibit resource)
+		 Ps = 1 0 4 9  -> Use Normal Screen Buffer and restore
+	       cursor as in DECRC (unless disabled by the titeInhibit
+	       resource).  This combines the effects of the 1 0 4 7  and
+	       1 0 4 8	modes.	Use this with terminfo-based applica-
+	       tions rather than the 4 7  mode.
+		 Ps = 1 0 5 1  -> Reset Sun function-key mode.
+		 Ps = 1 0 5 2  -> Reset HP function-key mode.
+		 Ps = 1 0 6 0  -> Reset legacy keyboard emulation
+	       (X11R6).
+		 Ps = 1 0 6 1  -> Reset Sun/PC keyboard emulation of
+	       VT220 keyboard.
+CSI Pm m       Character Attributes (SGR)
+		 Ps = 0  -> Normal (default)
+		 Ps = 1  -> Bold
+		 Ps = 4  -> Underlined
+		 Ps = 5  -> Blink (appears as Bold)
+		 Ps = 7  -> Inverse
+		 Ps = 8  -> Invisible, i.e., hidden (VT300)
+		 Ps = 2 2  -> Normal (neither bold nor faint)
+		 Ps = 2 4  -> Not underlined
+		 Ps = 2 5  -> Steady (not blinking)
+		 Ps = 2 7  -> Positive (not inverse)
+		 Ps = 2 8  -> Visible, i.e., not hidden (VT300)
+		 Ps = 3 0  -> Set foreground color to Black
+		 Ps = 3 1  -> Set foreground color to Red
+		 Ps = 3 2  -> Set foreground color to Green
+		 Ps = 3 3  -> Set foreground color to Yellow
+		 Ps = 3 4  -> Set foreground color to Blue
+		 Ps = 3 5  -> Set foreground color to Magenta
+		 Ps = 3 6  -> Set foreground color to Cyan
+		 Ps = 3 7  -> Set foreground color to White
+		 Ps = 3 9  -> Set foreground color to default (original)
+		 Ps = 4 0  -> Set background color to Black
+		 Ps = 4 1  -> Set background color to Red
+		 Ps = 4 2  -> Set background color to Green
+		 Ps = 4 3  -> Set background color to Yellow
+		 Ps = 4 4  -> Set background color to Blue
+		 Ps = 4 5  -> Set background color to Magenta
+		 Ps = 4 6  -> Set background color to Cyan
+		 Ps = 4 7  -> Set background color to White
+		 Ps = 4 9  -> Set background color to default (origi-
+	       nal).
+
+	       If 16-color support is compiled, the following apply.
+	       Assume that xterm's resources are set so that the ISO
+	       color codes are the first 8 of a set of 16.  Then the
+	       aixterm colors are the bright versions of the ISO colors:
+		 Ps = 9 0  -> Set foreground color to Black
+		 Ps = 9 1  -> Set foreground color to Red
+		 Ps = 9 2  -> Set foreground color to Green
+		 Ps = 9 3  -> Set foreground color to Yellow
+		 Ps = 9 4  -> Set foreground color to Blue
+		 Ps = 9 5  -> Set foreground color to Magenta
+		 Ps = 9 6  -> Set foreground color to Cyan
+		 Ps = 9 7  -> Set foreground color to White
+		 Ps = 1 0 0  -> Set background color to Black
+		 Ps = 1 0 1  -> Set background color to Red
+		 Ps = 1 0 2  -> Set background color to Green
+		 Ps = 1 0 3  -> Set background color to Yellow
+		 Ps = 1 0 4  -> Set background color to Blue
+		 Ps = 1 0 5  -> Set background color to Magenta
+		 Ps = 1 0 6  -> Set background color to Cyan
+		 Ps = 1 0 7  -> Set background color to White
+
+	       If xterm is compiled with the 16-color support disabled,
+	       it supports the following, from rxvt:
+		 Ps = 1 0 0  -> Set foreground and background color to
+	       default
+
+	       If 88- or 256-color support is compiled, the following
+	       apply.
+		 Ps = 3 8  ; 5	; Ps -> Set foreground color to the sec-
+	       ond Ps
+		 Ps = 4 8  ; 5	; Ps -> Set background color to the sec-
+	       ond Ps
+
+CSI Ps n       Device Status Report (DSR)
+		 Ps = 5  -> Status Report CSI 0 n  (``OK'')
+		 Ps = 6  -> Report Cursor Position (CPR) [row;column] as
+	       CSI r ; c R
+CSI ? Ps n     Device Status Report (DSR, DEC-specific)
+		 Ps = 6  -> Report Cursor Position (CPR) [row;column] as
+	       CSI ? r ; c R (assumes page is zero).
+		 Ps = 1 5  -> Report Printer status as CSI ? 1 0  n
+	       (ready) or CSI ? 1 1  n	(not ready)
+		 Ps = 2 5  -> Report UDK status as CSI ? 2 0  n
+	       (unlocked) or CSI ? 2 1	n  (locked)
+		 Ps = 2 6  -> Report Keyboard status as
+	       CSI ? 2 7  ;  1	;  0  ;  0  n  (North American)
+	       The last two parameters apply to VT400 & up, and denote
+	       keyboard ready and LK01 respectively.
+		 Ps = 5 3  -> Report Locator status as
+	       CSI ? 5 3  n  Locator available, if compiled-in, or
+	       CSI ? 5 0  n  No Locator, if not.
+CSI  ! p       Soft terminal reset (DECSTR)
+CSI Ps ; Ps " p
+	       Set conformance level (DECSCL) Valid values for the first
+	       parameter:
+		 Ps = 6 1  -> VT100
+		 Ps = 6 2  -> VT200
+		 Ps = 6 3  -> VT300
+	       Valid values for the second parameter:
+		 Ps = 0  -> 8-bit controls
+		 Ps = 1  -> 7-bit controls (always set for VT100)
+		 Ps = 2  -> 8-bit controls
+CSI Ps " q     Select character protection attribute (DECSCA).	Valid
+	       values for the parameter:
+		 Ps = 0  -> DECSED and DECSEL can erase (default)
+		 Ps = 1  -> DECSED and DECSEL cannot erase
+		 Ps = 2  -> DECSED and DECSEL can erase
+CSI Ps ; Ps r  Set Scrolling Region [top;bottom] (default = full size of
+	       window) (DECSTBM)
+CSI ? Pm r     Restore DEC Private Mode Values.  The value of Ps previ-
+	       ously saved is restored.  Ps values are the same as for
+	       DECSET.
+CSI s	       Save cursor (ANSI.SYS)
+CSI ? Pm s     Save DEC Private Mode Values.  Ps values are the same as
+	       for DECSET.
+CSI Ps ; Ps ; Ps t
+	       Window manipulation (from dtterm, as well as extensions).
+	       Valid values for the first (and any additional parame-
+	       ters) are:
+		 Ps = 1  -> De-iconify window.
+		 Ps = 2  -> Iconify window.
+		 Ps = 3  ; x ; y -> Move window to [x, y].
+		 Ps = 4  ; height ; width -> Resize the xterm window to
+	       height and width in pixels.
+		 Ps = 5  -> Raise the xterm window to the front of the
+	       stacking order.
+		 Ps = 6  -> Lower the xterm window to the bottom of the
+	       stacking order.
+		 Ps = 7  -> Refresh the xterm window.
+		 Ps = 8  ; height ; width -> Resize the text area to
+	       [height;width] in characters.
+		 Ps = 9  ; 0  -> Restore maximized window.
+		 Ps = 9  ; 1  -> Maximize window (i.e., resize to screen
+	       size).
+		 Ps = 1 1  -> Report xterm window state.  If the xterm
+	       window is open (non-iconified), it returns CSI 1 t .  If
+	       the xterm window is iconified, it returns CSI 2 t .
+		 Ps = 1 3  -> Report xterm window position as CSI 3 ; x;
+	       yt
+		 Ps = 1 4  -> Report xterm window in pixels as CSI  4  ;
+	       height ;  width t
+		 Ps = 1 8  -> Report the size of the text area in char-
+	       acters as CSI  8  ;  height ;  width t
+		 Ps = 1 9  -> Report the size of the screen in charac-
+	       ters as CSI  9  ;  height ;  width t
+		 Ps = 2 0  -> Report xterm window's icon label as OSC  L
+	       label ST
+		 Ps = 2 1  -> Report xterm window's title as OSC  l
+	       title ST
+		 Ps >= 2 4  -> Resize to Ps lines (DECSLPP)
+CSI u	       Save cursor (ANSI.SYS)
+CSI Pt ; Pl ; Pb ; Pr ' w
+	       Enable Filter Rectangle (DECEFR)
+	       Parameters are [top;left;bottom;right].
+	       Defines the coordinates of a filter rectangle and acti-
+	       vates it.  Anytime the locator is detected outside of the
+	       filter rectangle, an outside rectangle event is generated
+	       and the rectangle is disabled.  Filter rectangles are
+	       always treated as "one-shot" events.  Any parameters that
+	       are omitted default to the current locator position.  If
+	       all parameters are omitted, any locator motion will be
+	       reported.  DECELR always cancels any prevous rectangle
+	       definition.
+CSI Ps x       Request Terminal Parameters (DECREQTPARM)
+	       if Ps is a "0" (default) or "1", and xterm is emulating
+	       VT100, the control sequence elicits a response of the
+	       same form whose parameters describe the terminal:
+		 Ps -> the given Ps incremented by 2.
+		 1  -> no parity
+		 1  -> eight bits
+		 1  2  8  -> transmit 38.4k baud
+		 1  2  8  -> receive 38.4k baud
+		 1  -> clock multiplier
+		 0  -> STP flags
+CSI Ps ; Pu ' z
+	       Enable Locator Reporting (DECELR)
+	       Valid values for the first parameter:
+		 Ps = 0  -> Locator disabled (default)
+		 Ps = 1  -> Locator enabled
+		 Ps = 2  -> Locator enabled for one report, then dis-
+	       abled
+	       The second parameter specifies the coordinate unit for
+	       locator reports.
+	       Valid values for the second parameter:
+		 Pu = 0  or omitted -> default to character cells
+		 Pu = 1  -> device physical pixels
+		 Pu = 2  -> character cells
+CSI Pm ' {     Select Locator Events (DECSLE)
+	       Valid values for the first (and any additional parame-
+	       ters) are:
+		 Ps = 0  -> only respond to explicit host requests
+	       (DECRQLP)
+			    (default) also cancels any filter rectangle
+		 Ps = 1  -> report button down transitions
+		 Ps = 2  -> do not report button down transitions
+		 Ps = 3  -> report button up transitions
+		 Ps = 4  -> do not report button up transitions
+CSI Ps ' |     Request Locator Position (DECRQLP)
+	       Valid values for the parameter are:
+		 Ps = 0 , 1 or omitted -> transmit a single DECLRP loca-
+	       tor report
+
+	       If Locator Reporting has been enabled by a DECELR, xterm
+	       will respond with a DECLRP Locator Report.  This report
+	       is also generated on button up and down events if they
+	       have been enabled with a DECSLE, or when the locator is
+	       detected outside of a filter rectangle, if filter rectan-
+	       gles have been enabled with a DECEFR.
+
+		 -> CSI Pe ; Pb ; Pr ; Pc ; Pp &  w
+
+	       Parameters are [event;button;row;column;page].
+	       Valid values for the event:
+		 Pe = 0  -> locator unavailable - no other parameters
+	       sent
+		 Pe = 1  -> request - xterm received a DECRQLP
+		 Pe = 2  -> left button down
+		 Pe = 3  -> left button up
+		 Pe = 4  -> middle button down
+		 Pe = 5  -> middle button up
+		 Pe = 6  -> right button down
+		 Pe = 7  -> right button up
+		 Pe = 8  -> M4 button down
+		 Pe = 9  -> M4 button up
+		 Pe = 1 0  -> locator outside filter rectangle
+	       ``button'' parameter is a bitmask indicating which but-
+	       tons are pressed:
+		 Pb = 0  -> no buttons down
+		 Pb & 1  -> right button down
+		 Pb & 2  -> middle button down
+		 Pb & 4  -> left button down
+		 Pb & 8  -> M4 button down
+	       ``row'' and ``column'' parameters are the coordinates of
+	       the locator position in the xterm window, encoded as
+	       ASCII decimal.
+	       The ``page'' parameter is not used by xterm, and will be
+	       omitted.
+
+Operating System Controls
+OSC Ps ; Pt ST
+OSC Ps ; Pt BEL
+	       Set Text Parameters.  For colors and font, if Pt is a
+	       "?", the control sequence elicits a response which con-
+	       sists of the control sequence which would set the corre-
+	       sponding value.	The dtterm control sequences allow you
+	       to determine the icon name and window title.
+		 Ps = 0  -> Change Icon Name and Window Title to Pt
+		 Ps = 1  -> Change Icon Name to Pt
+		 Ps = 2  -> Change Window Title to Pt
+		 Ps = 3  -> Set X property on top-level window. Pt
+	       should be in the form "prop=value", or just "prop" to
+	       delete the property
+		 Ps = 4  ; c ; spec -> Change Color Number c to the
+	       color specified by spec, i.e., a name or RGB specifica-
+	       tion as per XParseColor.  Any number of c name pairs may
+	       be given.  The color numbers correspond to the ANSI col-
+	       ors 0-7, their bright versions 8-15, and if supported,
+	       the remainder of the 88-color or 256-color table.
+
+	       If a "?" is given rather than a name or RGB specifica-
+	       tion, xterm replies with a control sequence of the same
+	       form which can be used to set the corresponding color.
+	       Because more than one pair of color number and specifica-
+	       tion can be given in one control sequence, xterm can make
+	       more than one reply.
+
+	       The 8 colors which may be set using 1 0	through 1 7  are
+	       denoted dynamic colors, since the corresponding control
+	       sequences were the first means for setting xterm's colors
+	       dynamically, i.e., after it was started.  They are not
+	       the same as the ANSI colors.  One or more parameters is
+	       expected for Pt.  Each succesive parameter changes the
+	       next color in the list.	The value of Ps tells the start-
+	       ing point in the list.  The colors are specified by name
+	       or RGB specification as per XParseColor.
+
+	       If a "?" is given rather than a name or RGB specifica-
+	       tion, xterm replies with a control sequence of the same
+	       form which can be used to set the corresponding dynamic
+	       color.  Because more than one pair of color number and
+	       specification can be given in one control sequence, xterm
+	       can make more than one reply.
+
+		 Ps = 1 0  -> Change VT100 text foreground color to Pt
+		 Ps = 1 1  -> Change VT100 text background color to Pt
+		 Ps = 1 2  -> Change text cursor color to Pt
+		 Ps = 1 3  -> Change mouse foreground color to Pt
+		 Ps = 1 4  -> Change mouse background color to Pt
+		 Ps = 1 5  -> Change Tektronix foreground color to Pt
+		 Ps = 1 6  -> Change Tektronix background color to Pt
+		 Ps = 1 7  -> Change highlight color to Pt
+		 Ps = 1 8  -> Change Tektronix cursor color to Pt
+
+		 Ps = 4 6  -> Change Log File to Pt (normally disabled
+	       by a compile-time option)
+		 Ps = 5 0  -> Set Font to Pt If Pt begins with a "#",
+	       index in the font menu, relative (if the next character
+	       is a plus or minus sign) or absolute.  A number is
+	       expected but not required after the sign (the default is
+	       the current entry for relative, zero for absolute index-
+	       ing).
+
+Privacy Message
+PM Pt ST       xterm implements no PM  functions; Pt is ignored.  Pt
+	       need not be printable characters.
+
+PC-Style Function Keys
+If xterm does minimal translation of the function keys, it usually does
+this with a PC-style keyboard, so PC-style function keys result.  Sun
+keyboards are similar to PC keyboards.	Both have cursor and scrolling
+operations printed on the keypad, which duplicate the smaller cursor and
+scrolling keypads.
+X does not predefine NumLock (used for VT220 keyboards) or Alt (used as
+an extension for the Sun/PC keyboards) as modifiers.  These keys are
+recognized as modifiers when enabled by the numLock resource, or by the
+DECSET 1 0 3 5	control sequence.
+The cursor keys transmit the following escape sequences depending on the
+mode specified via the DECCKM escape sequence.
+
+		      Key	  Normal    Application
+		  --------------------------------------
+		  Cursor Up	 CSI A	    SS3 A
+		  Cursor Down	 CSI B	    SS3 B
+		  Cursor Right	 CSI C	    SS3 C
+		  Cursor Left	 CSI D	    SS3 D
+		  --------------------------------------
+
+The home- and end-keys (unlike PageUp and other keys also on the 6-key
+editing keypad) are considered "cursor keys" by xterm.	Their mode is
+also controlled by the DECCKM escape sequence:
+
+		      Key	Normal	  Application
+		    ----------------------------------
+		    Home       CSI H	  SS3 H
+		    End        CSI F	  SS3 F
+		    ----------------------------------
+
+The application keypad transmits the following escape sequences depend-
+ing on the mode specified via the DECPNM and DECPAM escape sequences.
+Use the NumLock key to override the application mode.
+Not all keys are present on the Sun/PC keypad (e.g., PF1, Tab), but are
+supported by the program.
+
+	   Key	       Numeric	  Application	Terminfo   Termcap
+      --------------------------------------------------------------
+      Space	       SP	  SS3 SP	-	   -
+      Tab	       TAB	  SS3 I 	-	   -
+      Enter	       CR	  SS3 M 	kent	   @8
+      PF1	       SS3 P	  SS3 P 	kf1	   k1
+      PF2	       SS3 Q	  SS3 Q 	kf2	   k2
+      PF3	       SS3 R	  SS3 R 	kf3	   k3
+      PF4	       SS3 S	  SS3 S 	kf4	   k4
+      * (multiply)     *	  SS3 j 	-	   -
+      + (add)	       +	  SS3 k 	-	   -
+      , (comma)        ,	  SS3 l 	-	   -
+      - (minus)        -	  SS3 m 	-	   -
+      . (Delete)       .	  CSI 3 ~	-	   -
+      / (divide)       /	  SS3 o 	-	   -
+      0 (Insert)       0	  CSI 2 ~	-	   -
+      1 (End)	       1	  SS3 F 	kc1	   K4
+      2 (DownArrow)    2	  CSI B 	-	   -
+      3 (PageDown)     3	  CSI 6 ~	kc3	   K5
+      4 (LeftArrow)    4	  CSI D 	-	   -
+      5 (Begin)        5	  CSI E 	kb2	   K2
+      6 (RightArrow)   6	  CSI C 	-	   -
+      7 (Home)	       7	  SS3 H 	ka1	   K1
+      8 (UpArrow)      8	  CSI A 	-	   -
+      9 (PageUp)       9	  CSI 5 ~	ka3	   K3
+      = (equal)        =	  SS3 X 	-	   -
+      --------------------------------------------------------------
+
+They also provide 12 function keys, as well as a few other special-pur-
+pose keys.
+
+			 Key	  Escape Sequence
+		       ---------------------------
+		       F1	  SS3 P
+		       F2	  SS3 Q
+		       F3	  SS3 R
+		       F4	  SS3 S
+		       F5	  CSI 1 5 ~
+		       F6	  CSI 1 7 ~
+		       F7	  CSI 1 8 ~
+		       F8	  CSI 1 9 ~
+		       F9	  CSI 2 0 ~
+		       F10	  CSI 2 1 ~
+		       F11	  CSI 2 3 ~
+		       F12	  CSI 2 4 ~
+		       ---------------------------
+
+Older versions of xterm implement different escape sequences for F1
+through F4.  These can be activated by setting the oldXtermFKeys
+resource.  However, since they do not correspond to any hardware termi-
+nal, they have been deprecated.  (The DEC VT220 reserves F1 through F5
+for local functions such as Setup).
+
+			 Key	  Escape Sequence
+		       ---------------------------
+		       F1	  CSI 1 1 ~
+		       F2	  CSI 1 2 ~
+		       F3	  CSI 1 3 ~
+		       F4	  CSI 1 4 ~
+		       ---------------------------
+
+In normal mode, i.e., a Sun/PC keyboard when the sunKeyboard resource is
+false, xterm recognizes function key modifiers which are parameters
+appended before the final character of the control sequence.
+
+		      Code     Modifiers
+		    ---------------------------------
+		       2       Shift
+		       3       Alt
+		       4       Shift + Alt
+		       5       Control
+		       6       Shift + Control
+		       7       Alt + Control
+		       8       Shift + Alt + Control
+		    ---------------------------------
+
+For example, shift-F5 would be sent as CSI 1 5 ; 2 ~
+
+If the alwaysUseMods resource is set, the Meta modifier also is recog-
+nized, making parameters 9 through 16.
+
+VT220-Style Function Keys
+However, xterm is most useful as a DEC VT102 or VT220 emulator.  Set the
+sunKeyboard resource to true to force a Sun/PC keyboard to act like a
+VT220 keyboard.
+The VT102/VT220 application keypad transmits unique escape sequences in
+application mode, which are distinct from the cursor and scrolling key-
+pad:
+
+		      Key	 Numeric    Application
+		  --------------------------------------
+		  Space 	 SP	    SS3 SP
+		  Tab		 TAB	    SS3 I
+		  Enter 	 CR	    SS3 M
+		  PF1		 SS3 P	    SS3 P
+		  PF2		 SS3 Q	    SS3 Q
+		  PF3		 SS3 R	    SS3 R
+		  PF4		 SS3 S	    SS3 S
+		  * (multiply)	 *	    SS3 j
+		  + (add)	 +	    SS3 k
+		  , (comma)	 ,	    SS3 l
+		  - (minus)	 -	    SS3 m
+		  . (period)	 .	    SS3 n
+		  / (divide)	 /	    SS3 o
+		  0		 0	    SS3 p
+		  1		 1	    SS3 q
+		  2		 2	    SS3 r
+		  3		 3	    SS3 s
+		  4		 4	    SS3 t
+		  5		 5	    SS3 u
+		  6		 6	    SS3 v
+		  7		 7	    SS3 w
+		  8		 8	    SS3 x
+		  9		 9	    SS3 y
+		  = (equal)	 =	    SS3 X
+		  --------------------------------------
+
+The VT220 provides a 6-key editing keypad, which is analogous to that on
+the PC keyboard.  It is not affected by DECCKM or DECPNM/DECPAM:
+
+		     Key       Normal	 Application
+		   ----------------------------------
+		   Insert     CSI 2 ~	 CSI 2 ~
+		   Delete     CSI 3 ~	 CSI 3 ~
+		   Home       CSI 1 ~	 CSI 1 ~
+		   End	      CSI 4 ~	 CSI 4 ~
+		   PageUp     CSI 5 ~	 CSI 5 ~
+		   PageDown   CSI 6 ~	 CSI 6 ~
+		   ----------------------------------
+
+The VT220 provides 8 additional function keys.	With a Sun/PC keyboard,
+access these keys by Control/F1 for F13, etc.
+
+			 Key	  Escape Sequence
+		       ---------------------------
+		       F13	  CSI 2 5 ~
+		       F14	  CSI 2 6 ~
+		       F15	  CSI 2 8 ~
+		       F16	  CSI 2 9 ~
+		       F17	  CSI 3 1 ~
+		       F18	  CSI 3 2 ~
+		       F19	  CSI 3 3 ~
+		       F20	  CSI 3 4 ~
+		       ---------------------------
+
+
+VT52-Style Function Keys
+A VT52 does not have function keys, but it does have a numeric keypad
+and cursor keys.  They differ from the other emulations by the prefix.
+Also, the cursor keys do not change:
+
+		       Key	  Normal/Application
+		   ----------------------------------
+		   Cursor Up	  ESC A
+		   Cursor Down	  ESC B
+		   Cursor Right   ESC C
+		   Cursor Left	  ESC D
+		   ----------------------------------
+
+The keypad is similar:
+
+		      Key	 Numeric    Application
+		  --------------------------------------
+		  Space 	 SP	    ESC ? SP
+		  Tab		 TAB	    ESC ? I
+		  Enter 	 CR	    ESC ? M
+		  PF1		 ESC P	    ESC P
+		  PF2		 ESC Q	    ESC Q
+		  PF3		 ESC R	    ESC R
+		  PF4		 ESC S	    ESC S
+		  * (multiply)	 *	    ESC ? j
+		  + (add)	 +	    ESC ? k
+		  , (comma)	 ,	    ESC ? l
+		  - (minus)	 -	    ESC ? m
+		  . (period)	 .	    ESC ? n
+		  / (divide)	 /	    ESC ? o
+		  0		 0	    ESC ? p
+		  1		 1	    ESC ? q
+		  2		 2	    ESC ? r
+		  3		 3	    ESC ? s
+		  4		 4	    ESC ? t
+		  5		 5	    ESC ? u
+		  6		 6	    ESC ? v
+		  7		 7	    ESC ? w
+		  8		 8	    ESC ? x
+		  9		 9	    ESC ? y
+		  = (equal)	 =	    ESC ? X
+		  --------------------------------------
+
+
+Sun-Style Function Keys
+The xterm program provides support for Sun keyboards more directly, by a
+menu toggle that causes it to send Sun-style function key codes rather
+than VT220.  Note, however, that the sun and VT100 emulations are not
+really compatible.  For example, their wrap-margin behavior differs.
+Only function keys are altered; keypad and cursor keys are the same.
+The emulation responds identically.  See the xterm-sun terminfo entry
+for details.
+
+HP-Style Function Keys
+Similarly, xterm can be compiled to support HP keyboards.  See the
+xterm-hp terminfo entry for details.
+
+The Alternate Screen Buffer
+Xterm maintains two screen buffers.  The normal screen buffer allows you
+to scroll back to view saved lines of output up to the maximum set by
+the saveLines resource.  The alternate screen buffer is exactly as large
+as the display, contains no additional saved lines.  When the alternate
+screen buffer is active, you cannot scroll back to view saved lines.
+Xterm provides control sequences and menu entries for switching between
+the two.
+Most full-screen applications use terminfo or termcap to obtain strings
+used to start/stop full-screen mode, i.e., smcup and rmcup for terminfo,
+or the corresponding ti and te for termcap.  The titeInhibit resource
+removes the ti and te strings from the TERMCAP string which is set in
+the environment for some platforms.  That is not done when xterm is
+built with terminfo libraries because terminfo does not provide the
+whole text of the termcap data in one piece.  It would not work for ter-
+minfo anyway, since terminfo data is not passed in environment vari-
+ables; setting an environment variable in this manner would have no
+effect on the application's ability to switch between normal and alter-
+nate screen buffers.  Instead, the newer private mode controls (such as
+1 0 4 9 ) for switching between normal and alternate screen buffers sim-
+ply disable the switching.  They add other features such as clearing the
+display for the same reason: to make the details of switching indepen-
+dent of the application that requests the switch.
+
+Mouse Tracking
+The VT widget can be set to send the mouse position and other informa-
+tion on button presses.  These modes are typically used by editors and
+other full-screen applications that want to make use of the mouse.
+
+There are six mutually exclusive modes.  One is DEC Locator mode,
+enabled by the DECELR CSI Ps ; Ps  'z control sequence, and is not
+described here (control sequences are summarized above).  The remaining
+five modes are each enabled (or disabled) by a different parameter in
+DECSET CSI ? Pm h or DECRST CSI ? Pm l control sequence.
+
+Manifest constants for the parameter values are defined in xcharmouse.h
+as follows:
+
+		#define SET_X10_MOUSE		    9
+		#define SET_VT200_MOUSE 	    1000
+		#define SET_VT200_HIGHLIGHT_MOUSE   1001
+		#define SET_BTN_EVENT_MOUSE	    1002
+		#define SET_ANY_EVENT_MOUSE	    1003
+
+The motion reporting modes are strictly xterm extensions, and are not
+part of any standard, though they are analogous to the DEC VT200 DECELR
+locator reports.
+
+Parameters (such as pointer position and button number) for all mouse
+tracking escape sequences generated by xterm encode numeric parameters
+in a single character as value+32.  For example, !  specifies the value
+1.  The upper left character position on the terminal is denoted as 1,1.
+
+X10 compatibility mode sends an escape sequence only on button press,
+encoding the location and the mouse button pressed.  It is enabled by
+specifying parameter 9 to DECSET.  On button press, xterm sends CSI M
+CbCxCy (6 characters).	Cb is button-1.  Cx and Cy are the x and y coor-
+dinates of the mouse when the button was pressed.
+
+Normal tracking mode sends an escape sequence on both button press and
+release.  Modifier key (shift, ctrl, meta) information is also sent.  It
+is enabled by specifying parameter 1000 to DECSET.  On button press or
+release, xterm sends CSI M CbCxCy.  The low two bits of Cb encode button
+information: 0=MB1 pressed, 1=MB2 pressed, 2=MB3 pressed, 3=release.
+The next three bits encode the modifiers which were down when the button
+was pressed and are added together:  4=Shift, 8=Meta, 16=Control.  Note
+however that the shift and control bits are normally unavailable because
+xterm uses the control modifier with mouse for popup menus, and the
+shift modifier is used in the default translations for button events.
+The Meta modifier recognized by xterm is the mod1 mask, and is not nec-
+essarily the "Meta" key (see xmodmap).	Cx and Cy are the x and y coor-
+dinates of the mouse event, encoded as in X10 mode.
+
+Wheel mice may return buttons 4 and 5.	Those buttons are represented by
+the same event codes as buttons 1 and 2 respectively, except that 64 is
+added to the event code.  Release events for the wheel buttons are not
+reported.
+
+Mouse hilite tracking notifies a program of a button press, receives a
+range of lines from the program, highlights the region covered by the
+mouse within that range until button release, and then sends the program
+the release coordinates.  It is enabled by specifying parameter 1001 to
+DECSET.  Highlighting is performed only for button 1, though other but-
+ton events can be received.  Warning: use of this mode requires a coop-
+erating program or it will hang xterm.	On button press, the same infor-
+mation as for normal tracking is generated; xterm then waits for the
+program to send mouse tracking information.  All X events are ignored
+until the proper escape sequence is received from the pty: CSI Ps ; Ps ;
+Ps ; Ps ; Ps T .  The parameters are func, startx, starty, firstrow, and
+lastrow.  func is non-zero to initiate hilite tracking and zero to
+abort.	startx and starty give the starting x and y location for the
+highlighted region.  The ending location tracks the mouse, but will
+never be above row firstrow and will always be above row lastrow.  (The
+top of the screen is row 1.)  When the button is released, xterm reports
+the ending position one of two ways: if the start and end coordinates
+are valid text locations: CSI t CxCy.  If either coordinate is past the
+end of the line: CSI T CxCyCxCyCxCy.  The parameters are startx, starty,
+endx, endy, mousex, and mousey.  startx, starty, endx, and endy give the
+starting and ending character positions of the region.	mousex and
+mousey give the location of the mouse at button up, which may not be
+over a character.
+
+Button-event tracking is essentially the same as normal tracking, but
+xterm also reports button-motion events.  Motion events are reported
+only if the mouse pointer has moved to a different character cell.  It
+is enabled by specifying parameter 1002 to DECSET.  On button press or
+release, xterm sends the same codes used by normal tracking mode.  On
+button-motion events, xterm adds 32 to the event code (the third charac-
+ter, Cb).  The other bits of the event code specify button and modifier
+keys as in normal mode.  For example, motion into cell x,y with button 1
+down is reported as CSI M @ CxCy.  ( @	= 32 + 0 (button 1) + 32 (motion
+indicator) ).  Similarly, motion with button 3 down is reported as CSI M
+B CxCy.  ( B  = 32 + 2 (button 3) + 32 (motion indicator) ).
+
+Any-event mode is the same as button-event mode, except that all motion
+events are reported, even if no mouse button is down.  It is enabled by
+specifying 1003 to DECSET.
+
+Tektronix 4014 Mode
+Most of these sequences are standard Tektronix 4014 control sequences.
+Graph mode supports the 12-bit addressing of the Tektronix 4014.  The
+major features missing are the write-through and defocused modes.  This
+document does not describe the commands used in the various Tektronix
+plotting modes but does describe the commands to switch modes.
+
+BEL	       Bell (Ctrl-G)
+BS	       Backspace (Ctrl-H)
+TAB	       Horizontal Tab (Ctrl-I)
+LF	       Line Feed or New Line (Ctrl-J)
+VT	       Cursor up (Ctrl-K)
+FF	       Form Feed or New Page (Ctrl-L)
+CR	       Carriage Return (Ctrl-M)
+ESC ETX        Switch to VT100 Mode (ESC Ctrl-C)
+ESC ENQ        Return Terminal Status (ESC Ctrl-E)
+ESC FF	       PAGE (Clear Screen) (ESC Ctrl-L)
+ESC SO	       Begin 4015 APL mode (ignored by xterm) (ESC Ctrl-N)
+ESC SI	       End 4015 APL mode (ignored by xterm) (ESC Ctrl-O)
+ESC ETB        COPY (Save Tektronix Codes to file COPYyyyy-mm-
+	       dd.hh:mm:ss) (ESC Ctrl-W)
+ESC CAN        Bypass Condition (ESC Ctrl-X)
+ESC SUB        GIN mode (ESC Ctrl-Z)
+ESC FS	       Special Point Plot Mode (ESC Ctrl-\)
+ESC 8	       Select Large Character Set
+ESC 9	       Select #2 Character Set
+ESC :	       Select #3 Character Set
+ESC ;	       Select Small Character Set
+OSC Ps ; Pt BEL
+	       Set Text Parameters of VT window
+		 Ps = 0  -> Change Icon Name and Window Title to Pt
+		 Ps = 1  -> Change Icon Name to Pt
+		 Ps = 2  -> Change Window Title to Pt
+		 Ps = 4 6  -> Change Log File to Pt (normally disabled
+	       by a compile-time option)
+ESC `	       Normal Z Axis and Normal (solid) Vectors
+ESC a	       Normal Z Axis and Dotted Line Vectors
+ESC b	       Normal Z Axis and Dot-Dashed Vectors
+ESC c	       Normal Z Axis and Short-Dashed Vectors
+ESC d	       Normal Z Axis and Long-Dashed Vectors
+ESC h	       Defocused Z Axis and Normal (solid) Vectors
+ESC i	       Defocused Z Axis and Dotted Line Vectors
+ESC j	       Defocused Z Axis and Dot-Dashed Vectors
+ESC k	       Defocused Z Axis and Short-Dashed Vectors
+ESC l	       Defocused Z Axis and Long-Dashed Vectors
+ESC p	       Write-Thru Mode and Normal (solid) Vectors
+ESC q	       Write-Thru Mode and Dotted Line Vectors
+ESC r	       Write-Thru Mode and Dot-Dashed Vectors
+ESC s	       Write-Thru Mode and Short-Dashed Vectors
+ESC t	       Write-Thru Mode and Long-Dashed Vectors
+FS	       Point Plot Mode (Ctrl-\)
+GS	       Graph Mode (Ctrl-])
+RS	       Incremental Plot Mode (Ctrl-^)
+US	       Alpha Mode (Ctrl-_)
+
+VT52 Mode
+Parameters for cursor movement are at the end of the ESC Y  escape
+sequence.  Each ordinate is encoded in a single character as value+32.
+For example, !	is 1.  The screen coodinate system is 0-based.
+
+ESC A	       Cursor up.
+ESC B	       Cursor down.
+ESC C	       Cursor right.
+ESC D	       Cursor left.
+ESC F	       Enter graphics mode.
+ESC G	       Exit graphics mode.
+ESC H	       Move the cursor to the home position.
+ESC I	       Reverse line feed.
+ESC J	       Erase from the cursor to the end of the screen.
+ESC K	       Erase from the cursor to the end of the line.
+ESC Y Ps Ps    Move the cursor to given row and column.
+ESC Z	       Identify
+		 -> ESC  /  Z  (``I am a VT52.'')
+ESC =	       Enter alternate keypad mode.
+ESC >	       Exit alternate keypad mode.
+ESC <	       Exit VT52 mode (Enter VT100 mode).
+
+;---------------------------- console man page ----------------------------
+
+NAME
+       console_codes - Linux console escape and control sequences
+
+DESCRIPTION
+       The   Linux  console  implements	 a  large  subset  of  the  VT102  and
+       ECMA-48/ISO 6429/ANSI X3.64 terminal controls,  plus  certain  private-
+       mode  sequences	for changing the color palette, character-set mapping,
+       etc.  In the  tabular  descriptions  below,  the	 second	 column	 gives
+       ECMA-48	or  DEC	 mnemonics  (the  latter if prefixed with DEC) for the
+       given function.	Sequences without a mnemonic are neither  ECMA-48  nor
+       VT102.
+
+       After  all  the normal output processing has been done, and a stream of
+       characters arrives at the console driver for actual printing, the first
+       thing  that  happens is a translation from the code used for processing
+       to the code used for printing.
+
+       If the console is in UTF-8 mode, then  the  incoming  bytes  are	 first
+       assembled  into	16-bit	Unicode	 codes.	 Otherwise each byte is trans-
+       formed according to the current mapping table (which translates it to a
+       Unicode value).	See the CHARACTER SETS section below for discussion.
+
+       In the normal case, the Unicode value is converted to a font index, and
+       this is stored in video memory, so that	the  corresponding  glyph  (as
+       found  in  video ROM) appears on the screen.  Note that the use of Uni-
+       code (and the design of the PC hardware) allows us to use 512 different
+       glyphs simultaneously.
+
+       If  the	current	 Unicode  value is a control character, or we are cur-
+       rently processing an escape sequence, the value will treated specially.
+       Instead	of  being turned into a font index and rendered as a glyph, it
+       may trigger cursor movement or other control functions.	See the	 LINUX
+       CONSOLE CONTROLS section below for discussion.
+
+       It  is  generally not good practice to hard-wire terminal controls into
+       programs.  Linux supports a terminfo(5) database of terminal  capabili-
+       ties.   Rather than emitting console escape sequences by hand, you will
+       almost always want to use a terminfo-aware screen  library  or  utility
+       such as ncurses(3), tput(1), or reset(1).
+
+LINUX CONSOLE CONTROLS
+       This  section describes all the control characters and escape sequences
+       that invoke special functions (i.e. anything other than writing a glyph
+       at the current cursor location) on the Linux console.
+
+   Control characters
+       A  character is a control character if (before transformation according
+       to the mapping table) it has one of the 14 codes 00 (NUL), 07 (BEL), 08
+       (BS), 09 (HT), 0a (LF), 0b (VT), 0c (FF), 0d (CR), 0e (SO), 0f (SI), 18
+       (CAN), 1a (SUB), 1b (ESC), 7f (DEL).  One can set  a  `display  control
+       characters'  mode  (see	below), and allow 07, 09, 0b, 18, 1a, 7f to be
+       displayed as glyphs.  On the other hand, in UTF-8 mode all codes	 00-1f
+       are  regarded as control characters, regardless of any `display control
+       characters' mode.
+
+       If we have a control character, it is acted upon immediately  and  then
+       discarded  (even	 in  the  middle of an escape sequence) and the escape
+       sequence continues with the next character.  (However, ESC starts a new
+       escape  sequence,  possibly aborting a previous unfinished one, and CAN
+       and SUB abort any escape sequence.)  The recognized control  characters
+       are  BEL, BS, HT, LF, VT, FF, CR, SO, SI, CAN, SUB, ESC, DEL, CSI. They
+       do what one would expect:
+
+       BEL (0x07, ^G) beeps;
+
+       BS (0x08, ^H) backspaces one column (but not past the beginning of  the
+	      line);
+
+       HT  (0x09,  ^I)	goes to the next tab stop or to the end of the line if
+	      there is no earlier tab stop;
+
+       LF (0x0A, ^J), VT (0x0B, ^K) and FF (0x0C, ^L) all give a linefeed;
+
+       CR (0x0D, ^M) gives a carriage return;
+
+       SO (0x0E, ^N) activates the G1 character set, and if  LF/NL  (new  line
+	      mode) is set also a carriage return;
+
+       SI (0x0F, ^O) activates the G0 character set;
+
+       CAN (0x18, ^X) and SUB (0x1A, ^Z) interrupt escape sequences;
+
+       ESC (0x1B, ^[) starts an escape sequence;
+
+       DEL (0x7F) is ignored;
+
+       CSI (0x9B) is equivalent to ESC [.
+
+   ESC- but not CSI-sequences
+       ESC c	 RIS	  Reset.
+       ESC D	 IND	  Linefeed.
+       ESC E	 NEL	  Newline.
+       ESC H	 HTS	  Set tab stop at current column.
+       ESC M	 RI	  Reverse linefeed.
+       ESC Z	 DECID	  DEC private identification. The kernel
+			  returns the string  ESC [ ? 6 c, claiming
+			  that it is a VT102.
+       ESC 7	 DECSC	  Save current state (cursor coordinates,
+			  attributes, character sets pointed at by G0, G1).
+       ESC 8	 DECRC	  Restore state most recently saved by ESC 7.
+       ESC [	 CSI	  Control sequence introducer
+       ESC %		  Start sequence selecting character set
+       ESC % @		     Select default (ISO 646 / ISO 8859-1)
+       ESC % G		     Select UTF-8
+       ESC % 8		     Select UTF-8 (obsolete)
+       ESC # 8	 DECALN	  DEC screen alignment test - fill screen with E's.
+       ESC (		  Start sequence defining G0 character set
+       ESC ( B		     Select default (ISO 8859-1 mapping)
+       ESC ( 0		     Select vt100 graphics mapping
+       ESC ( U		     Select null mapping - straight to character ROM
+       ESC ( K		     Select user mapping - the map that is loaded by
+			     the utility mapscrn(8).
+       ESC )		  Start sequence defining G1
+			  (followed by one of B, 0, U, K, as above).
+       ESC >	 DECPNM	  Set numeric keypad mode
+       ESC =	 DECPAM	  Set application keypad mode
+       ESC ]	 OSC	  (Should be: Operating system command)
+			  ESC ] P nrrggbb: set palette, with parameter
+			  given in 7 hexadecimal digits after the final P :-(.
+			  Here n is the color (0-15), and rrggbb indicates
+			  the red/green/blue values (0-255).
+			  ESC ] R: reset palette
+
+   ECMA-48 CSI sequences
+       CSI  (or	 ESC  [) is followed by a sequence of parameters, at most NPAR
+       (16), that are decimal numbers separated by  semicolons.	 An  empty  or
+       absent  parameter  is taken to be 0.  The sequence of parameters may be
+       preceded by a single question mark.
+
+       However, after CSI [ (or ESC [ [) a single character is read  and  this
+       entire  sequence	 is ignored. (The idea is to ignore an echoed function
+       key.)
+
+       The action of a CSI sequence is determined by its final character.
+
+       @   ICH	     Insert the indicated # of blank characters.
+       A   CUU	     Move cursor up the indicated # of rows.
+       B   CUD	     Move cursor down the indicated # of rows.
+       C   CUF	     Move cursor right the indicated # of columns.
+       D   CUB	     Move cursor left the indicated # of columns.
+       E   CNL	     Move cursor down the indicated # of rows, to column 1.
+       F   CPL	     Move cursor up the indicated # of rows, to column 1.
+       G   CHA	     Move cursor to indicated column in current row.
+       H   CUP	     Move cursor to the indicated row, column (origin at 1,1).
+       J   ED	     Erase display (default: from cursor to end of display).
+		     ESC [ 1 J: erase from start to cursor.
+		     ESC [ 2 J: erase whole display.
+       K   EL	     Erase line (default: from cursor to end of line).
+		     ESC [ 1 K: erase from start of line to cursor.
+		     ESC [ 2 K: erase whole line.
+       L   IL	     Insert the indicated # of blank lines.
+       M   DL	     Delete the indicated # of lines.
+       P   DCH	     Delete the indicated # of characters on the current line.
+       X   ECH	     Erase the indicated # of characters on the current line.
+       a   HPR	     Move cursor right the indicated # of columns.
+       c   DA	     Answer ESC [ ? 6 c: `I am a VT102'.
+       d   VPA	     Move cursor to the indicated row, current column.
+       e   VPR	     Move cursor down the indicated # of rows.
+       f   HVP	     Move cursor to the indicated row, column.
+       g   TBC	     Without parameter: clear tab stop at the current position.
+		     ESC [ 3 g: delete all tab stops.
+       h   SM	     Set Mode (see below).
+       l   RM	     Reset Mode (see below).
+       m   SGR	     Set attributes (see below).
+       n   DSR	     Status report (see below).
+       q   DECLL     Set keyboard LEDs.
+		     ESC [ 0 q: clear all LEDs
+		     ESC [ 1 q: set Scroll Lock LED
+		     ESC [ 2 q: set Num Lock LED
+		     ESC [ 3 q: set Caps Lock LED
+       r   DECSTBM   Set scrolling region; parameters are top and bottom row.
+       s   ?	     Save cursor location.
+       u   ?	     Restore cursor location.
+       `   HPA	     Move cursor to indicated column in current row.
+
+   ECMA-48 Set Graphics Rendition
+       The ECMA-48 SGR sequence ESC [ <parameters> m sets display  attributes.
+       Several attributes can be set in the same sequence.
+
+       par   result
+       0     reset all attributes to their defaults
+       1     set bold
+       2     set half-bright (simulated with color on a color display)
+       4     set underscore (simulated with color on a color display)
+	     (the colors used to simulate dim or underline are set
+	     using ESC ] ...)
+       5     set blink
+       7     set reverse video
+       10    reset selected mapping, display control flag,
+	     and toggle meta flag.
+
+       11    select null mapping, set display control flag,
+	     reset toggle meta flag.
+       12    select null mapping, set display control flag,
+	     set toggle meta flag. (The toggle meta flag
+	     causes the high bit of a byte to be toggled
+	     before the mapping table translation is done.)
+       21    set normal intensity (this is not compatible with ECMA-48)
+       22    set normal intensity
+       24    underline off
+       25    blink off
+       27    reverse video off
+       30    set black foreground
+       31    set red foreground
+       32    set green foreground
+       33    set brown foreground
+       34    set blue foreground
+       35    set magenta foreground
+       36    set cyan foreground
+       37    set white foreground
+       38    set underscore on, set default foreground color
+       39    set underscore off, set default foreground color
+       40    set black background
+       41    set red background
+       42    set green background
+       43    set brown background
+       44    set blue background
+       45    set magenta background
+       46    set cyan background
+       47    set white background
+       49    set default background color
+
+   ECMA-48 Mode Switches
+       ESC [ 3 h
+	      DECCRM (default off): Display control chars.
+
+       ESC [ 4 h
+	      DECIM (default off): Set insert mode.
+
+       ESC [ 20 h
+	      LF/NL  (default  off): Automatically follow echo of LF, VT or FF
+	      with CR.
+
+   ECMA-48 Status Report Commands
+       ESC [ 5 n
+	      Device status report (DSR): Answer is ESC [ 0 n (Terminal OK).
+
+       ESC [ 6 n
+	      Cursor position report (CPR): Answer is ESC [ y ; x R, where x,y
+	      is the cursor location.
+
+   DEC Private Mode (DECSET/DECRST) sequences.
+       These  are  not	described in ECMA-48.  We list the Set Mode sequences;
+       the Reset Mode sequences are obtained by replacing  the	final  `h'  by
+       `l'.
+
+       ESC [ ? 1 h
+	      DECCKM  (default	off):  When set, the cursor keys send an ESC O
+	      prefix, rather than ESC [.
+
+       ESC [ ? 3 h
+	      DECCOLM (default off = 80 columns): 80/132 col mode switch.  The
+	      driver sources note that this alone does not suffice; some user-
+	      mode utility such as resizecons(8) has to	 change	 the  hardware
+	      registers on the console video card.
+
+       ESC [ ? 5 h
+	      DECSCNM (default off): Set reverse-video mode.
+
+       ESC [ ? 6 h
+	      DECOM  (default off): When set, cursor addressing is relative to
+	      the upper left corner of the scrolling region.
+
+       ESC [ ? 7 h
+	      DECAWM (default on): Set autowrap on.  In this mode,  a  graphic
+	      character	 emitted  after column 80 (or column 132 of DECCOLM is
+	      on) forces a wrap to the beginning of the following line	first.
+
+       ESC [ ? 8 h
+	      DECARM (default on): Set keyboard autorepreat on.
+
+       ESC [ ? 9 h
+	      X10  Mouse  Reporting (default off): Set reporting mode to 1 (or
+	      reset to 0) - see below.
+
+       ESC [ ? 25 h
+	      DECCM (default on): Make cursor visible.
+
+       ESC [ ? 1000 h
+	      X11 Mouse Reporting (default off): Set reporting mode to	2  (or
+	      reset to 0) - see below.
+
+   Linux Console Private CSI Sequences
+       The following sequences are neither ECMA-48 nor native VT102.  They are
+       native to the Linux console driver.  Colors are in SGR parameters: 0  =
+       black,  1 = red, 2 = green, 3 = brown, 4 = blue, 5 = magenta, 6 = cyan,
+       7 = white.
+
+       ESC [ 1 ; n ]	   Set color n as the underline color
+       ESC [ 2 ; n ]	   Set color n as the dim color
+       ESC [ 8 ]	   Make the current color pair the default attributes.
+       ESC [ 9 ; n ]	   Set screen blank timeout to n minutes.
+       ESC [ 10 ; n ]	   Set bell frequency in Hz.
+       ESC [ 11 ; n ]	   Set bell duration in msec.
+       ESC [ 12 ; n ]	   Bring specified console to the front.
+       ESC [ 13 ]	   Unblank the screen.
+       ESC [ 14 ; n ]	   Set the VESA powerdown interval in minutes.
+
+CHARACTER SETS
+       The kernel knows about 4 translations of bytes into console-screen sym-
+       bols.   The four tables are: a) Latin1 -> PC,  b) VT100 graphics -> PC,
+       c) PC -> PC, d) user-defined.
+
+       There are two character sets, called G0 and G1, and one of them is  the
+       current	character  set. (Initially G0.)	 Typing ^N causes G1 to become
+       current, ^O causes G0 to become current.
+
+       These variables G0 and G1 point at a  translation  table,  and  can  be
+       changed	by the user. Initially they point at tables a) and b), respec-
+       tively.	The sequences ESC ( B and ESC ( 0 and ESC (  U	and  ESC  (  K
+       cause G0 to point at translation table a), b), c) and d), respectively.
+       The sequences ESC ) B and ESC ) 0 and ESC ) U and ESC ) K cause	G1  to
+       point at translation table a), b), c) and d), respectively.
+
+       The  sequence  ESC c causes a terminal reset, which is what you want if
+       the screen is all garbled. The oft-advised "echo ^V^O" will  only  make
+       G0  current,  but there is no guarantee that G0 points at table a).  In
+       some distributions there is a program reset(1)  that  just  does	 "echo
+       ^[c".   If  your	 terminfo entry for the console is correct (and has an
+       entry rs1=\Ec), then "tput reset" will also work.
+
+       The user-defined mapping table can be set using mapscrn(8).  The result
+       of  the mapping is that if a symbol c is printed, the symbol s = map[c]
+       is sent to the video memory. The bitmap that corresponds to s is	 found
+       in the character ROM, and can be changed using setfont(8).
+
+MOUSE TRACKING
+       The  mouse  tracking  facility  is  intended to return xterm-compatible
+       mouse status reports.  Because the console driver has no	 way  to  know
+       the device or type of the mouse, these reports are returned in the con-
+       sole input stream only when the	virtual	 terminal  driver  receives  a
+       mouse  update  ioctl.   These ioctls must be generated by a mouse-aware
+       user-mode application such as the gpm(8) daemon.
+
+       Parameters for all mouse tracking escape sequences generated  by	 xterm
+       encode  numeric	parameters  in	a  single character as value+040.  For
+       example, `!' is 1.  The screen coordinate system is 1-based.
+
+       The X10 compatibility mode sends an escape  sequence  on	 button	 press
+       encoding	 the  location and the mouse button pressed.  It is enabled by
+       sending ESC [ ? 9 h and disabled with ESC [ ? 9 l.   On	button	press,
+       xterm  sends ESC [ M bxy (6 characters).	 Here b is button-1, and x and
+       y are the x and y coordinates of the mouse when the button was pressed.
+       This is the same code the kernel also produces.
+
+       Normal  tracking mode (not implemented in Linux 2.0.24) sends an escape
+       sequence on both button press and  release.   Modifier  information  is
+       also  sent.   It is enabled by sending ESC [ ? 1000 h and disabled with
+       ESC [ 1000 l.  On button press or release, xterm sends  ESC  [  M  bxy.
+       The  low	 two bits of b encode button information: 0=MB1 pressed, 1=MB2
+       pressed, 2=MB3 pressed, 3=release.  The upper bits  encode  what	 modi-
+       fiers  were  down  when	the button was pressed and are added together:
+       4=Shift, 8=Meta, 16=Control.  Again x and y are the x and y coordinates
+       of the mouse event.  The upper left corner is (1,1).
+
+COMPARISONS WITH OTHER TERMINALS
+       Many different terminal types are described, like the Linux console, as
+       being `VT100-compatible'.  Here we  discuss  differences	 vbetween  the
+       Linux  console  an  the	two  most  important others, the DEC VT102 and
+       xterm(1).
+
+   Control-character handling
+       The vt102 also recognized the following control characters:
+
+       NUL (0x00) was ignored;
+
+       ENQ (0x05) triggered an answerback message;
+
+       DC1 (0x11, ^Q, XON) resumed transmission;
+
+       DC3 (0x13, ^S, XOFF) caused vt100 to ignore (and stop transmitting) all
+	      codes except XOFF and XON.
+
+       VT100-like DC1/DC3 processing may be enabled by the tty driver.
+
+       The  xterm  program  (in	 vt100 mode) recognizes the control characters
+       BEL, BS, HT, LF, VT, FF, CR, SO, SI, ESC.
+
+   Escape sequences
+       VT100 console sequences not implemented on the Linux console:
+
+       ESC N	   SS2	 Single shift 2. (Select G2 character set for the next
+			 character only.)
+       ESC O	   SS3	 Single shift 3. (Select G3 character set for the next
+			 character only.)
+       ESC P	   DCS	 Device control string (ended by ESC \)
+       ESC X	   SOS	 Start of string.
+       ESC ^	   PM	 Privacy message (ended by ESC \)
+       ESC \	   ST	 String terminator
+
+       ESC * ...	 Designate G2 character set
+       ESC + ...	 Designate G3 character set
+
+       The program xterm (in vt100 mode) recognizes ESC c, ESC # 8, ESC >, ESC
+       =,  ESC	D, ESC E, ESC H, ESC M, ESC N, ESC O, ESC P ... ESC  ESC Z (it
+       answers ESC [ ? 1 ; 2 c, `I am a vt100 with advanced video option') and
+       ESC  ^  ... ESC	with the same meanings as indicated above.  It accepts
+       ESC (, ESC ), ESC *,  ESC + followed by 0, A, B	for  the  DEC  special
+       character  and  line  drawing  set,  UK, and USASCII, respectively.  It
+       accepts ESC ] for the setting of certain resources:
+
+       ESC ] 0 ; txt BEL      Set icon name and window title to txt.
+       ESC ] 1 ; txt BEL      Set icon name to txt.
+       ESC ] 2 ; txt BEL      Set window title to txt.
+       ESC ] 4 6 ; name BEL   Change log file to name (normally disabled
+			      by a compile-time option)
+       ESC ] 5 0 ; fn BEL     Set font to fn.
+
+       It recognizes the following with slightly modified meaning:
+
+       ESC 7  DECSC   Save cursor
+       ESC 8  DECRC   Restore cursor
+
+       It also recognizes
+
+       ESC F	      Cursor to lower left corner of screen (if enabled by
+		      the hpLowerleftBugCompat resource)
+       ESC l	      Memory lock (per HP terminals).
+		      Locks memory above the cursor.
+       ESC m	      Memory unlock (per HP terminals).
+       ESC n   LS2    Invoke the G2 character set.
+       ESC o   LS3    Invoke the G3 character set.
+       ESC |   LS3R   Invoke the G3 character set as GR.
+		      Has no visible effect in xterm.
+       ESC }   LS2R   Invoke the G2 character set as GR.
+		      Has no visible effect in xterm.
+       ESC ~   LS1R   Invoke the G1 character set as GR.
+		      Has no visible effect in xterm.
+
+       It does not recognize ESC % ...
+
+   CSI Sequences
+       The xterm program (as of XFree86 3.1.2G) does not recognize  the	 blink
+       or  invisible-mode  SGRs.  Stock	 X11R6	versions  do not recognize the
+       color-setting SGRs.  All other  ECMA-48	CSI  sequences	recognized  by
+       Linux are also recognized by xterm, and vice-versa.
+
+       The  xterm program will recognize all of the DEC Private Mode sequences
+       listed above, but none of the Linux private-mode sequences.   For  dis-
+       cussion	of xterm's own private-mode sequences, refer to the Xterm Con-
+       trol Sequences document by Edward Moy  and  Stephen  Gildea,  available
+       with the X distribution.
+
+SEE ALSO
+       console(4), console_ioctl(4), charsets(7)
+
+;------------------------------------------------------------------------------
+CONSOLE_IOCTLS(4)	   Linux Programmer's Manual	     CONSOLE_IOCTLS(4)
+
+NAME
+       console ioctl - ioctl's for console terminal and virtual consoles
+
+DESCRIPTION
+       The  following  Linux-peculiar  ioctl()	requests  are supported.  Each
+       requires a third argument, assumed here to be argp.
+
+       KDGETLED
+	      Get state of LEDs.  argp points to a long int.  The lower	 three
+	      bits of *argp are set to the state of the LEDs, as follows:
+
+		  LED_CAP	0x04   caps lock led
+		  LEC_NUM	0x02   num lock led
+		  LED_SCR	0x01   scroll lock led
+
+       KDSETLED
+	      Set the LEDs.  The LEDs are set to correspond to the lower three
+	      bits of argp.  However, if a higher order bit is set,  the  LEDs
+	      revert to normal: displaying the state of the keyboard functions
+	      of caps lock, num lock, and scroll lock.
+
+       Before 1.1.54, the LEDs just reflected the state of  the	 corresponding
+       keyboard	 flags,	 and  KDGETLED/KDSETLED would also change the keyboard
+       flags. Since 1.1.54 the leds can be made to display arbitrary  informa-
+       tion,  but  by  default they display the keyboard flags.	 The following
+       two ioctl's are used to access the keyboard flags.
+
+       KDGKBLED
+	      Get keyboard flags CapsLock, NumLock, ScrollLock	(not  lights).
+	      argp  points  to a char which is set to the flag state.  The low
+	      order three bits (mask 0x7) get the current flag state, and  the
+	      low  order  bits	of the next nibble (mask 0x70) get the default
+	      flag state. (Since 1.1.54.)
+
+       KDSKBLED
+	      Set keyboard flags CapsLock, NumLock, ScrollLock	(not  lights).
+	      argp has the desired flag state.	The low order three bits (mask
+	      0x7) have the flag state, and the low order  bits	 of  the  next
+	      nibble  (mask 0x70) have the default flag state. (Since 1.1.54.)
+
+       KDGKBTYPE
+	      Get keyboard type. This returns the  value  KB_101,  defined  as
+	      0x02.
+
+       KDADDIO
+	      Add I/O port as valid. Equivalent to ioperm(arg,1,1).
+
+       KDDELIO
+	      Delete I/O port as valid. Equivalent to ioperm(arg,1,0).
+
+       KDENABIO
+	      Enable   I/O   to	  video	 board.	 Equivalent  to	 ioperm(0x3b4,
+	      0x3df-0x3b4+1, 1).
+
+       KDDISABIO
+	      Disable  I/O  to	video  board.  Equivalent   to	 ioperm(0x3b4,
+	      0x3df-0x3b4+1, 0).
+
+       KDSETMODE
+	      Set text/graphics mode.  argp is one of these:
+
+		  KD_TEXT	0x00
+		  KD_GRAPHICS	0x01
+
+       KDGETMODE
+	      Get  text/graphics  mode.	 argp points to a long which is set to
+	      one of the above values.
+
+       KDMKTONE
+	      Generate tone of specified length.  The lower 16	bits  of  argp
+	      specify  the  period in clock cycles, and the upper 16 bits give
+	      the duration in msec.  If the duration is	 zero,	the  sound  is
+	      turned  off.   Control returns immediately.  For example, argp =
+	      (125<<16) + 0x637 would specify  the  beep  normally  associated
+	      with a ctrl-G.  (Thus since 0.99pl1; broken in 2.1.49-50.)
+
+       KIOCSOUND
+	      Start or stop sound generation.  The lower 16 bits of argp spec-
+	      ify the period in clock cycles (that  is,	 argp  =  1193180/fre-
+	      quency).	 argp  =  0  turns sound off.  In either case, control
+	      returns immediately.
+
+       GIO_CMAP
+	      Get the current default colour map from kernel.  argp points  to
+	      a 48-byte array.	(Since 1.3.3.)
+
+       PIO_CMAP
+	      Change  the  default  text-mode  colour  map.   argp points to a
+	      48-byte array which contains, in order, the Red, Green, and Blue
+	      values for the 16 available screen colours: 0 is off, and 255 is
+	      full intensity.  The default colours are, in order: black,  dark
+	      red, dark green, brown, dark blue, dark purple, dark cyan, light
+	      grey, dark grey, bright red, bright green, yellow, bright	 blue,
+	      bright purple, bright cyan and white.  (Since 1.3.3.)
+
+       GIO_FONT
+	      Gets 256-character screen font in expanded form.	argp points to
+	      an 8192 byte array.  Fails with error code EINVAL	 if  the  cur-
+	      rently loaded font is a 512-character font, or if the console is
+	      not in text mode.
+
+       GIO_FONTX
+	      Gets screen font and associated information.  argp points	 to  a
+	      struct  consolefontdesc (see PIO_FONTX).	On call, the charcount
+	      field should be set to the maximum  number  of  characters  that
+	      would  fit in the buffer pointed to by chardata.	On return, the
+	      charcount and charheight are filled with the respective data for
+	      the  currently  loaded font, and the chardata array contains the
+	      font data if the initial value  of  charcount  indicated	enough
+	      space was available; otherwise the buffer is untouched and errno
+	      is set to ENOMEM.	 (Since 1.3.1.)
+
+       PIO_FONT
+	      Sets 256-character screen font.	Load  font  into  the  EGA/VGA
+	      character	 generator.   argp  points to a 8192 byte map, with 32
+	      bytes per character.  Only first N of them are used for  an  8xN
+	      font (0 < N <= 32).  This call also invalidates the Unicode map-
+	      ping.
+
+       PIO_FONTX
+	      Sets screen font and  associated	rendering  information.	  argp
+	      points to a
+
+	      struct consolefontdesc {
+		      u_short charcount;      /* characters in font (256 or 512) */
+		      u_short charheight;     /* scan lines per character (1-32) */
+		      char *chardata;	      /* font data in expanded form */
+	      };
+
+	      If necessary, the screen will be appropriately resized, and SIG-
+	      WINCH sent to the appropriate processes.	This call also invali-
+	      dates the Unicode mapping.  (Since 1.3.1.)
+
+       PIO_FONTRESET
+	      Resets  the  screen font, size and Unicode mapping to the bootup
+	      defaults.	 argp is unused, but should be set to NULL  to	ensure
+	      compatibility with future versions of Linux.  (Since 1.3.28.)
+
+       GIO_SCRNMAP
+	      Get  screen mapping from kernel.	argp points to an area of size
+	      E_TABSZ, which is loaded with the font positions used to display
+	      each  character.	This call is likely to return useless informa-
+	      tion if the currently loaded font is more than 256 characters.
+
+       GIO_UNISCRNMAP
+	      Get full Unicode screen mapping from kernel.  argp points to  an
+	      area  of	size  E_TABSZ*sizeof(unsigned  short), which is loaded
+	      with the Unicodes each character represent.  A  special  set  of
+	      Unicodes,	 starting at U+F000, are used to represent ``direct to
+	      font'' mappings.	(Since 1.3.1.)
+
+       PIO_SCRNMAP
+	      Loads the ``user definable'' (fourth) table in the kernel	 which
+	      maps  bytes into console screen symbols.	argp points to an area
+	      of size E_TABSZ.
+
+       PIO_UNISCRNMAP
+	      Loads the ``user definable'' (fourth) table in the kernel	 which
+	      maps  bytes into Unicodes, which are then translated into screen
+	      symbols according to the currently loaded	 Unicode-to-font  map.
+	      Special  Unicodes starting at U+F000 can be used to map directly
+	      to the font symbols.  (Since 1.3.1.)
+
+       GIO_UNIMAP
+	      Get Unicode-to-font mapping from kernel.	argp points to a
+
+	      struct unimapdesc {
+		      u_short entry_ct;
+		      struct unipair *entries;
+	      };
+
+	      where entries points to an array of
+
+	      struct unipair {
+		      u_short unicode;
+		      u_short fontpos;
+	      };
+
+	      (Since 1.1.92.)
+
+       PIO_UNIMAP
+	      Put unicode-to-font mapping in kernel.  argp points to a	struct
+	      unimapdesc.  (Since 1.1.92)
+
+       PIO_UNIMAPCLR
+	      Clear table, possibly advise hash algorithm.  argp points to a
+
+	      struct unimapinit {
+		      u_short advised_hashsize;	 /* 0 if no opinion */
+		      u_short advised_hashstep;	 /* 0 if no opinion */
+		      u_short advised_hashlevel; /* 0 if no opinion */
+	      };
+
+	      (Since 1.1.92.)
+
+       KDGKBMODE
+	      Gets  current keyboard mode.  argp points to a long which is set
+	      to one of these:
+
+		  K_RAW		0x00
+		  K_XLATE	0x01
+		  K_MEDIUMRAW	0x02
+		  K_UNICODE	0x03
+
+       KDSKBMODE
+	      Sets current keyboard mode.  argp is a long equal to one of  the
+	      above values.
+
+       KDGKBMETA
+	      Gets meta key handling mode.  argp points to a long which is set
+	      to one of these:
+
+		  K_METABIT	0x03   set high order bit
+		  K_ESCPREFIX	0x04   escape prefix
+
+       KDSKBMETA
+	      Sets meta key handling mode.  argp is a long equal to one of the
+	      above values.
+
+       KDGKBENT
+	      Gets  one	 entry	in  key	 translation  table (keycode to action
+	      code).  argp points to a
+
+	      struct kbentry {
+		  u_char kb_table;
+		  u_char kb_index;
+		  u_short kb_value;
+	      };
+
+	      with the first two members filled in: kb_table selects  the  key
+	      table (0 <= kb_table < MAX_NR_KEYMAPS), and kb_index is the key-
+	      code (0 <= kb_index < NR_KEYS).  kb_value is set to  the	corre-
+	      sponding	action	code,  or  K_HOLE  if there is no such key, or
+	      K_NOSUCHMAP if kb_table is invalid.
+
+       KDSKBENT
+	      Sets one entry in translation table.  argp points	 to  a	struct
+	      kbentry.
+
+       KDGKBSENT
+	      Gets one function key string.  argp points to a
+
+	      struct kbsentry {
+		  u_char kb_func;
+		  u_char kb_string[512];
+	      };
+
+	      kb_string	 is  set to the (NULL terminated) string corresponding
+	      to the kb_functh function key action code.
+
+       KDSKBSENT
+	      Sets one function key string entry.  argp	 points	 to  a	struct
+	      kbsentry.
+
+       KDGKBDIACR
+	      Read kernel accent table.	 argp points to a
+
+	      struct kbdiacrs {
+		  unsigned int kb_cnt;
+		  struct kbdiacr kbdiacr[256];
+	      };
+
+	      where  kb_cnt  is	 the  number  of entries in the array, each of
+	      which is a
+
+	      struct kbdiacr { u_char diacr, base, result; };
+
+       KDGETKEYCODE
+	      Read kernel keycode table entry (scan code  to  keycode).	  argp
+	      points to a
+
+	      struct kbkeycode { unsigned int scancode, keycode; };
+
+	      keycode  is  set	to  correspond	to the given scancode.	(89 <=
+	      scancode <= 255 only.  For 1 <= scancode <=  88,	keycode==scan-
+	      code.)  (Since 1.1.63.)
+
+       KDSETKEYCODE
+	      Write  kernel keycode table entry.  argp points to struct kbkey-
+	      code.  (Since 1.1.63.)
+
+       KDSIGACCEPT
+	      The calling process indicates its willingness to accept the sig-
+	      nal  argp	 when  it  is generated by pressing an appropriate key
+	      combination.  (1 <= argp	<=  NSIG).   (See  spawn_console()  in
+	      linux/drivers/char/keyboard.c.)
+
+       VT_OPENQRY
+	      Returns  the  first available (non-opened) console.  argp points
+	      to an int which is set to the number of the vt (1	 <=  *argp  <=
+	      MAX_NR_CONSOLES).
+
+       VT_GETMODE
+	      Get mode of active vt.  argp points to a
+
+	      struct vt_mode {
+		  char mode;	 /* vt mode */
+		  char waitv;	 /* if set, hang on writes if not active */
+		  short relsig;	 /* signal to raise on release req */
+		  short acqsig;	 /* signal to raise on acquisition */
+		  short frsig;	 /* unused (set to 0) */
+	      };
+
+	      mode is set to one of these values:
+
+		  VT_AUTO	auto vt switching
+		  VT_PROCESS	process controls switching
+		  VT_ACKACQ	acknowledge switch
+
+       VT_SETMODE
+	      Set mode of active vt.  argp points to a struct vt_mode.
+
+       VT_GETSTATE
+	      Get global vt state info.	 argp points to a
+
+	      struct vt_stat {
+		  ushort v_active;  /* active vt */
+		  ushort v_signal;  /* signal to send */
+		  ushort v_state;   /* vt bitmask */
+	      };
+
+	      For  each vt in use, the corresponding bit in the v_state member
+	      is set.  (Kernels 1.0 through 1.1.92.)
+
+       VT_RELDISP
+	      Release a display.
+
+       VT_ACTIVATE
+	      Switch to vt argp (1 <= argp <= MAX_NR_CONSOLES).
+
+       VT_WAITACTIVE
+	      Wait until vt argp has been activated.
+
+       VT_DISALLOCATE
+	      Deallocate the memory associated with vt argp.  (Since  1.1.54.)
+
+       VT_RESIZE
+	      Set the kernel's idea of screensize.  argp points to a
+
+	      struct vt_sizes {
+		  ushort v_rows;       /* # rows */
+		  ushort v_cols;       /* # columns */
+		  ushort v_scrollsize; /* no longer used */
+	      };
+
+	      Note  that  this	does  not  change  the videomode.  See resize-
+	      cons(8).	(Since 1.1.54.)
+
+       VT_RESIZEX
+	      Set the kernel's idea of various screen parameters.  argp points
+	      to a
+
+	      struct vt_consize {
+		      ushort v_rows;	      /* number of rows */
+		      ushort v_cols;	      /* number of columns */
+		      ushort v_vlin;	      /* number of pixel rows on screen */
+		      ushort v_clin;	      /* number of pixel rows per character */
+		      ushort v_vcol;	      /* number of pixel columns on screen */
+		      ushort v_ccol;	      /* number of pixel columns per character */
+	      };
+
+	      Any  parameter may be set to zero, indicating ``no change'', but
+	      if multiple parameters are set, they  must  be  self-consistent.
+	      Note  that  this	does  not  change  the videomode.  See resize-
+	      cons(8).	(Since 1.3.3.)
+
+       The action of the following ioctls depends on the  first	 byte  in  the
+       struct  pointed to by argp, referred to here as the subcode.  These are
+       legal only for the superuser or the owner of the current tty.
+
+       TIOCLINUX, subcode=0
+	      Dump the screen.	Disappeared in 1.1.92.	(With kernel 1.1.92 or
+	      later, read from /dev/vcsN or /dev/vcsaN instead.)
+
+       TIOCLINUX, subcode=1
+	      Get task information. Disappeared in 1.1.92.
+
+       TIOCLINUX, subcode=2
+	      Set selection.  argp points to a
+
+		 struct {char subcode;
+		     short xs, ys, xe, ye;
+		     short sel_mode;
+		 }
+
+	      xs  and  ys  are the starting column and row.  xe and ye are the
+	      ending column and row.  (Upper  left  corner  is	row=column=1.)
+	      sel_mode	is 0 for character-by-character selection, 1 for word-
+	      by-word selection, or 2 for line-by-line selection.   The	 indi-
+	      cated  screen characters are highlighted and saved in the static
+	      array sel_buffer in devices/char/console.c.
+
+       TIOCLINUX, subcode=3
+	      Paste selection.	The characters in  the	selection  buffer  are
+	      written to fd.
+
+       TIOCLINUX, subcode=4
+	      Unblank the screen.
+
+       TIOCLINUX, subcode=5
+	      Sets  contents of a 256-bit look up table defining characters in
+	      a "word", for word-by-word selection.  (Since 1.1.32.)
+
+       TIOCLINUX, subcode=6
+	      argp points to a char which is set to the value  of  the	kernel
+	      variable shift_state.  (Since 1.1.32.)
+
+       TIOCLINUX, subcode=7
+	      argp  points  to	a char which is set to the value of the kernel
+	      variable report_mouse.  (Since 1.1.33.)
+
+       TIOCLINUX, subcode=8
+	      Dump screen width and height, cursor position, and all the char-
+	      acter-attribute  pairs.	(Kernels  1.1.67  through 1.1.91 only.
+	      With kernel 1.1.92 or later, read from /dev/vcsa* instead.)
+
+       TIOCLINUX, subcode=9
+	      Restore screen width and height, cursor position,	 and  all  the
+	      character-attribute pairs.  (Kernels 1.1.67 through 1.1.91 only.
+	      With kernel 1.1.92 or later, write to /dev/vcsa* instead.)
+
+       TIOCLINUX, subcode=10
+	      Handles the Power Saving feature of the new generation of	 moni-
+	      tors.   VESA  screen blanking mode is set to argp[1], which gov-
+	      erns what screen blanking does:
+
+		  0: Screen blanking is disabled.
+
+		  1: The current video adapter register	 settings  are	saved,
+	      then  the controller is programmed to turn off the vertical syn-
+	      chronization pulses.  This puts the monitor into "standby" mode.
+	      If  your	monitor has an Off_Mode timer, then it will eventually
+	      power down by itself.
+
+		  2: The current settings are saved, then  both	 the  vertical
+	      and horizontal synchronization pulses are turned off.  This puts
+	      the monitor into "off" mode.  If your monitor  has  no  Off_Mode
+	      timer,  or  if  you  want your monitor to power down immediately
+	      when the blank_timer times out, then  you	 choose	 this  option.
+	      (Caution: Powering down frequently will damage the monitor.)
+
+	      (Since 1.1.76.)
+
+RETURN VALUE
+       On success, 0 is returned. On error -1 is returned, and errno is set.
+
+ERRORS
+       errno may take on these values:
+
+       EBADF  file descriptor is invalid.
+
+       ENOTTY file  descriptor	is  not	 associated  with  a character special
+	      device, or the specified request does not apply to it.
+
+       EINVAL file descriptor or argp is invalid.
+
+       EPERM  permission violation.
+
+WARNING
+       Do not regard this man page  as	documentation  of  the	Linux  console
+       ioctl's.	  This	is provided for the curious only, as an alternative to
+       reading the source. Ioctl's are undocumented Linux internals, liable to
+       be  changed  without  warning.  (And  indeed,  this  page  more or less
+       describes the situation as of kernel version  1.1.94;  there  are  many
+       minor and not-so-minor differences with earlier versions.)
+
+       Very often, ioctl's are introduced for communication between the kernel
+       and  one	 particular  well-known	 program  (fdisk,  hdparm,  setserial,
+       tunelp, loadkeys, selection, setfont, etc.), and their behavior will be
+       changed when required by this particular program.
+
+       Programs using these ioctl's will not be portable to other versions  of
+       Unix,  will  not	 work on older versions of Linux, and will not work on
+       future versions of Linux.
+
+       Use POSIX functions.
+
+SEE ALSO
+       kbd_mode(1), loadkeys(1), dumpkeys(1), mknod(1),	 setleds(1),  setmeta-
+       mode(1),	 ioperm(2),  execve(2), fcntl(2), termios(3), console(4), con-
+       sole_codes(4), mt(4), sd(4),  tty(4),  ttys(4),	tty_ioctl(4),  vcs(4),
+       vcsa(4),	   charsets(7),	   mapscrn(8),	  setfont(8),	resizecons(8),
+       /usr/include/linux/kd.h, /usr/include/linux/vt.h
+

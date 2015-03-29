@@ -1,0 +1,89 @@
+
+----------------------------------------------------------------------------
+ 15 chmod          - change permissions of a file
+----------------------------------------------------------------------------
+  mov   eax,015         ;chmod
+  mov   ebx,filename    ;ptr to asciiz path
+  mov   ecx,mode
+  int   80h
+
+  The  mode of the file given by path (filename)  is changed.
+  Modes are specified by or'ing the following octal numbers:
+              S_ISUID   04000q set user ID on execution
+              S_ISGID   02000q set group ID on execution
+              S_ISVTX   01000q sticky bit
+              S_IRUSR (S_IREAD) 00400q read by owner
+              S_IWUSR (S_IWRITE) 00200q write by owner
+              S_IXUSR (S_IEXEC) 00100q execute/search by owner
+              S_IRGRP   00040q read by group
+              S_IWGRP   00020q write by group
+              S_IXGRP   00010q execute/search by group
+              S_IROTH   00004q read by others
+              S_IWOTH   00002q write by others
+              S_IXOTH   00001q execute/search by others
+
+
+       The effective UID of the process must be zero or must match  the  owner
+       of the file.
+
+       If  the  effective  UID of the process is not zero and the group of the
+       file does not match the effective group ID of the process or one of its
+       supplementary  group  IDs, the S_ISGID bit will be turned off, but this
+       will not cause an error to be returned.
+
+       Depending on the file system, set user ID and set  group  ID  execution
+       bits  may  be  turned  off if a file is written.  On some file systems,
+       only the super-user can set the sticky bit, which may  have  a  special
+       meaning.  For the sticky bit, and for set user ID and set group ID bits
+       on directories, see stat(2).
+
+       On NFS file  systems,  restricting  the  permissions  will  immediately
+       influence already open files, because the access control is done on the
+       server, but open files are maintained by the client.  Widening the per-
+       missions  may  be  delayed  for  other  clients if attribute caching is
+       enabled on them.
+
+RETURN VALUE
+       On success, zero is returned.  On error a negative code is returned
+
+ERRORS
+       Depending  on  the file system, other errors can be returned.  The more
+       general errors for chmod are listed below:
+
+
+       EPERM  The effective UID does not match the owner of the file,  and  is
+              not zero.
+
+       EROFS  The named file resides on a read-only file system.
+
+       EFAULT path points outside your accessible address space.
+
+       ENAMETOOLONG
+              path is too long.
+
+       ENOENT The file does not exist.
+
+       ENOMEM Insufficient kernel memory was available.
+
+       ENOTDIR
+              A component of the path prefix is not a directory.
+
+       EACCES Search permission is denied on a component of the path prefix.
+
+       ELOOP  Too many symbolic links were encountered in resolving path.
+
+       EIO    An I/O error occurred.
+
+       The general errors for fchmod are listed below:
+
+       EBADF  The file descriptor fildes is not valid.
+
+       EROFS  See above.
+
+       EPERM  See above.
+
+       EIO    See above.
+
+SEE ALSO
+       open, chown, execve, stat
+

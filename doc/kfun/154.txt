@@ -1,0 +1,50 @@
+
+----------------------------------------------------------------------------
+system 154 sched_setparam          - set scheduling parameters
+----------------------------------------------------------------------------
+  mov  eax,154
+  mov  ebx,pid  ;process id
+  mov  ecx,p	;ptr to parameter
+  int  80h
+
+       sched_setparam  sets  the  scheduling  parameters  associated  with the
+       scheduling policy for the process identified by pid. If  pid  is  zero,
+       then  the parameters of the current process are set. The interpretation
+       of the parameter p depends on the selected policy. Currently, the  fol-
+       lowing three scheduling policies are supported under Linux: SCHED_FIFO,
+       SCHED_RR, and SCHED_OTHER.
+
+        SCHED_NORMAL		0
+        SCHED_FIFO		1
+        SCHED_RR		2
+        SCHED_BATCH		3
+
+       sched_setparam checks the validity of p for the  scheduling  policy  of
+       the  process. The parameter p->sched_priority must lie within the range
+       given by sched_get_priority_min and sched_get_priority_max.
+
+
+RETURN VALUE
+       On  success, sched_setparam returns 0. On error a negative code
+
+ERRORS
+       ESRCH  The process whose ID is pid could not be found.
+
+       EPERM  The calling process does not have  appropriate  privileges.  The
+              process  calling  sched_setparam needs an effective uid equal to
+              the euid or uid of the process identified by pid, or it must  be
+              a superuser process.
+
+       EINVAL The  parameter  p does not make sense for the current scheduling
+              policy.
+
+CONFORMING TO
+       POSIX.1b (formerly POSIX.4)
+
+SEE ALSO
+       sched_setaffinity(2),   sched_getaffinity(2),    sched_setscheduler(2),
+       sched_getscheduler(2),    sched_get_priority_max(2),   sched_get_prior-
+       ity_min(2), nice(2), setpriority(2), getpriority(2),
+
+       sched_setscheduler(2) has a description of the Linux scheduling scheme.
+

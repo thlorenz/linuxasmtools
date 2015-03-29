@@ -1,0 +1,166 @@
+
+----------------------------------------------------------------------------
+system  76 getrlimit               - get resource limits and usage
+----------------------------------------------------------------------------
+  mov  eax,076
+  mov  ebx,resource
+  mov  ecx,rlim
+  int  80h
+
+       getrlimit gets resource limits.
+
+  resource
+  --------
+
+        RLIMIT_CPU		0	/* CPU time in ms */
+        RLIMIT_FSIZE		1	/* Maximum filesize */
+        RLIMIT_DATA		2	/* max data size */
+        RLIMIT_STACK		3	/* max stack size */
+        RLIMIT_CORE		4	/* max core file size */
+        RLIMIT_RSS		5	/* max resident set size */
+        RLIMIT_NPROC		6	/* max number of processes */
+        RLIMIT_NOFILE		7	/* max number of open files */
+        RLIMIT_MEMLOCK		8	/* max locked-in-memory address space */
+        RLIMIT_AS		9	/* address space limit */
+        RLIMIT_LOCKS		10	/* maximum file locks held */
+        RLIMIT_SIGPENDING	11	/* max number of pending signals */
+        RLIMIT_MSGQUEUE		12	/* maximum bytes in POSIX mqueues */
+        RLIMIT_NICE		13	/* max nice prio allowed to raise to
+					   0-39 for nice level 19 .. -20 */
+        RLIMIT_RTPRIO		14	/* maximum realtime priority */
+        RLIM_NLIMITS		15
+
+  rlim
+  ----
+       resource has an associated soft and  hard  limit,  as  defined  by  the
+       rlimit  structure  (the  rlim  argument)
+
+            struct rlimit
+                rlim_cur  resd 1 ; Soft limit
+                rlim_max  resd 1 ; Hard limit (ceiling for rlim_cur)
+            endstruc
+
+       The soft limit is the value that the kernel  enforces  for  the  corre-
+       sponding  resource.   The  hard  limit  acts  as a ceiling for the soft
+       limit: an unprivileged process may only set its soft limit to  a  value
+       in  the range from 0 up to the hard limit, and (irreversibly) lower its
+       hard limit.  A privileged process may make arbitrary changes to  either
+       limit value.
+
+
+       The  value  RLIM_INFINITY  denotes  no limit on a resource (both in the
+       structure returned by getrlimit() and in the structure passed to  setr-
+       limit()).
+
+
+  expanded resource descriptions
+  ------------------------------
+
+       RLIMIT_AS
+              The maximum size of the process's virtual memory (address space)
+              in bytes.  This limit  affects  calls  to  brk(2),  mmap(2)  and
+              mremap(2),  which fail with the error ENOMEM upon exceeding this
+              limit. Also automatic stack expansion will fail (and generate  a
+              SIGSEGV  that kills the process when no alternate stack has been
+              made available).  Since the value is a long, on machines with  a
+              32-bit long either this limit is at most 2 GiB, or this resource
+              is unlimited.
+
+       RLIMIT_CORE
+              Maximum size of core file. When 0 no core dump  files  are  cre-
+              ated.  When nonzero, larger dumps are truncated to this size.
+
+       RLIMIT_CPU
+              CPU  time  limit  in seconds.  When the process reaches the soft
+              limit, it is sent a SIGXCPU signal.  The default action for this
+              signal  is to terminate the process.  However, the signal can be
+              caught, and the handler can return control to the main  program.
+              If  the  process  continues to consume CPU time, it will be sent
+              SIGXCPU once per second until the  hard  limit  is  reached,  at
+              which  time  it  is  sent SIGKILL.  (This latter point describes
+              Linux 2.2 and 2.4 behaviour.  Implementations vary in  how  they
+              treat  processes which continue to consume CPU time after reach-
+              ing the soft limit.  Portable applications that  need  to  catch
+              this  signal  should  perform  an orderly termination upon first
+              receipt of SIGXCPU.)
+
+       RLIMIT_DATA
+              The maximum size of  the  process's  data  segment  (initialized
+              data,  uninitialized  data, and heap).  This limit affects calls
+              to brk() and sbrk(), which  fail  with  the  error  ENOMEM  upon
+              encountering the soft limit of this resource.
+
+       RLIMIT_FSIZE
+              The maximum size of files that the process may create.  Attempts
+              to extend a file beyond this  limit  result  in  delivery  of  a
+              SIGXFSZ  signal.   By default, this signal terminates a process,
+              but a process can catch this signal instead, in which  case  the
+              relevant  system call (e.g., write(), truncate()) fails with the
+              error EFBIG.
+
+       RLIMIT_LOCKS
+              A limit on the combined number  of  flock()  locks  and  fcntl()
+              leases that this process may establish.  (Early Linux 2.4 only.)
+
+       RLIMIT_MEMLOCK
+              The maximum number of bytes of virtual memory that may be locked
+              into RAM using mlock() and mlockall().
+
+       RLIMIT_NOFILE
+              Specifies  a  value one greater than the maximum file descriptor
+              number that can be opened by this  process.   Attempts  (open(),
+              pipe(),  dup(),  etc.)   to  exceed  this  limit yield the error
+              EMFILE.
+
+       RLIMIT_NPROC
+              The maximum number of processes that can be created for the real
+              user  ID  of the calling process.  Upon encountering this limit,
+              fork() fails with the error EAGAIN.
+
+       RLIMIT_RSS
+              Specifies the limit (in pages) of  the  process's  resident  set
+              (the  number of virtual pages resident in RAM).  This limit only
+              has effect in Linux 2.4 onwatrds, and there only  affects  calls
+              to madvise() specifying MADVISE_WILLNEED.
+
+       RLIMIT_STACK
+              The  maximum size of the process stack, in bytes.  Upon reaching
+              this limit, a SIGSEGV signal is generated.  To handle this  sig-
+              nal,  a  process  must employ an alternate signal stack (sigalt-
+              stack(2)).
+
+       RLIMIT_OFILE is the BSD name for RLIMIT_NOFILE.
+
+RETURN VALUE
+       On  success,  zero is returned.  On error a negative code is returned
+
+ERRORS
+       EFAULT rlim or usage points outside the accessible address space.
+
+       EINVAL getrlimit or  setrlimit  is  called  with  a  bad  resource,  or
+              getrusage is called with a bad who.
+
+       EPERM  A non-superuser tries to use setrlimit() to increase the soft or
+              hard limit above the current hard limit, or a superuser tries to
+              increase RLIMIT_NOFILE above the current kernel maximum.
+
+CONFORMING TO
+       SVr4, BSD 4.3
+
+NOTE
+       Including <sys/time.h> is not required these days, but increases porta-
+       bility.  (Indeed, struct timeval is defined in <sys/time.h>.)
+
+       On Linux, if the disposition of SIGCHLD is  set  to  SIG_IGN  then  the
+       resource  usages  of  child processes are automatically included in the
+       value returned by RUSAGE_CHILDREN, although POSIX  1003.1-2001  explic-
+       itly prohibits this.
+
+       The above struct was taken from BSD 4.3 Reno.  Not all fields are mean-
+       ingful under Linux.   Right  now  (Linux  2.4,  2.6)  only  the  fields
+       ru_utime,  ru_stime, ru_minflt, ru_majflt, and ru_nswap are maintained.
+
+SEE ALSO
+       dup, fcntl, fork,  mlock,  mlockall,  mmap,  open,
+       quotactl,  brk,  wait,  wait4, ulimit
+

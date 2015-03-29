@@ -1,0 +1,5 @@
+copy files, somewhat like DOS copy program
+"copy" is a console/X terminal utility
+with a few DOS style options.  It can append
+files or change names as it copies.
+http://linuxasmtools.net

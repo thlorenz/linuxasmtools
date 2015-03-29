@@ -1,0 +1,227 @@
+Outline of MiniBug design
+
+files:
+------
+
+minibug.asm - Main loop
+              Main window (excluding mini reg,mem,brk,hlp)
+              global data
+mstruc.in   - structures and equates
+ElfDecode.in - disassembler
+mdismap.in   - map of application code
+msetup.in    - non window setup
+msignals.in  - signal processing
+mptrace.in   - ptrace handlers,mini-running window
+mreg.in      - register windows
+memory.in    - memory windows
+mstack.in    - stack windows
+mbreak.in    - break windows
+mhelp.in     - help windows
+
+Routines and data:
+------------------
+
+minibug.asm
+  _start:  -startup,main loop, shutdown
+  show_menu_line
+  show_dis_window
+  show_mini_window
+  get_input
+  commands - ? - mini_help
+             w - next_window
+             W - next_mini_window (not on menu)
+             g - go
+             s - step
+             o - step_over
+             b - break_here
+             f - find
+             h - help_win (not on menu)
+             q - quit 
+             up_key
+             down_key
+             pgup
+             pgdn
+             alt window keys -> help_win,memory_win,reg_win,stack_win,break_win
+
+  --- data ---
+
+  win_select:	dd 0=main 4=reg 8=mem 12=break 16=stack 20=help
+  mini_win_select: 	db 0 ;0=reg 1=mem 2=break 3=stack
+  app_mode:	db 0 ;1=running 2=dead 4=exit req 8=stop req
+                       ;10=do dwin  20=             40=            80=               
+
+  main_key_decode_tbl
+
+  app_win_last_line
+  mini_win_top_line
+  mini_win_end_line
+
+
+  dis_win_end_col: dd 0
+  reg_win_start_col: dd 0
+
+  ; color format  attribute - foreground - background
+  ;    30-blk 31-red 32-grn 33-brwn 34-blu 35-purple 36-cyan 37-gry
+  ;    attributes 30-normal 31-bold 34-underscore 37-inverse
+
+  app_win_color:	 dd 30003037h
+  menu_color:		 dd 30003730h
+  dis_win_color:	 dd 30003036h        
+  dis_win_eip_color:	 dd 30003033h  
+  dis_win_select_color:	 dd 31003736h
+  dis_win_break_color:	 dd 31003736h
+  dis_win_alert_color:	 dd 30003033h
+  aux_win_color:	 dd 31003735h
+  aux_win_menu_color:	 dd 30003234h
+
+msetup.in    - general initialization
+  display_setup
+  keyboard_setup
+  save_our_termios
+  save_app_termios
+  restore_our_termios
+  restore_app_termios
+
+mdismap.in   - map of application code
+  load_app	;read app into memory
+  map_setup - calls
+    hunt_shadow - set code here bits
+    hunt_exec - set simulated execution code bits
+  check_map - check if hunt needed & within map
+
+  -- data --
+  load_header_ptr	dd 0	;load top
+  load_code_ptr	dd 0	;end of header, or text section
+  load_end_ptr	dd 0	;end of load
+
+  ;map format 00h = data      00=shadow data
+  ;           01h = body      10=shadow body
+  ;           02h = start     20=shadow start
+  map_header_ptr	dd 0	;top of map (header)
+  map_code_ptr	dd 0	;start of code map
+  map_end_ptr	dd 0	;end of map
+
+msignals.in  - signal processing
+  signal_setup - install signals
+  winch_signal - signal handler
+  signal_remove - uninstall signal
+  report_signal - display signal info
+
+mptrace.in   - ptrace handlers,mini-running window
+  cmd_go
+  cmd_step
+  cmd_step_over
+  running_win - mini run win
+  restore_app_state
+  save_app_state
+  shrink_window_size
+  restore_window_size
+
+  -- data --
+
+  run_win_decode_tbl
+  send_signal	dd 0	;set to signal if necessary
+  app_status	dd 0	;status of last command
+
+mreg.in      - register windows
+  show_reg_win
+   w - next_window
+   ? - reg_win_help
+   q - quit_reg_win
+   (number) edit numbered entry
+
+  -- data --
+
+  reg_win_decode_tbl
+
+memory.in    - memory windows
+  memory_setup
+  show_mem_win
+   w - next_window
+   ? - mem_win_help
+   a - address_enter
+   (number) use entry# as address to display.
+       number each line on display
+   (reg name) - use register contents as address
+   (down_arrow) - mem_down
+   (up_arrow)   - mem_up
+   (pgup)       - mem_pgup
+   (pgdn)       - mem_pgdn
+   q - quit_mem (return to main)
+
+  -- data --
+
+  mem_win_decode_tbl
+
+mstack.in    - stack windows
+  show_stack_win
+    w - next_window
+    ? - stack_win_help
+    q - quit_stack
+   (down_arrow) - stack_down
+   (up_arrow)   - stack_up
+   (pgup)       - stack_pgup
+   (pgdn)       - stack_pgdn
+    
+ 
+  -- data --
+
+  stack_win_decode_tbl
+
+mbreak.in    - break windows
+  show_break_win
+    w - next_window
+    ? - break_win_help
+    q - quit_break
+    a - add_break
+    c - clear_breaks
+    (number) clear numbered break
+    
+  -- data --
+
+  break_win_decode_tbl
+
+mhelp.in     - help windows
+  show_help_win
+    w - next_window
+    q - help_break
+   (down_arrow) - help_down
+   (up_arrow)   - help_up
+   (pgup)       - help_pgup
+   (pgdn)       - help_pgdn
+    
+
+  -- data --
+
+  help_win_decode_tbl
+
+---------------------------------------------------------------------------
+
+main flow
+---------
+
+ env_stack
+ save_our_termios
+ save_app_termios
+ keyboard_setup
+ signal_setup
+ memory_setup
+ parse
+ load_app
+ map_setup
+winch:
+ display_setup (read_window_size)
+loop: 
+ (use win_select) to display windows
+
+ get_input
+
+ (use win_select) to decode input)
+
+ call process
+
+ exit? winch? or loop
+ 
+exit:
+   
+   

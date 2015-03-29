@@ -1,0 +1,1373 @@
+     1                                    [section .text]
+     2                                  BITS 32
+     3                                  ;
+     4                                  ; special cases, instructions "adc,add,and,cmp,or - imm8" have two encodings if
+     5                                  ;                the operand is al,ax,eax.  This forces us to use "db xx,xx,xx"
+     6                                  ;                for the long form which has opcodes of 80,83 hex.  The short
+     7                                  ;                form is output by nasm and uses several opcodes (see s07)
+     8                                  ;                example:  add eax,byte 1  long from 83,xx,xx  short form 04,xx
+     9                                  ;
+    10                                    global main,_start
+    11                                  main:
+    12                                  _start:
+    13                                  
+    14 00000000 F3A4                      rep movsb
+    15 00000002 3EA164000000              mov	eax,[ds:100]
+    16                                  
+    17                                  
+    18                                  ;---------------------- type s28    --------------- opcode = de
+    19                                  ;
+    20                                  ; instuction          mod/rm      raw data entry
+    21                                  ; --------------      --------    ------------
+    22 00000008 DE03                      fiadd word [ebx]
+    23 0000000A DE0B                      fimul word [ebx]
+    24 0000000C DE13                      ficom word [ebx]
+    25 0000000E DE1B                      ficomp word [ebx]
+    26 00000010 DE23                      fisub word [ebx]
+    27 00000012 DE2B                      fisubr word [ebx]
+    28 00000014 DE33                      fidiv word [ebx]
+    29 00000016 DE3B                      fidivr word [ebx]
+    30                                  
+    31 00000018 DEC2                      faddp st2
+    32 0000001A DEE1                      fsubrp st1
+    33 0000001C DEF1                      fdivrp st1
+    34 0000001E DEC9                      fmulp st1
+    35 00000020 DEE9                      fsubp st1
+    36 00000022 DEF9                      fdivp st1
+    37                                  
+    38 00000024 DED9                      fcompp
+    39                                  
+    40                                  ;---------------------- type s27    --------------- opcode = dd
+    41                                  ;
+    42                                  ; instuction          mod/rm      raw data entry
+    43                                  ; --------------      --------    ------------
+    44                                  
+    45 00000026 DD03                      fld	qword [ebx]
+    46 00000028 DD13                      fst   qword [ebx]
+    47 0000002A DD1B                      fstp  qword [ebx]
+    48 0000002C DD23                      frstor  [ebx]
+    49 0000002E DD33                      fnsave  [ebx]
+    50 00000030 DD3B                      fnstsw [ebx]
+    51                                  
+    52 00000032 DDC1                      ffree st1
+    53 00000034 DDD1                      fst st1
+    54 00000036 DDE1                      fucom st1
+    55 00000038 DDD9                      fstp st1
+    56 0000003A DDE9                      fucomp st1
+    57                                  
+    58                                  
+    59                                  ;---------------------- type s26    --------------- opcode = dc
+    60                                  ;
+    61                                  ; instuction          mod/rm      raw data entry
+    62                                  ; --------------      --------    ------------
+    63                                  
+    64 0000003C DCC0                      fadd	st0,st0  
+    65 0000003E DCC1                      fadd	st1,st0
+    66 00000040 DCC7                      fadd  st7,st0
+    67                                  
+    68 00000042 DC03                      fadd  qword [ebx]
+    69 00000044 DC06                      fadd	qword [esi]
+    70                                  
+    71 00000046 DC0556341208              fadd	qword [08123456h]
+    72                                  
+    73 0000004C DC8356341208              fadd	qword [ebx + 08123456h]
+    74 00000052 DC840B56341208            fadd	qword [ebx + ecx + 08123456h]
+    75 00000059 DC84D934120000            fadd	qword [ebx*8+ecx+1234h]
+    76                                   
+    77 00000060 DC0B                      fmul qword [ebx]
+    78 00000062 DC13                      fcom qword [ebx]
+    79 00000064 DC1B                      fcomp qword [ebx]
+    80 00000066 DC23                      fsub qword [ebx]
+    81 00000068 DC2B                      fsubr qword [ebx]
+    82 0000006A DC33                      fdiv qword [ebx]
+    83 0000006C DC3B                      fdivr qword [ebx]
+    84                                  
+    85 0000006E DCE1                      fsubr st1,st0
+    86 00000070 DCE9                      fsub  st1,st0
+    87 00000072 DCF1                      fdivr st1,st0
+    88 00000074 DCC9                      fmul  st1,st0
+    89 00000076 DCF9                      fdiv  st1,st0
+    90                                  
+    91                                  
+    92                                  ;---------------------- type s25    --------------- opcode= db
+    93                                  ;
+    94                                  ; instuction          mod/rm      raw data entry
+    95                                  ; --------------      --------    ------------
+    96                                  
+    97 00000078 DB03                      fild dword [ebx]    ;0          s0f,0
+    98 0000007A DB13                      fist dword [ebx]    ;2          s0f,2
+    99 0000007C DB1B                      fistp dword [ebx]   ;3          s0f,3
+   100 0000007E DB2B                      fld tword [ebx]     ;5          s0f,5
+   101 00000080 DB3B                      fstp tword [ebx]    ;7          s0f,7
+   102                                  
+   103 00000082 DBE2                      fnclex
+   104 00000084 DBE3                      fninit
+   105                                  
+   106 00000086 DBC1                      fcmovnb st1
+   107 00000088 DBC9                      fcmovne st1
+   108 0000008A DBD1                      fcmovnbe st1
+   109 0000008C DBD9                      fcmovnu st1
+   110 0000008E DBF1                      fcomi st1
+   111 00000090 DBE9                      fucomi st1
+   112                                  
+   113                                  
+   114                                  ;---------------------- type s24    --------------- opcode = da
+   115                                  ;
+   116                                  ; instuction          mod/rm      raw data entry
+   117                                  ; --------------      --------    ------------
+   118 00000092 DA00                      fiadd dword [eax]   ; 0           s0e,0
+   119 00000094 DA08                      fimul dword [eax]   ; 1           s0e,1
+   120 00000096 DA10                      ficom dword [eax]   ; 2           s0e,2
+   121 00000098 DA18                      ficomp dword [eax]  ; 3           s0e,3
+   122 0000009A DA20                      fisub dword [eax]   ; 4           s0e,4
+   123 0000009C DA28                      fisubr dword [eax]  ; 5           s0e,5
+   124 0000009E DA30                      fidiv dword [eax]   ; 6           s0e,6
+   125 000000A0 DA38                      fidivr dword [eax]  ; 7           s0e,7
+   126                                  
+   127 000000A2 DAC1                      fcmovb st1
+   128 000000A4 DAC9                      fcmove st1
+   129 000000A6 DAD1                      fcmovbe st1
+   130 000000A8 DAD9                      fcmovu st1
+   131                                  
+   132 000000AA DAE9                      fucompp
+   133                                  
+   134                                  ;---------------------- type s23    --------------- opcode = d9
+   135                                  ;
+   136                                  ; instuction          mod/rm      raw data entry
+   137                                  ; --------------      --------    ------------
+   138 000000AC D9C0                      fld st0             ;  0         s0d,0
+   139 000000AE D9C1                      fld st1
+   140 000000B0 D903                      fld dword [ebx]
+   141 000000B2 D98334120000              fld dword [ebx + 1234h]
+   142 000000B8 D90556341208              fld dword [08123456h]
+   143 000000BE D90433                    fld dword [ebx + esi]
+   144                                  
+   145 000000C1 D913                      fst dword [ebx]
+   146 000000C3 D91B                      fstp dword [ebx]
+   147 000000C5 D923                      fldenv [ebx]
+   148 000000C7 D92B                      fldcw  [ebx]
+   149 000000C9 D933                      fnstenv [ebx]		;nasm inst. for fstenv
+   150 000000CB D93B                      fnstcw [ebx]		;nasm inst. for fstcw
+   151                                  
+   152 000000CD D9D0                      fnop
+   153 000000CF D9E0                      fchs
+   154 000000D1 D9E1                      fabs
+   155 000000D3 D9E4                      ftst
+   156 000000D5 D9E5                      fxam
+   157 000000D7 D9F0                      f2xm1
+   158 000000D9 D9F1                      fyl2x
+   159 000000DB D9F2                      fptan
+   160 000000DD D9F4                      fxtract
+   161 000000DF D9F5                      fprem1
+   162 000000E1 D9F6                      fdecstp
+   163 000000E3 D9F7                      fincstp
+   164                                  
+   165 000000E5 D9E8                      fld1
+   166 000000E7 D9E9                      fldl2t
+   167 000000E9 D9EA                      fldl2e
+   168 000000EB D9EB                      fldpi
+   169 000000ED D9EC                      fldlg2
+   170 000000EF D9ED                      fldln2
+   171 000000F1 D9EE                      fldz
+   172                                  
+   173 000000F3 D9F8                      fprem
+   174 000000F5 D9F9                      fyl2xp1
+   175 000000F7 D9FA                      fsqrt
+   176 000000F9 D9FB                      fsincos
+   177 000000FB D9FC                      frndint
+   178 000000FD D9FD                      fscale
+   179 000000FF D9FE                      fsin
+   180 00000101 D9FF                      fcos
+   181                                  
+   182                                  ;---------------------- type s22    --------------- opcode = d8
+   183                                  ;
+   184                                  ; instuction          mod/rm      raw data entry
+   185                                  ; --------------      --------    ------------
+   186                                  ; fadd st0,mem32        0         s0c,0
+   187                                  
+   188 00000103 D8C0                      fadd	st0
+   189 00000105 D8C1                      fadd	st1
+   190 00000107 D8C7                      fadd  st7
+   191                                  
+   192 00000109 D803                      fadd  dword [ebx]
+   193 0000010B D806                      fadd	dword [esi]
+   194                                  
+   195 0000010D D80556341208              fadd	dword [08123456h]
+   196                                  
+   197 00000113 D88356341208              fadd	dword [ebx + 08123456h]
+   198 00000119 D8840B56341208            fadd	dword [ebx + ecx + 08123456h]
+   199 00000120 D884D934120000            fadd	dword [ebx*8+ecx+1234h]
+   200                                   
+   201 00000127 D8C8                      fmul st0
+   202 00000129 D8D0                      fcom st0
+   203 0000012B D8D8                      fcomp st0
+   204 0000012D D8E0                      fsub st0
+   205 0000012F D8E8                      fsubr st0
+   206 00000131 D8F0                      fdiv st0
+   207 00000133 D8F8                      fdivr st0  
+   208                                  
+   209                                  ;---------------------- type s21    ---------------
+   210                                  ; opcode                prefix 
+   211                                  ;                       flag   
+   212                                  ; ------                ------ 
+   213                                  ; a0 mov al,[adr]        -        s0b,1
+   214                                  ; d1 mov ax/eax,[adr]    p        s0b,1
+   215                                  ;
+   216                                  ; a2 mov [adr],al        -        s0b,2
+   217                                  ; a3 mov [adr],ax/eax    p        s0b,2
+   218                                  
+   219 00000135 A056341208                mov	al,[08123456h]
+   220 0000013A A156341208                mov	eax,[08123456h]
+   221 0000013F A256341208                mov	[08123456h],al
+   222 00000144 A356341208                mov	[08123456h],eax
+   223 00000149 66A356341208              mov	[08123456h],ax
+   224                                  
+   225                                  
+   226                                  
+   227                                  ;---------------------- type s20    ---------------
+   228                                  
+   229 0000014F 0FC8                      bswap	eax
+   230 00000151 0FCB                      bswap ebx
+   231 00000153 0FCA                      bswap edx
+   232 00000155 C8341212                  enter	1234h,12h
+   233                                  
+   234                                  ;---------------------- type s19    ---------------
+   235                                  
+   236                                  ;s19,1 
+   237                                  
+   238 00000159 D50A                      aad	0ah
+   239 0000015B D40A                      aam	0ah
+   240 0000015D D40A                      aam
+   241 0000015F CD12                      int	byte 12h
+   242 00000161 6A12                      push	byte 12h
+   243                                  
+   244                                  ;s09,2
+   245                                  
+   246 00000163 1C12                      sbb	al,12h
+   247 00000165 2C12                      sub   al,12h
+   248 00000167 A812                      test  al,12h
+   249 00000169 3412                      xor   al,12h
+   250                                  
+   251                                  ;s09,3
+   252                                  
+   253 0000016B 1D56341208                sbb	eax,08123456h
+   254 00000170 661D3412                  sbb	ax,word 1234h
+   255                                  
+   256 00000174 6856341208                push	dword 08123456h
+   257 00000179 66683412                  push	word 1234h
+   258                                  
+   259 0000017D 2D56341208                sub	eax,08123456h
+   260 00000182 A956341208                test	eax,08123456h
+   261 00000187 3556341208                xor	eax,08123456h
+   262                                  
+   263                                  ;s09,4
+   264                                  
+   265 0000018C C23412                    ret	1234h
+   266 0000018F CA3412                    retf  1234h
+   267                                  
+   268                                  
+   269                                  ;---------------------- type s18    ---------------
+   270                                  
+   271 00000192 EA896745002301            jmp	123h:456789h
+   272 00000199 9A896745002301            call	123h:456789h
+   273                                  
+   274                                  back:
+   275 000001A0 90                        nop
+   276 000001A1 70FD                      jo	back
+   277                                    
+   278                                    ;opcode jmp = e9
+   279                                  neg_lp:
+   280 000001A3 E934000000                jmp	near here
+   281 000001A8 E92F000000                jmp	here
+   282 000001AD EBF4                      jmp	neg_lp
+   283                                    ;opcode call = e8
+   284 000001AF E828000000                call	here
+   285 000001B4 E823000000                call	here
+   286                                  
+   287 000001B9 E221                      loop	here
+   288 000001BB E2E6                      loop	neg_lp
+   289 000001BD E11D                      loope here
+   290 000001BF E01B                      loopne here
+   291                                  
+   292                                  sam:
+   293                                    ;opcode jcxz = 67h, e3h, 0a
+   294 000001C1 67E318                    jcxz	here
+   295                                  ;  jcxz	here+1000        <- this opcode possible?
+   296 000001C4 E3FB                      jecxz sam
+   297 000001C6 E2F9                      loop	sam
+   298                                  
+   299                                    ;opcode jmp = eb
+   300 000001C8 EB12                      jmp	short here
+   301                                  
+   302                                    ;opcode jo = 0f 80
+   303 000001CA 702E                      jo	there
+   304 000001CC 0F80FA0F0000              jo	$ + 1000h
+   305 000001D2 0F8004100000              jo    near here + 1000h
+   306                                  
+   307                                    ;opcode jo = 70
+   308 000001D8 7000                      jo	$+2
+   309 000001DA 7000                      jo	short here
+   310                                  here:
+   311 000001DC 71FE                      jno	here
+   312 000001DE 72FC                      jb    here
+   313 000001E0 73FA                      jnb   here
+   314 000001E2 74F8                      jz    here
+   315 000001E4 75F6                      jnz   here
+   316 000001E6 76F4                      jbe   here
+   317 000001E8 77F2                      ja   here
+   318 000001EA 78F0                      js   here
+   319 000001EC 79EE                      jns  here
+   320 000001EE 7AEC                      jp   here
+   321 000001F0 7BEA                      jnp  here
+   322 000001F2 7C06                      jl   there
+   323 000001F4 7D04                      jnl  there
+   324 000001F6 7E02                      jle  there
+   325 000001F8 7F00                      jg   there
+   326                                  there:    
+   327                                  
+   328                                  ;---------------------- type s17    ---------------
+   329                                  
+   330 000001FA E405                      in	al,5
+   331 000001FC 66E505                    in	ax,5
+   332 000001FF E505                      in	eax,5
+   333 00000201 EC                        in	al,dx
+   334 00000202 66ED                      in	ax,dx
+   335 00000204 ED                        in	eax,dx
+   336                                  
+   337 00000205 E605                      out	5,al
+   338 00000207 66E705                    out	5,ax
+   339 0000020A E705                      out	5,eax
+   340 0000020C EE                        out	dx,al
+   341 0000020D 66EF                      out	dx,ax
+   342 0000020F EF                        out	dx,eax
+   343                                  
+   344 00000210 1408                      adc	al,byte 8
+   345 00000212 66150800                  adc	ax,word 8
+   346 00000216 1508000000                adc	eax,dword 8
+   347                                  
+   348 0000021B 0408                      add	al,8
+   349 0000021D 2408                      and	al,8
+   350 0000021F 3C08                      cmp	al,8
+   351 00000221 0C08                      or	al,8
+   352                                  
+   353                                  ;---------------------- type 06-11 (reg16/32 rm16/32 , imm32 ---------------
+   354                                  
+   355                                  ;mod=11
+   356                                  
+   357 00000223 69C308000000              imul	eax,ebx,dword 8
+   358                                  
+   359                                  ;mod=10
+   360                                  
+   361 00000229 698356341208080000-       imul	eax,[ebx + 08123456h],dword 8
+   362 00000232 00                 
+   363                                  
+   364                                  ;mod=01
+   365                                  
+   366 00000233 69430508000000            imul	eax,[ebx + 5],dword 8
+   367                                  
+   368                                  ;mod=00
+   369                                  
+   370 0000023A 690308000000              imul	eax,[ebx],dword 8
+   371                                  
+   372                                  ;---------------------- type 06-10 (reg16/32, rm16/32, imm8 ---------------
+   373                                  
+   374                                  ;mod=11
+   375                                  
+   376 00000240 6BC308                    imul	eax,ebx,byte 8
+   377 00000243 666BC308                  imul	ax,bx,byte 8
+   378                                  
+   379                                  ;mod=10
+   380                                  
+   381 00000247 6B835634120808            imul	eax,[ebx + 08123456h],byte 8
+   382                                  
+   383                                  ;mod=01
+   384                                  
+   385 0000024E 6B430508                  imul	eax,[ebx + 5],byte 8
+   386                                  
+   387                                  ;mod=00
+   388                                  
+   389 00000252 6B0308                    imul	eax,[ebx],byte 8
+   390                                  
+   391                                  ;---------------------- type 06-9 (rm32 , rm16 ---------------
+   392                                  
+   393                                  ;mod=11
+   394                                  
+   395 00000255 0FBFC3                    movsx	eax,bx
+   396                                  
+   397                                  ;mod=10
+   398                                  
+   399 00000258 0FB78356341208            movzx	eax,word [ebx + 08123456h]
+   400                                  
+   401                                  ;mod=01
+   402                                  
+   403 0000025F 0FB74303                  movzx  eax,word [ebx + 3]
+   404                                  
+   405                                  ;mod=00
+   406                                  
+   407 00000263 0FB703                    movzx	eax,word [ebx]
+   408                                  
+   409                                  ;---------------------- type 06-8 (rm16/32 , rm8 ---------------
+   410                                  
+   411                                  ;mod=11
+   412                                  
+   413 00000266 0FBEC3                    movsx	eax,bl
+   414 00000269 660FB6C3                  movzx ax,bl
+   415                                  
+   416                                  ;mod=10
+   417                                  
+   418 0000026D 0FB68356341208            movzx	eax,byte [ebx + 08123456h]
+   419                                  
+   420                                  ;mod=01
+   421                                  
+   422 00000274 0FB64305                  movzx	eax,byte [ebx + 5]
+   423                                  
+   424                                  ;mod=00
+   425                                  
+   426 00000278 0FBE03                    movsx	eax,byte [ebx]
+   427 0000027B 660FBE03                  movsx	ax,byte [ebx]
+   428                                  
+   429                                  ;---------------------- type 06-7 (rm32,reg32,x ----------------
+   430                                  
+   431                                  ;mod=11
+   432                                  
+   433 0000027F 0FA4D802                  shld	eax,ebx,2
+   434 00000283 0FA5D8                    shld	eax,ebx,cl
+   435 00000286 0FACD802                  shrd	eax,ebx,2
+   436 0000028A 0FADD8                    shrd	eax,ebx,cl
+   437                                  
+   438 0000028D 660FA4D802                shld	ax,bx,2
+   439                                  
+   440                                  ;mod=10
+   441                                  
+   442 00000292 0FA4985634120802          shld	[08123456h + eax],ebx,2
+   443 0000029A 660FA4985634120802        shld	[08123456h + eax],bx,2
+   444                                  
+   445                                  ;mod=01
+   446                                  ;mod=00
+   447                                    
+   448                                  ;---------------------- type 06-6 (rm32,cl) ----------------
+   449                                  
+   450                                  ;mod=11
+   451                                  
+   452 000002A3 D3D0                      rcl	eax,cl
+   453 000002A5 D3D3                      rcl	ebx,cl
+   454 000002A7 66D3D3                    rcl	bx,cl
+   455 000002AA D3DB                      rcr	ebx,cl
+   456 000002AC D3C3                      rol	ebx,cl
+   457 000002AE D3CB                      ror	ebx,cl
+   458 000002B0 D3FB                      sar	ebx,cl
+   459 000002B2 D3E3                      shl	ebx,cl
+   460 000002B4 D3EB                      shr	ebx,cl
+   461                                  
+   462                                  ;mod=10
+   463                                  ;mod=01
+   464                                  ;mod=00
+   465                                  
+   466                                  ;---------------------- type 06-6 (rm8,cl) ----------------
+   467                                  
+   468                                  ;mod=11
+   469                                  
+   470 000002B6 D2D0                      rcl	al,cl
+   471 000002B8 D2D3                      rcl	bl,cl
+   472 000002BA D2DB                      rcr	bl,cl
+   473 000002BC D2C3                      rol	bl,cl
+   474 000002BE D2CB                      ror	bl,cl
+   475 000002C0 D2FB                      sar	bl,cl
+   476 000002C2 D2E3                      shl	bl,cl
+   477 000002C4 D2EB                      shr	bl,cl
+   478                                  
+   479                                  ;mod=10
+   480                                  
+   481 000002C6 D29056341208              rcl	byte [eax + 08123456h],cl
+   482                                  
+   483                                  ;mod=01
+   484                                  ;mod=00
+   485                                  
+   486                                  ;---------------------- type 06-5 (rm32,imm32) ----------------
+   487                                  
+   488                                  ;mod=11
+   489                                  
+   490                                  ;  adc	eax,08123456h
+   491 000002CC 81D356341208              adc	ebx,08123456h
+   492 000002D2 6681D33412                adc	bx,1234h
+   493                                  
+   494 000002D7 81C356341208              add	ebx,08123456h
+   495 000002DD 81C078563412              db	81h,0c0h,78h,56h,34h,12h	;add	eax,08123456h
+   496 000002E3 6681C33412                add	bx,1234h
+   497                                  
+   498 000002E8 81E356341208              and	ebx,08123456h
+   499 000002EE 6681E33412                and	bx,1234h
+   500                                  
+   501 000002F3 81FB56341208              cmp	ebx,08123456h
+   502 000002F9 3D56341208                cmp	eax,08123456h
+   503                                  
+   504 000002FE BB56341208                mov	ebx,08123456h
+   505 00000303 B856341208                mov	eax,08123456h
+   506 00000308 C7C078563412              db	0c7h,0c0h,78h,56h,34h,12h
+   507                                  
+   508 0000030E 81CB56341208              or	ebx,08123456h
+   509                                  
+   510 00000314 81DB56341208              sbb	ebx,08123456h
+   511                                  
+   512 0000031A 81EB56341208              sub	ebx,08123456h
+   513                                  
+   514 00000320 F7C356341208              test	ebx,08123456h
+   515                                  
+   516 00000326 81F356341208              xor	ebx,08123456h
+   517                                  
+   518                                  ;mod=10
+   519                                  
+   520 0000032C 819056341208563412-       adc	dword [eax + 08123456h],08123456h
+   521 00000335 08                 
+   522                                  
+   523 00000336 818056341208563412-       add	dword [eax + 08123456h],08123456h
+   524 0000033F 08                 
+   525                                  
+   526 00000340 C78056341208563412-       mov	dword [eax + 08123456h],08123456h
+   527 00000349 08                 
+   528                                  
+   529                                  ;mod=01
+   530                                  
+   531 0000034A 81400556341208            add	dword [eax + 5],08123456h
+   532 00000351 81410556341208            add	dword [ecx + 5],08123456h
+   533                                  
+   534 00000358 F7400556341208            test	dword [eax + 5],08123456h
+   535 0000035F F7430556341208            test	dword [ebx + 5],08123456h
+   536                                  
+   537 00000366 C7400556341208            mov	dword [eax + 5],08123456h
+   538 0000036D C7430556341208            mov	dword [ebx + 5],08123456h
+   539                                  
+   540                                  ;mod=00
+   541                                  
+   542                                    
+   543                                  
+   544 00000374 810078563412              db	81h,0h,78h,56h,34h,12h		;add	[eax],08123456h
+   545                                  
+   546 0000037A 810056341208              add	dword [eax],08123456h
+   547                                  
+   548 00000380 F70056341208              test	dword [eax],08123456h
+   549                                  
+   550 00000386 C70056341208              mov	dword [eax],08123456h
+   551                                  
+   552                                  ;---------------------- type 06-4 (reg32,rm32) ----------------
+   553                                  
+   554                                  ;mod=11
+   555                                  
+   556                                    ;opcode adc=13
+   557 0000038C 13C0                      db	13h,0c0h	;adc	eax,eax
+   558 0000038E 11CB                      adc	ebx,ecx
+   559 00000390 6611CB                    adc	bx,cx
+   560                                  
+   561                                    ;opcode add = 03
+   562 00000393 03C0                      db	03h,0c0h	;add	eax,eax
+   563 00000395 01CB                      add	ebx,ecx
+   564 00000397 01C0                      add	eax,eax
+   565 00000399 01C8                      add	eax,ecx
+   566 0000039B 6601CB                    add	bx,cx
+   567                                  
+   568                                    ;opcode and = 23
+   569 0000039E 23C0                      db	23h,0c0h	;and	eax,eax
+   570 000003A0 21CB                      and	ebx,ecx
+   571 000003A2 6621CB                    and	bx,cx
+   572                                  
+   573                                    ;opcode bsf = 0f bc
+   574 000003A5 0FBCD9                    bsf	ebx,ecx
+   575                                  
+   576 000003A8 0FBDD9                    bsr	ebx,ecx
+   577 000003AB 0F47D9                    cmova	ebx,ecx
+   578 000003AE 0F42D9                    cmovc	ebx,ecx
+   579 000003B1 0F44D9                    cmove	ebx,ecx
+   580 000003B4 0F4FD9                    cmovg	ebx,ecx
+   581 000003B7 0F4CD9                    cmovl	ebx,ecx
+   582 000003BA 0F4ED9                    cmovle ebx,ecx
+   583 000003BD 0F46D9                    cmovna ebx,ecx
+   584 000003C0 0F43D9                    cmovnc ebx,ecx
+   585 000003C3 0F45D9                    cmovne ebx,ecx
+   586 000003C6 0F4DD9                    cmovnl ebx,ecx
+   587 000003C9 0F41D9                    cmovno ebx,ecx
+   588 000003CC 0F4BD9                    cmovnp ebx,ecx
+   589 000003CF 0F49D9                    cmovns ebx,ecx
+   590 000003D2 0F40D9                    cmovo  ebx,ecx
+   591 000003D5 0F4AD9                    cmovp ebx,ecx
+   592 000003D8 0F48D9                    cmovs ebx,ecx
+   593 000003DB 39CB                      cmp	ebx,ecx
+   594 000003DD 0FAFD9                    imul	ebx,ecx
+   595 000003E0 0F02D9                    lar	ebx,ecx
+   596                                  
+   597                                    ;opcode mov = 8b
+   598 000003E3 8BC0                      db	8bh,0c0h	;mov eax,eax
+   599 000003E5 89CB                      mov	ebx,ecx
+   600                                  
+   601                                    ;opcode or = 0b
+   602 000003E7 09CB                      or	ebx,ecx
+   603                                  
+   604                                    ;opcode sbb = 1b
+   605 000003E9 19CB                      sbb	ebx,ecx
+   606                                  
+   607                                    ;opcode sub = 1b
+   608 000003EB 29CB                      sub	ebx,ecx
+   609 000003ED 29C0                      sub	eax,eax
+   610                                  
+   611                                    ;opcode xchg = 87
+   612 000003EF 87D9                      xchg	ebx,ecx
+   613                                  
+   614                                    ;opcode xor = 33
+   615 000003F1 31CB                      xor	ebx,ecx
+   616                                  
+   617                                  
+   618                                  ;mod=10
+   619                                  
+   620 000003F3 138356341208              adc	eax,[ebx + 08123456h]
+   621 000003F9 139B56341208              adc	ebx,[ebx + 08123456h]
+   622                                  
+   623 000003FF C59956341208              lds	ebx,[ecx + 08123456h]
+   624 00000405 C49956341208              les	ebx,[ecx + 08123456h]
+   625 0000040B 0FB49956341208            lfs	ebx,[ecx + 08123456h]
+   626 00000412 0FB59956341208            lgs	ebx,[ecx + 08123456h]
+   627 00000419 0F039956341208            lsl	ebx,[ecx + 08123456h]
+   628 00000420 0FB29956341208            lss	ebx,[ecx + 08123456h]
+   629 00000427 66C59956341208            lds	bx,[ecx + 08123456h]
+   630 0000042E 66C49956341208            les	bx,[ecx + 08123456h]
+   631 00000435 660FB49956341208          lfs	bx,[ecx + 08123456h]
+   632 0000043D 660FB59956341208          lgs	bx,[ecx + 08123456h]
+   633 00000445 660F039956341208          lsl	bx,[ecx + 08123456h]
+   634 0000044D 660FB29956341208          lss	bx,[ecx + 08123456h]
+   635                                  
+   636 00000455 8D8356341208              lea	eax,[ebx + 08123456h]
+   637 0000045B 668D8334120000            lea	ax,[ebx + 1234h]
+   638                                  
+   639 00000462 628356341208              bound	eax,[ebx + 08123456h]
+   640 00000468 66628334120000            bound	ax,[ebx + 1234h]
+   641                                  
+   642                                  ;mod=01
+   643                                  
+   644 0000046F 8D4305                    lea	eax,[ebx + 5]
+   645 00000472 668D4305                  lea	ax,[ebx + 5]
+   646                                  
+   647 00000476 66624305                  bound	ax,[ebx + 5]
+   648 0000047A 624305                    bound eax,[ebx + 5]
+   649                                  
+   650                                  ;mod=00
+   651                                  
+   652 0000047D 0303                      add	eax,[ebx]
+   653 0000047F 0318                      add	ebx,[eax]
+   654                                  
+   655                                  
+   656 00000481 1319                      adc	ebx,[ecx]
+   657 00000483 661319                    adc	bx,[ecx]
+   658 00000486 0319                      add	ebx,[ecx]
+   659 00000488 2319                      and	ebx,[ecx]
+   660 0000048A 0FBC19                    bsf	ebx,[ecx]
+   661 0000048D 0FBD19                    bsr	ebx,[ecx]
+   662 00000490 0F4719                    cmova ebx,[ecx]
+   663 00000493 0F4219                    cmovc ebx,[ecx]
+   664 00000496 0F4419                    cmove ebx,[ecx]
+   665 00000499 0F4F19                    cmovg ebx,[ecx]
+   666 0000049C 0F4C19                    cmovl ebx,[ecx]
+   667 0000049F 0F4E19                    cmovle ebx,[ecx]
+   668                                  
+   669 000004A2 3B19                      cmp	ebx,[ecx]
+   670 000004A4 0FAF19                    imul	ebx,[ecx]
+   671 000004A7 0F0219                    lar	ebx,[ecx]
+   672                                  
+   673 000004AA C519                      lds	ebx,[ecx]
+   674 000004AC 8B19                      mov   ebx,[ecx]
+   675 000004AE 0B19                      or 	ebx,[ecx]
+   676 000004B0 1B19                      sbb	ebx,[ecx]
+   677 000004B2 2B19                      sub	ebx,[ecx]
+   678 000004B4 8719                      xchg	ebx,[ecx]
+   679 000004B6 3319                      xor	ebx,[ecx]
+   680                                  
+   681 000004B8 8D03                      lea	eax,[ebx]
+   682 000004BA 8D36                      lea	esi,[esi]
+   683 000004BC 668D03                    lea	ax,[ebx]
+   684                                  
+   685 000004BF 6203                      bound	eax,[ebx]
+   686 000004C1 666203                    bound ax,[ebx]
+   687                                  
+   688                                  ;---------------------- type 06-4 (reg8,rm8) ----------------
+   689                                  
+   690                                  ;mod=11  -- all of these are not reproducable by nasm
+   691                                  
+   692                                    ;opcode = 12
+   693 000004C4 12C0                      db	12h,0c0h	;adc	al,al
+   694 000004C6 10CB                      adc	bl,cl
+   695 000004C8 10C0                      adc	al,al
+   696                                  
+   697                                    ;opcode = 02
+   698 000004CA 02C0                      db	02h,0c0h	;add	al,al
+   699 000004CC 00C8                      add	al,cl
+   700 000004CE 00C0                      add	al,al
+   701 000004D0 00C8                      add	al,cl
+   702                                  
+   703 000004D2 20C8                      and	al,cl
+   704 000004D4 38C8                      cmp	al,cl
+   705 000004D6 88C8                      mov	al,cl
+   706 000004D8 08C8                      or	al,cl
+   707 000004DA 18C8                      sbb	al,cl
+   708 000004DC 28C8                      sub	al,cl
+   709 000004DE 86C1                      xchg	al,cl
+   710 000004E0 30C8                      xor	al,cl
+   711                                  
+   712                                  ;mod=10
+   713                                  
+   714 000004E2 121D56341208              adc	bl,[08123456h]
+   715 000004E8 129A56341208              adc	bl,[edx + 08123456h]
+   716 000004EE 029A56341208              add	bl,[edx + 08123456h]
+   717 000004F4 229A56341208              and	bl,[edx + 08123456h]
+   718 000004FA 3A9A56341208              cmp	bl,[edx + 08123456h]
+   719 00000500 8A9A56341208              mov	bl,[edx + 08123456h]
+   720 00000506 0A9A56341208              or 	bl,[edx + 08123456h]
+   721 0000050C 1A9A56341208              sbb	bl,[edx + 08123456h]
+   722 00000512 2A9A56341208              sub	bl,[edx + 08123456h]
+   723 00000518 869A56341208              xchg	bl,[edx + 08123456h]
+   724 0000051E 329B56341208              xor	bl,[ebx + 08123456h]
+   725                                  
+   726                                  ;mod=01
+   727                                  
+   728 00000524 125A12                    adc	bl,[edx + 12h]
+   729 00000527 025A12                    add	bl,[edx + 12h]
+   730 0000052A 225A12                    and	bl,[edx + 12h]
+   731 0000052D 3A5A12                    cmp	bl,[edx + 12h]
+   732 00000530 8A5A12                    mov	bl,[edx + 12h]
+   733 00000533 0A5A12                    or 	bl,[edx + 12h]
+   734 00000536 1A5A12                    sbb	bl,[edx + 12h]
+   735 00000539 2A5A12                    sub	bl,[edx + 12h]
+   736 0000053C 865A12                    xchg	bl,[edx + 12h]
+   737 0000053F 325B12                    xor	bl,[ebx + 12h]
+   738                                  
+   739                                  ;mod=00
+   740                                   
+   741 00000542 121A                      adc	bl,[edx]
+   742 00000544 021A                      add	bl,[edx]
+   743 00000546 221A                      and	bl,[edx]
+   744 00000548 3A1A                      cmp	bl,[edx]
+   745 0000054A 8A1A                      mov	bl,[edx]
+   746 0000054C 0A1A                      or 	bl,[edx]
+   747 0000054E 1A1A                      sbb	bl,[edx]
+   748 00000550 2A1A                      sub	bl,[edx]
+   749 00000552 861A                      xchg	bl,[edx]
+   750 00000554 321B                      xor	bl,[ebx]
+   751                                  
+   752                                  ;---------------------- type 06-3 (rm32,reg32) ----------------
+   753                                  
+   754                                  ; mod=11
+   755                                  
+   756                                    ;opcode adc = 11
+   757 00000556 11DB                      adc	ebx,ebx
+   758 00000558 6611DB                    adc	bx,bx
+   759 0000055B 6611CB                    adc	bx,cx
+   760 0000055E 11C0                      adc	eax,eax
+   761                                  
+   762                                    ;opcode add = 01
+   763 00000560 01CB                      add	ebx,ecx
+   764 00000562 01C0                      add	eax,eax
+   765                                  
+   766 00000564 21CB                      and	ebx,ecx
+   767 00000566 0FA3CB                    bt	ebx,ecx
+   768 00000569 0FBBCB                    btc	ebx,ecx
+   769 0000056C 660FBBCB                  btc	bx,cx
+   770 00000570 0FB3CB                    btr	ebx,ecx
+   771 00000573 0FABCB                    bts	ebx,ecx
+   772 00000576 39CB                      cmp	ebx,ecx
+   773 00000578 0FB1CB                    cmpxchg ebx,ecx
+   774 0000057B 89CB                      mov	ebx,ecx
+   775 0000057D 09CB                      or	ebx,ecx
+   776 0000057F 19CB                      sbb	ebx,ecx
+   777 00000581 29CB                      sub	ebx,ecx
+   778 00000583 85CB                      test	ebx,ecx
+   779 00000585 0FC1CB                    xadd	ebx,ecx
+   780 00000588 31CB                      xor	ebx,ecx
+   781                                  
+   782                                  
+   783                                  ; mod=10
+   784                                  
+   785 0000058A 111D56341208              adc	[08123456h],ebx
+   786 00000590 119A56341208              adc	[edx + 08123456h],ebx
+   787 00000596 66111D56341208            adc	[08123456h],bx
+   788                                  
+   789                                  ; mod=01
+   790                                  
+   791 0000059D 111D12000000              adc	[12h],ebx
+   792 000005A3 115A12                    adc	[edx + 12h],ebx
+   793                                  
+   794                                  ; mod=00
+   795                                  
+   796 000005A6 1113                      adc	[ebx],edx
+   797 000005A8 661113                    adc	[ebx],dx
+   798                                  
+   799                                  ;---------------------- type 06-3 (rm8,reg8) ----------------
+   800                                  
+   801                                  ; mod=11
+   802                                  
+   803                                    ;opcode adc = 10
+   804 000005AB 10CB                      adc	bl,cl
+   805 000005AD 10C0                      adc	al,al
+   806                                  
+   807                                    ;opcode add = 00
+   808 000005AF 00CB                      add	bl,cl
+   809 000005B1 00C0                      add	al,al
+   810                                  
+   811 000005B3 20CB                      and	bl,cl
+   812 000005B5 38CB                      cmp	bl,cl
+   813 000005B7 0FB0CB                    cmpxchg bl,cl
+   814 000005BA 88CB                      mov	bl,cl
+   815 000005BC 08CB                      or	bl,cl
+   816 000005BE 18CB                      sbb	bl,cl
+   817 000005C0 28CB                      sub	bl,cl
+   818 000005C2 84CB                      test	bl,cl
+   819 000005C4 0FC0CB                    xadd	bl,cl
+   820 000005C7 30CB                      xor	bl,cl
+   821                                  
+   822                                  ;mod=10
+   823                                  
+   824 000005C9 108B56341208             adc	[08123456h + ebx],cl
+   825 000005CF 100D56341208             adc	[08123456h],cl
+   826                                  
+   827                                  ;mod=01
+   828                                  
+   829 000005D5 104B05                    adc	[ebx + 5],cl
+   830                                  
+   831                                  ;mod=00
+   832                                  
+   833 000005D8 100B                      adc   [ebx],cl
+   834                                  
+   835                                  
+   836                                       
+   837                                  ;---------------------- type 09 (rm8 + others) -----------------
+   838                                  
+   839 000005DA 8A9A56341208              mov	bl,[edx + 08123456h]
+   840                                  
+   841                                  ;mod=11  -- all of these are not reproducable by nasm
+   842                                  
+   843                                    ;opcode = 12
+   844 000005E0 3AC0                      db	3ah,0c0h	;cmp
+   845 000005E2 12C0                      db	12h,0c0h	;adc	al,al
+   846 000005E4 02C0                      db	02h,0c0h	;add	al,al
+   847 000005E6 22C0                      db	22h,0c0h	;and	al,al
+   848 000005E8 0AC0                      db	0ah,0c0h	;or	al,al
+   849 000005EA 1AC0                      db	1ah,0c0h	;sbb	al,al
+   850 000005EC 2AC0                      db	2ah,0c0h	;sub	al,al
+   851 000005EE 86C0                      db	86h,0c0h	;xchg	al,al
+   852 000005F0 32C0                      db	32h,0c0h	;xor	al,al
+   853                                  
+   854 000005F2 00C8                      add	al,cl
+   855 000005F4 00C0                      add	al,al
+   856 000005F6 00C8                      add	al,cl
+   857                                  
+   858 000005F8 20C8                      and	al,cl
+   859 000005FA 38C8                      cmp	al,cl
+   860 000005FC 88C8                      mov	al,cl
+   861 000005FE 08C8                      or	al,cl
+   862 00000600 18C8                      sbb	al,cl
+   863 00000602 28C8                      sub	al,cl
+   864 00000604 86C1                      xchg	al,cl
+   865 00000606 30C8                      xor	al,cl
+   866                                  
+   867                                  ;mod=10
+   868                                  
+   869 00000608 121D56341208              adc	bl,[08123456h]
+   870 0000060E 129A56341208              adc	bl,[edx + 08123456h]
+   871 00000614 029A56341208              add	bl,[edx + 08123456h]
+   872 0000061A 229A56341208              and	bl,[edx + 08123456h]
+   873 00000620 3A9A56341208              cmp	bl,[edx + 08123456h]
+   874 00000626 8A9A56341208              mov	bl,[edx + 08123456h]
+   875 0000062C 0A9A56341208              or 	bl,[edx + 08123456h]
+   876 00000632 1A9A56341208              sbb	bl,[edx + 08123456h]
+   877 00000638 2A9A56341208              sub	bl,[edx + 08123456h]
+   878 0000063E 869A56341208              xchg	bl,[edx + 08123456h]
+   879 00000644 329B56341208              xor	bl,[ebx + 08123456h]
+   880                                  
+   881                                  ;mod=01
+   882                                  
+   883 0000064A 125A12                    adc	bl,[edx + 12h]
+   884 0000064D 025A12                    add	bl,[edx + 12h]
+   885 00000650 225A12                    and	bl,[edx + 12h]
+   886 00000653 3A5A12                    cmp	bl,[edx + 12h]
+   887 00000656 8A5A12                    mov	bl,[edx + 12h]
+   888 00000659 0A5A12                    or 	bl,[edx + 12h]
+   889 0000065C 1A5A12                    sbb	bl,[edx + 12h]
+   890 0000065F 2A5A12                    sub	bl,[edx + 12h]
+   891 00000662 865A12                    xchg	bl,[edx + 12h]
+   892 00000665 325B12                    xor	bl,[ebx + 12h]
+   893                                  
+   894                                  ;mod=00
+   895                                   
+   896 00000668 121A                      adc	bl,[edx]
+   897 0000066A 021A                      add	bl,[edx]
+   898 0000066C 221A                      and	bl,[edx]
+   899 0000066E 3A1A                      cmp	bl,[edx]
+   900 00000670 8A1A                      mov	bl,[edx]
+   901 00000672 0A1A                      or 	bl,[edx]
+   902 00000674 1A1A                      sbb	bl,[edx]
+   903 00000676 2A1A                      sub	bl,[edx]
+   904 00000678 861A                      xchg	bl,[edx]
+   905 0000067A 321B                      xor	bl,[ebx]
+   906                                  
+   907                                  ;-----------------
+   908                                  
+   909                                  ;mod=11
+   910                                  
+   911                                    ;opcode adc=13
+   912 0000067C 13C0                      db	13h,0c0h	;adc	eax,eax
+   913 0000067E 11CB                      adc	ebx,ecx
+   914 00000680 6611CB                    adc	bx,cx
+   915                                  
+   916                                    ;opcode add = 03
+   917 00000683 03C0                      db	03h,0c0h	;add	eax,eax
+   918 00000685 01CB                      add	ebx,ecx
+   919 00000687 01C0                      add	eax,eax
+   920 00000689 01C8                      add	eax,ecx
+   921 0000068B 6601CB                    add	bx,cx
+   922                                  
+   923                                    ;opcode and = 23
+   924 0000068E 23C0                      db	23h,0c0h	;and	eax,eax
+   925 00000690 21CB                      and	ebx,ecx
+   926 00000692 6621CB                    and	bx,cx
+   927                                  
+   928                                    ;opcode bsf = 0f bc
+   929 00000695 0FBCD9                    bsf	ebx,ecx
+   930                                  
+   931 00000698 0FBDD9                    bsr	ebx,ecx
+   932 0000069B 0F47D9                    cmova	ebx,ecx
+   933 0000069E 0F42D9                    cmovc	ebx,ecx
+   934 000006A1 0F44D9                    cmove	ebx,ecx
+   935 000006A4 0F4FD9                    cmovg	ebx,ecx
+   936 000006A7 0F4CD9                    cmovl	ebx,ecx
+   937 000006AA 0F4ED9                    cmovle ebx,ecx
+   938 000006AD 0F46D9                    cmovna ebx,ecx
+   939 000006B0 0F43D9                    cmovnc ebx,ecx
+   940 000006B3 0F45D9                    cmovne ebx,ecx
+   941 000006B6 0F4DD9                    cmovnl ebx,ecx
+   942 000006B9 0F41D9                    cmovno ebx,ecx
+   943 000006BC 0F4BD9                    cmovnp ebx,ecx
+   944 000006BF 0F49D9                    cmovns ebx,ecx
+   945 000006C2 0F40D9                    cmovo  ebx,ecx
+   946 000006C5 0F4AD9                    cmovp ebx,ecx
+   947 000006C8 0F48D9                    cmovs ebx,ecx
+   948 000006CB 39CB                      cmp	ebx,ecx
+   949 000006CD 0FAFD9                    imul	ebx,ecx
+   950 000006D0 0F02D9                    lar	ebx,ecx
+   951                                  
+   952                                    ;opcode mov = 8b
+   953 000006D3 8BC0                      db	8bh,0c0h	;mov eax,eax
+   954 000006D5 89CB                      mov	ebx,ecx
+   955                                  
+   956                                    ;opcode or = 0b
+   957 000006D7 09CB                      or	ebx,ecx
+   958                                  
+   959                                    ;opcode sbb = 1b
+   960 000006D9 19CB                      sbb	ebx,ecx
+   961                                  
+   962                                    ;opcode sub = 1b
+   963 000006DB 29CB                      sub	ebx,ecx
+   964 000006DD 29C0                      sub	eax,eax
+   965                                  
+   966                                    ;opcode xchg = 87
+   967 000006DF 87D9                      xchg	ebx,ecx
+   968                                  
+   969                                    ;opcode xor = 33
+   970 000006E1 31CB                      xor	ebx,ecx
+   971                                  
+   972                                  
+   973                                  ;mod=10
+   974                                  
+   975 000006E3 138356341208              adc	eax,[ebx + 08123456h]
+   976 000006E9 139B56341208              adc	ebx,[ebx + 08123456h]
+   977                                  
+   978 000006EF C59956341208              lds	ebx,[ecx + 08123456h]
+   979 000006F5 C49956341208              les	ebx,[ecx + 08123456h]
+   980 000006FB 0FB49956341208            lfs	ebx,[ecx + 08123456h]
+   981 00000702 0FB59956341208            lgs	ebx,[ecx + 08123456h]
+   982 00000709 0F039956341208            lsl	ebx,[ecx + 08123456h]
+   983 00000710 0FB29956341208            lss	ebx,[ecx + 08123456h]
+   984 00000717 66C59956341208            lds	bx,[ecx + 08123456h]
+   985 0000071E 66C49956341208            les	bx,[ecx + 08123456h]
+   986 00000725 660FB49956341208          lfs	bx,[ecx + 08123456h]
+   987 0000072D 660FB59956341208          lgs	bx,[ecx + 08123456h]
+   988 00000735 660F039956341208          lsl	bx,[ecx + 08123456h]
+   989 0000073D 660FB29956341208          lss	bx,[ecx + 08123456h]
+   990                                  
+   991 00000745 8D8356341208              lea	eax,[ebx + 08123456h]
+   992 0000074B 668D8334120000            lea	ax,[ebx + 1234h]
+   993                                  
+   994 00000752 628356341208              bound	eax,[ebx + 08123456h]
+   995 00000758 66628334120000            bound	ax,[ebx + 1234h]
+   996                                  
+   997                                  ;mod=01
+   998                                  
+   999 0000075F 8D4305                    lea	eax,[ebx + 5]
+  1000 00000762 668D4305                  lea	ax,[ebx + 5]
+  1001                                  
+  1002 00000766 66624305                  bound	ax,[ebx + 5]
+  1003 0000076A 624305                    bound eax,[ebx + 5]
+  1004                                  
+  1005                                  ;mod=00
+  1006                                  
+  1007 0000076D 0303                      add	eax,[ebx]
+  1008 0000076F 0318                      add	ebx,[eax]
+  1009                                  
+  1010                                  
+  1011 00000771 1319                      adc	ebx,[ecx]
+  1012 00000773 661319                    adc	bx,[ecx]
+  1013 00000776 0319                      add	ebx,[ecx]
+  1014 00000778 2319                      and	ebx,[ecx]
+  1015 0000077A 0FBC19                    bsf	ebx,[ecx]
+  1016 0000077D 0FBD19                    bsr	ebx,[ecx]
+  1017 00000780 0F4719                    cmova ebx,[ecx]
+  1018 00000783 0F4219                    cmovc ebx,[ecx]
+  1019 00000786 0F4419                    cmove ebx,[ecx]
+  1020 00000789 0F4F19                    cmovg ebx,[ecx]
+  1021 0000078C 0F4C19                    cmovl ebx,[ecx]
+  1022 0000078F 0F4E19                    cmovle ebx,[ecx]
+  1023                                  
+  1024 00000792 3B19                      cmp	ebx,[ecx]
+  1025 00000794 0FAF19                    imul	ebx,[ecx]
+  1026 00000797 0F0219                    lar	ebx,[ecx]
+  1027                                  
+  1028 0000079A C519                      lds	ebx,[ecx]
+  1029 0000079C 8B19                      mov   ebx,[ecx]
+  1030 0000079E 0B19                      or 	ebx,[ecx]
+  1031 000007A0 1B19                      sbb	ebx,[ecx]
+  1032 000007A2 2B19                      sub	ebx,[ecx]
+  1033 000007A4 8719                      xchg	ebx,[ecx]
+  1034 000007A6 3319                      xor	ebx,[ecx]
+  1035                                  
+  1036 000007A8 8D03                      lea	eax,[ebx]
+  1037 000007AA 8D36                      lea	esi,[esi]
+  1038 000007AC 668D03                    lea	ax,[ebx]
+  1039                                  
+  1040 000007AF 6203                      bound	eax,[ebx]
+  1041 000007B1 666203                    bound ax,[ebx]
+  1042                                  
+  1043                                  ;---------------------- type 08 (rm8) -----------------
+  1044                                  
+  1045                                  ; mod=11
+  1046                                  
+  1047                                    ;opcode adc = 10
+  1048 000007B4 10CB                      adc	bl,cl
+  1049 000007B6 10C0                      adc	al,al
+  1050                                  
+  1051                                    ;opcode add = 00
+  1052 000007B8 00CB                      add	bl,cl
+  1053 000007BA 00C0                      add	al,al
+  1054                                  
+  1055 000007BC 20CB                      and	bl,cl
+  1056 000007BE 38CB                      cmp	bl,cl
+  1057 000007C0 0FB0CB                    cmpxchg bl,cl
+  1058 000007C3 88CB                      mov	bl,cl
+  1059 000007C5 08CB                      or	bl,cl
+  1060 000007C7 18CB                      sbb	bl,cl
+  1061 000007C9 28CB                      sub	bl,cl
+  1062 000007CB 84CB                      test	bl,cl
+  1063 000007CD 0FC0CB                    xadd	bl,cl
+  1064 000007D0 30CB                      xor	bl,cl
+  1065                                  
+  1066                                  ;mod=10
+  1067                                  
+  1068 000007D2 108B56341208             adc	[08123456h + ebx],cl
+  1069 000007D8 100D56341208             adc	[08123456h],cl
+  1070                                  
+  1071                                  ;mod=01
+  1072                                  
+  1073 000007DE 104B05                    adc	[ebx + 5],cl
+  1074                                  
+  1075                                  ;mod=00
+  1076                                  
+  1077 000007E1 100B                      adc   [ebx],cl
+  1078                                  
+  1079                                  
+  1080                                  ;---------------------- type 07 (rm8) -----------------
+  1081                                  
+  1082                                  ;  mod=11
+  1083                                  
+  1084 000007E3 D0D3                      rcl	bl,1
+  1085 000007E5 D0DB                      rcr	bl,1
+  1086 000007E7 D0C3                      rol	bl,1
+  1087 000007E9 D0CB                      ror	bl,1
+  1088 000007EB D0FB                      sar	bl,1
+  1089 000007ED D0E3                      shl	bl,1
+  1090 000007EF D0EB                      shr	bl,1
+  1091                                  
+  1092                                    ;opcode adc = 80
+  1093 000007F1 80D305                    adc	bl,5
+  1094 000007F4 80D005                    db	80h,0d0h,5	;adc al,5
+  1095                                  
+  1096 000007F7 80C305                    add	bl,5
+  1097 000007FA 80E305                    and	bl,5
+  1098 000007FD 80FB05                    cmp	bl,5
+  1099 00000800 80CB05                    or	bl,5
+  1100 00000803 B305                      mov	bl,5
+  1101 00000805 C0D305                    rcl	bl,5
+  1102 00000808 C0C305                    rol	bl,5
+  1103 0000080B C0DB05                    rcr	bl,5
+  1104 0000080E C0FB05                    sar	bl,5
+  1105 00000811 80DB05                    sbb	bl,5
+  1106 00000814 C0E305                    shl	bl,5
+  1107 00000817 C0EB05                    shr	bl,5
+  1108 0000081A 80EB05                    sub	bl,5
+  1109 0000081D F6C305                    test	bl,5
+  1110 00000820 80F305                    xor	bl,5
+  1111                                  
+  1112                                  ;  mod=10
+  1113                                  
+  1114 00000823 80355634120805            xor	byte [08123456h],5
+  1115 0000082A 80B35634120805            xor	byte [ebx + 08123456h],5
+  1116                                  
+  1117 00000831 D01556341208              rcl	byte [08123456h],1
+  1118 00000837 D09356341208              rcl	byte [ebx + 08123456h],1
+  1119                                  
+  1120                                  ;  mod=01
+  1121                                  
+  1122 0000083D 80730505                  xor	byte [ebx + 5],5
+  1123 00000841 D05305                    rcl	byte [ebx +5],1
+  1124                                  
+  1125                                  ;  mod=00
+  1126                                  
+  1127 00000844 803305                    xor	byte [ebx],5
+  1128 00000847 D013                      rcl	byte [ebx],1
+  1129                                  
+  1130                                  
+  1131                                  ;---------------------- type 06 (rm8) -----------------
+  1132                                  
+  1133                                  ;mod=11
+  1134                                  
+  1135 00000849 3EFE03                    inc   byte [ds:ebx]
+  1136                                  
+  1137                                    ;opcode inc = fe
+  1138 0000084C FEC3                      inc	bl
+  1139 0000084E FEC7                      inc	bh
+  1140 00000850 FEC0                      inc	al
+  1141                                  
+  1142                                    ;opcode dec = fe
+  1143 00000852 FEC8                      dec	al
+  1144 00000854 FEC9                      dec	cl
+  1145 00000856 FECA                      dec	dl
+  1146                                  
+  1147                                    ;opcode neg = f6
+  1148 00000858 F6D8                      neg	al
+  1149 0000085A F6D9                      neg	cl
+  1150 0000085C F6DA                      neg	dl
+  1151                                    
+  1152                                  ;mod=10
+  1153                                  
+  1154 0000085E FE83F4010000              inc	byte [ebx + 500]
+  1155 00000864 FE0556341208              inc	byte [08123456h]
+  1156                                  
+  1157                                  ;mod=01
+  1158                                  
+  1159 0000086A FE4303                    inc	byte [ebx +3]
+  1160 0000086D FE4002                    inc	byte [eax +2]
+  1161 00000870 FE44C803                  inc	byte [eax + ecx*8 +3]
+  1162 00000874 FE4503                    inc	byte [ebp +3]
+  1163                                  
+  1164                                  ;mod=0
+  1165                                  
+  1166 00000877 FE00                      inc	byte [eax]
+  1167 00000879 FE03                      inc	byte [ebx]
+  1168 0000087B FE01                      inc	byte [ecx]
+  1169 0000087D FE02                      inc	byte [edx]
+  1170 0000087F FE06                      inc	byte [esi]
+  1171 00000881 FE07                      inc	byte [edi]
+  1172                                  
+  1173 00000883 3EFE03                    inc	byte [ds:ebx]
+  1174 00000886 26FE03                    inc	byte [es:ebx]
+  1175 00000889 2EFE03                    inc	byte [cs:ebx]
+  1176 0000088C 36FE03                    inc	byte [ss:ebx]
+  1177 0000088F 65FE03                    inc	byte [gs:ebx]
+  1178 00000892 64FE03                    inc	byte [fs:ebx]
+  1179                                  
+  1180 00000895 260F9703                  seta	byte [es:ebx]
+  1181 00000899 0F9403                    sete  byte [ebx]
+  1182 0000089C 0F9803                    sets  byte [ebx]
+  1183 0000089F 0F9F03                    setg  byte [ebx]
+  1184 000008A2 0F9C03                    setl  byte [ebx]
+  1185 000008A5 0F9603                    setna byte [ebx]
+  1186 000008A8 0F9303                    setnc byte [ebx]
+  1187 000008AB 0F9503                    setne byte [ebx]
+  1188 000008AE 0F9E03                    setng byte [ebx]
+  1189 000008B1 0F9D03                    setnl byte [ebx]
+  1190 000008B4 0F9903                    setns byte [ebx]
+  1191 000008B7 0F9B03                    setnp byte [ebx]
+  1192 000008BA 0F9003                    seto  byte [ebx]
+  1193 000008BD 0F9A01                    setp  byte [ecx]
+  1194 000008C0 0F9807                    sets  byte [edi]
+  1195 000008C3 0F9106                    setno byte [esi]
+  1196                                  
+  1197 000008C6 FE049D00000000            inc	byte [ebx*4]
+  1198 000008CD FE041B                    inc	byte [ebx*2]
+  1199 000008D0 FE04CB                    inc   byte [ebx+ecx*8]
+  1200 000008D3 FE03                      inc	byte [ebx]
+  1201 000008D5 FE0556341208              inc	byte [08123456h]
+  1202 000008DB FE0B                      dec	byte [ebx]
+  1203 000008DD F633                      div	byte [ebx]
+  1204 000008DF F63B                      idiv	byte [ebx]
+  1205 000008E1 F623                      mul	byte [ebx]
+  1206 000008E3 F62B                      imul  byte [ebx]
+  1207 000008E5 F61B                      neg	byte [ebx]
+  1208 000008E7 F613                      not	byte [ebx]
+  1209                                  
+  1210                                  
+  1211                                  ;---------------------- type 05 -----------------------
+  1212                                  
+  1213 000008E9 666D                      insw
+  1214 000008EB F0F36C                    lock rep insb
+  1215 000008EE F36C                      rep insb
+  1216 000008F0 6C                        insb
+  1217 000008F1 F3666D                    rep insw
+  1218 000008F4 F36D                      rep insd
+  1219 000008F6 A4                        movsb
+  1220 000008F7 F3A4                      rep movsb
+  1221 000008F9 66A5                      movsw
+  1222 000008FB F366A5                    rep movsw
+  1223 000008FE A5                        movsd
+  1224 000008FF AC                        lodsb
+  1225 00000900 66AD                      lodsw
+  1226 00000902 AD                        lodsd
+  1227 00000903 AA                        stosb
+  1228 00000904 66AB                      stosw
+  1229 00000906 AB                        stosd
+  1230 00000907 6E                        outsb
+  1231 00000908 666F                      outsw
+  1232 0000090A 6F                        outsd
+  1233 0000090B AA                        stosb
+  1234 0000090C 66AB                      stosw
+  1235 0000090E AB                        stosd
+  1236 0000090F F3AB                      rep stosd
+  1237 00000911 A6                        cmpsb
+  1238 00000912 F266A7                    repne cmpsw
+  1239 00000915 66A7                      cmpsw
+  1240 00000917 A7                        cmpsd
+  1241 00000918 F366A7                    rep cmpsw
+  1242 0000091B AE                        scasb
+  1243 0000091C 66AF                      scasw
+  1244 0000091E AF                        scasd
+  1245 0000091F F0F3AF                    lock rep scasd
+  1246                                  
+  1247                                  ;---------------------- type 04 -----------------------
+  1248                                  
+  1249 00000922 98                        cwde
+  1250 00000923 90                        xchg  eax,eax
+  1251 00000924 91                        xchg  eax,ecx
+  1252 00000925 92                        xchg  eax,edx
+  1253 00000926 93                        xchg  eax,ebx
+  1254 00000927 95                        xchg  eax,ebp
+  1255 00000928 94                        xchg  eax,esp
+  1256 00000929 96                        xchg  eax,esi
+  1257 0000092A 97                        xchg  eax,edi
+  1258 0000092B 6690                      xchg  ax,ax
+  1259 0000092D 6691                      xchg	ax,cx
+  1260 0000092F 6692                      xchg	ax,dx
+  1261 00000931 6693                      xchg	ax,bx
+  1262 00000933 6695                      xchg	ax,bp
+  1263 00000935 6694                      xchg	ax,sp
+  1264 00000937 6696                      xchg	ax,si
+  1265 00000939 6697                      xchg	ax,di
+  1266 0000093B B834120000                mov	eax,1234h
+  1267 00000940 B934120000                mov	ecx,1234h
+  1268 00000945 BA34120000                mov	edx,1234h
+  1269 0000094A BB34120000                mov	ebx,1234h
+  1270 0000094F BD34120000                mov	ebp,1234h
+  1271 00000954 BC34120000                mov	esp,1234h
+  1272 00000959 BE34120000                mov	esi,1234h
+  1273 0000095E BF34120000                mov	edi,1234h
+  1274 00000963 66B83412                  mov	ax,1234h
+  1275 00000967 66B93412                  mov	cx,1234h
+  1276 0000096B 66BA3412                  mov	dx,1234h
+  1277 0000096F 66BB3412                  mov	bx,1234h
+  1278 00000973 66BD3412                  mov	bp,1234h
+  1279 00000977 66BC3412                  mov	sp,1234h
+  1280 0000097B 66BE3412                  mov	si,1234h
+  1281 0000097F 66BF3412                  mov	di,1234h
+  1282 00000983 B055                      mov	al,55h
+  1283 00000985 B156                      mov	cl,56h
+  1284 00000987 B257                      mov	dl,57h
+  1285 00000989 B358                      mov	bl,58h
+  1286 0000098B B459                      mov	ah,59h
+  1287 0000098D B55A                      mov	ch,5ah
+  1288 0000098F B65B                      mov	dh,5bh
+  1289 00000991 B75C                      mov	bh,5ch
+  1290 00000993 98                        cwde
+  1291 00000994 6698                      cbw
+  1292 00000996 99                        cdq
+  1293 00000997 6699                      cwd
+  1294 00000999 F06698                    lock cbw
+  1295 0000099C F0B055                    lock mov al,55h
+  1296 0000099F F093                      lock xchg eax,ebx
+  1297 000009A1 F06699                    lock cwd
+  1298                                  
+  1299                                  ;---------------------- type 03 -----------------------
+  1300                                  
+  1301 000009A4 0FA8                      push gs
+  1302 000009A6 0E                        push	cs
+  1303 000009A7 16                        push	ss
+  1304 000009A8 17                        pop	ss
+  1305 000009A9 1E                        push	ds
+  1306 000009AA 1F                        pop	ds
+  1307 000009AB 07                        pop	es
+  1308 000009AC F007                      lock pop es
+  1309 000009AE 06                        push	es
+  1310 000009AF 27                        daa
+  1311 000009B0 2F                        das
+  1312 000009B1 37                        aaa
+  1313 000009B2 3F                        aas
+  1314 000009B3 60                        pusha
+  1315 000009B4 61                        popa
+  1316 000009B5 9E                        sahf
+  1317 000009B6 9F                        lahf
+  1318 000009B7 C3                        ret
+  1319 000009B8 C9                        leave
+  1320 000009B9 CC                        int3
+  1321 000009BA CB                        retf
+  1322 000009BB CE                        into
+  1323 000009BC CF                        iret
+  1324 000009BD D7                        xlat
+  1325 000009BE F4                        hlt
+  1326 000009BF F5                        cmc
+  1327 000009C0 F8                        clc
+  1328 000009C1 F9                        stc
+  1329 000009C2 FA                        cli
+  1330 000009C3 FB                        sti
+  1331 000009C4 FC                        cld
+  1332 000009C5 FD                        std
+  1333 000009C6 9C                        pushf
+  1334 000009C7 9D                        popf
+  1335 000009C8 9B                        wait
+  1336 000009C9 0F06                      clts
+  1337 000009CB 0FA2                      cpuid
+  1338 000009CD 0FA1                      pop fs
+  1339 000009CF 0FA0                      push fs
+  1340 000009D1 0FA9                      pop  gs
+  1341                                  
+  1342                                  ;---------------------- type 02 -----------------------
+  1343                                  
+  1344                                  ; single byte instructions with assumed register
+  1345                                  
+  1346 000009D3 F0                        lock
+  1347 000009D4 66                        db 66h
+  1348 000009D5 50                        push	eax
+  1349 000009D6 F06650                    lock push	ax
+  1350 000009D9 F051                      lock push	ecx
+  1351 000009DB 6651                      push	cx
+  1352 000009DD 52                        push	edx
+  1353 000009DE 6652                      push	dx
+  1354 000009E0 53                        push	ebx
+  1355 000009E1 6653                      push	bx
+  1356 000009E3 54                        push	esp
+  1357 000009E4 6654                      push	sp
+  1358 000009E6 55                        push	ebp
+  1359 000009E7 6655                      push	bp
+  1360 000009E9 56                        push	esi
+  1361 000009EA 6656                      push	si
+  1362 000009EC 57                        push	edi
+  1363 000009ED 6657                      push	di
+  1364 000009EF 58                        pop	eax
+  1365 000009F0 40                        inc	eax
+  1366 000009F1 48                        dec	eax
+  1367                                  
+  1368                                   
+  1369                                  ;---------------------- type 01 -----------------------
+  1370                                  
+  1371                                  ;add prefix test here later
+  1372                                  
+  1373                                  

@@ -1,0 +1,36 @@
+
+NAME
+ testcrt - test crt capabilities
+
+PURPOSE
+    crt_test is useful as a demo of sending control
+    codes to a terminal.  It also is useful as a
+    quick way to view the status of a terminal.
+
+INPUTS
+    no parameters are passed to testcrt
+
+OUTPUTS
+    The program display a menu and waits for input. After
+    each input the results are displayed and the menu
+    redisplayed.
+
+    menu contents:              vt100 code sent
+    -----------------------     ---------------
+    (a) alt screen selection    1bh,"[?47h"
+    (b) normal screen           1bh,"[?47l"
+    (c) get status              1bh,"[0c"
+    (d) get termios
+    {e} get $TERM variable
+    (f) get DSA                 1bh,"[5n"
+    (g) get status              1bh,"[5n"
+    (h) mouse off               1bh,"[?1000l"
+    (i) mouse on                1bh,"[?1000h"
+    (j) reset                   1bh,"c"
+    (k) report cursor position  1bh,"[6n"
+    (l) get parameters          1bh,"1x"
+
+    VT100 codes are explained in reference section
+    (see vt_term)
+    The termios fields are explained in reference
+    section (see termios)

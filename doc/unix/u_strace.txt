@@ -1,0 +1,48 @@
+
+strace - trace a programs execution
+
+strace has a lot of options, but a small set are
+useful for assembler programmers.  Here are some
+examples:
+
+  strace -o <output-file> <input-file>
+
+To add the program counter (EIP) to output use -i
+
+  strace -i -o <output-file> <input-file>
+
+The -v option provides verbose output and -ff follows
+each process created.
+
+  strace -v -ff -o <output-file> <input-file>
+
+
+other possible flags of interest are:
+
+       -x          Print all non-ASCII strings  in  hexadecimal  string
+                   format.
+
+       -f          Trace child processes as they are  created  by  cur‐
+                   rently  traced  processes as a result of the fork(2)
+                   system call.  The new process is attached to as soon
+                   as  its  pid  is  known (through the return value of
+                   fork(2) in the parent process). This means that such
+                   children  may  run  uncontrolled  for a while (espe‐
+                   cially in the case of a vfork(2)), until the  parent
+                   is  scheduled again to complete its (v)fork(2) call.
+                   If the parent process decides to wait(2) for a child
+                   that  is  currently  being  traced,  it is suspended
+                   until an appropriate child process either terminates
+                   or  incurs a signal that would cause it to terminate
+                   (as determined from the child’s current signal  dis‐
+                   position).
+
+       -ff         If  the  -o  filename option is in effect, each pro‐
+                   cesses trace is written to filename.pid where pid is
+                   the numeric process id of each process.
+
+       -F          Attempt  to  follow  vforks.  (On SunOS 4.x, this is
+                   accomplished with some  dynamic  linking  trickery.)
+                   Otherwise,  vforks  will  not be followed even if -f
+                   has been given.
+

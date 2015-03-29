@@ -1,0 +1,21 @@
+#! /bin/bash
+asmbug $1
+#insight_ $1
+
+#
+# NAME
+#>1 script
+#  a.f4 - example debugger interface
+# INPUTS
+#  $1 is base name of program being edited.  It
+#  can be used to envoke a debugger or the debug
+#  target can be coded into the a.f4 script.
+# OUTPUT
+#  nothing is output.
+# NOTES
+# * file: a.f4  <- tied to function key f4 in AsmEdit
+#                  if local or at $HOME/.asmide/edit
+#                  Also, used by AsmMgr debug button
+#                  if local debug script not found.
+#<
+# * ----------------------------------------------

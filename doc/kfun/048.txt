@@ -1,0 +1,34 @@
+
+----------------------------------------------------------------------------
+ 48 signal          - install a signal handler
+----------------------------------------------------------------------------
+  mov  eax,048
+  mov  ebx,signum        ;signal number
+  mov  ecx,sighandler    ;signal handler,or sig_ign, or sig_dfl
+  int  80h
+
+  (use the sigaction call instead)
+
+  The linux.signal() system call installs a new signal handler for the
+  signal number signum. The signal handler is set to sighandler
+  which may be a user specified function, or either signals.sig_ign or
+  signals.sig_dfl.
+
+  Upon arrival of a signal with number signum the following happens. If
+  the corresponding handler is set to signals.sig_ign, then the signal is
+  ignored. If the handler is set to signals.sig_dfl, then the default
+  action associated to the signal (see signal(7)) occurs. Finally, if the
+  handler is set to a function sighandler then first either the handler is
+  reset to signals.sig_dfl or an implementation-dependent blocking of the
+  signal is per- formed and next sighandler is called with argument signum.
+  Using a signal handler function for a signal is called "catching the
+  signal". The signals signals.sigkill and signals.sigstop cannot be
+  caught or ignored.
+
+ return value --
+  The function signal() returns the previous value of the signal handler,
+  or signals.sig_err on error.
+
+ see also --
+  kill, pause, raise, sigaction sigsetops, sigvec, alarm
+

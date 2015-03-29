@@ -1,0 +1,47 @@
+NAME
+
+  AsmTools - collection of tools for assembler development
+
+SYNOPSIS
+
+  asmfile <path> <path>
+   where: <path> is path of work directory
+
+DESCRIPTION
+
+   asmtools consists of a manager (asmfile) which provides access
+   to a debugger, disassembler, source generator, project planner,
+   editors, library, comment extractor, assembler reference, and others.
+   If you prefer, asmfile can be ignored and the individual
+   tool used.
+
+   All tools are standalone programs, but they can be used as
+   package if AsmFile or AsmEdit is active.
+  
+   asmtools runs as a Linux terminal program. most of the programs
+   will run in the console and all run in a x-terminal. the install
+   is from a tar.gz file and no compile is needed. the binaries will
+   run on any x86 Linux system.
+
+INSTALL
+  
+   After asmtools is installed (see instructions in tar.gz file)
+   start the manager by typing "asmfile" in a terminal or the
+   console. Some tools will request additional install information
+   when they are executed.
+  
+USAGE
+
+  The "tools/proj" button can be used to begin an assembler program. This
+  will create a source file and make file. The program can be
+  compiled by clicking on "make" and then debugged by highlighting
+  the executable and clicking "debug"
+
+  To navigate in asmfile, use arrow keys. The help button provides
+  move usage hints, and the "tools" button provides extensive
+  reference material for assembler development.
+    
+
+SEE ALSO
+
+ asmmgr, asmref    

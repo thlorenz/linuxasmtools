@@ -1,0 +1,80 @@
+
+----------------------------------------------------------------------------
+168 poll           - wait for some event on a file descriptor
+----------------------------------------------------------------------------
+  mov  eax,168
+  mov  ebx,ufds         ;ptr to array of structures
+  mov  ecx,nfds         ;number of structures in array
+  mov  edx,timeout      ;timeout
+  int  80h
+
+  struc pollfd
+  .fd      resd 1 ; /* file descriptor */
+  .events  resw 1 ; /* requested events */
+  .revents resw 1 ; /* returned events */
+  endstruc
+
+    The "poll" function returns status of file descriptors (fd).
+    Each file descriptor is described in the pollfd structure and
+    the kernel stores results in the same structure (revents).
+
+       The timeout parameter is in milliseconds. A negative value means infinite
+       timeout.
+
+       The  field  fd  contains a file descriptor for an open file.  The field
+       events is an input parameter,  a  bitmask  specifying  the  events  the
+       application  is  interested in.  The field revents is an output parame-
+       ter, filled by the kernel  with  the  events  that  actually  occurred,
+       either of the type requested, or of one of the types POLLERR or POLLHUP
+       or POLLNVAL.  (These three bits are meaningless in  the  events  field,
+       and  will be set in the revents field whenever the corresponding condi-
+       tion is true.)  If none of the events  requested  (and  no  error)  has
+       occurred  for any of the file descriptors, the kernel waits for timeout
+       milliseconds for one of these events to occur.  The following  possible
+       bits in these masks are defined in <sys/poll.h>
+
+           #define POLLIN      0x0001    /* There is data to read */
+           #define POLLPRI     0x0002    /* There is urgent data to read */
+           #define POLLOUT     0x0004    /* Writing now will not block */
+           #define POLLERR     0x0008    /* Error condition */
+           #define POLLHUP     0x0010    /* Hung up */
+           #define POLLNVAL    0x0020    /* Invalid request: fd not open */
+
+           #define POLLRDNORM  0x0040    /* Normal data may be read */
+           #define POLLRDBAND  0x0080    /* Priority data may be read */
+           #define POLLWRNORM  0x0100    /* Writing now will not block */
+           #define POLLWRBAND  0x0200    /* Priority data may be written */
+
+
+RETURN VALUE
+       On success, a positive number is returned, where the number returned is
+       the number of structures which have non-zero revents fields  (in  other
+       words, those descriptors with events or errors reported).  A value of 0
+       indicates that the call timed out and no  file  descriptors  have  been
+       selected. On error a negative code is returned
+
+       If poll is interupted by signal it returns EINTR (-11).
+       Only signals handled by our program cause a EINTR.
+       If we wait for IO possible on two fd's, either or both
+       may return a possible flag.
+
+ERRORS
+       EBADF  An invalid file descriptor was given in one of the sets.
+       ENOMEM There was no space to allocate file descriptor tables.
+       EFAULT The  array  given  as  argument was not contained in the calling
+              program's address space.
+       EINTR  A signal occurred before any requested event.
+       EINVAL The nfds value exceeds the RLIMIT_NOFILE value.
+
+CONFORMING TO
+       XPG4-UNIX.
+
+AVAILABILITY
+       The poll() systemcall was  introduced  in  Linux  2.1.23.   The  poll()
+       library  call  was  introduced  in  libc 5.4.28 (and provides emulation
+       using select if your kernel does not have a poll syscall).
+
+SEE ALSO
+       select, select_tut(2)
+
+

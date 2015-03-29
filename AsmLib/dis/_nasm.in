@@ -1,0 +1,1369 @@
+  [section .text]
+BITS 32
+;
+; special cases, instructions "adc,add,and,cmp,or - imm8" have two encodings if
+;                the operand is al,ax,eax.  This forces us to use "db xx,xx,xx"
+;                for the long form which has opcodes of 80,83 hex.  The short
+;                form is output by nasm and uses several opcodes (see s07)
+;                example:  add eax,byte 1  long from 83,xx,xx  short form 04,xx
+;
+  global main,_start
+main:
+_start:
+
+  rep movsb
+  mov	eax,[ds:100]
+
+
+;---------------------- type s28    --------------- opcode = de
+;
+; instuction          mod/rm      raw data entry
+; --------------      --------    ------------
+  fiadd word [ebx]
+  fimul word [ebx]
+  ficom word [ebx]
+  ficomp word [ebx]
+  fisub word [ebx]
+  fisubr word [ebx]
+  fidiv word [ebx]
+  fidivr word [ebx]
+
+  faddp st2
+  fsubrp st1
+  fdivrp st1
+  fmulp st1
+  fsubp st1
+  fdivp st1
+
+  fcompp
+
+;---------------------- type s27    --------------- opcode = dd
+;
+; instuction          mod/rm      raw data entry
+; --------------      --------    ------------
+
+  fld	qword [ebx]
+  fst   qword [ebx]
+  fstp  qword [ebx]
+  frstor  [ebx]
+  fnsave  [ebx]
+  fnstsw [ebx]
+
+  ffree st1
+  fst st1
+  fucom st1
+  fstp st1
+  fucomp st1
+
+
+;---------------------- type s26    --------------- opcode = dc
+;
+; instuction          mod/rm      raw data entry
+; --------------      --------    ------------
+
+  fadd	st0,st0  
+  fadd	st1,st0
+  fadd  st7,st0
+
+  fadd  qword [ebx]
+  fadd	qword [esi]
+
+  fadd	qword [08123456h]
+
+  fadd	qword [ebx + 08123456h]
+  fadd	qword [ebx + ecx + 08123456h]
+  fadd	qword [ebx*8+ecx+1234h]
+ 
+  fmul qword [ebx]
+  fcom qword [ebx]
+  fcomp qword [ebx]
+  fsub qword [ebx]
+  fsubr qword [ebx]
+  fdiv qword [ebx]
+  fdivr qword [ebx]
+
+  fsubr st1,st0
+  fsub  st1,st0
+  fdivr st1,st0
+  fmul  st1,st0
+  fdiv  st1,st0
+
+
+;---------------------- type s25    --------------- opcode= db
+;
+; instuction          mod/rm      raw data entry
+; --------------      --------    ------------
+
+  fild dword [ebx]    ;0          s0f,0
+  fist dword [ebx]    ;2          s0f,2
+  fistp dword [ebx]   ;3          s0f,3
+  fld tword [ebx]     ;5          s0f,5
+  fstp tword [ebx]    ;7          s0f,7
+
+  fnclex
+  fninit
+
+  fcmovnb st1
+  fcmovne st1
+  fcmovnbe st1
+  fcmovnu st1
+  fcomi st1
+  fucomi st1
+
+
+;---------------------- type s24    --------------- opcode = da
+;
+; instuction          mod/rm      raw data entry
+; --------------      --------    ------------
+  fiadd dword [eax]   ; 0           s0e,0
+  fimul dword [eax]   ; 1           s0e,1
+  ficom dword [eax]   ; 2           s0e,2
+  ficomp dword [eax]  ; 3           s0e,3
+  fisub dword [eax]   ; 4           s0e,4
+  fisubr dword [eax]  ; 5           s0e,5
+  fidiv dword [eax]   ; 6           s0e,6
+  fidivr dword [eax]  ; 7           s0e,7
+
+  fcmovb st1
+  fcmove st1
+  fcmovbe st1
+  fcmovu st1
+
+  fucompp
+
+;---------------------- type s23    --------------- opcode = d9
+;
+; instuction          mod/rm      raw data entry
+; --------------      --------    ------------
+  fld st0             ;  0         s0d,0
+  fld st1
+  fld dword [ebx]
+  fld dword [ebx + 1234h]
+  fld dword [08123456h]
+  fld dword [ebx + esi]
+
+  fst dword [ebx]
+  fstp dword [ebx]
+  fldenv [ebx]
+  fldcw  [ebx]
+  fnstenv [ebx]		;nasm inst. for fstenv
+  fnstcw [ebx]		;nasm inst. for fstcw
+
+  fnop
+  fchs
+  fabs
+  ftst
+  fxam
+  f2xm1
+  fyl2x
+  fptan
+  fxtract
+  fprem1
+  fdecstp
+  fincstp
+
+  fld1
+  fldl2t
+  fldl2e
+  fldpi
+  fldlg2
+  fldln2
+  fldz
+
+  fprem
+  fyl2xp1
+  fsqrt
+  fsincos
+  frndint
+  fscale
+  fsin
+  fcos
+
+;---------------------- type s22    --------------- opcode = d8
+;
+; instuction          mod/rm      raw data entry
+; --------------      --------    ------------
+; fadd st0,mem32        0         s0c,0
+
+  fadd	st0
+  fadd	st1
+  fadd  st7
+
+  fadd  dword [ebx]
+  fadd	dword [esi]
+
+  fadd	dword [08123456h]
+
+  fadd	dword [ebx + 08123456h]
+  fadd	dword [ebx + ecx + 08123456h]
+  fadd	dword [ebx*8+ecx+1234h]
+ 
+  fmul st0
+  fcom st0
+  fcomp st0
+  fsub st0
+  fsubr st0
+  fdiv st0
+  fdivr st0  
+
+;---------------------- type s21    ---------------
+; opcode                prefix 
+;                       flag   
+; ------                ------ 
+; a0 mov al,[adr]        -        s0b,1
+; d1 mov ax/eax,[adr]    p        s0b,1
+;
+; a2 mov [adr],al        -        s0b,2
+; a3 mov [adr],ax/eax    p        s0b,2
+
+  mov	al,[08123456h]
+  mov	eax,[08123456h]
+  mov	[08123456h],al
+  mov	[08123456h],eax
+  mov	[08123456h],ax
+
+
+
+;---------------------- type s20    ---------------
+
+  bswap	eax
+  bswap ebx
+  bswap edx
+  enter	1234h,12h
+
+;---------------------- type s19    ---------------
+
+;s19,1 
+
+  aad	0ah
+  aam	0ah
+  aam
+  int	byte 12h
+  push	byte 12h
+
+;s09,2
+
+  sbb	al,12h
+  sub   al,12h
+  test  al,12h
+  xor   al,12h
+
+;s09,3
+
+  sbb	eax,08123456h
+  sbb	ax,word 1234h
+
+  push	dword 08123456h
+  push	word 1234h
+
+  sub	eax,08123456h
+  test	eax,08123456h
+  xor	eax,08123456h
+
+;s09,4
+
+  ret	1234h
+  retf  1234h
+
+
+;---------------------- type s18    ---------------
+
+  jmp	123h:456789h
+  call	123h:456789h
+
+back:
+  nop
+  jo	back
+  
+  ;opcode jmp = e9
+neg_lp:
+  jmp	near here
+  jmp	here
+  jmp	neg_lp
+  ;opcode call = e8
+  call	here
+  call	here
+
+  loop	here
+  loop	neg_lp
+  loope here
+  loopne here
+
+sam:
+  ;opcode jcxz = 67h, e3h, 0a
+  jcxz	here
+;  jcxz	here+1000        <- this opcode possible?
+  jecxz sam
+  loop	sam
+
+  ;opcode jmp = eb
+  jmp	short here
+
+  ;opcode jo = 0f 80
+  jo	there
+  jo	$ + 1000h
+  jo    near here + 1000h
+
+  ;opcode jo = 70
+  jo	$+2
+  jo	short here
+here:
+  jno	here
+  jb    here
+  jnb   here
+  jz    here
+  jnz   here
+  jbe   here
+  ja   here
+  js   here
+  jns  here
+  jp   here
+  jnp  here
+  jl   there
+  jnl  there
+  jle  there
+  jg   there
+there:    
+
+;---------------------- type s17    ---------------
+
+  in	al,5
+  in	ax,5
+  in	eax,5
+  in	al,dx
+  in	ax,dx
+  in	eax,dx
+
+  out	5,al
+  out	5,ax
+  out	5,eax
+  out	dx,al
+  out	dx,ax
+  out	dx,eax
+
+  adc	al,byte 8
+  adc	ax,word 8
+  adc	eax,dword 8
+
+  add	al,8
+  and	al,8
+  cmp	al,8
+  or	al,8
+
+;---------------------- type 06-11 (reg16/32 rm16/32 , imm32 ---------------
+
+;mod=11
+
+  imul	eax,ebx,dword 8
+
+;mod=10
+
+  imul	eax,[ebx + 08123456h],dword 8
+
+;mod=01
+
+  imul	eax,[ebx + 5],dword 8
+
+;mod=00
+
+  imul	eax,[ebx],dword 8
+
+;---------------------- type 06-10 (reg16/32, rm16/32, imm8 ---------------
+
+;mod=11
+
+  imul	eax,ebx,byte 8
+  imul	ax,bx,byte 8
+
+;mod=10
+
+  imul	eax,[ebx + 08123456h],byte 8
+
+;mod=01
+
+  imul	eax,[ebx + 5],byte 8
+
+;mod=00
+
+  imul	eax,[ebx],byte 8
+
+;---------------------- type 06-9 (rm32 , rm16 ---------------
+
+;mod=11
+
+  movsx	eax,bx
+
+;mod=10
+
+  movzx	eax,word [ebx + 08123456h]
+
+;mod=01
+
+  movzx  eax,word [ebx + 3]
+
+;mod=00
+
+  movzx	eax,word [ebx]
+
+;---------------------- type 06-8 (rm16/32 , rm8 ---------------
+
+;mod=11
+
+  movsx	eax,bl
+  movzx ax,bl
+
+;mod=10
+
+  movzx	eax,byte [ebx + 08123456h]
+
+;mod=01
+
+  movzx	eax,byte [ebx + 5]
+
+;mod=00
+
+  movsx	eax,byte [ebx]
+  movsx	ax,byte [ebx]
+
+;---------------------- type 06-7 (rm32,reg32,x ----------------
+
+;mod=11
+
+  shld	eax,ebx,2
+  shld	eax,ebx,cl
+  shrd	eax,ebx,2
+  shrd	eax,ebx,cl
+
+  shld	ax,bx,2
+
+;mod=10
+
+  shld	[08123456h + eax],ebx,2
+  shld	[08123456h + eax],bx,2
+
+;mod=01
+;mod=00
+  
+;---------------------- type 06-6 (rm32,cl) ----------------
+
+;mod=11
+
+  rcl	eax,cl
+  rcl	ebx,cl
+  rcl	bx,cl
+  rcr	ebx,cl
+  rol	ebx,cl
+  ror	ebx,cl
+  sar	ebx,cl
+  shl	ebx,cl
+  shr	ebx,cl
+
+;mod=10
+;mod=01
+;mod=00
+
+;---------------------- type 06-6 (rm8,cl) ----------------
+
+;mod=11
+
+  rcl	al,cl
+  rcl	bl,cl
+  rcr	bl,cl
+  rol	bl,cl
+  ror	bl,cl
+  sar	bl,cl
+  shl	bl,cl
+  shr	bl,cl
+
+;mod=10
+
+  rcl	byte [eax + 08123456h],cl
+
+;mod=01
+;mod=00
+
+;---------------------- type 06-5 (rm32,imm32) ----------------
+
+;mod=11
+
+;  adc	eax,08123456h
+  adc	ebx,08123456h
+  adc	bx,1234h
+
+  add	ebx,08123456h
+  db	81h,0c0h,78h,56h,34h,12h	;add	eax,08123456h
+  add	bx,1234h
+
+  and	ebx,08123456h
+  and	bx,1234h
+
+  cmp	ebx,08123456h
+  cmp	eax,08123456h
+
+  mov	ebx,08123456h
+  mov	eax,08123456h
+  db	0c7h,0c0h,78h,56h,34h,12h
+
+  or	ebx,08123456h
+
+  sbb	ebx,08123456h
+
+  sub	ebx,08123456h
+
+  test	ebx,08123456h
+
+  xor	ebx,08123456h
+
+;mod=10
+
+  adc	dword [eax + 08123456h],08123456h
+
+  add	dword [eax + 08123456h],08123456h
+
+  mov	dword [eax + 08123456h],08123456h
+
+;mod=01
+
+  add	dword [eax + 5],08123456h
+  add	dword [ecx + 5],08123456h
+
+  test	dword [eax + 5],08123456h
+  test	dword [ebx + 5],08123456h
+
+  mov	dword [eax + 5],08123456h
+  mov	dword [ebx + 5],08123456h
+
+;mod=00
+
+  
+
+  db	81h,0h,78h,56h,34h,12h		;add	[eax],08123456h
+
+  add	dword [eax],08123456h
+
+  test	dword [eax],08123456h
+
+  mov	dword [eax],08123456h
+
+;---------------------- type 06-4 (reg32,rm32) ----------------
+
+;mod=11
+
+  ;opcode adc=13
+  db	13h,0c0h	;adc	eax,eax
+  adc	ebx,ecx
+  adc	bx,cx
+
+  ;opcode add = 03
+  db	03h,0c0h	;add	eax,eax
+  add	ebx,ecx
+  add	eax,eax
+  add	eax,ecx
+  add	bx,cx
+
+  ;opcode and = 23
+  db	23h,0c0h	;and	eax,eax
+  and	ebx,ecx
+  and	bx,cx
+
+  ;opcode bsf = 0f bc
+  bsf	ebx,ecx
+
+  bsr	ebx,ecx
+  cmova	ebx,ecx
+  cmovc	ebx,ecx
+  cmove	ebx,ecx
+  cmovg	ebx,ecx
+  cmovl	ebx,ecx
+  cmovle ebx,ecx
+  cmovna ebx,ecx
+  cmovnc ebx,ecx
+  cmovne ebx,ecx
+  cmovnl ebx,ecx
+  cmovno ebx,ecx
+  cmovnp ebx,ecx
+  cmovns ebx,ecx
+  cmovo  ebx,ecx
+  cmovp ebx,ecx
+  cmovs ebx,ecx
+  cmp	ebx,ecx
+  imul	ebx,ecx
+  lar	ebx,ecx
+
+  ;opcode mov = 8b
+  db	8bh,0c0h	;mov eax,eax
+  mov	ebx,ecx
+
+  ;opcode or = 0b
+  or	ebx,ecx
+
+  ;opcode sbb = 1b
+  sbb	ebx,ecx
+
+  ;opcode sub = 1b
+  sub	ebx,ecx
+  sub	eax,eax
+
+  ;opcode xchg = 87
+  xchg	ebx,ecx
+
+  ;opcode xor = 33
+  xor	ebx,ecx
+
+
+;mod=10
+
+  adc	eax,[ebx + 08123456h]
+  adc	ebx,[ebx + 08123456h]
+
+  lds	ebx,[ecx + 08123456h]
+  les	ebx,[ecx + 08123456h]
+  lfs	ebx,[ecx + 08123456h]
+  lgs	ebx,[ecx + 08123456h]
+  lsl	ebx,[ecx + 08123456h]
+  lss	ebx,[ecx + 08123456h]
+  lds	bx,[ecx + 08123456h]
+  les	bx,[ecx + 08123456h]
+  lfs	bx,[ecx + 08123456h]
+  lgs	bx,[ecx + 08123456h]
+  lsl	bx,[ecx + 08123456h]
+  lss	bx,[ecx + 08123456h]
+
+  lea	eax,[ebx + 08123456h]
+  lea	ax,[ebx + 1234h]
+
+  bound	eax,[ebx + 08123456h]
+  bound	ax,[ebx + 1234h]
+
+;mod=01
+
+  lea	eax,[ebx + 5]
+  lea	ax,[ebx + 5]
+
+  bound	ax,[ebx + 5]
+  bound eax,[ebx + 5]
+
+;mod=00
+
+  add	eax,[ebx]
+  add	ebx,[eax]
+
+
+  adc	ebx,[ecx]
+  adc	bx,[ecx]
+  add	ebx,[ecx]
+  and	ebx,[ecx]
+  bsf	ebx,[ecx]
+  bsr	ebx,[ecx]
+  cmova ebx,[ecx]
+  cmovc ebx,[ecx]
+  cmove ebx,[ecx]
+  cmovg ebx,[ecx]
+  cmovl ebx,[ecx]
+  cmovle ebx,[ecx]
+
+  cmp	ebx,[ecx]
+  imul	ebx,[ecx]
+  lar	ebx,[ecx]
+
+  lds	ebx,[ecx]
+  mov   ebx,[ecx]
+  or 	ebx,[ecx]
+  sbb	ebx,[ecx]
+  sub	ebx,[ecx]
+  xchg	ebx,[ecx]
+  xor	ebx,[ecx]
+
+  lea	eax,[ebx]
+  lea	esi,[esi]
+  lea	ax,[ebx]
+
+  bound	eax,[ebx]
+  bound ax,[ebx]
+
+;---------------------- type 06-4 (reg8,rm8) ----------------
+
+;mod=11  -- all of these are not reproducable by nasm
+
+  ;opcode = 12
+  db	12h,0c0h	;adc	al,al
+  adc	bl,cl
+  adc	al,al
+
+  ;opcode = 02
+  db	02h,0c0h	;add	al,al
+  add	al,cl
+  add	al,al
+  add	al,cl
+
+  and	al,cl
+  cmp	al,cl
+  mov	al,cl
+  or	al,cl
+  sbb	al,cl
+  sub	al,cl
+  xchg	al,cl
+  xor	al,cl
+
+;mod=10
+
+  adc	bl,[08123456h]
+  adc	bl,[edx + 08123456h]
+  add	bl,[edx + 08123456h]
+  and	bl,[edx + 08123456h]
+  cmp	bl,[edx + 08123456h]
+  mov	bl,[edx + 08123456h]
+  or 	bl,[edx + 08123456h]
+  sbb	bl,[edx + 08123456h]
+  sub	bl,[edx + 08123456h]
+  xchg	bl,[edx + 08123456h]
+  xor	bl,[ebx + 08123456h]
+
+;mod=01
+
+  adc	bl,[edx + 12h]
+  add	bl,[edx + 12h]
+  and	bl,[edx + 12h]
+  cmp	bl,[edx + 12h]
+  mov	bl,[edx + 12h]
+  or 	bl,[edx + 12h]
+  sbb	bl,[edx + 12h]
+  sub	bl,[edx + 12h]
+  xchg	bl,[edx + 12h]
+  xor	bl,[ebx + 12h]
+
+;mod=00
+ 
+  adc	bl,[edx]
+  add	bl,[edx]
+  and	bl,[edx]
+  cmp	bl,[edx]
+  mov	bl,[edx]
+  or 	bl,[edx]
+  sbb	bl,[edx]
+  sub	bl,[edx]
+  xchg	bl,[edx]
+  xor	bl,[ebx]
+
+;---------------------- type 06-3 (rm32,reg32) ----------------
+
+; mod=11
+
+  ;opcode adc = 11
+  adc	ebx,ebx
+  adc	bx,bx
+  adc	bx,cx
+  adc	eax,eax
+
+  ;opcode add = 01
+  add	ebx,ecx
+  add	eax,eax
+
+  and	ebx,ecx
+  bt	ebx,ecx
+  btc	ebx,ecx
+  btc	bx,cx
+  btr	ebx,ecx
+  bts	ebx,ecx
+  cmp	ebx,ecx
+  cmpxchg ebx,ecx
+  mov	ebx,ecx
+  or	ebx,ecx
+  sbb	ebx,ecx
+  sub	ebx,ecx
+  test	ebx,ecx
+  xadd	ebx,ecx
+  xor	ebx,ecx
+
+
+; mod=10
+
+  adc	[08123456h],ebx
+  adc	[edx + 08123456h],ebx
+  adc	[08123456h],bx
+
+; mod=01
+
+  adc	[12h],ebx
+  adc	[edx + 12h],ebx
+
+; mod=00
+
+  adc	[ebx],edx
+  adc	[ebx],dx
+
+;---------------------- type 06-3 (rm8,reg8) ----------------
+
+; mod=11
+
+  ;opcode adc = 10
+  adc	bl,cl
+  adc	al,al
+
+  ;opcode add = 00
+  add	bl,cl
+  add	al,al
+
+  and	bl,cl
+  cmp	bl,cl
+  cmpxchg bl,cl
+  mov	bl,cl
+  or	bl,cl
+  sbb	bl,cl
+  sub	bl,cl
+  test	bl,cl
+  xadd	bl,cl
+  xor	bl,cl
+
+;mod=10
+
+ adc	[08123456h + ebx],cl
+ adc	[08123456h],cl
+
+;mod=01
+
+  adc	[ebx + 5],cl
+
+;mod=00
+
+  adc   [ebx],cl
+
+
+     
+;---------------------- type 09 (rm8 + others) -----------------
+
+  mov	bl,[edx + 08123456h]
+
+;mod=11  -- all of these are not reproducable by nasm
+
+  ;opcode = 12
+  db	3ah,0c0h	;cmp
+  db	12h,0c0h	;adc	al,al
+  db	02h,0c0h	;add	al,al
+  db	22h,0c0h	;and	al,al
+  db	0ah,0c0h	;or	al,al
+  db	1ah,0c0h	;sbb	al,al
+  db	2ah,0c0h	;sub	al,al
+  db	86h,0c0h	;xchg	al,al
+  db	32h,0c0h	;xor	al,al
+
+  add	al,cl
+  add	al,al
+  add	al,cl
+
+  and	al,cl
+  cmp	al,cl
+  mov	al,cl
+  or	al,cl
+  sbb	al,cl
+  sub	al,cl
+  xchg	al,cl
+  xor	al,cl
+
+;mod=10
+
+  adc	bl,[08123456h]
+  adc	bl,[edx + 08123456h]
+  add	bl,[edx + 08123456h]
+  and	bl,[edx + 08123456h]
+  cmp	bl,[edx + 08123456h]
+  mov	bl,[edx + 08123456h]
+  or 	bl,[edx + 08123456h]
+  sbb	bl,[edx + 08123456h]
+  sub	bl,[edx + 08123456h]
+  xchg	bl,[edx + 08123456h]
+  xor	bl,[ebx + 08123456h]
+
+;mod=01
+
+  adc	bl,[edx + 12h]
+  add	bl,[edx + 12h]
+  and	bl,[edx + 12h]
+  cmp	bl,[edx + 12h]
+  mov	bl,[edx + 12h]
+  or 	bl,[edx + 12h]
+  sbb	bl,[edx + 12h]
+  sub	bl,[edx + 12h]
+  xchg	bl,[edx + 12h]
+  xor	bl,[ebx + 12h]
+
+;mod=00
+ 
+  adc	bl,[edx]
+  add	bl,[edx]
+  and	bl,[edx]
+  cmp	bl,[edx]
+  mov	bl,[edx]
+  or 	bl,[edx]
+  sbb	bl,[edx]
+  sub	bl,[edx]
+  xchg	bl,[edx]
+  xor	bl,[ebx]
+
+;-----------------
+
+;mod=11
+
+  ;opcode adc=13
+  db	13h,0c0h	;adc	eax,eax
+  adc	ebx,ecx
+  adc	bx,cx
+
+  ;opcode add = 03
+  db	03h,0c0h	;add	eax,eax
+  add	ebx,ecx
+  add	eax,eax
+  add	eax,ecx
+  add	bx,cx
+
+  ;opcode and = 23
+  db	23h,0c0h	;and	eax,eax
+  and	ebx,ecx
+  and	bx,cx
+
+  ;opcode bsf = 0f bc
+  bsf	ebx,ecx
+
+  bsr	ebx,ecx
+  cmova	ebx,ecx
+  cmovc	ebx,ecx
+  cmove	ebx,ecx
+  cmovg	ebx,ecx
+  cmovl	ebx,ecx
+  cmovle ebx,ecx
+  cmovna ebx,ecx
+  cmovnc ebx,ecx
+  cmovne ebx,ecx
+  cmovnl ebx,ecx
+  cmovno ebx,ecx
+  cmovnp ebx,ecx
+  cmovns ebx,ecx
+  cmovo  ebx,ecx
+  cmovp ebx,ecx
+  cmovs ebx,ecx
+  cmp	ebx,ecx
+  imul	ebx,ecx
+  lar	ebx,ecx
+
+  ;opcode mov = 8b
+  db	8bh,0c0h	;mov eax,eax
+  mov	ebx,ecx
+
+  ;opcode or = 0b
+  or	ebx,ecx
+
+  ;opcode sbb = 1b
+  sbb	ebx,ecx
+
+  ;opcode sub = 1b
+  sub	ebx,ecx
+  sub	eax,eax
+
+  ;opcode xchg = 87
+  xchg	ebx,ecx
+
+  ;opcode xor = 33
+  xor	ebx,ecx
+
+
+;mod=10
+
+  adc	eax,[ebx + 08123456h]
+  adc	ebx,[ebx + 08123456h]
+
+  lds	ebx,[ecx + 08123456h]
+  les	ebx,[ecx + 08123456h]
+  lfs	ebx,[ecx + 08123456h]
+  lgs	ebx,[ecx + 08123456h]
+  lsl	ebx,[ecx + 08123456h]
+  lss	ebx,[ecx + 08123456h]
+  lds	bx,[ecx + 08123456h]
+  les	bx,[ecx + 08123456h]
+  lfs	bx,[ecx + 08123456h]
+  lgs	bx,[ecx + 08123456h]
+  lsl	bx,[ecx + 08123456h]
+  lss	bx,[ecx + 08123456h]
+
+  lea	eax,[ebx + 08123456h]
+  lea	ax,[ebx + 1234h]
+
+  bound	eax,[ebx + 08123456h]
+  bound	ax,[ebx + 1234h]
+
+;mod=01
+
+  lea	eax,[ebx + 5]
+  lea	ax,[ebx + 5]
+
+  bound	ax,[ebx + 5]
+  bound eax,[ebx + 5]
+
+;mod=00
+
+  add	eax,[ebx]
+  add	ebx,[eax]
+
+
+  adc	ebx,[ecx]
+  adc	bx,[ecx]
+  add	ebx,[ecx]
+  and	ebx,[ecx]
+  bsf	ebx,[ecx]
+  bsr	ebx,[ecx]
+  cmova ebx,[ecx]
+  cmovc ebx,[ecx]
+  cmove ebx,[ecx]
+  cmovg ebx,[ecx]
+  cmovl ebx,[ecx]
+  cmovle ebx,[ecx]
+
+  cmp	ebx,[ecx]
+  imul	ebx,[ecx]
+  lar	ebx,[ecx]
+
+  lds	ebx,[ecx]
+  mov   ebx,[ecx]
+  or 	ebx,[ecx]
+  sbb	ebx,[ecx]
+  sub	ebx,[ecx]
+  xchg	ebx,[ecx]
+  xor	ebx,[ecx]
+
+  lea	eax,[ebx]
+  lea	esi,[esi]
+  lea	ax,[ebx]
+
+  bound	eax,[ebx]
+  bound ax,[ebx]
+
+;---------------------- type 08 (rm8) -----------------
+
+; mod=11
+
+  ;opcode adc = 10
+  adc	bl,cl
+  adc	al,al
+
+  ;opcode add = 00
+  add	bl,cl
+  add	al,al
+
+  and	bl,cl
+  cmp	bl,cl
+  cmpxchg bl,cl
+  mov	bl,cl
+  or	bl,cl
+  sbb	bl,cl
+  sub	bl,cl
+  test	bl,cl
+  xadd	bl,cl
+  xor	bl,cl
+
+;mod=10
+
+ adc	[08123456h + ebx],cl
+ adc	[08123456h],cl
+
+;mod=01
+
+  adc	[ebx + 5],cl
+
+;mod=00
+
+  adc   [ebx],cl
+
+
+;---------------------- type 07 (rm8) -----------------
+
+;  mod=11
+
+  rcl	bl,1
+  rcr	bl,1
+  rol	bl,1
+  ror	bl,1
+  sar	bl,1
+  shl	bl,1
+  shr	bl,1
+
+  ;opcode adc = 80
+  adc	bl,5
+  db	80h,0d0h,5	;adc al,5
+
+  add	bl,5
+  and	bl,5
+  cmp	bl,5
+  or	bl,5
+  mov	bl,5
+  rcl	bl,5
+  rol	bl,5
+  rcr	bl,5
+  sar	bl,5
+  sbb	bl,5
+  shl	bl,5
+  shr	bl,5
+  sub	bl,5
+  test	bl,5
+  xor	bl,5
+
+;  mod=10
+
+  xor	byte [08123456h],5
+  xor	byte [ebx + 08123456h],5
+
+  rcl	byte [08123456h],1
+  rcl	byte [ebx + 08123456h],1
+
+;  mod=01
+
+  xor	byte [ebx + 5],5
+  rcl	byte [ebx +5],1
+
+;  mod=00
+
+  xor	byte [ebx],5
+  rcl	byte [ebx],1
+
+
+;---------------------- type 06 (rm8) -----------------
+
+;mod=11
+
+  inc   byte [ds:ebx]
+
+  ;opcode inc = fe
+  inc	bl
+  inc	bh
+  inc	al
+
+  ;opcode dec = fe
+  dec	al
+  dec	cl
+  dec	dl
+
+  ;opcode neg = f6
+  neg	al
+  neg	cl
+  neg	dl
+  
+;mod=10
+
+  inc	byte [ebx + 500]
+  inc	byte [08123456h]
+
+;mod=01
+
+  inc	byte [ebx +3]
+  inc	byte [eax +2]
+  inc	byte [eax + ecx*8 +3]
+  inc	byte [ebp +3]
+
+;mod=0
+
+  inc	byte [eax]
+  inc	byte [ebx]
+  inc	byte [ecx]
+  inc	byte [edx]
+  inc	byte [esi]
+  inc	byte [edi]
+
+  inc	byte [ds:ebx]
+  inc	byte [es:ebx]
+  inc	byte [cs:ebx]
+  inc	byte [ss:ebx]
+  inc	byte [gs:ebx]
+  inc	byte [fs:ebx]
+
+  seta	byte [es:ebx]
+  sete  byte [ebx]
+  sets  byte [ebx]
+  setg  byte [ebx]
+  setl  byte [ebx]
+  setna byte [ebx]
+  setnc byte [ebx]
+  setne byte [ebx]
+  setng byte [ebx]
+  setnl byte [ebx]
+  setns byte [ebx]
+  setnp byte [ebx]
+  seto  byte [ebx]
+  setp  byte [ecx]
+  sets  byte [edi]
+  setno byte [esi]
+
+  inc	byte [ebx*4]
+  inc	byte [ebx*2]
+  inc   byte [ebx+ecx*8]
+  inc	byte [ebx]
+  inc	byte [08123456h]
+  dec	byte [ebx]
+  div	byte [ebx]
+  idiv	byte [ebx]
+  mul	byte [ebx]
+  imul  byte [ebx]
+  neg	byte [ebx]
+  not	byte [ebx]
+
+
+;---------------------- type 05 -----------------------
+
+  insw
+  lock rep insb
+  rep insb
+  insb
+  rep insw
+  rep insd
+  movsb
+  rep movsb
+  movsw
+  rep movsw
+  movsd
+  lodsb
+  lodsw
+  lodsd
+  stosb
+  stosw
+  stosd
+  outsb
+  outsw
+  outsd
+  stosb
+  stosw
+  stosd
+  rep stosd
+  cmpsb
+  repne cmpsw
+  cmpsw
+  cmpsd
+  rep cmpsw
+  scasb
+  scasw
+  scasd
+  lock rep scasd
+
+;---------------------- type 04 -----------------------
+
+  cwde
+  xchg  eax,eax
+  xchg  eax,ecx
+  xchg  eax,edx
+  xchg  eax,ebx
+  xchg  eax,ebp
+  xchg  eax,esp
+  xchg  eax,esi
+  xchg  eax,edi
+  xchg  ax,ax
+  xchg	ax,cx
+  xchg	ax,dx
+  xchg	ax,bx
+  xchg	ax,bp
+  xchg	ax,sp
+  xchg	ax,si
+  xchg	ax,di
+  mov	eax,1234h
+  mov	ecx,1234h
+  mov	edx,1234h
+  mov	ebx,1234h
+  mov	ebp,1234h
+  mov	esp,1234h
+  mov	esi,1234h
+  mov	edi,1234h
+  mov	ax,1234h
+  mov	cx,1234h
+  mov	dx,1234h
+  mov	bx,1234h
+  mov	bp,1234h
+  mov	sp,1234h
+  mov	si,1234h
+  mov	di,1234h
+  mov	al,55h
+  mov	cl,56h
+  mov	dl,57h
+  mov	bl,58h
+  mov	ah,59h
+  mov	ch,5ah
+  mov	dh,5bh
+  mov	bh,5ch
+  cwde
+  cbw
+  cdq
+  cwd
+  lock cbw
+  lock mov al,55h
+  lock xchg eax,ebx
+  lock cwd
+
+;---------------------- type 03 -----------------------
+
+  push gs
+  push	cs
+  push	ss
+  pop	ss
+  push	ds
+  pop	ds
+  pop	es
+  lock pop es
+  push	es
+  daa
+  das
+  aaa
+  aas
+  pusha
+  popa
+  sahf
+  lahf
+  ret
+  leave
+  int3
+  retf
+  into
+  iret
+  xlat
+  hlt
+  cmc
+  clc
+  stc
+  cli
+  sti
+  cld
+  std
+  pushf
+  popf
+  wait
+  clts
+  cpuid
+  pop fs
+  push fs
+  pop  gs
+
+;---------------------- type 02 -----------------------
+
+; single byte instructions with assumed register
+
+  lock
+  db 66h
+  push	eax
+  lock push	ax
+  lock push	ecx
+  push	cx
+  push	edx
+  push	dx
+  push	ebx
+  push	bx
+  push	esp
+  push	sp
+  push	ebp
+  push	bp
+  push	esi
+  push	si
+  push	edi
+  push	di
+  pop	eax
+  inc	eax
+  dec	eax
+
+ 
+;---------------------- type 01 -----------------------
+
+;add prefix test here later
+
+

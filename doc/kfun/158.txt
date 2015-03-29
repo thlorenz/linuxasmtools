@@ -1,0 +1,26 @@
+
+----------------------------------------------------------------------------
+system 158 sched_yield             - yield the processor
+----------------------------------------------------------------------------
+  mov  eax,158
+  int  80h
+
+       A  process can relinquish the processor voluntarily without blocking by
+       calling sched_yield.  The process will then be moved to the end of  the
+       queue for its static priority and a new process gets to run.
+
+       Note:  If the current process is the only process in the highest prior-
+       ity list at that time, this process will continue to run after  a  call
+       to sched_yield.
+
+       POSIX  systems  on  which sched_yield is available define _POSIX_PRIOR-
+       ITY_SCHEDULING in <unistd.h>.
+
+
+RETURN VALUE
+       On success, sched_yield returns 0.  On error, a negative code is returned
+
+
+SEE ALSO
+       sched_setscheduler for a description of Linux scheduling.
+

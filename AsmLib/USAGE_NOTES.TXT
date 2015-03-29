@@ -1,0 +1,101 @@
+
+
+------------------------------------------------------------------
+asmlib usage hints
+------------------------------------------------------------------
+
+This library has evolved and as it grew so
+did the authors understanding.  Some of the
+early functions were marginal, but they worked
+and became part of other programs.  New programs
+should try and avoid these obsolete functions,
+as identified in the following table.
+
+ Old function                 Prefered function
+ -------------------          -------------------------------------
+ crt_open,crt_close,          read_stdin
+ key_mouse1,key_mouse2
+  These functions set the       set the keyboard into raw mode only
+  keyboard into raw mode        when reading a key.
+  while the program runs.
+
+ file_open_rd,etc.            block_open,block_write,block....
+  The early file handlers       The new block file handlers, check    
+  did not handle symlinks       for symlinks and handle permissions.
+  and permissions correctly
+                                  
+ sys_launch                   sys_ex
+ sys_launch_engine            sys_ex_home,sys_ex_home
+ sys_launch...                sys_shell
+  The early fork and            The new fork and execute rountines
+  execute code did not          are improved and handle parameters
+  handle parameter passing      for all cases.
+  for all cases
+
+
+ sys_pipe...                  sys_wrap
+   The pipe functions are       The sys_wrap function uses a psuedo
+   not a reliable as the        terminal to feed stdin and capture
+   pseudo terminal design.      stdout.
+
+
+AsmLib assumes some coding conventions as follows:
+
+ 1. the "CLD" flag is set.  Normally, this can be set
+    at the top of a program and forgotten.  It will work
+    even if we forget to do this, but good practice says
+    it should be set.
+
+ 2. Most library routines do not save registers.  This elimiates
+    a lot of stack pushes which are not necessary and speeds
+    up code.  This deviates from most other libraries, they save
+    and restore registers.      
+
+ 3. The following setup programs appear at the top of programs:
+    read_window_size - get our screen size from the kernel
+    read_term_info_0 - save current system settings.  Before exit,
+                       restore with output_term_info_0
+    env_stack - save ptr to the environment stack
+    install_signals - install the signal to handle screen resize
+                      and others.
+
+
+Buffers
+-------
+
+  Some of the old file handlers assumed a BSS section is at the end of
+  programs.  This allowed them to expand the program size to buffer
+  data.  This can cause problems and the newer block file handlers do
+  not assume a BSS section.  Additionally, mixing BSS sections between
+  the libarary and applications caused problems.  For these reasons the
+  library does not use any BSS data.  All library data is in a .data
+  section.
+
+  The library buffer lib_buf is available for use by programs, but
+  anytime the library is called it may be utilized as a temp buffer.
+  lib_buf is 600 bytes long.
+
+Portability
+-----------
+
+  Some calls may need a 2.4 kernel or later.  The instructions
+  do not use any newer processor features and should work on
+  any 486+ processor.  It may work with a 386.
+
+  The library is tied to Linux and will not work on BSD or HERD.
+
+Documentation
+-------------
+
+  The reference document displayed by the asmref program is somewhat
+  terse and has few examples.  For complex functions it helps to
+  search the Asmtools source files to see how they were used.  Also,
+  look in the test.asm program which can be found near each library
+  source file.
+
+  The utility AsmFind is a good way to find things within the library.
+  It can find all references to library functions and view them.
+
+
+       
+    

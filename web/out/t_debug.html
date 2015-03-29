@@ -1,0 +1,244 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>debuggers for assembler</title>
+ <meta name="keywords" content="debuggers, assembler, linux, utilities, x86, assembly, tools, development, programming">
+ <meta name="description" content="what is best debugger for coding assembler on Linux?">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+<br>
+<br>
+AsmTools comes with two debuggers (Asmbug,<br>
+MiniBug),but other debuggers can be used. The Linux<br>
+world has a large number of debuggers and a few<br>
+support assembler. Most are structured for a high<br>
+level language (such as C) and the general purpose<br>
+debuggers can be awkward on assembler.<br>
+<br>
+Here are some of the choices available:<br>
+<br>
+AsmBug - AsmTools terminal debugger<br>
+MiniBug - AsmTools console debugger<br>
+insight - Debugger from Red Hat<br>
+kdbg - KDE debugger<br>
+debug - Command line debugger<br>
+debugger - GTK style debugger<br>
+gdb - GNU general purpose debugger<br>
+ald - simple command line debugger<br>
+ddd - data display debugger<br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+<br>
+AsmBug<br>
+<br>
+AsmBug runs in a x-terminal and is optimized for<br>
+assembler. It has many features and has a very fast<br>
+mouse interface. This is the debugger used to test<br>
+AsmTools. The display uses two windows. One shows<br>
+debugger information, and the other shows output from <br>
+the program under test.<br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+<br>
+MiniBug<br>
+<br>
+MiniBug is a simple debugger that is optimized for the<br>
+console.  Like AsmBug it uses two windows but it does<br>
+not have a mouse interface.  All commands are single<br>
+letters or key presses.<br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+      <br>
+Insight<br>
+   <br>
+      <br>
+The "insight" debugger can be configured using many<br>
+separate windows.  It support several languages and<br>
+is a huge program.<br>
+      <br>
+The insight debugger is hosted and supported by Red<br>
+Hat. It requires x-wndows and displays the source code<br>
+as debugging proceeds. It is based on gdb and will<br>
+show registers, memory, and raw instructions. As will <br>
+all gdb debuggers the display of memory is not ideal. <br>
+Also, it can be difficult to install.<br>
+      <br>
+<a href="http://sources.redhat.com/insight">http://sources.redhat.com/insight</a><br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+<br>
+kdbg<br>
+      <br>
+The kdbg debugger is another large debugger used to<br>
+debug KDE. It is also in active development and is based<br>
+on gdb. It requires x-windows for operation and is<br>
+like the insight debugger. It isn't ideal for assembler.<br>
+      <br>
+<a href="http://members.nextra.at/johsixt/kdbg.html">http://members.nextra.at/johsixt/kdbg.html</a><br>
+      <br>
+      <br>
+      <br>
+<hr style="width: 100%; height: 2px;"><br>
+<br>
+Debug<br>
+      <br>
+Terry Loveall wrote a command line debugger called<br>
+debug that is like old DOS debuggers. It works well<br>
+and has some support for symbols. Since it<br>
+works with raw executables and the console it is<br>
+very dependable.<br>
+      <br>
+<a href="http://modest-proposal/Furball.htm">http://modest-proposal/Furball.htm</a><br>
+      <br>
+<hr style="width: 100%; height: 2px;"><br>
+<br>
+debugger<br>
+      <br>
+"debugger" is a GTK style debugger that has appeared<br>
+recently. I have not been able to compile it, so no<br>
+opinion is offered.<br>
+      <br>
+      <br>
+<hr style="width: 100%; height: 2px;"><br>
+<br>
+gdb<br>
+<br>
+gdb is a general command line debugger. It works best <br>
+if source code is available and acts as a engine for<br>
+other debuggers. Both kdbg and insight call gdb. Many <br>
+people like this debugger, but I find it very tedious <br>
+to use.<br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+<br>
+ald<br>
+<br>
+ald is a command line debugger that supports<br>
+assembler. This is a very basic and dependable<br>
+debugger. Since it involves a lot of typing to do<br>
+simple operations, the debugging scession tends to be <br>
+very slow.<br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+<br>
+ddd<br>
+      <br>
+ddd is optimized for "C" code but can be used with<br>
+assembler.  Showing the register window has been a <br>
+problem, because it does not stay on the display.<br>
+<br>
+<hr style="width: 100%; height: 2px;"><br>
+      <br>
+To use any of the debuggers it is helpful if the<br>
+assembler supports symbolic debugging. Some<br>
+possible choices are:<br>
+      <br>
+      <br>
+      nasm, gas, yasm.<br>
+      <br>
+      <br>
+For nasm it is best to enable the elf format and<br>
+debug mode with:<br>
+      <br>
+      <br>
+      nasm -f elf -g ......<br>
+      <br>
+      <br>
+With gas you have a number of choices, including the<br>
+intel syntax, debugging info, and more. The yasm<br>
+assembler is like nasm with a few differences. None of<br>
+the assemblers or debuggers handle assembly data<br>
+structures very well. Structures are difficult to<br>
+access and even nasm does not allow filling in a<br>
+series of structures with data. The only alternative<br>
+is to view data as hex/decimal bytes/words/dwords.<br>
+kdbg has limited display of labels with the data but<br>
+it is marginal. The insight and kdbg debuggers share<br>
+some of the quirks of gdb. Both look for a start label<br>
+of _start or main and try to set a breakpoint there<br>
+initially. For some reason this breakpoint does not<br>
+work. The soluttion to these problems is to put the<br>
+labels _start and main at the top of all programs and <br>
+set a initial breakpont at one instruction beyond the <br>
+labels.<br>
+      <br>
+      <br>
+Another quirk is that all debuggers based upon GDB<br>
+can not single step a program until the run button has<br>
+been pressed once. Also all debuggers are a little<br>
+awkward at passing parameters to programs. With<br>
+insight it is the --args parameter and with kdbg it is<br>
+a menu item.<br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

@@ -1,0 +1,260 @@
+
+ extern blk_insert_bytes
+ extern blk_del_bytes
+ extern blk_replace_all
+ extern blk_replace
+
+ [section .text]
+
+%include "test.inc"
+
+  global _start
+  global main
+
+_start:
+main:
+  nop
+  call	blk_replace_test
+  call	format_doc
+  call	blk_find_test
+  call	blk_insert_test
+  call	blk_delete_test
+;  call	paragraph_test
+  mov	eax,1		;exit
+  int	80h
+;------------------------------------------------------
+blk_replace_test:
+  mov	eax,replace_str1
+  mov	ch,0ffh
+  mov	esi,find_str1
+  mov	edi,bufx
+  mov	ebp,bufx_end
+  call	blk_replace
+
+  mov	eax,replace_str2
+  mov	ch,0ffh
+  mov	esi,find_str2
+  mov	edi,bufx
+  mov	ebp,bufx_end + 4	;buffer has expanded
+  call	blk_replace_all
+  ret
+
+  [section .data]
+find_str1: db 0ah,'   ',0
+find_str2: db '23',0
+replace_str1: db 0ah,0
+replace_str2: db 0
+bufx	db	'0',0ah,0ah,0ah,'      ',0ah,0
+bufx_end: times 10 db 0
+
+  [section .text]
+;-------------------------------------------------------------
+; extern file_read_all
+; extern file_write_close
+
+
+; global _start
+; global main
+
+
+;main:
+;_start:
+format_doc:
+  mov	al,0ah
+  mov	[pre_fbuf],al
+  mov	dword [file_end_ptr],fbuf
+
+  mov	ebp,file_in_name
+  mov	edx,fbuf_end - fbuf	;buffer size
+  mov	ecx,fbuf
+  mov	al,1			;local file
+;  call	file_read_all
+  js	fd_error		;jmp if failure
+  add	eax,fbuf
+  mov	ebp,eax			;move file end ptr to ebp
+
+  call	table_replace
+;
+; write file and exit
+;
+  mov	eax,fbuf
+  mov	ecx,ebp		;get file end ptr
+  sub	ecx,eax		;compute length of write
+  mov	ebx,file_out_name
+  mov	esi,1
+;  call	file_write_close
+fd_error:
+  mov	eax,1
+  int	80h		;exit  
+;---------------------------------------------
+table_replace:
+  mov	ebx,rtable
+;  mov	ebp,[file_end_ptr]	;end of buf
+  mov	edi,fbuf		;start of buf
+  mov	ch,0ffh			;match case
+;
+; get search string
+;
+tr_main_lp:
+  mov	esi,ebx			;esi = ptr to find str
+tr_lp1:
+  inc	ebx
+  mov	al,[ebx]
+  or	al,al
+  jnz	tr_lp1			;loop till end of find str
+
+  inc	ebx
+  mov	eax,ebx			;eax = ptr to replace str
+
+  push	ebx	;save table ptr
+  push	edi	;save buffer top
+  call	blk_replace_all
+  pop	edi		
+  pop	ebx
+;
+; scan to end of replaee str
+;
+tr_lp2:
+  mov	al,[ebx]
+  or	al,al
+  jz	tr_cont
+  inc	ebx
+  jmp	tr_lp2
+
+tr_cont:
+  inc	ebx		;move to start of find str
+  cmp	byte [ebx],0
+  jne	tr_main_lp
+tr_done:
+  ret
+
+rtable:
+  db 0ah,20h,20h,20h,0,  0ah,0
+  db " * ",0,            0
+  db "[top]",0,          0
+  db "[parent]",0,       0
+  db "NAME",0,           0
+  db "INPUTS",0,         "input:",0
+  db "OUTPUT",0,         "output:",0
+  db 0ah,0ah,0,          0ah,0
+  db 0				;end of table
+file_in_name: db "asmlib.out",0
+file_out_name: db "asmlib.txt",0
+
+  [section .bss]
+
+file_end_ptr	resd	1
+pre_fbuf resb	1
+fbuf	resd	64000
+fbuf_end resb	1
+
+ [section .text]
+
+;-------------------------------------------------------------
+paragraph_test:
+  mov	esi,pptr	;ptr inside para
+  mov	edi,ptop	;buffer start
+  mov	ebp,pend	;buffer end
+  call	paragraph
+  ret
+  
+  [section .data]
+  db 0ah		;preceeding char
+ptop:
+  db 'hi there im a',0ah,' messed up'
+  db 0ah,' paragraph'
+pptr:
+  db 0ah,0ah
+  db 'this is another paragraph',0ah
+  db ' It needs work.'
+pend:
+  db	0ah		;term character
+  times	200 db 0
+
+  [section .text]
+%include "paragraph.asm"
+
+;-------------------------------------------------------------
+blk_delete_test:
+  mov	eax,2		;delete 2 bytes
+  mov	edi,bit_in	;delete point
+  mov	ebp,bit_overflow
+  call	blk_del_bytes
+  cmp	byte [bit_in],9
+  je	bdt_ok1
+  nop
+bdt_ok1:
+  ret  
+;-------------------------------------------------------------
+blk_insert_test:
+  mov	edi,bit_in	;insert point
+  mov	ebp,bit_overflow ;block end
+  mov	eax,2		;insert 2 bytes
+  mov	esi,bit_in_str
+  call	blk_insert_bytes
+  cmp	word [bit_in],-1
+  je	bit_ok1
+  nop
+bit_ok1:
+  cmp	byte [bit_in +2],9
+  je	bit_ok2
+  nop
+bit_ok2:
+  ret
+  
+  [section .data]
+bit_buf db	1,2,3,4,5,6,7,8
+bit_in	db	9,0ah,0bh,0ch,0dh,0eh
+bit_overflow db 0,0,0,0,0,0
+
+bit_in_str  db	-1,-1
+  [section .text]
+
+;-------------------------------------------------------------
+blk_find_test:
+  mov	ebp,block_end
+  mov	esi,match
+  mov	edi,search_block
+  mov	edx,1
+  mov	ch,0dfh
+  call	blk_find
+;
+; check if string found, forward search
+;
+  jc	bad1
+  cmp	ebx,search_block +6
+  je	ok1
+bad1:
+  mov	ecx,bad1_msg
+  call	msg
+ok1:
+
+  mov	ebp,search_block
+  mov	esi,match
+  mov	edi,block_end -1
+  mov	edx,-1
+  mov	ch,0ffh
+  call	blk_find
+;
+; check if string found, backwards search
+;
+  jc	bad2
+  cmp	ebx,search_block +6
+  je	ok2
+bad2:
+  mov	ecx,bad2_msg
+  call	msg
+ok2:
+  ret
+
+%include "blk_find.asm"
+
+;-----------------
+; data for blk_find test
+;
+match		db	'find me',0
+search_block	db	'hello find me in here'
+block_end	db	0
+
+bad1_msg	db	'forward search failed',0ah,0
+bad2_msg	db	'reverse search failed',0ah,0

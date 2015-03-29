@@ -1,0 +1,63 @@
+
+----------------------------------------------------------------------------
+  4 write         - write to a file descriptor
+----------------------------------------------------------------------------
+  mov   eax,4
+  mov   ebx,fd         ;file descriptor
+  mov   ecx,buffer     ;ptr to buffer
+  mov   edx,lenght     ;buffer size (byte count)
+  int   80h
+
+       write  writes  up  to  count  bytes  to the file referenced by the file
+       descriptor fd from the buffer starting at buf.  POSIX requires  that  a
+       read()  which  can  be  proved  to  occur  after a write() has returned
+       returns the new data.  Note that not all file systems  are  POSIX  con-
+       forming.
+
+RETURN VALUE
+       On  success,  the  number of bytes written are returned (zero indicates
+       nothing was written).  On error a negative code is  returned
+       If  count  is zero and the file descriptor refers to a
+       regular file, 0 will be returned without causing any other effect.  For
+       a special file, the results are not portable.
+
+ERRORS
+       EBADF  fd is not a valid file descriptor or is not open for writing.
+
+       EINVAL fd is attached to an object which is unsuitable for writing.
+
+       EFAULT buf is outside your accessible address space.
+
+       EFBIG  An attempt was made to write a file that exceeds the implementa-
+              tion-defined maximum file size or the process' file size  limit,
+              or  to write at a position past than the maximum allowed offset.
+
+       EPIPE  fd is connected to a pipe or socket whose reading end is closed.
+              When  this  happens the writing process will also receive a SIG-
+              PIPE signal.  (Thus, the write return value is seen only if  the
+              program catches, blocks or ignores this signal.)
+
+       EAGAIN Non-blocking  I/O  has  been  selected  using O_NONBLOCK and the
+              write would block.
+
+       EINTR  The call was interrupted by a signal before any data  was  writ-
+              ten.
+
+       ENOSPC The device containing the file referred to by fd has no room for
+              the data.
+
+       EIO    A low-level I/O error occurred while modifying the inode.
+
+       Other errors may occur, depending on the object connected to fd.
+
+NOTES
+       A  successful  return  from write does not make any guarantee that data
+       has been committed to disk.  In fact, on some buggy implementations, it
+       does  not  even guarantee that space has successfully been reserved for
+       the data.  The only way to be sure is to call fsync after you are
+       done writing all your data.
+
+SEE ALSO
+       close,  fcntl,  fsync,  ioctl,  lseek, open, read,
+       select, fwrite, writev
+

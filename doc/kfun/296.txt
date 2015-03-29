@@ -1,0 +1,79 @@
+
+------------------------------------------------------------------
+296 mkdirat  - make rel directory
+------------------------------------------------------------------
+
+  mov  eax,296
+  mov  ebx,fd
+  mov  ecx,name  ;pointer to asciiz name
+  mov  edx,permissions
+  int  80h
+
+   Creates a directory relative to a directory file descriptor.
+   This system call operates in exactly the same way as sys_mkdir,
+   except for the differences described below.
+   The newly created directory will be owned by the effective user ID of
+   the process. If the directory containing the file has the set-group-ID
+   bit set, or if the filesystem is mounted with BSD group semantics, the
+   new directory will inherit the group ownership from its parent;
+   otherwise it will be owned by the effective group ID of the process.
+   If the parent directory has the set-group-ID bit set then so will the
+   newly created directory.
+
+args
+----
+
+ ebx Directory descriptor.
+
+ ecx A pointer to a null-terminated string that specifies the pathname
+   of the directory to be created.
+   If the pathname given is relative, then it is interpreted relative to
+   the directory referred to by the file descriptor ebx (rather than
+   relative to the current working directory of the calling process, as
+   is done by sys_mkdir for a relative pathname).
+   If the pathname is relative and ebx is the special value AT_FDCWD,
+   then pathname is interpreted relative to the current working directory
+   of the calling process.
+   If the pathname is absolute, then ebx is ignored.
+
+ edx Permissions to use. It is modified by the process's umask in the
+   usual way: the permissions of the created directory are (ecx & ~umask
+   & 01777).
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EACCES The parent directory does not allow write permission to the
+     process, or one of the directories in the path pointed by ecx did not
+     allow search permission.
+   -EEXIST Path pointed by ecx already exists (not necessarily as a
+     directory). This includes the case where path is a symbolic link,
+     dangling or not.
+   -EFAULT Path pointed by ecx points outside your accessible address
+     space.
+   -ELOOP Too many symbolic links were encountered in resolving the path
+     pointed by ecx.
+   -ENAMETOOLONG Path pointed by ecx was too long.
+   -ENOENT A directory component in the path pointed by ecx does not
+     exist or is a dangling symbolic link.
+   -ENOMEM Insufficient kernel memory was available.
+   -ENOSPC The device containingthe path pointed by ecx has no room for
+     the new directory.
+     -or-
+     The new directory cannot be created because the user's disk quota is
+     exhausted.
+   -ENOTDIR A component used as a directory in the path pointed by ecx is
+     not, in fact, a directory.
+   -EPERM The filesystem containing the path pointed by ecx does not
+     support the creation of directories.
+   -EROFS Path pointed by ecx refers to a file on a read-only filesystem.
+   -EBADF ebx is not a valid file descriptor.
+   -ENOTDIR Path pointed by ecx is a relative path and ebx is a file
+     descriptor referring to a file other than a directory.
+
+
+   Available since 2.6.16
+

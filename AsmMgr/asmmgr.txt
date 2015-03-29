@@ -1,0 +1,241 @@
+
+NAME
+
+ asmmgr - file manager for assembler programmers
+
+DESCRIPTION
+
+ AsmMgr is an assembler IDE front end. It calls several
+ support programs and can coordinate development. The
+ design and key usage is similar to the mc file manager.
+
+ When configured for assembler development the top row
+ of buttons provide compile and debug buttons. The
+ "project" button will list installed tools, create
+ project directories, open projects, build makefiles,
+ build sample source files, and assist with setting
+ up projects. 
+
+ AsmMgr was written to ease assembly development and
+ remove some of the hurdles faced by novice programmers.
+
+ AsmMgr is part of a collection of programs that can work
+ together or work as stand alone functions. These programs
+ are:
+  asmbug  - debugger
+  asmsrc  - source code generator
+  asmdis  - disassembler
+  asmedit - editor
+  asmlib -  library
+  asmplan - todo list (design functions planned)
+  asmref  - extensive help system
+  asmfunc - helper programs for asmedit, asmmgr, and others
+  asmmgr - front end
+  asmpub - builds documents from comments in source (in design)
+  asmsrc - generates nasm source from ELF executable
+
+STARTUP WINDOW
+
+ The middle buttons are file related and work on the highlighted file.
+ For move or copy operations the highlighted file/directory is moved to
+ directory shown in opposing panel.
+
+ The bottom line is always available for shell commands.
+
+ the top row of buttons are user defined. The defaults are
+ setup to create an ide for assembler. All top buttons are
+ attached to external programs or scripts.
+
+USAGE
+
+ When first loaded, AsmMgr looks for paths on the command
+ line and if not found it used the $HOME directory.
+ AsmMgr can accept paths for the two windows.
+
+ Another somewhat invisible input is from a collection of
+ files that configure the program and control how it reacts
+ to user input. These files can describe projects, buttons,
+ button actions, and other parameters.
+
+QUICK START
+
+ To quickly set up an assembler project, simply click the
+ project button and fill out the form. Then select open
+ project from within the project setup dialog. The new
+ project will appear in the left panel. Click the "make"
+ button to compile the sample source file and click the
+ "debug" button to enter the debugger.
+
+MOUSE
+
+ The mouse is active in all windows (if AsmMgr is executed in
+ an xterm). In console mode, the keyboard is used. In most
+ menu's the up/down arrow keys followed by enter, will select
+ options. Escape or ctrl-O can be used to exit most windows.
+
+ Mouse Usage
+
+ All buttons can be selected by mouse clicks. The right/left
+ panels can be activated by mouse clicks and once selected
+ individual files can be highlighted.
+
+ Clicking a highlighed entry will result in an action
+ AsmMgr thinks is appropiate. If executable is found, it
+ will be started, if directory it will be entered, etc.
+
+ Right clicks on top button row will convert button into
+ a bookmark using currently active directory.
+
+ Top button bar
+
+ The top buttons can be configured with "setup" as either
+ functions or bookmarks. A bookmark label has to start
+ with the "/" character and functions can be any executable.
+ All top buttons result in execution of a shell command.
+
+ Since some of the buttons call scripts it is easy to change
+ the way they operate. Each top button executable receives
+ the selected right/left window entries as parameters.
+
+ Bookmark buttons have a short cut feature that sets the
+ current directory to bookmark. Simply right-click on
+ a top line button and it becomes a bookmark.
+
+ vertical button bar
+
+ The status button brings up a table showing the
+ status of current highlighted entry. It also allows
+ attributes and owners to be changed.
+
+ The open button works on highlighted entry. If a
+ directory is highlighted, it is entered. If a file
+ is highlighted it is decoded using a table of
+ instructions (see setup function to edit table).
+ If the file is an executable it will be executed.
+
+ the view button works on highlighted entry. It
+ will try to determine viewing options using a
+ table of instructions. (see setup button to
+ edit table).
+
+ The edit button starts an editor on the currently
+ highlighted file. The default editor can be selected
+ from the setup button.
+
+ Copy transfers files/directories from on panel to
+ the other. An option to change names occurs before
+ the copy.
+
+ Move will move files and directories and rename
+ them. To rename anything set both panels to the
+ same location an use move with name change.
+
+ Delete is a very dangerous button. Beware, it does
+ not ask first.
+
+ Expand knows about most compression types and expands
+ them.
+
+ Tar.gz makes compressed files in only one format. 
+
+ Compare will compare the two text files in right
+ and left panels. It uses an external program to
+ do this which can be changed by editing the compare
+ script. Initially AsmMgr expects the program
+ xxdiff to be available and does nothing if not found.
+
+ Print needs to be setup for your printer. It is
+ currently setup for a deskjet 500 which may not
+ be ideal. The print script can be edited to
+ change its operation.
+
+ The terminal button can be used to check on the results
+ of AsmMgr shell commands or work in the shell. Once in
+ the shell it is necessary to type "exit" to leave.
+
+ Another way to enter and leave the terminal is with the
+ ctrl-o key. This is easy to remember since it is used
+ to exit many commands that call terminal programs.
+
+ The terminal entry line accepts all alpha characters typed.
+ Pressing <return> will execute the line. Note: if no
+ characters have been typed, the <return> key is connected
+ to the open button.
+
+ The highlighted file can be inserted into a terminal command
+ by entering "%f". For example: to edit the current file with
+ vi type:
+  
+     vi %f <enter>
+
+ Note: Since typing <Enter> can execute a highlighted program
+ or run data on the terminal it is necessary to keep AsmMgr
+ informed about which is needed. To help with this the terminal
+ line is highlighted whenever AsmMgr thinks it is being used
+ to enter commands. To get out of the entry mode, type ESC or
+ any non-alpha key.
+
+Keyboard commands
+
+  ctrl-x      -  exit
+  alt-x       -  exit
+  alt-q       -  exit
+
+  tab    - switch panels
+
+  ctrl-o - switch to and from the terminal display
+
+  right/left
+  arrow keys - traverse directory tree
+
+  up/down
+  arrow keys - traverse up/down file list
+
+  pgup/pgdn  - page up down file selection panel
+
+  enter - same as open button
+
+  ESC,q,ctrl-o are all used to exit helper programs
+  run by asmmgr. A few helper programs require other
+  keys to exit and for these programs ctrl-c always
+  works. For example the "less" viewer is run when
+  the F3 key is pressed. Normally, "less" uses the
+  'q' key to exit. Asmmgr also recognizes ESC, F3,
+  and ctrl-c as exit keys.
+
+  all other keys are show on buttons and usage is
+  obvious.
+
+INSTALL
+
+  The command "make install" as root can be used to
+  install AsmMgr. Program can be uninstalled with
+  "make uninstall".
+
+Configuration
+
+  The "setup" button can be used to edit the
+  configuration files and change AsmMgr operation.
+  
+  Access button  file name        Description
+  -------------  --------------   ------------------------
+  setup          config.tbl       general settings
+  setup          top_buttons.tbl  defines buttons on top row
+  setup          open_button.tbl  defines open button action
+  setup          view_button.tbl  defines view button action
+  project        project.tbl      describes projects
+
+  The top row buttons can also be bookmarks which are
+  set from the "setup" button or right click.
+
+
+DEPENDENCIES
+
+  Optional compile dependency: AsmLib
+
+  AsmMgr calls numerous UNIX utilities, too many
+  for a short list.  If a feature does not work or
+  a file type will can not be viewed, then install
+  the program that can not be found.  Normally, the
+  most used programs are already installed.
+ 

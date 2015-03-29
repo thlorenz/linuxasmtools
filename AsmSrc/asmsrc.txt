@@ -1,0 +1,78 @@
+
+NAME
+
+ asmsrc - create nasm source for ELF executable
+
+SYNOPSIS
+
+ asmsrc <file>
+
+        <file> is optional ELF target. If no <file>
+        is provided then this is continuation and
+        asmsrc looks for existing database of ELF
+        decoding information in current directory.
+
+DESCRIPTION
+
+ asmsrc generates nasm formatted assembler source
+ files. It can use preproccessed data from
+ asmdis or asmbug. If a filename is provided,
+ asmsrc ignores any existing database and recreates
+ a database for the target file.
+ All files are expected to be in the current
+ directory.
+
+USAGE
+
+The current directory is a work directory and asmsrc
+writes its output file here as xxxx.src.
+There are two expected modes of operation.
+
+mode 1
+
+If source is available and debug information included,
+this provides asmsrc more information and allows it
+to create better source files. This is useful to
+convert from one assembler or HLL to the nasm format.
+
+mode 2
+
+When source is not available it is necessary to
+identify all code areas and try to generate a
+source that will compile. This requires use to
+asmdis and asmbug to identify areas of the ELF
+file and help build descriptive tables.
+
+Typically mode 2 starts with asmdis and after
+the displayed data looks correct, asmsrc is
+started without any parameters. asmsrc writes
+a file xxxxx.src using the ELF file name as
+a base.
+
+
+
+FILES
+
+ asmbug - debugger
+ asmdis - disassembler that works with asmbug
+ asmsrc - source code generator that works with asmbug
+
+   asmdis_history.dat  - status of last executable disassembled
+   asmdis_image.dat    - load image of last executable
+   asmdis_fimage.dat   - flags image describing executable
+   asmdis_sym.dat      - symbol table for last executable
+   asmdis_externs.txt  - list of extern's if file used dynamic lib
+   asmdis_lib.txt      - list of dynamic libraries used
+
+SEE ALSO
+ asmmgr(1) asmref(1) asmedit(1) asmsrc(1) asmdis(1)
+ asmbug(1)
+ 
+AUTHOR
+ Jeff Owens <jko@bsn1.net>
+
+COPYRIGHT
+ Copyright (C) 2007 Jeff Owens
+ This program comes with absolutely NO WARRANTY
+
+  

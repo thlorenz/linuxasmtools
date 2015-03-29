@@ -1,0 +1,10 @@
+#!/bin/bash
+#>1 test
+# bug - debug script
+# test asmpub without a mask, insight has problems with quoting.
+# test asmpub with two comment chararcters
+#<
+#insight --args asmpub -f2 -n -s -r3 -i -k -otest  /home/jeff/asm/asmide/AsmLib
+#insight --args asmpub -f1 -otest /home/jeff/asm/asmide/AsmPub
+#insight --args asmpub -r -ox /home/jeff/asm/asmide/AsmPub
+insight --args asmpub -f2 -n -s -r3 -i -oasmfunc '-c#' "-c;" -k /home/jeff/asm/asmide/AsmFunc/

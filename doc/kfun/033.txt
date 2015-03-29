@@ -1,0 +1,98 @@
+
+----------------------------------------------------------------------------
+ 33 access         - check user's permissions for a file
+----------------------------------------------------------------------------
+  mov eax,33
+  mov ebx,path	;file path
+  mov ecx,mode  ;access type to check
+  int 80h
+
+    mode
+    ----
+      R_OK	4	; read
+      W_OK	2	; write
+      X_OK	1	; execute
+      F_OK	0	; existence
+
+       access  checks  whether  the process would be allowed to read, write or
+       test for existence of the file (or other file system object) whose name
+       is  pathname.   If  pathname is a symbolic link permissions of the file
+       referred to by this symbolic link are tested.
+
+       mode is a mask consisting of one or more of R_OK, W_OK, X_OK and  F_OK.
+
+       R_OK,  W_OK  and  X_OK request checking whether the file exists and has
+       read, write and execute permissions, respectively.  F_OK just  requests
+       checking for the existence of the file.
+
+       The tests depend on the permissions of the directories occurring in the
+       path to the file, as given in  pathname,  and  on  the  permissions  of
+       directories  and files referred to by symbolic links encountered on the
+       way.
+
+       The check is done with the process's real uid and gid, rather than with
+       the  effective  ids  as  is done when actually attempting an operation.
+       This is to allow set-UID programs  to  easily  determine  the  invoking
+       user's authority.
+
+       Only  access  bits  are checked, not the file type or contents.  There-
+       fore, if a directory is found to be "writable," it probably means  that
+       files  can  be created in the directory, and not that the directory can
+       be written as a file.  Similarly, a DOS file may be found to  be  "exe-
+       cutable," but the execve(2) call will still fail.
+
+       If  the process has appropriate privileges, an implementation may indi-
+       cate success for X_OK even if none of the execute file permission  bits
+       are set.
+
+RETURN VALUE
+       On  success  (all requested permissions granted), zero is returned.  On
+       error (at least one bit in mode asked for a permission that is  denied,
+       or  some other error occurred), a negative code is returned.
+
+ERRORS
+       access shall fail if:
+
+       EACCES The requested access would be denied to the file or search  per-
+              mission is denied to one of the directories in pathname.
+
+       ELOOP  Too  many symbolic links were encountered in resolving pathname.
+
+       ENAMETOOLONG
+              pathname is too long.
+
+       ENOENT A directory component in pathname would have been accessible but
+              does not exist or was a dangling symbolic link.
+
+       ENOTDIR
+              A  component  used as a directory in pathname is not, in fact, a
+              directory.
+
+       EROFS  Write permission  was  requested  for  a  file  on  a  read-only
+              filesystem.
+
+       access may fail if:
+
+       EFAULT pathname points outside your accessible address space.
+
+       EINVAL mode was incorrectly specified.
+
+       EIO    An I/O error occurred.
+
+       ENOMEM Insufficient kernel memory was available.
+
+       ETXTBSY
+              Write  access was requested to an executable which is being exe-
+              cuted.
+
+RESTRICTIONS
+       access returns an error if any of the access  types  in  the  requested
+       call fails, even if other types might be successful.
+
+       access  may  not  work  correctly  on NFS file systems with UID mapping
+       enabled, because UID mapping is done on the server and hidden from  the
+       client, which checks permissions.
+
+SEE ALSO
+       stat, open, chmod, chown, setuid, setgid
+

@@ -1,0 +1,25 @@
+
+----------------------------------------------------------------------------
+165 getresuid      - get real, effective and saved user or group ID
+----------------------------------------------------------------------------
+
+  mov  eax,165
+  mov  ebx,ruid  ;ptr to dword for real user id
+  mov  ecx,euid  ;ptr to dword for effective user id
+  mov  edx,suid  ;ptr to dword for saved effective user id
+  int  80h
+
+       getresuid gets the real, effective and saved  user  ID's of
+       the  current process.
+
+
+RETURN VALUE
+       On  success, zero is returned. On error a negative code is returned
+
+ERRORS
+       EFAULT One of the arguments specified an address  outside  the  calling
+              program's address space.
+
+SEE ALSO
+       getuid, setuid, setreuid, setresuid
+

@@ -1,0 +1,32 @@
+This package is part of AsmIDE (a collection of
+programs for assembler developent on Linux X86 cpu's.)
+
+The AsmIDE family consists of:
+  AsmEdit - editor
+  AsmFunc - plugins for AsmEdit, AsmMgr and other utilities
+  AsmRef  - reference for assembly programming
+  AsmLib  - library of assembler functions
+  AsmMgr  - Front end for AsmIDE
+  AsmPub  - Document builder (uses comments in programs)
+  AsmPlan - planner for AsmMgr and AsmEdit (in development)
+  AsmBug  - Debugger (in planning stage)
+
+
+ The author can be found on the DesktopLinuxAsm
+ discussion group at yahoogroups.  To join send
+ a blank email to:
+
+   DesktopLinuxAsm-subscribe@yahoogroups.com
+
+ Additional information may be available on the
+ home page at:
+
+ http://linuxasmtools.net/
+
+ http://sourceforge.net/projects/asmedit
+
+ 
+
+
+
+

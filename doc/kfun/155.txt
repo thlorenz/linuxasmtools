@@ -1,0 +1,34 @@
+
+----------------------------------------------------------------------------
+system 155 sched_getparam          - get scheduling parameters
+----------------------------------------------------------------------------
+  mov  eax,155
+  mov  ebx,pid  ;process id
+  mov  ecx,p    ;ptr to parameter storage (dword stored)
+  int  80h
+
+       sched_getparam retrieves the  scheduling  parameters  for  the  process
+       identified  by  pid. If pid is zero, then the parameters of the current
+       process are retrieved.
+
+RETURN VALUE
+       On  success, sched_getparam returns 0. On error a negative code
+       is returned
+
+ERRORS
+       ESRCH  The process whose ID is pid could not be found.
+
+       EINVAL The  parameter  p does not make sense for the current scheduling
+              policy.
+
+CONFORMING TO
+       POSIX.1b (formerly POSIX.4)
+
+SEE ALSO
+       sched_setaffinity(2),   sched_getaffinity(2),    sched_setscheduler(2),
+       sched_getscheduler(2),    sched_get_priority_max(2),   sched_get_prior-
+       ity_min(2), nice(2), setpriority(2), getpriority(2),
+
+       sched_setscheduler(2) has a description of the Linux scheduling scheme.
+
+

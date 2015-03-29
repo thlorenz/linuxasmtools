@@ -1,0 +1,40 @@
+This table (top_buttons.tbl)  located at
+$HOME/.asmide/mgr and defines the top row
+of buttons.
+
+Only data encolsed in quotes is seen
+by AsmMgr, everything else is comments.
+Each entry constists of:
+  1. keypress name (do not edit this)
+  2. button text (5 characters, no less and no move)
+  3. process called when button pressed
+
+The button-text field is pasted to buttons,
+and if it starts with a / the button is assumed
+to be a bookmark.  This field must be exactly
+five characters long!!!  Bookmarks must have
+a / on left edge of button text.
+
+The current highlighted file can be added to process
+string by using %f
+
+The process field is passed to the shell and
+can be a script or executable.  If the button
+is a bookmark the process field is path
+
+key     button text  process to call
+------  ----------   ---------------------------------------------
+alt-q    " quit"       "/usr/share/asmmgr/quit"
+alt-s    "setup"       "/usr/share/asmmgr/setup"
+alt-h    " help"       "less '-P q to exit, h for help$' /usr/share/asmmgr/asmfile.txt"
+alt-1    "spell"       "/usr/share/asmmgr/spell %f"
+alt-2    " todo"       "asmplan"
+alt-3    "     "       "ls"
+alt-4    "     "       "ls"
+alt-5    "/    "       "/"
+alt-6    "/    "       "/"
+alt-7    "/    "       "/"
+alt-8    "/    "       "/"
+alt-9    "/    "       "/"
+alt-0    "/    "       "/"
+

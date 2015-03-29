@@ -1,0 +1,29 @@
+
+----------------------------------------------------------------------------
+system 129 delete_module           - delete a loadable module entry 
+----------------------------------------------------------------------------
+  mov  eax,129
+  mov   ebx,Name   ;ptr to module name
+  int   80h
+
+       delete_module  attempts  to remove an unused loadable module entry.  If
+       name is NULL, all unused modules marked  auto-clean  will  be  removed.
+       This system call is only open to the superuser.
+
+RETURN VALUE
+       On  success,  zero  is returned.  On error a negative code is returned
+
+ERRORS
+       EPERM  The user is not the superuser.
+
+       ENOENT No module by that name exists.
+
+       EINVAL name was the empty string.
+
+       EBUSY  The module is in use.
+
+       EFAULT name is outside the program's accessible address space.
+
+SEE ALSO
+       create_module, init_module, query_module.
+

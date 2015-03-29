@@ -1,0 +1,45 @@
+
+-------------------------------------------------------------------
+263 timer_delete   - Delete a POSIX.1b interval timer
+-------------------------------------------------------------------
+
+  mov  eax,263
+  mov  ebx,timer_id
+  int  80h
+
+NAME
+       timer_delete - delete a POSIX timer
+
+SYNOPSIS
+       cc [ flag ... ] file -lrt [ library ... ]
+
+       #include <time.h>
+
+       int timer_delete(timer_t timer_id);
+
+DESCRIPTION
+       timer_delete  deletes  the  POSIX  timer specified by timer_id.  If the
+       timer is already started, it will be disabled and no signals or actions
+       assigned  to  timer_id will be delivered or executed.  A pending signal
+       from an expired timer, however, will not be removed by this call.
+
+       Use timer_create(3) to create a timer and timer_settime(3) to  start  a
+       timer.
+
+RETURN VALUE
+       On success, timer_delete returns the value 0 and the timer specified by
+       timer_id is deleted.
+
+       On failure, timer_delete returns the value -1 and errno is  set  appro‐
+       priately.
+
+ERRORS
+       EINVAL The timer specified by timer_id is invalid.
+
+CONFORMING TO
+       POSIX 1003.1b (formerly POSIX.4) as ammended by POSIX 1003.1j-2000.
+
+SEE ALSO
+       clock_getres(3),           clock_gettime(3),          clock_settime(3),
+       clock_nanosleep(3),   timer_create(3),   timer_settime(3),   timer_get�‐
+       time(3), timer_getoverrun(3)

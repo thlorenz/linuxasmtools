@@ -1,0 +1,46 @@
+
+----------------------------------------------------------------------------
+146 writev         - write a list of buffers
+----------------------------------------------------------------------------
+  mov  eax,146
+  mov  ebx,fd     ;open file descriptor
+  mov  ecx,vector ;ptr to iovec (buffer list)
+  mov  edx,count  ;number of buffers
+  int  80h
+
+       The writev() function writes at most count blocks described  by  vector
+       to the file associated with the file descriptor fd.
+
+       The pointer vector points to a struct iovec defined in sys/uio.h as
+
+          struct iovec
+              .iov_base resd 1 ;buffer address
+              .iov_len  resd 1 ;size of buffer
+          endstruc
+
+       Buffers are processed in the order specified.
+
+       The writev() function works just like  "write"  except  that  multiple
+       buffers are written out.
+
+
+RETURN VALUE
+       On  success, the writev() function returns the number of bytes written.
+       On error a negative code is returned
+
+ERRORS
+       The  errors  are  as  given for "write".  Additionally the
+       following error is defined.
+
+       EINVAL The sum of the iov_len values overflows an  ssize_t  value.  Or,
+              the vector count count is zero or greater than MAX_IOVEC.
+
+BUGS
+       It is not advisable to mix calls to functions like readv() or writev(),
+       which operate on file descriptors, with the functions  from  the  stdio
+       library;  the results will be undefined and probably not what you want.
+
+SEE ALSO
+       read, write
+
+

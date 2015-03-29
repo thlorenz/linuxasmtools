@@ -1,0 +1,6 @@
+tutorial for asmlib (assembler library)
+asmlib_tutor consists of a text file
+and a number of sample programs.
+It runs in the console or x terminal
+and installs at: ~/AsmLib_tutor
+http://linuxasmtools.net

@@ -1,0 +1,25 @@
+
+----------------------------------------------------------------------------
+memory  45 brk            - change data segment size
+----------------------------------------------------------------------------
+  mov eax,045
+  mov   ebx,new_end
+  int   80h
+
+       brk  sets  the  end  of  the  data  segment  to  the value specified by
+       new_end, when that value is reasonable, and the system  has 
+       enough  memory.
+
+       With newer kernels it is necessary to request the memory start
+       address by setting ebx=0 on  the first call.  This returns the
+       start in eax.  This value can be modified and used to allocate
+       a expanded memory area.  The asmlib function memory_init will
+       handle initializing memory.
+
+RETURN VALUE
+       On  success,  brk returns new_end in eax and prevous end in ebx
+       On error a negatave value is returned
+
+SEE ALSO
+       execve, getrlimit
+

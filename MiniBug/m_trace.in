@@ -1,0 +1,737 @@
+  extern set_screen_size
+;  extern scroll_region
+  extern raw_set1
+  extern raw_unset1
+  extern key_poll,poll_fd
+  extern signal_send
+  extern trace_kill
+  extern show_box
+  extern byteto_hexascii
+  extern delay
+
+%include "save_restore_cursor.in"
+
+  [section .text]
+;-------------  m_trace.in -------------------------------
+;-------------------------------------------------------
+;if a signal occurs, it is reported and our step resquest
+;isn't done.  If we want the signal to occur we send it
+;with the next step request.  If we want to ignore the
+;signal we just resend the step request.
+
+;operation      ptrace_step   wait4-return wait4_status    app_eax  app_old_eax 
+;---------      -----------   ------------ -----------     -------  ----------- 
+;mov eax,1       rtn eax=0     eax=pid      7f,1c (winch)   0        b          
+;(continue)      rtn eax=0     eax=pid      7f,05 (brk)     01       -1         
+;int 80h         rtn eax=0     eax=pid      7f,1c (winch)   01       -1         
+;(continue)      rtn eax=0     eax=pid      0 (app dead)    (getregs returns fffffffd)
+
+
+step_cmd:
+  call	show_run_win
+  call	restore_cursor
+  or	[app_mode],byte 81h	;set run+step flags
+step_again:
+  mov	esi,[send_signal] ;get signal
+  mov	[send_signal],dword 0	;clear signal flag
+  call	trace_step
+  or	eax,eax
+  jns	step_on
+  call	enable_dead_msg		;set dead flag
+  jmp	step_tail
+step_on:
+  xor	eax,eax
+  mov	[app_status],eax
+  call	service_slave_loop	;wait for completion
+  mov	al,[app_mode]
+  test	al,byte 4	;abort alt-a
+  jnz	step_abort
+  test	al,byte 8	;pause?
+  jz	check_signals
+;pause key hit
+  call	run_pause
+  jmp	short step_key
+step_abort:
+  call	run_abort
+step_key:
+  call	service_slave_loop	;wait for signal
+  test	[app_mode],byte 8	;pause?
+  jz	step_term
+;we are at normal break, after pause key pressed, check if
+;in kernel?
+  mov	esi,app_regs
+  call	trace_regsget		;get registers
+  cmp	[app_eax],dword 0fffffe00h	;kernel flag?
+  jne	step_term		;exit if not in kernel
+;we paused inside the kernel,
+  mov	al,[crt_rows]
+  sub	al,6
+  mov	[pause_msg_row],al
+  mov	[pop_msg],dword pause_msg
+
+step_term:
+  and	[app_mode],byte ~0ch	;clear pause and abort flags
+  jmp	short step_tail
+
+check_signals:
+  test	al,byte 20h+40h ;signal or winch
+  jz	step_on2		;jmp if no signals pending
+  call	step_signal_report
+  mov	esi,[send_signal]	;get signal to send
+  call	trace_step		;deliver the signal
+  or	eax,eax
+  jns	step_on2
+  call	enable_dead_msg		;set dead flag
+  jmp	short step_tail
+step_on2:
+  mov	esi,app_regs
+  call	trace_regsget		;get registers
+step_tail:
+  call	save_cursor
+  call	eip_tracking
+  and	[app_mode],byte -0e1h	;clear run,step,signal,winch flags
+  mov	[send_signal],dword 0	;do not send signals found if stepping
+ca_exit2:
+  ret
+
+;------------------------
+enable_dead_msg:
+  or	[app_mode],byte 2		;set app dead
+  mov	al,[crt_rows]
+  sub	al,6
+  mov	[dead_msg_row],al
+  mov	[pop_msg],dword dead_msg
+  mov	al,[app_status+1]
+  mov	edi,rtn_code
+  call	byteto_hexascii
+  ret
+
+;-----------------------------------------------------------
+step:
+  mov	esi,[send_signal] ;get signal
+  mov	[send_signal],dword 0	;clear signal flag
+  call	trace_step
+  xor	eax,eax
+  mov	[app_status],eax
+
+  mov	eax,114
+  mov	ebx,[trace_pid]
+  mov	ecx,app_status
+  mov	edx,0				;1=WNOHANG
+  xor	esi,esi
+  int	byte 80h
+;returns eax=err if app dead
+;returns eax=0 if no change in status
+;returns eax=pid if stop and status filled in
+  mov	esi,app_regs
+  call	trace_regsget
+  mov	ax,[app_status]
+  or	ax,ax
+  jnz	step_50				;jmp if app returned status
+  call	enable_dead_msg
+  jmp	step_ok  
+step_50:
+  cmp	ax,057fh			;normal break?
+  je	step_ok
+  call	step_signal_report
+
+  movzx esi,byte [app_status+1] ;get signal to send
+  cmp	esi,28			;ignore winch signals
+  je	step_continue
+  mov	[send_signal],esi	;signal to send
+step_continue:
+  jmp	step
+step_ok:
+  ret
+;-------------------------------------------------------
+go_cmd:
+;first show run box
+  call	show_run_win
+  call	restore_cursor	;;
+  mov	ebx,[app_eip]
+  call	find_break	;check if break at eip
+  jecxz	cg_20		;jmp if no break at eip
+;we need to step over break location
+  call	step
+
+  mov	edx,[app_eip]
+  call	find_break	;break here?
+  jecxz	cg_20		;jmp if no break here
+  jmp	cg_exit	;exit if break here
+;run to next break
+cg_20:
+  call	insert_breaks
+go_again:
+  and	[app_mode],byte 3	;clear flags
+  mov	esi,[send_signal]	
+  call	trace_continue
+;wait for run to stop or key press
+ssl_loop:
+  call	service_slave_loop
+  mov	al,[app_mode]
+  test	al,2		;dead?
+  jnz	app_dead
+  test	al,4		;
+  jnz	app_exit_key
+  test	al,8
+  jnz	app_stop_key
+  test	al,20h
+  jnz	ssl_signal	;jmp if signal occured
+  test	al,10h
+  jnz	app_break
+;error if we get here, ?
+  jmp	cg_exitx
+
+app_stop_key:
+  call	run_pause
+  and	[app_mode],byte 8	;clear stop flag
+  call	service_slave_loop	;wait for signal
+  test	[app_mode],byte 8	;pause?
+  jz	go_term
+;we are at normal break, after pause key pressed, check if
+;in kernel?
+  mov	esi,app_regs
+  call	trace_regsget		;get registers
+  cmp	[app_eax],dword 0fffffe00h	;kernel flag?
+  jne	go_term		;exit if not in kernel
+;we paused inside the kernel,
+  mov	al,[crt_rows]
+  sub	al,6
+  mov	[pause_msg_row],al
+  mov	[pop_msg],dword pause_msg
+
+go_term:
+  and	[app_mode],byte ~0ch	;clear pause and abort flags
+  jmp	short go_tail
+
+app_exit_key:
+  call	run_abort
+  jmp	ssl_loop
+
+app_dead:
+  mov	al,[crt_rows]
+  sub	al,6
+  mov	[dead_msg_row],al
+  mov	[pop_msg],dword dead_msg
+  jmp	cg_exitx  
+
+ssl_signal:
+  call	step_signal_report
+  and	[app_mode],byte 3	;clear flags
+  mov	esi,[send_signal]	
+  mov	[send_signal],dword 0	;clear signals
+  call	trace_continue		;deliver signal
+  or	eax,eax
+  jns	cg_exitx
+  call	enable_dead_msg		;set dead flag
+  jmp	short cg_exitx
+
+app_break:
+  mov	esi,app_regs
+  call	trace_regsget
+  dec	dword [app_eip]		;adjust back to start of inst
+  mov	esi,app_regs
+  call	trace_regsset		;fix eip
+go_tail:
+  call	remove_breaks
+cg_exitx:
+  call	save_cursor
+  call	eip_tracking
+cg_exit:
+  ret
+;------------------------------------------------------------
+
+step_over_cmd:
+  call	show_run_win
+  call	restore_cursor
+  mov	[stepover_restore_flag],byte 0
+;check if this instruction is terminator
+  mov	edx,[app_eip]		;get start address
+  mov	esi,raw_inst
+  mov	edi,11			;number of bytes to read
+  call	trace_peek_bytes
+  js	cso_exitx		;exit if error
+;disassemble instruction to get length
+  mov	eax,[app_eip]
+  mov	ebp,raw_inst
+  call	dis_one
+  mov	[soc_block],eax	;save dis block
+  mov	al,[eax+2]	;get instruction_type
+  test	al,2+8		;check if jmp or other
+  jnz	cso_exitx	;exit if not good idea
+;check if break at eip
+  mov	ebx,[app_eip]
+  call	find_break	;check if break at eip
+  jecxz	cso_20		;jmp if no break at eip
+;we need to remove break at eip, and restore later
+  mov	ebx,[app_eip]
+  mov	[break1],ebx
+  mov	[stepover_restore_flag],byte 1
+  call	remove_break
+;check if next instruction already has break?
+cso_20:
+  mov	ebx,[app_eip]
+  mov	eax,[soc_block]
+  add	ebx,[eax+8]	;add inst. length
+  call	find_break	;check defined breaks
+  jecxz cso_30		;jmp if no break found
+  jmp	short cso_40	;next inst. has existing break
+;add temp break on next instruction
+cso_30:
+  mov	[break2],ebx	;save temp break adr
+  or	[stepover_restore_flag],byte 2
+  call	add_break
+cso_40:
+  or	[stepover_restore_flag],byte 4
+  call	insert_breaks
+cso_again:
+  mov	esi,[send_signal] ;get signal
+  mov	[send_signal],dword 0	;clear signal flag
+  call	trace_continue
+
+cso_wait_lp:
+  mov	eax,114
+  mov	ebx,[trace_pid]
+  mov	ecx,app_status
+  mov	edx,1				;1=WNOHANG
+  xor	esi,esi
+  int	byte 80h
+  or	eax,eax
+  jnz	cso_stopped		;jmp if app stopped
+  call	raw_set1
+  call	key_poll
+  pushf
+  call	raw_unset1
+  popf
+  jz	cso_wait_lp
+cso_key_press:
+  call	read_stdin
+  mov	edx,kbuf
+  mov	esi,run_win_decode_tbl
+  call	terminfo_key_decode2
+  or	eax,eax
+  jz	cso_wait_lp
+  call	eax
+  jmp	short cso_wait_lp
+cso_stopped:
+  mov	ax,[app_status]
+  or	ah,ah
+  jnz	cso_50				;jmp if app returned status
+  or	[app_mode],byte 2		;set app dead
+  mov	al,[crt_rows]
+  sub	al,6
+  mov	[dead_msg_row],al
+  mov	[pop_msg],dword dead_msg
+  jmp	cso_exitx  
+cso_50:
+  cmp	ax,057fh			;normal break?
+  je	cso_ok
+  cmp	ah,19			;stop signal
+  je	cso_ok
+  movzx esi,byte [app_status+1] ;get signal to send
+  cmp	esi,28			;ignore winch signals
+  je	cso_continue
+  mov	[send_signal],esi	;signal to send
+cso_continue:
+  jmp	cso_again
+
+cso_ok:
+  mov	esi,app_regs
+  call	trace_regsget
+  dec	dword [app_eip]		;adjust back to start of inst
+  mov	esi,app_regs
+  call	trace_regsset		;fix eip
+  call	remove_breaks
+;fix breaks
+  cmp	byte [stepover_restore_flag],0
+  je	cso_exitx	;jmp if stop after "go"
+;clean up after stepover
+  test	[stepover_restore_flag],byte 1
+  jz	ca_10			;jmp if break1 ok
+  mov	ebx,[break1]
+  call	add_break
+ca_10:
+  test	[stepover_restore_flag],byte 2
+  jz	ca_15			;jmp if no break2
+  mov	ebx,[break2]
+  call	remove_break
+ca_15:
+  mov	[stepover_restore_flag],byte 0
+
+cso_exitx:
+  call	save_cursor 
+  call	eip_tracking
+cso_exit:
+  ret
+;----------
+  [section .data]
+soc_block: dd 0	;ptr to disassembly info block
+stepover_restore_flag	db 0 ;1=restore break1  2=remove break2 4=stepover active
+break1: dd 0	;break at eip
+break2: dd 0	;break set on next instruction
+  [section .text]
+
+;-----------------------------------------------------------
+;this is loop for reading & writing psuedo tty stdin/stdout
+;zero read readmasks for select call --------------------
+service_slave_loop:
+;verify slave is still alive, and wait for stop
+  call	check_app
+  ja	app_stop
+  jb	child_dead
+;slave is running or idle, check if key press or app output
+  call	raw_set1
+  call	key_poll
+  pushf
+  call	raw_unset1
+  popf
+  jnz	app_key_avail
+
+  mov	eax,[master_fd]
+  xor	edx,edx		;no wait
+  call	poll_fd
+  jne	app_output
+
+  mov	eax,10
+  call	delay
+  jmp	service_slave_loop
+  
+app_key_avail:
+  call	raw_set1
+  mov	ecx,work_buf		;buffer pointer;
+read_more:
+  mov	eax,3			;read
+  mov	ebx,0			;stdin
+  mov	edx,work_buf_size			;buffer size
+  int	80h
+  or	eax,eax
+  js	feed_error		;jmp if error
+  jz	feed_error		;jmp if child dead
+  add	ecx,eax			;advance kbuf ptr
+  mov	byte [ecx],0		;put zero at end
+;check if more key data available
+  push	ecx
+  call	raw_set1
+  call	key_poll
+  pushf
+  call	raw_unset1
+  popf
+  pop	ecx
+  jnz	read_more		;jmp if more data avail
+;check for special keys
+  mov	ax,[work_buf]
+  cmp	ax,611bh	;alt-a?
+  je	feed_abort
+  cmp	ax,0a1c3h
+  je	feed_abort
+  cmp	ax,701bh	;alt-p
+  je	feed_pause
+  cmp	ax,0b0c3h
+  je	feed_pause
+
+  mov	edx,ecx			;save end of data  
+  mov	ecx,work_buf		;get data buffer
+  sub	edx,ecx			;compute write length
+;write key to child
+write_key:
+  mov	eax,4
+  mov	ebx,[master_fd]
+  int	80h
+  or	eax,eax
+;ainfo returns different counts and requires
+;we not track amount written
+  js	feed_error
+  call	raw_unset1
+  jmp	service_slave_loop	;jmp if no error
+feed_error:
+  call	raw_unset1
+  jmp	child_dead	;jmp if error
+feed_abort:
+  or	[app_mode],byte 4
+  jmp	service_exit
+feed_pause:
+  or	[app_mode],byte 8	;pause
+  jmp	service_exit
+
+;check if normal break or signal and set app_mode
+app_stop:
+  jmp	short service_exit
+
+cg_ignore_winch:
+  or	[app_mode],byte 40h		;ignore winch flag
+  jmp	short service_exit
+
+app_output:
+  mov	ecx,work_buf		;buffer pointer;
+  mov	eax,3			;read
+  mov	ebx,[master_fd]		;app-stdout
+  mov	edx,work_buf_size			;buffer size
+  int	80h
+;check if good read
+  or	eax,eax		;
+  jz	child_dead
+  cmp	eax,-4		;check if signal interrupted us
+  je	app_output
+  js	service_exit	;exit if other error occured
+  mov	[read_slave_count],eax
+  mov	ebx,1			;stout
+  mov	edx,eax			;count
+  mov	ecx,work_buf
+  mov	eax,4			;write
+  int	80h
+  or	eax,eax
+  js	service_exit
+  cmp	eax,[read_slave_count]
+  jne	child_dead		;jmp if not all data written
+  cmp	eax,work_buf_size	;possible buffer size too small
+  je	app_output
+  jmp	service_slave_loop
+  
+;set app_mode to dead
+child_dead:
+  call	enable_dead_msg
+service_exit: 
+  ret
+;------------
+  [section .data]
+read_slave_count: dd 0
+  [section .text]
+
+;-----------------------------------
+  extern blk_clear
+  extern bit_set_list
+;  extern lib_buf
+;----------------------
+;****f* sys/event_wait *
+; NAME
+;>1 sys
+;   event_wait - poll fd input/output status
+; INPUTS
+;    esi = array of dword fd's terminated by -1
+;    eax = max wait time(usec), or zero to wait forever, and
+;          minus 1 for immediate return of status
+; OUTPUT
+;    eax = 0 child has died? signal?
+;        = negative, then error/signal active(-4)
+;        = positive number of events pending
+;    ecx = ptr to array of bits set for each fd with
+;          pending actions, bit 1 represents stdin (fd 0).
+;          fd's must be in numerical order (small to large).
+; NOTES
+;    source file event_wait.asm
+;    note: see bit_test, bit_set_list
+;<
+;  * ---------------------------------------------------
+;*******
+  global event_wait
+event_wait:
+  push	eax		;save wait forever flag
+  mov	ecx,20
+  mov	edi,vent_buf	;temp buffer for array
+  call	blk_clear
+
+  call	bit_set_list	;set bits
+  mov	ebx,[esi-8]	;get value of highest fd
+  inc	ebx		;ebx = highest fd +1
+  mov	ecx,edi		;ecx = bit array ptr (input)
+  xor	edx,edx		;edx = 0 (no write bit array)
+  xor	esi,esi		;esi = 0 (no exceptfds bit array)
+
+  pop	edi		;get wait flag
+  or	edi,edi
+  js	we_fast_rtn	;jmp if immediate return
+  jz	we_forever
+;edi = number of microseconds to wait
+  mov	[_time+4],edi	;set microseconds
+  mov	[_time],dword 0
+we_fast_rtn:
+  mov	edi,_time	;assume stored time is zero
+we_forever:	
+  mov	eax,142
+  int	80h
+  ret
+
+  [section .data]
+_time:	dd	0	;zero seconds, returns status immediatly
+	dd	0	;microseconds to wait
+vent_buf: dd	0,0,0,0,0,0,0
+;bits representing fd numbers to poll, stdin=bit#1
+  [section .text]
+
+;--------------------------------------------------------
+run_abort:
+  mov	ebx,[trace_pid]
+  mov	ecx,9		;kill signal
+  call	signal_send
+
+  call	trace_kill	;kill ptrace
+  ret
+;-------------------------------------------------------
+run_pause:
+  mov	ebx,[trace_pid]
+  mov	ecx,19		;stop signal
+  call	signal_send
+;we may need to detach and reattach?
+  ret
+;-------------------------------------------------------
+show_run_win:
+  mov	al,[crt_rows]
+  sub	al,6
+  mov	[run_msg_row],al
+  mov	esi,run_msg	;get message ptr
+  call	show_box
+  ret
+;-------------------------------------------------------
+  [section .data]
+run_msg:
+  dd	30003137h	;window color
+  dd	run_msg_top
+  dd	run_msg_end
+  dd	0		;scroll
+  db	28		;columns in box
+  db	2		;rows in box
+run_msg_row:
+  db	00		;starting row
+  db	14		;starting colulmn
+  dd	30003137h	;outline box color
+
+run_msg_top: db 'running alt-a=abort',0ah
+             db '        alt-p=pause'
+run_msg_end:
+
+pause_msg:
+  dd	30003137h	;window color
+  dd	pause_msg_top
+  dd	pause_msg_end
+  dd	0		;scroll
+  db	28		;columns in box
+  db	3		;rows in box
+pause_msg_row:
+  db	00		;starting row
+  db	14		;starting colulmn
+  dd	30003137h	;outline box color
+
+pause_msg_top: db 'stopped in kernel',0ah
+             db   'clear eax to cont',0ah
+             db   ' -press any key-'
+pause_msg_end:
+
+  [section .text]
+;-------------------------------------------------------
+;output: al 0=dead=jb 1=run/idle=je 3=stop=ja
+;       app_mode bits  2(dead) 10(break) 20(sig) set
+check_app:
+  mov	eax,114
+  mov	ebx,[trace_pid]
+  mov	ecx,app_status
+  mov	edx,1				;1=WNOHANG
+  xor	esi,esi
+  int	byte 80h
+;returns eax=err if app dead
+;returns eax=0 if no change in status
+;returns eax=pid if stop and status filled in
+  or	eax,eax
+  jz	ca_run_idle		;jmp if no status change
+;  test	[app_mode],byte 1 ;running?
+;  jz	ca_stopped2	;jmp if not running
+;  mov	eax,run_msg_top
+;  mov	[pop_msg],eax
+;  jmp	short ca_run
+;app status has changed
+ca_20:
+  or	eax,eax		;check status again
+  js	ca_dead		;jmp if app dead
+  mov	ax,[app_status]
+;      if al=0 then process exited, return status in ah
+;      if ah=0 it could be return code or no process found.
+;      if al=(1-7e) then ah = signal that killed process
+;      if al=7fh then ah = signal that stopped process
+;      if al=ffh then ah = signal that continued process
+  cmp	al,7fh
+  jb	ca_dead		;jmp if app dead
+  mov	bl,10h		;preload normal break flag
+  cmp	ax,057fh	;normal break?
+  je	ca_stopped	;jmp if normal break
+  movzx esi,byte [app_status+1] ;get signal to send
+  cmp	esi,28			;ignore winch signals
+  je	ca_stopped		;jmp if winch signal
+  mov	[send_signal],esi	;signal to send
+  mov	bl,20h			;get signal flag
+ca_stopped:
+  or	[app_mode],bl		;set signal/normal break flag
+ca_stopped2:
+;;  mov	[winch_expected],dword 0
+  mov	al,2	;stopped state
+  jmp	short ca_exit
+ca_run_idle:
+  mov	al,1
+  jmp	short ca_exit
+ca_dead:
+  or	[app_mode],byte 2	;set dead flag
+  xor	eax,eax
+ca_exit:
+  cmp	al,1	;set flags for jb=dead je=run ja=stop
+  ret
+;-------------------------------------------------------
+  [section .data]
+dead_msg:
+  dd	30003137h	;window color
+  dd	dead_msg_top
+  dd	dead_msg_end
+  dd	0		;scroll
+  db	28		;columns in box
+  db	3		;rows in box
+dead_msg_row:
+  db	00		;starting row
+  db	14		;starting colulmn
+  dd	30003137h	;outline box color
+
+dead_msg_top: db 'program dead',0ah
+              db 'rtn code='
+rtn_code:     db '  h',0ah
+	      db 'press key'
+dead_msg_end: db 0
+
+run_win_decode_tbl:
+  db 0	;padding
+  db 2	;flag
+
+  db 03h,0		;abort ctrl-c?
+  dd run_abort
+
+  db 'a',0
+  dd run_abort
+
+  db 'p',0
+  dd run_pause
+  
+  db 0	;end of table
+
+
+;---------------------
+app_regs:
+app_ebx	dd 0
+app_ecx	dd 0
+app_edx	dd 0
+app_esi	dd 0
+app_edi	dd 0
+app_ebp	dd 0
+app_eax	dd 0
+app_ds 	dd 0
+app_es 	dd 0
+app_fs 	dd 0
+app_gs 	dd 0
+app_old_eax dd 0
+app_eip	dd 0
+app_cs 	dd 0
+app_flags dd 0
+app_esp	dd 0
+app_ss 	dd 0
+
+
+app_mode:	db 0 ;80=stepping   40=ignore winch  20=signal  10=normal break
+                     ;08=pause key  04=abort key     02=dead    01=run(go/step)
+app_status:	dd 0 ;set by wait4 kernel call
+send_signal:	dd 0	;signal to send
+
+  [section .text]

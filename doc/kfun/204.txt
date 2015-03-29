@@ -1,0 +1,11 @@
+
+
+   204. [93]setregid, setregid32
+
+                 arg     eax     204
+                         ebx
+                 return
+                 errors  eax
+                 ref               sys_setregid16 [94]kernel/uid16.c - re lx 2.2. '[95]setregid'.
+
+

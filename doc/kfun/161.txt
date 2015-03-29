@@ -1,0 +1,47 @@
+
+----------------------------------------------------------------------------
+system 161 sched_rr_get_interval   - get the SCHED_RR interval for the named
+----------------------------------------------------------------------------
+  mov  eax,161
+  mov  ebx,pid  ;process id
+  mov  ecx,tp   ;ptr to timespec
+  int  80h
+
+       sched_rr_get_interval writes into the timespec structure pointed to  by
+       tp  the  round robin time quantum for the process identified by pid. If
+       pid is zero, the time quantum for the calling process is  written  into
+       *tp. The identified process should be running under the SCHED_RR sched-
+       uling policy.
+
+       timspec struc
+        .sec  resd 1 ;seconds
+        .msec resd 1 ;nanoseconds
+       endstruc
+
+       The round robin time quantum value is not alterable under Linux 1.3.81.
+
+       POSIX  systems  on  which  sched_rr_get_interval  is  available  define
+       _POSIX_PRIORITY_SCHEDULING in <unistd.h>.
+
+
+RETURN VALUE
+       On success, sched_rr_get_interval returns 0.  On error a negative code
+       is returned
+
+ERRORS
+       ESRCH  The process whose ID is pid could not be found.
+
+       ENOSYS The system call is not yet implemented.
+
+       EINVAL Invalid pid.
+
+       EFAULT Problem with copying information to userspace.
+
+BUGS
+       As  of  Linux  1.3.81  sched_rr_get_interval returns with error ENOSYS,
+       because SCHED_RR has not yet been fully implemented  and  tested  prop-
+       erly.
+
+SEE ALSO
+       sched_setscheduler(2) has a description of the Linux scheduling scheme.
+

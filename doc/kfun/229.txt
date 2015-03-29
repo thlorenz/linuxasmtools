@@ -1,0 +1,29 @@
+
+----------------------------------------------------------------------------
+229 getxattr           - Get an extended atribute
+----------------------------------------------------------------------------
+
+  mov  eax,229
+  mov  ebx,path    ;pointer to path string
+  mov  ecx,name    ;pointer to name string
+  mov  edx,value   ;pointer to value
+  mov  esi,size    ;size of buffer for  value
+  int  80h
+
+SYNOPSIS
+       #include <sys/types.h>
+       #include <attr/xattr.h>
+
+       int getxattr(const char *path, const char *name,
+                     const void *value, size_t size
+
+DESCRIPTION
+       Extended attributes are name:value pairs associated with inodes (files,
+       directories, symbolic links, etc).  They are extensions to  the  normal
+       attributes  which  are  associated with all inodes in the system (i.e.,
+       the stat(2) data).  A complete overview of extended attributes concepts
+       can be found in attr(5).
+
+
+
+

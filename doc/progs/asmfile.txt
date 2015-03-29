@@ -1,0 +1,212 @@
+
+NAME
+
+ asmfile - file manager for shell users
+
+DESCRIPTION
+
+asmfile always shows a bash shell window and has
+a optional two pane directory display. It can be
+controlled from the keyboard or a mouse. The mouse
+interface is only available in terminals.
+
+Various support programs can be installed and
+selected with optional script files. A bookmark
+file is kept in the home directory and all other
+support tools are installed anywhere on the
+executable path.
+
+The two pane window display is used to show the
+files operated on (pane 1) and the destination
+for operations (pane 2). One pane is active and
+the target for keys and mouse input. The inactive
+pane has a dimmed color.
+
+STARTUP
+
+  - asmfile
+  - asmfile path1
+  - asmfile path1 path2
+
+Asmfile can be started with a path for pane 1
+and another for pane 2. If no path is provided
+the current directory is used for both panes.
+
+MOUSE CONTROLS
+
+buttons are indicated by color and are mouse
+targets. Files can be selected by clicking on
+them. If a file has already been selected and
+it is clicked, asmfile will try to act as follows:
+
+  - executable files will be executed
+  - directories will be entered
+  - normal files will be viewed
+
+All clicks use the left button with one exception.
+The setting bookmarks uses the right button.
+
+KEYBOARD CONTROLS
+
+The keyboard input may go to the shell window
+or the asmfile window. All alpha keys always
+go to the shell window. When the shell is in
+full screen mode it get all keys except for
+alt-s and alt-r. These two keys are used to
+switch window modes and reset the shell.
+
+FILE COMMANDS
+
+The following keyboard controls are active
+when a small shell window is at top of screen.
+
+right-arrow  enter directory if one is selected
+
+left-arrow   return to previous directory
+
+tab          switch window pane
+
+up-arrow     move selection bar up
+
+down-arrow   move selection bar down
+
+pgup         page active screen up
+
+pgdn         page active screen down
+
+%            insert the selected path into shell
+
+f1           set and view file state
+
+f2           find
+
+f3           view file
+
+f4           edit file
+
+f5           copy file
+
+f6           move file
+
+f7           make directory
+
+f8           delete file or directory
+
+f9           decompress file
+
+f10          tar.gz directory
+
+f11          compare two files
+
+f12          print file
+
+The mouse can not do pgup or pgdn, but all other commands
+are click on button or file.
+
+BOOKMARKS
+
+Bookmarks are set or activated by a single key or mouse action.
+
+  alt-0 -> alt-9  activate bookmarks
+  Shift-F1 -> shift-f12 set bookmarks
+
+To set a bookmark, enter the directory to be set, and right click
+bookmark button or press shift-fXX. The first few letters of path
+will show on bookmark button after the set operation.
+
+SHELL USAGE
+
+Commands can be sent to the shell at any time. Just type them
+in and press enter. In the small shell mode, the enter key
+is also used to execute actions on the selected file. This
+action is disable once a command letter is typed (alpha key).
+
+The swap command (ctrl-o) will switch to a full screen shell.
+In full screen mode, the shell can also run graphical programs
+and accepts the full keyboard input.
+
+To exit full screen mode type ctrl-o
+
+Many commands will call shell programs and their output
+will appear in shell window. The copy, move, and delete
+commands require feedback, and the shell pauses with
+a partial command. The user must accept or modify the
+shell command.
+
+TOOLS AND PLUGINS
+
+If a helper program is not available, the button will have
+four "????" characters on the bottom. This can be changed
+by installing programs or creating a script.
+
+When asmfile starts it looks for user supplied scripts, if
+they are not found it looks for the default helper program.
+If neither is found, the button will have four "????"
+characters.
+
+The default helper programs are:
+
+ status - fileset
+ find   - asmfind
+ view   - asmview
+ edit   - asmedit
+ upak   - script upak install with asmfile
+ pak    - script installed with asmfile
+ compare- xxdiff
+ print  - print script installed with asmfile
+ docs   - asmref
+ colors - asmcolor
+ disasm - asmdis
+ sourcer- asmsrc
+ timer  - asmtimer
+ plan   - asmplan
+ echo   - key_echo
+ project- asmproject
+ make   - make
+ debug  - asmbug
+
+The above defaults can be modified
+by adding scripts named:
+
+   asmfile_chmod   
+   asmfile_docs   
+   asmfile_colors   
+   asmfile_dis   
+   asmfile_src   
+   asmfile_timer   
+   asmfile_plan   
+   asmfile_project   
+   asmfile_make   
+   asmfile_key_echo   
+   asmfile_debug   
+   asmfile_find   
+   asmfile_view   
+   asmfile_edit   
+   asmfile_upak   
+   asmfile_pak   
+   asmfile_compare   
+   asmfile_print   
+
+Added scripts must be on execution search path and
+can be constructed as follows:
+
+   #! /bin/bash
+   executable %1 %2
+
+The first line selects shell to handle script.
+The second line provides command and paramters.
+Not all scripts will need parameters, but if they
+do the parameters must match parameters used
+by origional command or script. 
+
+
+DEPENDENCIES
+
+  Optional compile dependency: AsmLib
+
+  asmfile calls numerous UNIX utilities, too many
+  for a short list.  If a feature does not work or
+  a file type will can not be viewed, then install
+  the program that can not be found.  Normally, the
+  most used programs are already installed.
+ 

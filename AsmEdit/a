@@ -1,0 +1,3 @@
+#! /bin/sh
+# shortcut to asmedit
+asmedit $1 $2

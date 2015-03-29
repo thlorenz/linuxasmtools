@@ -1,0 +1,48 @@
+
+-----------------------------------------------------------------
+275 get_mempolicy  - get NUMA memory policy
+-----------------------------------------------------------------
+
+  mov  eax,275
+  mov  ebx,value    ;pointer to policy value store
+  mov  ecx,nodemask ;pointer to nodemask value
+  mov  edx,bsize    ;size of bit mask
+  mov  esi,addr     ;memory address
+  mov  edi,flags
+  int  80h
+
+   Retrieves NUMA memory policy for a process.
+
+args
+----
+
+ ebx A pointer to an integer value which will receive the Policy value.
+
+ ecx A pointer to an integer value which will receive the nodemask
+   value associated with the policy.
+
+ edx Maximum bit number plus one that can be stored into mask buffer
+   (pointed by ecx).
+
+ esi Memory address for NUMA policy retrieval. (depends whether
+   MPOL_F_ADDR is used or not)
+
+ edi Flags. It may be either 0 or MPOL_F_ADDR.
+   If MPOL_F_ADDR is specified, then information is returned about the
+   policy governing the memory address given in esi. This policy may be
+   different from the process's default policy if [1]set_mempolicy has
+   been used to establish a policy for the page containing esi.
+   If flags is null, then information about the calling process's default
+   policy (as set by set_mempolicy) is returned.
+
+Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EINVAL Invalid parameter was passed in.
+   -EFAULT Invalid memory accessed.
+
+   Available since 2.6.7. This system call is only available on kernels
+   compiled with CONFIG_NUMA.

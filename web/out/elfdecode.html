@@ -1,0 +1,344 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>ELFDecode utility</title>
+ <meta name="keywords" content="decoder, ELF, linux, utilities">
+ <meta name="description" content="decode Linux ELF executable files">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+
+INTRO<br>
+-----<br>
+<br>
+This document describes an executable "elfdecode" and<br>
+a general usage include file called "elfdecode.inc".<br>
+elfdecode.inc is described last and is the prime focus<br>
+of this document.  the executable "elfdecode" exists<br>
+to test elfdecode.inc and as a general interrogation<br>
+of elf files.  The executable is menu driven and needs<br>
+a file name as parameter.  It then displays information<br>
+from elfdecode.inc.<br>
+<br>
+The rest of this document describes elfdecode.inc<br>
+<br>
+<br>
+elfdecode.inc<br>
+-------------<br>
+<br>
+PURPOSE<br>
+-------<br>
+elfdecode.inc is a generic decoder of elf files.  It is<br>
+intended as a pre processor for AsmDis,AsmSrc, and AsmBug.<br>
+<br>
+INPUTS<br>
+------<br>
+Input is any elf file name.  If debug information is present<br>
+in the elf, it will look in the current directory for source<br>
+files.<br>
+<br>
+ mov	eax,file_name_ptr<br>
+ call	elfdecode<br>
+<br>
+OUTPUT<br>
+------<br>
+elfdecode writes its output as files in the current directory.<br>
+The files created depend upon elf contents.  Not all elf's<br>
+have comment information and non-dynamic files will not have<br>
+the library and externs files.<br>
+  .abug_header.dat	;image of header1<br>
+  .abug_image.dat       ;load image<br>
+  .abug_fimage.dat      ;flag image<br>
+  .abug_sym.dat         ;symbol table<br>
+  .abug_externs.txt     ;externals used in elf<br>
+  .abug_lib.txt         ;libraries referenced in elf<br>
+  .abug_comment.dat     ;comments extracted from source file<br>
+The results will be in -al- register<br>
+  al = 0 success<br>
+  al = -1 'Cant write to current directory',0ah,0<br>
+  al = -2 'File not found',0ah,0<br>
+  al = -3 'ELF format error',0ah,0<br>
+  al = -4 'Insufficient Memory',0ah,0<br>
+  al = -5 'Cant access file',0ah,0<br>
+  al = -6 'File format wrong',0ah,0<br>
+  al = -7 'Source newer than executable',0<br>
+note: since elfdecode is a include file the header will be<br>
+      in memory already.<br>
+<br>
+--------------------------------------------------------------------<br>
+.abug_header<br>
+--------------------------------------------------------------------<br>
+<br>
+Summary of abug_header<br>
+----------------------<br>
+  1. Preamble - general info<br>
+  2. Program load headers (sorted by adr)<br>
+  3. section headers (sorted by adr)<br>
+<br>
++ ---------+<br>
+| Preamble |   preamble: times (pre_struc_size) db 0<br>
++ ---------+<br>
+<br>
+ At the top of .abug_header is general information<br>
+<br>
+  struc pre<br>
+  .elf_type_flag resd 1 ;00000001h - dynamic section found<br>
+                        ;00000002h - lib wrapper for HLL found<br>
+                        ;00000004h - symbol table found<br>
+                        ;00000008h - debug section found<br>
+                        ;00000010h - source file found<br>
+                        ;00000020h - debug comments found<br>
+                        ;00000040h - no sections found (bit set)<br>
+  .elf_phys_top		resd 1 ;start of elf header<br>
+  .elf_phys_code_start	resd 1 ;start of code,data may proceed, may be in elf header<br>
+  .elf_phys_exec_entry	resd 1 ;entry point<br>
+  .elf_phys_code_end	resd 1 ;end of code<br>
+  .elf_phys_load_end	resd 1 ;end of file data<br>
+  .elf_phys_bss_end	resd 1 ;end of bss data<br>
+  .app_main             resd 1 ;set if lib setup at run_physical_entry<br>
+  (if loaded from file, the following ptrs need adjustment)<br>
+  .pheader_ptrs: resd 8 ;last ptr is zero to signal end of list<br>
+  .sheader_ptrs: resd 12 ;last ptr is zero<br>
+  .target_time: resd 2<br>
+  .target_file:	resb 128-16<br>
+  endstruc<br>
+<br>
+ After the Preamble are program headers.<br>
+<br>
+ The .abug_header file is a map to elf contents.  Everything<br>
+ is tied to program headers which are listed first. The following<br>
+ structure is replicated for each loadable program header found.<br>
+ Only loadable blocks have entries here.<br>
+ Entries are sorted by assending phys_start address.<br>
+<br>
+ -----------------------+<br>
+ program header extract |   phead: times (head_struc_size * 8) db 0<br>
+ -----------------------+<br>
+<br>
+ struc head<br>
+ .phys_start	dd 0	;load address for block<br>
+ .phys_end	dd 0	;end address for block (beyond last byte)<br>
+ .size		dd 0	;size of block<br>
+ .offset	dd 0	;offset into elf file, not fimage.dat or image.dat<br>
+ .p_flags	db 0	;flag from pheader 1=exec 2=write 4=read 8=bss<br>
+ endstruc<br>
+<br>
+ .offset is initially a index into elf file, and is converted into<br>
+        a index into both the flag and load image files<br>
+<br>
+ note: the .p_flag 08h (.bss) is created when the load size exceedes<br>
+       the file size of a header entry.<br>
+       if the .phys_start is zero then this is end of "head" structures.<br>
+       A better way to find end of extracts is using pointers in preamble.<br>
+<br>
++ ------------------------+<br>
+| section header extracts |  shead: times (shead_struc_size * 20) db 0<br>
++ ------------------------+<br>
+<br>
+ The section headers are stored as offsets from "head" in file and must<br>
+ be converted to pointers.  Only sections that are loaded are stored.<br>
+<br>
+ struc sect<br>
+ .sh_addr	dd 0	;phys load address<br>
+ .sh_size	dd 0	;size of this section<br>
+ .sh_flags	db 0	;bits 01h=writeable 02h=allocate 04h=execute<br>
+ .sh_name	db x	;ascii name string<br>
+ endstruc<br>
+<br>
+<br>
++--------------------------------------------------------------------<br>
+|.abug_image and .abug_fimage<br>
++--------------------------------------------------------------------<br>
+<br>
+ The abug_image conatins the loadable contents from the elf file.<br>
+ If the blocks have gaps, fill data will be added.  It will not<br>
+ contain any .bss sections found.<br>
+<br>
+ The abug_fimage will be a bit map of abug_image and also include<br>
+ a map for .bss sections found.  Fill data will have a map  value<br>
+ of 7fh<br>
+<br>
+flag image (fimage)  bit definitions<br>
+<br>
+ 0xxx xxxx - data<br>
+ 1xxx xxxx - code<br>
+<br>
+ x0xx xxxx - start of data/instruction<br>
+ x1xx xxxx - data/instruction body<br>
+<br>
+ xx00 xxxx - no label here<br>
+ xx01 xxxx - symbol table has label for this location<br>
+ xx10 xxxx - label hit, type in low 4 bits<br>
+ xx11 xxxx - symbol table has label & hits, type in low 4 bits<br>
+<br>
+ data start states               data body states<br>
+ -----------------               ----------------<br>
+ 00xx 0000 - db                  0100 0000 - db,dw,dd,ptr body<br>
+ 00xx 0001 - dw<br>
+ 00xx 0010 - dd<br>
+ 00xx 0011 -              <br>
+ 00xx 0100 - string start        0100 0100 - string body<br>
+ 00xx 1000 - repeat start        0100 1000 - repeat db body<br>
+<br>
+ code start states               code body state<br>
+ -----------------               ---------------<br>
+ 10xx 0000 - normal code         1100 0000 - non-start body<br>
+ 10xx 0001 - jmp target<br>
+ 10xx 0010 - call target<br>
+<br>
++--------------------------------------------------------------------<br>
+|  .abug_sym.dat files (symbol table)<br>
++--------------------------------------------------------------------<br>
+<br>
+;-- structure used by abug_sym.dat file<br>
+struc sym<br>
+.sym_adr    resd 1	;address, if not in .text.data.bss then dymamic<br>
+.sym_typ    resb 1	;type, 50=data 60=code 00=external<br>
+.sym_ascii  resb 1      ;asciiz symbol name<br>
+endstruc<br>
+<br>
+The AsmLib function hash_add is used to build database.<br>
+To accesss the database use hash_lookup<br>
+<br>
++--------------------------------------------------------------------<br>
+|  .abug_comment.dat files (table)<br>
++--------------------------------------------------------------------<br>
+<br>
+A comment consists of<br>
+  .comment_adr dd 0 ;physical address <br>
+  .comment_str db x ;comment string<br>
+<br>
+The AsmLib function string_add is used to add<br>
+comments to a database which can be accessed by string_lookup<br>
+ <br>
++--------------------------------------------------------------------<br>
+|  .abug_externs.dat and .abug_libs.dat                      <br>
++--------------------------------------------------------------------<br>
+<br>
+ These files are simple text lists<br>
+<br>
+ .abug_header<br>
++------------------+<br>
+| preamble         |<br>
+| ptrs to pheaders |--&gt; ptrs (file values need conversion)<br>
+| ptrs to sheaders |--&gt; ptrs (file values need conversion)<br>
++------------------+<br>
+<br>
+ program headers               .abug_image             .abug_fimage<br>
++------------------+  +--&gt;  +-----------------+      +---------------+<br>
+|                  |  |     |  load image     |      |  flags        |<br>
+|                  |  |     |                 |      |               |<br>
+|                  |  |     |                 |      |               |<br>
+|                  |  |     |                 |      |               |<br>
+| offset           |--+     |                 |      |               |<br>
+|                  |        |                 |      |               |<br>
++------------------+        +-----------------+      +---------------+<br>
+                            | optional filler |      |optional filler|<br>
++------------------+  +--&gt;  +-----------------+      +---------------+<br>
+|                  |  |     |                 |      |               |<br>
+|                  |  |     |                 |      |               |<br>
+|                  |  |     |                 |      |               |<br>
+|                  |  |     |                 |      |               |<br>
+| offset to image2 |--+     |                 |      |               |<br>
+|                  |        |                 |      |               |<br>
++------------------+        +-----------------+      +---------------+<br>
+                                                     |               |<br>
++------------------+                             +-&gt; +---------------+<br>
+|                  |                             |   | .bss section  |<br>
+|                  |                             |   |               |<br>
+|                  |                             |   |               |<br>
+|                  |                             |   |               |<br>
+| offset .bss      |-----------------------------+   |               |<br>
+|                  |                                 |               |<br>
++------------------+                                 +---------------+<br>
+                        <br>
+                        <br>
++------------------+    <br>
+|                  |    <br>
+| section index3   |    <br>
++------------------+    <br>
+                        <br>
+                        <br>
++------------------+     <br>
+| (section 1)      |<br>
+| section index1   |   <br>
++------------------+   <br>
+<br>
++------------------+<br>
+| (section 2)      |<br>
+| section index2   |   <br>
++------------------+   <br>
+                       <br>
+<br>
+<br>
+<br>
+         <br>
+      </big><br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

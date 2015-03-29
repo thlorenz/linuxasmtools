@@ -1,0 +1,101 @@
+
+----------------------------------------------------------------------
+303 linkat  - link relative
+----------------------------------------------------------------------
+
+This function has not been verified, check before using.
+
+  mov  eax,303
+  mov  ebx,fd1
+  mov  ecx,filename     ;pointer to asciiz name
+  mov  edx,fd2
+  mov  esi,new_filename ;pointer to new link name
+  mov  edi,0            ;flags
+  int  80h
+
+   Creates a file link relative to directory file descriptors. This
+   system call operates in exactly the same way as sys_link, except
+   for the differences described below.
+
+SYNOPSIS
+       #define _ATFILE_SOURCE
+       #include <unistd.h>
+
+       int linkat(int olddirfd, const char *oldpath,
+                  int newdirfd, const char *newpath, int flags);
+
+
+args
+----
+
+ ebx If the pathname pointed by ecx is relative, then it is interpreted
+   relative to the directory referred to by the file descriptor in ebx
+   (rather than relative to the current working directory of the calling
+   process, as is done by sys_link for a relative pathname).
+   If the pathname given pointed by ecx is relative and ebx is the
+   special value AT_FDCWD, then old path is interpreted relative to the
+   current working directory of the calling process.
+   If the pathname pointed by ecx is absolute, then ebx is ignored.
+
+ ecx A pointer to a null-terminated string that specifies the filename
+   and path of old file.
+
+ edx If the pathname pointed by edi is relative, then it is interpreted
+   relative to the directory referred to by the file descriptor in esi
+   (rather than relative to the current working directory of the calling
+   process, as is done by sys_link for a relative pathname).
+   If the pathname given pointed by edi is relative and esi is the
+   special value AT_FDCWD, then old path is interpreted relative to the
+   current working directory of the calling process.
+   If the pathname pointed by edi is absolute, then esi is ignored.
+
+ esi A pointer to a null-terminated string that specifies the filename
+   and path of new link. If it is already exists it will not be
+   overwritten.
+   ebp This argument is currently unused, and must be specified as 0.
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+   -EXDEV old path and new path are not on the same filesystem.
+   -EPERM The filesystem containing old path and new path does not
+   support the creation of hard links.
+   -EFAULT old path or new path points outside your accessible address
+   space.
+   -EACCES Write access to the directory containing new path is not
+   allowed for the process's effective uid, or one of the directories in
+   old path or new path did not allow search (execute) permission.
+   -ENAMETOOLONG old path or new path was too long.
+   -ENOENT A directory component in old path or new path does not exist
+   or is a dangling symbolic link.
+   -ENOTDIR A component used as a directory in old path or new path is
+   not, in fact, a directory.
+   -ENOMEM Insufficient kernel memory was available.
+   -EROFS The file is on a read-only filesystem.
+   -EEXIST Path pointed by ecx already exists.
+   -EMLINK The file referred to by ebx already has the maximum number of
+   links to it.
+   -ELOOP Too many symbolic links were encountered in resolving old path
+   or new path.
+   -ENOSPC The device containing the file has no room for the new
+   directory entry.
+   -EPERM Path pointed by ebx is a directory.
+   -EIO An I/O error occurred.
+   -EBADF ecx or esi is not a valid file descriptor.
+   -ENOTDIR old path is a relative path and ecx is a file descriptor
+   referring to a file other than a directory; or similar for new path
+   and esi.
+
+   Remarks
+
+   Hard links, as created by sys_link, cannot span filesystems. Use
+   sys_symlink if this is required.
+   On NFS file systems, the return code may be wrong in case the NFS
+   server performs the link creation and dies before it can say so. Use
+   sys_stat to find out if the link got created.
+
+
+   Available since 2.6.16
+

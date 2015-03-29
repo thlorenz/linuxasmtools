@@ -1,0 +1,30 @@
+  extern str_index
+
+ [section .text]
+
+  global _start
+  global main
+_start:
+main:
+  mov	ecx,0
+  mov	esi,strings
+  call	str_index
+
+  mov	ecx,1
+  mov	esi,strings
+  call	str_index
+
+  mov	ecx,99
+  mov	esi,strings
+  call	str_index
+
+  mov	eax,1
+  int	80h			;exit
+
+;------------------
+  [section .data]
+strings:
+  db 'string 0',0
+  db 'string 1',0
+  db 'string 2',0
+  db 0			;end of table

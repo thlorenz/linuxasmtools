@@ -1,0 +1,72 @@
+
+-----------------------------------------------------------------------
+298 fchownat  - chown relative
+-----------------------------------------------------------------------
+
+  mov  eax,298
+  mov  ebx,?
+  mov  ecx,path  ;
+  mov  edx,UID
+  mov  esi,GID
+  int  80h
+
+   Changes ownership of a file relative to a directory file descriptor.
+   This system call operates in exactly the same way as sys_chown,
+   except for the differences described below.
+
+args
+----
+
+ ebx If the pathname pointed by ecx is relative, then it is interpreted
+   relative to the directory referred to by the file descriptor ebx
+   (rather than relative to the current working directory of the calling
+   process, as is done by sys_chown for a relative pathname).
+   If the pathname pointed by ecx is relative and ebx is the special
+   value AT_FDCWD, then path is interpreted relative to the current
+   working directory of the calling process.
+   If the pathname pointed by ecx is absolute, then ebx is ignored.
+
+ ecx A pointer to a null-terminated string that specifies the name of a
+   file.
+
+ edx Owner's UID.
+
+ esi Owner's GID.
+
+Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values (depending on the file systems other error values may be
+   returned):
+
+   -ENOENT The file does not exist.
+   -ENOMEM Insufficient kernel memory was available.
+   -ENOTDIR A component of the path prefix is not a directory.
+     -or-
+     path pointed by ecx is a relative path and ebx is a file descriptor
+     referring to a file other than a directory.
+   -EPERM The calling process did not have the required permissions (see
+     above) to change owner and/or group.
+   -EROFS The named file resides on a read-only file system.
+   -ENAMETOOLONG Path is too long.
+   -ELOOP Too many symbolic links were encountered in path resolving.
+   -EFAULT Path points outside your accessible address space.
+   -EACCESS Search permission is denied on a component of the path
+     prefix.
+   -EBADF ebx is not a valid file descriptor.
+
+   Only a process with a CAP_CHOWN capability may change the owner of a
+   file. The owner of a file may change the group of the file to any
+   group of which that owner is a member. A process with CAP_CHOWN may
+   change the group arbitrarily.
+   The sys_fchownat semantics are deliberately violated on NFS file
+   systems which have UID mapping enabled. Additionally, the semantics of
+   all system calls which access the file contents are violated, because
+   sys_fchownat may cause immediate access revocation on already open
+   files. Client side caching may lead to a delay between the time where
+   ownership have been changed to allow access for a user and the time
+   where the file can actually be accessed by the user on other clients.
+
+   Available since 2.6.16
+

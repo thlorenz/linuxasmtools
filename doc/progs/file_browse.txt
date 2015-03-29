@@ -1,0 +1,34 @@
+
+NAME
+
+  file_browse - display and traverse directories
+
+ INPUTS
+
+    If file is passed as parameter it is
+    used as starting point for browse
+
+    If no parameters are supplied the current
+    directory is used as starting point for browse.
+
+    the following keys are recognized:
+      right arrow - move into directory
+      left arrow - go back one directory
+      up arrow - move file select bar up
+      down arrow - move file select bar down
+      pgup/pgdn - move page up or down
+      ESC - exit without selecting
+    - <enter> exit and select file
+
+OUTPUT
+
+    file $HOME/.asmide/tmp.dir contains selected filename.
+    if no file selected, tmp.dir has lenght of zero. 
+
+NOTES
+
+   file: file_browse.asm
+   This file is a standalone ELF binary.
+
+   file_browse is used as a plugin by AsmEdit to pick
+   files for editing.      

@@ -1,0 +1,208 @@
+  extern str_compare
+;-------------- 1setup.inc ----------------------
+;input:
+; parse states:  asmbug                      <- use history data,verify history data present
+;                asmbug <prog> <parmaters>   <- stuff in history,clear existing asmdis files
+;                asmbug -a <prog>            <- set flag and lookup pid for program
+;                asmbug -h                   <- show help and exit
+;output: sign flag set if error
+parse:
+;check if any parameters
+  mov	esi,esp
+  lodsd			;clear return address from stack
+  lodsd			;get parameter count, 1=none
+  dec	eax
+  jnz	pi_10		;jmp if parameter entered
+  call	check_history	;veriify filename in history
+  jmp	short pi_exit ;exit if no parameter entered
+;get parameters
+pi_10:
+;  mov	ecx,eax		;ecx=parameter count
+  lodsd			;eax=our executable name ptr
+pi_sw_lp:
+  lodsd			;eax=ptr to user parameter
+  or	eax,eax
+  jz	pi_exit		;exit if all parameters processed
+;check for switch (-) parameters
+  cmp	word [eax],'-h'
+  jne	pi_12		;jmp if not help
+  call	show_help
+  jmp	short pi_exit
+pi_12:
+  cmp	word [eax],'-a'
+  jne	pi_target
+  call	attach_setup
+  jmp	short pi_exit
+pi_target:
+  call	get_target
+pi_exit:
+  or	eax,eax
+  ret
+;-------------------------------------------------------------
+; parse target filename,check if file
+; exists, any other parsed entry is error.
+; eax=ptr to parameter
+; esi=ptr to stack ptrs 
+get_target:
+  mov	edi,LastTarget
+  push	esi			;save stack ptr
+  mov	esi,eax			;get parameter ptr
+  push	esi
+  push	edi
+  call	str_compare
+  je	gt_10			;jmp if strings the same
+;new file entered, zero some fields
+  mov	[MemWinAdr],dword 0
+gt_10:
+  pop	edi
+  pop	esi
+  call	str_move
+  pop	esi
+  mov	edi,LastTargetParm
+gt_parm_lp:
+  lodsd				;get ptr to next parameter
+  or	eax,eax
+  jz	gt_check		;go check file
+  push	esi
+  mov	esi,eax
+  call	str_move
+  pop	esi
+  jmp	short gt_parm_lp
+;check if legal filename
+gt_check:
+  cmp	byte [LastTarget],'/'
+  je	gt_full_path
+;check if file in current dir
+  call	dir_current		;get current dir, ebx=ptr eax=size
+  push	ebx			;save ptr
+  mov	edi,ebx
+  add	edi,eax			;point at end
+  mov	esi,LastTarget
+  call	str_move		;append filename to current dir
+  pop	ebx
+  mov	ecx,1			;check if executable
+  call	file_access
+  or	eax,eax
+  jz	gt_file_ok		;jmp if access ok
+;file not in local dir, check path  
+  mov	ebx,[enviro_ptrs]
+  mov	ebp,LastTarget
+  call	env_exec
+  jc	gt_fail			;jmp if file not found
+  mov	esi,ebx
+  mov	edi,LastTarget
+  call	str_move		;save full path
+;full path now at LastTarget
+gt_full_path:
+  mov	ebx,LastTarget
+gt_access_ck:
+  mov	ecx,1			;check if executable
+  call	file_access
+  or	eax,eax
+  jz	gt_file_ok		;jmp if access ok
+gt_fail:
+  mov	eax,err1
+  call	show_error
+  mov	eax,-1
+gt_file_ok:
+  or	eax,eax
+  ret
+  
+;-------------------------------------------------------------
+;show help file
+; eax=ptr to parameter
+; esi=ptr to stack ptrs 
+show_help:
+  mov	ebx,asmbug_doc
+  call	view_file
+  ret
+;-------------------------------------------------------------
+;parse filename if present, get pid of target
+; eax=ptr to parameter
+; esi=ptr to stack ptrs 
+attach_setup:
+  lodsd			;get next parameter
+  call	get_target
+  js	as_exit0	;exit if error
+  mov	byte [parse_attach],1
+;find pid of file at LastTarget
+  mov	esi,LastTarget
+  cmp	byte [esi],'/'
+  jne	as_40		;jmp if not full path
+  call	str_end
+as_10:
+  dec	esi
+  cmp	byte [esi],'/'
+  jne	as_10		;loop till prior '/' found
+  inc	esi		;move to start of name
+;setup to search /proc
+as_40:
+  push	esi
+;  mov	eax,temp_buf_size
+;  call	m_allocate	;allocate buffer to read files
+;  js	as_exit2
+;  mov	[temp_buf_ptr],eax
+  mov	ebx,temp_buf_size
+  pop	ecx		;get match string
+  call	process_search	;find process
+  jz	as_exit0	;jmp if not found
+  js	as_exit0	;jmp if not found
+;search for pid
+  mov	esi,eax		;get buf ptr
+  mov	ecx,100		;max serach length
+as_50:
+  inc	esi
+  cmp	[esi],dword 'Pid:'
+  je	as_60		;jmp if "Pid:" found
+  loop	as_50		;keep looking
+  jmp	short as_exit0	;error exit
+;we have found string "Pid:"
+as_60:
+  add	esi,5		;move past "Pid:"
+  call	ascii_to_dword
+  mov	[attach_pid],ecx
+  xor	eax,eax
+  jmp	short as_exit1 
+as_exit0:
+  mov	eax,-1
+as_exit1:
+;  push	eax
+;  mov	eax,[temp_buf_ptr]
+;  call	m_release
+;  pop	eax
+as_exit2:
+  ret  
+;-------------------------------------------------------------
+;no parameters found, verify we have a filename in history data 
+; eax=ptr to parameter
+; esi=ptr to stack ptrs 
+check_history:
+  cmp	byte [LastTarget],0
+  jne	ch_exit
+  mov	eax,err2
+  call	show_error
+  mov	eax,-1
+ch_exit:
+  ret
+;-----------------------
+  [section .data]
+
+temp_buf_size	equ 10000
+temp_buf_ptr:	dd the_temp
+the_temp times temp_buf_size db 0
+
+parse_attach:	db 0	;set to 1 if this is attach
+attach_pid:	dd 0
+
+asmbug_doc: db '/usr/share/doc/asmref/asmbug.txt',0
+
+
+err1: db 'File not found',0
+err2: db 'no active debug file',0ah
+  [section .text]
+
+
+
+
+
+

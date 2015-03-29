@@ -1,0 +1,62 @@
+
+----------------------------------------------------------------------------
+187 sendfile       - transfer data between file descriptors
+----------------------------------------------------------------------------
+  mov  eax,187
+  mov  ebx,out_fd  ;open write descriptor
+  mov  ecx,in_fd   ;open read descriptor
+  mov  edx,offset  ;ptr to 64bit displacement into file
+  mov  esi,count   ;number of bytes to copy
+  int  80h
+
+       This  call copies data between one file descriptor and another.  Either
+       or both of these file descriptors  may  refer  to  a  socket  (but  see
+       below).   in_fd  should  be  a  file  descriptor opened for reading and
+       out_fd should be a descriptor opened for writing.  offset is a  pointer
+       to  a variable holding the input file pointer position from which send-
+       file() will start reading data.  When sendfile() returns, this variable
+       will  be set to the offset of the byte following the last byte that was
+       read.  count is the number of bytes to copy between file descriptors.
+
+       Because this copying is done within the  kernel,  sendfile()  does  not
+       need to spend time transferring data to and from user space.  
+
+
+NOTES
+       Sendfile  does  not  modify the current file pointer of in_fd, but does
+       for out_fd.
+
+       If you plan to use sendfile for sending files to a TCP socket, but need
+       to  send some header data in front of the file contents, please see the
+       TCP_CORK option in tcp(7) to minimize the number of packets and to tune
+       performance.
+
+       Presently the descriptor from which data is read cannot correspond to a
+       socket, it must correspond to a file which supports mmap()-like  opera-
+       tions.
+
+
+RETURN VALUE
+       If  the  transfer was successful, the number of bytes written to out_fd
+       is returned.  On error a negative code is returned
+
+
+ERRORS
+       EBADF  The input file was not opened for reading or the output file was
+              not opened for writing.
+
+       EAGAIN Non-blocking I/O has been  selected  using  O_NONBLOCK  and  the
+              write would block.
+
+       EINVAL Descriptor is not valid or locked.
+
+       ENOMEM Insufficient memory to read from in_fd.
+
+       EIO    Unspecified error while reading from in_fd.
+
+       EFAULT Bad address.
+
+SEE ALSO
+       socket, open
+
+

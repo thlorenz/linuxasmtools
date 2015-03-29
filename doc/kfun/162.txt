@@ -1,0 +1,60 @@
+
+----------------------------------------------------------------------------
+162 nanosleep      - pause execution for a specified time
+----------------------------------------------------------------------------
+  mov  eax,162
+  mov  ebx,req  ;ptr to delay time
+  mov  ecx,rem  ;ptr to remaining time storeage
+  int  80h
+
+       nanosleep  delays  the  execution  of the program for at least the time
+       specified in *req.  The function can return earlier  if  a  signal  has
+       been  delivered to the process. In this case, it returns -1, sets errno
+       to EINTR, and writes the remaining time into the structure  pointed  to
+       by  rem unless rem is NULL.  The value of *rem can then be used to call
+       nanosleep again and complete the specified pause.
+
+       The structure timespec is  used  to  specify  intervals  of  time  with
+       nanosecond precision. It is specified in <time.h> and has the form
+
+              struct timespec
+               .tv_sec   resd 1 ;         /* seconds */
+               .tv_nsec  resd 1 ;        /* nanoseconds */
+              endstruc
+
+       The  value  of  the nanoseconds field must be in the range 0 to 999 999
+       999.
+
+ERRORS
+       In  case of an error or exception, the nanosleep system call returns
+       a negative code.
+
+       EINTR  The pause has been interrupted by a non-blocked signal that  was
+              delivered  to  the  process.  The  remaining sleep time has been
+              written into *rem so that the process can easily call  nanosleep
+              again and continue with the pause.
+
+       EINVAL The  value  in  the  tv_nsec  field  was  not  in the range 0 to
+              999 999 999 or tv_sec was negative.
+
+       EFAULT Problem with copying information from user space.
+
+BUGS
+       The current implementation of nanosleep is based on the  normal  kernel
+       timer  mechanism,  which  has  a  resolution  of  1/HZ s (i.e, 10 ms on
+       Linux/i386 and  1 ms  on  Linux/Alpha).   Therefore,  nanosleep  pauses
+       always for at least the specified time, however it can take up to 10 ms
+       longer than specified until the process becomes runnable again. For the
+       same  reason,  the value returned in case of a delivered signal in *rem
+       is usually rounded to the next larger multiple of 1/HZ s.
+
+       As some applications require much more precise pauses (e.g.,  in  order
+       to  control  some time-critical hardware), nanosleep is also capable of
+       short high-precision pauses. If the process is scheduled under a  real-
+       time policy like SCHED_FIFO or SCHED_RR, then pauses of up to 2 ms will
+       be performed as busy waits with microsecond precision.
+
+SEE ALSO
+        sched_setscheduler(2), timer_create(2)
+
+

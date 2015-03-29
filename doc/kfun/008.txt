@@ -1,0 +1,136 @@
+
+----------------------------------------------------------------------------
+ 08 creat          - create a file                 
+----------------------------------------------------------------------------
+  mov  eax,8
+  mov  ebx,filename_ptr
+  mov  ecx,mode
+  int  80h
+
+       The  open()  system  call  is  used  to  convert a pathname into a file
+       descriptor (a small, non-negative integer for use in subsequent I/O  as
+       with  read,  write,  etc.).   When  the  call  is  successful, the file
+       descriptor returned will be the lowest file  descriptor  not  currently
+       open  for  the  process.  This call creates a new open file, not shared
+       with any other process.  (But shared  open  files  may  arise  via  the
+       fork(2)  system  call.)   The new file descriptor is set to remain open
+       across exec functions (see fcntl(2)).  The file offset is  set  to  the
+       beginning of the file.
+
+       The  argument  mode specifies the permissions to use in case a new file
+       is created. It is modified by the process's umask in the usual way: the
+       permissions  of  the  created file are (mode & ~umask).  Note that this
+       mode only applies to future accesses of the  newly  created  file;  the
+       open  call  that  creates a read-only file may well return a read/write
+       file descriptor.
+
+       mode
+       ----
+
+       The following symbolic constants and octal codes are provided for mode:
+
+       S_ISUID         04000q set user ID on execution
+       S_ISGID         02000q set group ID on execution
+       S_ISVTX         01000q sticky bit
+       S_IRUSR         00400q read by owner     (S_IREAD)
+       S_IWUSR         00200q write by owner    (S_IWRITE)
+       S_IXUSR         00100q execute/search by owner (S_IEXEC)
+       S_IRGRP         00040q read by group
+       S_IWGRP         00020q write by group
+       S_IXGRP         00010q execute/search by group
+       S_IROTH         00004q read by others    ([69]R_OK)
+       S_IWOTH         00002q write by others   ([70]W_OK)
+       S_IXOTH         00001q execute/search by others ([71]X_OK)
+       S_IRWXUGO       (S_IRWXU|S_IRWXG|S_IRWXO) 
+       S_IALLUGO       (S_ISUID|S_ISGID|S_ISVTX|S_IRWXUGO)
+       S_IRUGO         (S_IRUSR|S_IRGRP|S_IROTH)
+       S_IWUGO         (S_IWUSR|S_IWGRP|S_IWOTH)
+       S_IXUGO         (S_IXUSR|S_IXGRP|S_IXOTH)
+       S_IRWXU         00700q user (file owner) has read, write and execute permission
+       S_IRWXO         00007q others have read, write and execute permission
+
+       creat    is    equivalent    to    open    with    flags    equal    to
+       O_CREAT|O_WRONLY|O_TRUNC.
+
+RETURN VALUE
+       open and creat return the new  file  descriptor, or a negative error
+       Note that open can open device special files, but creat cannot create
+       them  -  use mknod instead.
+
+       If the file is newly created, its atime, ctime, mtime fields are set to
+       the  current  time, and so are the ctime and mtime fields of the parent
+       directory.  Otherwise, if the file is modified because of  the  O_TRUNC
+       flag, its ctime and mtime fields are set to the current time.
+
+
+ERRORS
+       EEXIST pathname already exists and O_CREAT and O_EXCL were used.
+
+       EISDIR pathname refers to a directory and the access requested involved
+              writing (that is, O_WRONLY or O_RDWR is set).
+
+       EACCES The requested access to the file is not allowed, or one  of  the
+              directories  in  pathname did not allow search (execute) permis-
+              sion, or the file did not exist yet and write access to the par-
+              ent directory is not allowed.
+
+       ENAMETOOLONG
+              pathname was too long.
+
+       ENOENT O_CREAT  is  not  set  and the named file does not exist.  Or, a
+              directory component in pathname does not exist or is a  dangling
+              symbolic link.
+
+       ENOTDIR
+              A  component  used as a directory in pathname is not, in fact, a
+              directory, or O_DIRECTORY was specified and pathname was  not  a
+              directory.
+
+       ENXIO  O_NONBLOCK  |  O_WRONLY  is set, the named file is a FIFO and no
+              process has the file open for reading.  Or, the file is a device
+              special file and no corresponding device exists.
+
+       ENODEV pathname  refers  to  a device special file and no corresponding
+              device exists.  (This is a Linux kernel bug - in this  situation
+              ENXIO must be returned.)
+
+       EROFS  pathname  refers  to  a file on a read-only filesystem and write
+              access was requested.
+
+       ETXTBSY
+              pathname refers to an executable image which is currently  being
+              executed and write access was requested.
+
+       EFAULT pathname points outside your accessible address space.
+
+       ELOOP  Too  many symbolic links were encountered in resolving pathname,
+              or O_NOFOLLOW was specified but pathname was a symbolic link.
+
+       ENOSPC pathname was to be created but the  device  containing  pathname
+              has no room for the new file.
+
+       ENOMEM Insufficient kernel memory was available.
+
+       EMFILE The process already has the maximum number of files open.
+
+       ENFILE The  limit  on  the total number of files open on the system has
+              been reached.
+
+NOTE
+       Under Linux, the O_NONBLOCK flag indicates that one wants to  open  but
+       does not necessarily have the intention to read or write.  This is typ-
+       ically used to open devices in order to get a file descriptor  for  use
+       with ioctl.
+
+RESTRICTIONS
+       There  are  many infelicities in the protocol underlying NFS, affecting
+       amongst others O_SYNC and O_NDELAY.
+
+       POSIX provides for three different variants of synchronised I/O, corre-
+       sponding to the flags O_SYNC, O_DSYNC and O_RSYNC.  Currently (2.1.130)
+       these are all synonymous under Linux.
+
+SEE ALSO
+       read, write, fcntl,  close,  link,  mknod,  mount,
+       stat, umask, unlink, socket, fopen, fifo
+

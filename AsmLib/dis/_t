@@ -1,0 +1,15 @@
+#! /bin/bash
+make
+rm -f _nasm.out.lst
+rm -f _nasm.out.bin
+rm -f _dis.out
+rm -f _nasm.out.dis
+echo "nasm" > _t1.out
+nasm _nasm.in -l _nasm.out.lst -o _nasm.out.bin 2>> _t1.out
+echo "dis" >> _t1.out
+./dis
+echo "dis -> nasm -> _nasm.out.dis.bin" >> _t1.out
+nasm _dis.out -l _nasm.out.dis.lst -o _nasm.out.dis.bin 2>> _t1.out
+echo "cmp binary outputs" >> _t1.out
+cmp _nasm.out.bin _nasm.out.dis.bin >> _t1.out
+less _t1.out

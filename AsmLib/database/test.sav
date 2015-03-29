@@ -1,0 +1,44 @@
+  extern database_open
+  extern database_close
+  extern database_insert
+  extern database_extract
+  extern database_search
+
+%include "dbs_struc.inc"
+
+ [section .text]
+
+  global _start
+  global main
+_start:
+main:
+  nop
+  call	db_open_test
+
+  mov	eax,1		;exit
+  int	80h
+;-------------------------------------------------------------
+db_open_test:
+  mov	esi,file_path
+  mov	edi,separator
+  mov	ebp,buf
+  call	database_open
+  
+  mov	esi,new_record
+  mov	ecx,record_size		;get ptr to top of index
+  mov	al,1
+  call	database_insert
+
+  call	database_close
+  ret
+
+  [section .data]
+file_path: db 'x',0
+separator: db 3,0ah,'~',0ah
+new_record: db 'end_rec'
+record_size equ $ - new_record
+buf:  times 1000 db 0
+buf2: times 20 db 0
+match: db 'match',0
+  [section .text]
+;-------------------------------------------------------------

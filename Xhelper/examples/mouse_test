@@ -1,0 +1,19 @@
+#!/bin/bash
+#This script demonstrates a mouse click
+#The window manager may move our window if xclock is loaded.
+
+#execute xhelper commands
+xhelper $0
+# stop script using "exit 0"
+exit 0
+
+#xhelper functions are placed here
+^show ("starting")
+^if_no_program ("xclock")
+^run ("xclock")
+^endif
+^move_window ("xclock") ("1271") ("223")
+^move_mouse ("1428") ("215")
+^click_mouse ("left")
+^sleep ("2")
+^stop

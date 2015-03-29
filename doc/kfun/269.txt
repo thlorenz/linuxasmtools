@@ -1,0 +1,18 @@
+
+-------------------------------------------------------------------------
+269 fstatfs64    - get open file status
+-------------------------------------------------------------------------
+
+  mov  eax,269
+  mov  ebx,fd
+  mov  ecx,size
+  mov  edx,buf	;pointer to buffer for statfs64
+  int  80h
+
+
+
+
+
+
+
+

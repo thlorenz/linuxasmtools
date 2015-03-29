@@ -1,0 +1,347 @@
+-- process# 00001003h is starting
+-- trace reporting enabled
+uname RTN=00000000h SEQ=00000001H ADR=B7F169EDH 
+ ebx=BFF7BFD6h  ptr to strings  
+  sys_name BFF7BFD6=Linux
+  sys_rel BFF7C017=debian
+  sys_release BFF7C058=2.6.18-4-k7
+  sys_version BFF7C099=#1 SMP Mon Mar 
+  sys_machine BFF7C0DA=i686
+  sys_domain BFF7C11B=(none)
+
+brk RTN=0805D000h SEQ=00000002H ADR=B7F15EDBH 
+ ebx=00000000h new address, or if zero address returned 
+
+access RTN=FFFFFFFEh SEQ=00000003H ADR=B7F16781H 
+ ebx=B7F1A041h filename B7F1A041=/etc/ld.so.nohw
+ ecx=00000000h access mode 
+
+mmap2 RTN=B7F03000h SEQ=00000004H ADR=B7F16933H 
+ ebx=00000000h  page 
+ ecx=00002000h  size 
+ edx=00000003h  prot 
+ esi=00000022h  flags 
+ edi=FFFFFFFFh  fd 
+ ebp=00000000h  offset (if needed) 
+
+access RTN=FFFFFFFEh SEQ=00000005H ADR=B7F16781H 
+ ebx=B7F17387h filename B7F17387=/etc/ld.so.prel
+ ecx=00000004h access mode 
+
+open RTN=00000004h SEQ=00000006H ADR=B7F16644H 
+ ebx=B7F19FCAh   filename B7F19FCA=/etc/ld.so.cach
+ ecx=00000000h   flags 
+ edx=00000000h   permissions (0=defaults) 
+ (open returns file-descriptor or error) 
+
+fstat64 RTN=00000000h SEQ=00000007H ADR=B7F1660EH 
+ ebx=00000004h   fd 
+ ecx=BFF7B8F8h   ptr to stat_struc -> 
+   00000303 st_dev: 
+   00000000 st_ino: 
+   0000 st_mode: 
+   0000 st_nlink: 
+   47BF st_uid: 
+   00ED st_gid: 
+   000081A4 st_rdev: device type (if inode device) 
+   00000001 st_size: total size in bytes 
+   00000000 st_blksize: blocksize for filesystem I/O 
+   00000000 st_blocks: number of blocks allocated 
+   00000000 st_atime: time of last access 
+   00000000 __unused1 
+   00000000 st_mtime: time of last modification 
+   0001460D __unused2 
+   00000000 st_ctime: time of last change 
+
+mmap2 RTN=B7EEE000h SEQ=00000008H ADR=B7F16933H 
+ ebx=00000000h  page 
+ ecx=0001460Dh  size 
+ edx=00000001h  prot 
+ esi=00000002h  flags 
+ edi=00000004h  fd 
+ ebp=00000000h  offset (if needed) 
+
+close RTN=00000000h SEQ=00000009H ADR=B7F1667DH 
+ ebx=00000004h file descriptor 
+
+access RTN=FFFFFFFEh SEQ=0000000AH ADR=B7F16781H 
+ ebx=B7F1A041h filename B7F1A041=/etc/ld.so.nohw
+ ecx=00000000h access mode 
+
+open RTN=00000004h SEQ=0000000BH ADR=B7F16644H 
+ ebx=B7EFBABAh   filename B7EFBABA=/lib/libkeyutil
+ ecx=00000000h   flags 
+ edx=08048631h   permissions (0=defaults) 
+ (open returns file-descriptor or error) 
+
+read RTN=00000200h SEQ=0000000CH ADR=B7F166C4H 
+ ebx=00000004h   fd 
+ ecx=BFF7BA60h   buffer BFF7BA60=7F 45 4C 46 01 01 01 00 00 00 00 00 00 00 00    ELF...........
+ edx=00000200h   length 
+
+fstat64 RTN=00000000h SEQ=0000000DH ADR=B7F1660EH 
+ ebx=00000004h   fd 
+ ecx=BFF7B978h   ptr to stat_struc -> 
+   00000303 st_dev: 
+   00000000 st_ino: 
+   0000 st_mode: 
+   0000 st_nlink: 
+   4A07 st_uid: 
+   0111 st_gid: 
+   000081A4 st_rdev: device type (if inode device) 
+   00000001 st_size: total size in bytes 
+   00000000 st_blksize: blocksize for filesystem I/O 
+   00000000 st_blocks: number of blocks allocated 
+   00000000 st_atime: time of last access 
+   00000000 __unused1 
+   00000000 st_mtime: time of last modification 
+   000015C8 __unused2 
+   00000000 st_ctime: time of last change 
+
+mmap2 RTN=B7EEB000h SEQ=0000000EH ADR=B7F16933H 
+ ebx=00000000h  page 
+ ecx=00002184h  size 
+ edx=00000005h  prot 
+ esi=00000802h  flags 
+ edi=00000004h  fd 
+ ebp=00000000h  offset (if needed) 
+
+mmap2 RTN=B7EED000h SEQ=0000000FH ADR=B7F16933H 
+ ebx=B7EED000h  page 
+ ecx=00001000h  size 
+ edx=00000003h  prot 
+ esi=00000812h  flags 
+ edi=00000004h  fd 
+ ebp=00000001h  offset (if needed) 
+
+close RTN=00000000h SEQ=00000010H ADR=B7F1667DH 
+ ebx=00000004h file descriptor 
+
+access RTN=FFFFFFFEh SEQ=00000011H ADR=B7F16781H 
+ ebx=B7F1A041h filename B7F1A041=/etc/ld.so.nohw
+ ecx=00000000h access mode 
+
+open RTN=00000004h SEQ=00000012H ADR=B7F16644H 
+ ebx=B7F00034h   filename B7F00034=/lib/tls/i686/c
+ ecx=00000000h   flags 
+ edx=08048786h   permissions (0=defaults) 
+ (open returns file-descriptor or error) 
+
+read RTN=00000200h SEQ=00000013H ADR=B7F166C4H 
+ ebx=00000004h   fd 
+ ecx=BFF7BA44h   buffer BFF7BA44=7F 45 4C 46 01 01 01 00 00 00 00 00 00 00 00    ELF...........
+ edx=00000200h   length 
+
+fstat64 RTN=00000000h SEQ=00000014H ADR=B7F1660EH 
+ ebx=00000004h   fd 
+ ecx=BFF7B95Ch   ptr to stat_struc -> 
+   00000303 st_dev: 
+   00000000 st_ino: 
+   0000 st_mode: 
+   0000 st_nlink: 
+   49A9 st_uid: 
+   0111 st_gid: 
+   000081A4 st_rdev: device type (if inode device) 
+   00000001 st_size: total size in bytes 
+   00000000 st_blksize: blocksize for filesystem I/O 
+   00000000 st_blocks: number of blocks allocated 
+   00000000 st_atime: time of last access 
+   00000000 __unused1 
+   00000000 st_mtime: time of last modification 
+   0012F130 __unused2 
+   00000000 st_ctime: time of last change 
+
+mmap2 RTN=B7DBA000h SEQ=00000015H ADR=B7F16933H 
+ ebx=00000000h  page 
+ ecx=0013089Ch  size 
+ edx=00000005h  prot 
+ esi=00000802h  flags 
+ edi=00000004h  fd 
+ ebp=00000000h  offset (if needed) 
+
+mmap2 RTN=B7EE1000h SEQ=00000016H ADR=B7F16933H 
+ ebx=B7EE1000h  page 
+ ecx=00007000h  size 
+ edx=00000003h  prot 
+ esi=00000812h  flags 
+ edi=00000004h  fd 
+ ebp=00000127h  offset (if needed) 
+
+mmap2 RTN=B7EE8000h SEQ=00000017H ADR=B7F16933H 
+ ebx=B7EE8000h  page 
+ ecx=0000289Ch  size 
+ edx=00000003h  prot 
+ esi=00000032h  flags 
+ edi=FFFFFFFFh  fd 
+ ebp=00000000h  offset (if needed) 
+
+close RTN=00000000h SEQ=00000018H ADR=B7F1667DH 
+ ebx=00000004h file descriptor 
+
+mmap2 RTN=B7DB9000h SEQ=00000019H ADR=B7F16933H 
+ ebx=00000000h  page 
+ ecx=00001000h  size 
+ edx=00000003h  prot 
+ esi=00000022h  flags 
+ edi=FFFFFFFFh  fd 
+ ebp=00000000h  offset (if needed) 
+
+mmap2 RTN=B7DB8000h SEQ=0000001AH ADR=B7F16933H 
+ ebx=00000000h  page 
+ ecx=00001000h  size 
+ edx=00000003h  prot 
+ esi=00000022h  flags 
+ edi=FFFFFFFFh  fd 
+ ebp=00000000h  offset (if needed) 
+
+mprotect RTN=00000000h SEQ=0000001BH ADR=B7F169B4H 
+ ebx=B7EE1000h  address 
+ ecx=00005000h  length 
+ edx=00000001h  prot flags 
+
+set_thread_area RTN=00000000h SEQ=0000001CH ADR=B7F08C11H 
+ ebx=BFF7BF60h  u_info ptr -> 
+    entry_number=    00000006
+    base_addr=       B7DB86C0
+    limit   =        000FFFFF
+    seg_32bit=       00000051
+    contents=        00000000
+    read_exec_only=  00000000
+    limit_in_pages=  00000001
+    seg_not_present= 00000000
+    usable=          00000000
+
+munmap RTN=00000000h SEQ=0000001DH ADR=B7F16971H 
+ ebx=B7EEE000h  start adr 
+ ecx=0001460Dh  length 
+
+geteuid32 RTN=000003E8h SEQ=0000001EH ADR=B7F05410H 
+
+getegid32 RTN=000003E8h SEQ=0000001FH ADR=B7F05410H 
+
+getgroups32 RTN=00000009h SEQ=00000020H ADR=B7F05410H 
+ ebx=00000000h  size of buffer 
+ ecx=00000000h  ptr to ->         ... 
+  (returns group count) 
+
+brk RTN=0805D000h SEQ=00000021H ADR=B7F05410H 
+ ebx=00000000h new address, or if zero address returned 
+
+brk RTN=0807E000h SEQ=00000022H ADR=B7F05410H 
+ ebx=0807E000h new address, or if zero address returned 
+
+getgroups32 RTN=00000009h SEQ=00000023H ADR=B7F05410H 
+ ebx=00000009h  size of buffer 
+ ecx=0805D008h  ptr to ->  00000014  00000018  00000019  0000001D ... 
+  (returns group count) 
+
+fstat64 RTN=00000000h SEQ=00000024H ADR=B7F05410H 
+ ebx=00000001h   fd 
+ ecx=BFF7C014h   ptr to stat_struc -> 
+   0000000B st_dev: 
+   00000000 st_ino: 
+   0000 st_mode: 
+   0000 st_nlink: 
+   0004 st_uid: 
+   0000 st_gid: 
+   00002190 st_rdev: device type (if inode device) 
+   00000001 st_size: total size in bytes 
+   000003E8 st_blksize: blocksize for filesystem I/O 
+   00000005 st_blocks: number of blocks allocated 
+   00008802 st_atime: time of last access 
+   00000000 __unused1 
+   00000000 st_mtime: time of last modification 
+   00000000 __unused2 
+   00000000 st_ctime: time of last change 
+
+mmap2 RTN=B7F02000h SEQ=00000025H ADR=B7F05410H 
+ ebx=00000000h  page 
+ ecx=00001000h  size 
+ edx=00000003h  prot 
+ esi=00000022h  flags 
+ edi=FFFFFFFFh  fd 
+ ebp=00000000h  offset (if needed) 
+
+write RTN=00000010h SEQ=00000026H ADR=B7F05410H 
+ ebx=00000001h   fd 
+ ecx=B7F02000h   buffer B7F02000=53 65 73 73 69 6F 6E 20 4B 65 79 72 69 6E 67    Session Keyring
+ edx=00000010h   length 
+
+keyctl RTN=00000027h SEQ=00000027H ADR=B7F05410H 
+ ebx=00000006h  describe a key
+ ecx=FFFFFFFDh  serial# 
+ edx=00000000h  buffer ptr -> 
+  type  
+  uid   
+  gid   
+  perm  
+  desc  00000000=
+ esi=00000000h  size of buffer 
+
+keyctl RTN=00000027h SEQ=00000028H ADR=B7F05410H 
+ ebx=00000006h  describe a key
+ ecx=FFFFFFFDh  serial# 
+ edx=0805D030h  buffer ptr -> 
+  type  7279656B
+  uid   3B676E69
+  gid   30303031
+  perm  3B312D3B
+  desc  0805D040=1f3f0000;_uid_s
+ esi=00000028h  size of buffer 
+
+write RTN=00000038h SEQ=00000029H ADR=B7F05410H 
+ ebx=00000001h   fd 
+ ecx=B7F02000h   buffer B7F02000=20 20 20 20 20 20 20 2D 33 20 2D 2D 61 6C 73           -3 --als
+ edx=00000038h   length 
+
+keyctl RTN=00000004h SEQ=0000002AH ADR=B7F05410H 
+ ebx=0000000Bh  read a key or keyrings contents
+ ecx=FFFFFFFDh  key serial# 
+ edx=00000000h  payload ptr 
+ esi=00000000h  size of payload buf 
+
+keyctl RTN=00000004h SEQ=0000002BH ADR=B7F05410H 
+ ebx=0000000Bh  read a key or keyrings contents
+ ecx=FFFFFFFDh  key serial# 
+ edx=0805D060h  payload ptr 
+ esi=00000004h  size of payload buf 
+
+keyctl RTN=00000023h SEQ=0000002CH ADR=B7F05410H 
+ ebx=00000006h  describe a key
+ ecx=2D9E22B1h  serial# 
+ edx=00000000h  buffer ptr -> 
+  type  
+  uid   
+  gid   
+  perm  
+  desc  00000000=
+ esi=00000000h  size of buffer 
+
+keyctl RTN=00000023h SEQ=0000002DH ADR=B7F05410H 
+ ebx=00000006h  describe a key
+ ecx=2D9E22B1h  serial# 
+ edx=0805D070h  buffer ptr -> 
+  type  7279656B
+  uid   3B676E69
+  gid   30303031
+  perm  3B312D3B
+  desc  0805D080=1f3f0000;_uid.1
+ esi=00000024h  size of buffer 
+
+write RTN=00000038h SEQ=0000002EH ADR=B7F05410H 
+ ebx=00000001h   fd 
+ ecx=B7F02000h   buffer B7F02000=37 36 35 33 33 38 32 38 39 20 2D 2D 61 6C 73    765338289 --als
+ edx=00000038h   length 
+
+keyctl RTN=00000000h SEQ=0000002FH ADR=B7F05410H 
+ ebx=0000000Bh  read a key or keyrings contents
+ ecx=2D9E22B1h  key serial# 
+ edx=00000000h  payload ptr 
+ esi=00000000h  size of payload buf 
+
+munmap RTN=00000000h SEQ=00000030H ADR=B7F05410H 
+ ebx=B7F02000h  start adr 
+ ecx=00001000h  length 
+
+exit_group RTN=FFFFFFDAh SEQ=00000031H ADR=B7F05410H 
+-- process 00001003h died

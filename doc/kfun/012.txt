@@ -1,0 +1,45 @@
+
+----------------------------------------------------------------------------
+ 12 chdir          - change working directory
+----------------------------------------------------------------------------
+  mov   eax,012
+  mov   ebx,path  ;ptr to asciiz path string
+  int   80h
+
+       chdir changes the current directory to the specified path.
+
+RETURN VALUE
+       On success, zero is returned. On error a negative code is returned
+
+ERRORS
+       Depending  on  the file system, other errors can be returned.  The more
+       general errors for chdir are listed below:
+
+       EFAULT path points outside your accessible address space.
+
+       ENAMETOOLONG
+              path is too long.
+
+       ENOENT The file does not exist.
+
+       ENOMEM Insufficient kernel memory was available.
+
+       ENOTDIR
+              A component of path is not a directory.
+
+       EACCES Search permission is denied on a component of path.
+
+       ELOOP  Too many symbolic links were encountered in resolving path.
+
+       EIO    An I/O error occurred.
+
+       The general errors for fchdir are listed below:
+
+       EBADF  fd is not a valid file descriptor.
+
+       EACCES Search permission was denied on the directory open on fd.
+
+SEE ALSO
+       getcwd, chroot
+
+

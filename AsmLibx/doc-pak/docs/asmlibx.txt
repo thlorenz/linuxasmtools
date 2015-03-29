@@ -1,0 +1,2587 @@
+ AsmLibx Reference ** Version asmlibx0.9.46
+
+Asmlibx is a library of Linux functions for X86
+processors.  All code was written in assembler.
+In general, functions do not preserve registers
+or check for errors.  The CLD flag is assumed
+to be set.  Also, some functions assume other
+functions are called first.
+
+Copyrighted by the GNU public liscense.
+----------------------------------------------
+
+TABLE OF CONTENTS
+-----------------
+
+ -- keyboard -- 
+1 ascii_to_xkey - ascii code to x key code
+2 x_change_keyboard_control - change keyboard state
+3 x_edit_key_decode - associate process with key
+4 x_get_keyboard_control - get keyboard state
+5 x_get_keyboard_mapping - get map file for keyboard
+6 x_get_text - get string in scrolled window line
+7 x_key_decode - associate process with key
+8 x_key_translate - convert event packet to key codes
+
+ -- mgr_ctrl -- 
+9 activate_window - focus and show window
+10 select_desktop - send desktop select to window manager
+11 window_move_resize - window move/resize 
+12 x_wm_hints - send window size to manager
+
+ -- mgr_info -- 
+13 atom_NET_ACTIVE_WINDOW - get atom NET_ACTIVE_WINDOW
+14 atom_NET_CLIENT_LIST - get atom NET_CLIENT_LIST
+15 atom_NET_CURRENT_DESKTOP - get atom NET_CURRENT_DESKTOP
+16 atom_NET_NUMBER_OF_DESKTOPS - get atom NET_NUMBER_OF_DESKTOPS
+17 atom_NET_WM_DESKTOP - get atom NET_WM_DESKTOP
+18 atom_NET_WM_PID - get atom NET_WM_PID
+19 current_desktop - get current desktop from window mgr
+20 get_client_list - get list of window manager window id's
+21 get_windows_desktop - get desktop# for window
+22 number_of_desktops - get number of desktops from window mgr
+23 win_associated_pid - get pid (program) for window
+24 wm_class - get property wm_class
+25 wm_name - get property wm_name
+
+ -- mouse -- 
+26 x_mouse_decode - associate process with screen area
+27 x_query_pointer - query pointer position
+
+ -- server -- 
+28 poll_socket - check if key avail.
+29 window_event_decode - wait for events and decode actions
+30 window_event_enable - enable window events
+31 x_check_event - check if events ready or pending
+32 x_connect - connect to x server
+33 x_disconnect - disconnect from x server
+34 x_flush - send queued events to x server
+35 x_interatom - lookup atom code
+36 x_list_extension - get list of extensions
+37 x_query_extension - check for x server extension
+38 x_read_socket - read x server socket
+39 x_send_request - send request to x server
+40 x_wait_big_reply - wait xx millsecods for big reply
+41 x_wait_event - wait forever and read event packet
+42 x_wait_reply - wait for xx milliseconds for reply
+
+ -- win_color -- 
+43 color_id_lookup - color number to color id
+44 color_num_lookup - convert color id to color number
+45 window_color - set color number active
+46 window_id_color - set color id's active
+47 x_allocate_named_color - ask for color id
+48 x_change_gc_colors - set active colors for window
+
+ -- win_ctrl -- 
+49 window_clear - clear window              
+50 window_clear_area - clear with window color
+51 window_create - create x window
+52 window_kill - destroy window
+53 window_lower - move window to bottom of stack
+54 window_name - set window name and title
+55 window_pre - setup for window_create
+56 window_raise - raise window to top
+57 x_change_attributes - change a window attribute
+58 x_configure_window - get list of windows
+59 x_create_gc - create graphic context 
+60 x_create_window - create window within server
+61 x_destroy_window - destroy window
+62 x_freegc - discard window information in server
+63 x_map_win - show window 
+64 x_reparent_window - get list of windows
+65 x_replace_string_property - change a window property
+66 x_set_input_focus - set input focus
+
+ -- win_info -- 
+67 window_find - search for window
+68 x_get_geometry - get window geometry
+69 x_get_input_focus - get focus
+70 x_get_property - get property status
+71 x_get_selection_owner - get selection owner
+72 x_get_window_attributes - get window attributes
+73 x_list_properties - get list of atoms (properties)
+74 x_query_tree - get list of windows
+75 x_translate_coordinates - get abs win location
+
+ -- win_text -- 
+76 window_font - set a new window font
+77 window_rel_table - display list of items 
+78 window_rel_table_setup - setup for window_rel_table
+79 window_write_line - write line at char address
+80 window_write_lines - write lines to area
+81 window_write_pline - write line at pixel address
+82 window_write_table - display items for text window 
+83 window_write_table_setup - setup for window_write_table
+84 x_change_gc_font - change active font
+85 x_get_font_path - get paths used for font search
+86 x_list_fonts - list fonts that match pattern
+87 x_open_font - look for a named font
+88 x_query_font - check current font state
+89 x_query_text - get lenght of text string
+90 x_write_block - write ascii block to window 
+91 x_write_string - write a string to window 
+
+ -- xtest -- 
+92 query_XKEYBOARD - get XKEYBOARD op code
+93 query_xtest - get xtest op code
+94 send_keys_to_window - send keystrokes to window
+95 xtest_click - send input to window
+96 xtest_fake_input - send input to window
+97 xtest_grab_control - set server "grab" status
+98 xtest_move_mouse - move mouse pointer
+99 xtest_version - get xtest extension version
+
+ -- appendix --
+999 usage notes
+
+-----------------------------------------------------------------------
+1 ascii_to_xkey - ascii code to x key code
+-----------------------------------------------------------------------
+ INPUTS
+  al = ascii key
+ OUTPUT:
+  "js" flag set if printable ascii, (ah has 80h bit set)
+  ah=flag
+   00=unshifted  01-shifted
+  al= x code
+
+ NOTES
+   source file: ascii_to_xkey
+   This function can not be used for special keys with
+   extended ascii representation.
+
+-----------------------------------------------------------------------
+2 x_change_keyboard_control - change keyboard state
+-----------------------------------------------------------------------
+ INPUTS
+    al = auto repeat mode 0=off 1=on
+ OUTPUT:
+    failure - eax = negative error code
+              flags set for "js"
+    success - eax =
+              
+ NOTES
+   source file: x_change_keyboard_control.asm
+
+-----------------------------------------------------------------------
+3 x_edit_key_decode - associate process with key
+-----------------------------------------------------------------------
+ INPUTS
+  bl = key code
+  bh = key flag
+  esi = ptr to translation table as follows:
+          table of key codes and processes
+          first table entry is alpha key process
+          middle entries are non alpha keys
+          final process is called if no match
+          A key code consists of flag byte and
+          code byte as returned by x_key_translate.
+    example
+    dd	gs_normal_char ;alpha key process (printable char)
+    dw 00xxh          ; flag,code
+    dd gs_home        ; home process 
+    ds 00xxh          ; flag (00) code (xx)
+    dd gs_left        ; left arrow process
+        .
+    dw 0              ;end of table
+    dd no_match       ;no-match process
+
+           
+ OUTPUT
+    eax=pointer to process
+
+ NOTES
+   source file: x_key_decode.asm
+
+-----------------------------------------------------------------------
+4 x_get_keyboard_control - get keyboard state
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    failure - eax = negative error code
+              flags set for "js"
+    success - eax = size of replay
+              ecx = buffer ptr with
+  resb 1  ;Reply
+  resb 1  ;autorepeat status 0=off 1=on
+  resb 2  ;sequence number
+  resb 4  ;led mask
+  resb 1  ;key click percent
+  resb 1  ;bell percent
+  resb 2  ;bell pitch
+  resb 2  ;bell duration
+  resb 2  ;unused
+  resb 32 ;auto repeats
+              
+ NOTES
+   source file: x_get_keyboard_control.asm
+
+-----------------------------------------------------------------------
+5 x_get_keyboard_mapping - get map file for keyboard
+-----------------------------------------------------------------------
+ INPUTS
+  eax = buffer of size 4000+ to hold map
+ OUTPUT:
+    buffer has map unless eax negative
+              
+ NOTES
+   source file: x_get_keyboard_mapping.asm
+
+-----------------------------------------------------------------------
+6 x_get_text - get string in scrolled window line
+-----------------------------------------------------------------------
+    Read string into buffer using optional window size.
+    Unknown keys can be returned to caller for processing
+    or ignored by x_get_text.
+ INPUTS
+    ebp= win block ptr (see window_pre)
+    eax= pointer to table with following structure:
+    struc strdef
+    ._data_buffer_ptr    resd 1 ;+0    blanked or preload with text
+    ._buffer_size        resd 1 ;+4    buffer size, > or = window_size
+    ._display_row        resb 1 ;+12   ;row (1-x)
+    ._display_column     resb 1 ;+13   ;column (1-x)
+    ._initial_cursor_col resb 1 ;+15   ;must be within data area
+    ._window_size        resd 1 ;+16   bytes in window
+    ._scroll             resd 1 ;+20   window scroll right count
+    ._stringBColor       resd 1 ;string background color#
+    ._stringFColor       resd 1 ;string foreground color#
+    ._cursorBColor       resd 1 ;string cursor background color#
+    ._cursorFColor       resd 1 ;string cursor foreground color#
+    endstruc
+
+    note: the input block is updated by x_get_text and must
+          be writable.  This allows x_get_text entry to continue
+          from last entry when called over and over.
+
+    note: x_get_text is always in insert mode.
+    
+    note: The Initial cursor column must equal the display column
+      or within the range of "display_column" + window_size"
+      Thus, if "display_column=5" and "window_size"=2 then
+      "initial cursor" can be 5 or 6
+      If window_size extends beyond physical right edge of screen
+      it will be truncated.
+
+    note: the initial buffer is assumed to contain text or
+          blanks.  At exit the whole buffer is retruned with
+          edits.
+           
+ OUTPUT
+    ebp=pointer to input table (unchanged)
+    [lib_buf] has packet that caused exit
+
+    note: x_get_text uses right/left arrow, rubout, del
+          home, end, .  All
+          other non-text data will force exit.
+
+ NOTES
+   source file: x_get_text.asm
+
+-----------------------------------------------------------------------
+7 x_key_decode - associate process with key
+-----------------------------------------------------------------------
+ INPUTS
+  bl = key code
+  bh = key flag
+  esi = ptr to translation table as follows:
+          table of key codes and processes.
+          entries consist of flag & code, plus
+          process.
+          final process is called if no match
+          A key code consists of flag byte and
+          code byte as returned by x_key_translate.
+    example
+    dw 00xxh          ; flag,code
+    dd gs_home        ; home process 
+    ds 00xxh          ; flag (00) code (xx)
+    dd gs_left        ; left arrow process
+        .
+    dw 0              ;end of table
+    dd no_match       ;no-match process
+
+           
+ OUTPUT
+    eax=pointer to process
+        if no match, then eax=0
+
+ NOTES
+   source file: x_key_decode.asm
+
+-----------------------------------------------------------------------
+8 x_key_translate - convert event packet to key codes
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = window block
+  ecx = event packet pointer
+ OUTPUT:
+  "js" flag set if printable ascii, (ah has 80h bit set)
+  ah=flag
+   80=printable ascii 40=non-printable
+   20=modifier key  10-numlock
+   08-alt 04-ctrl 02-caplock 01-shift
+  al= printable ascii if flag 80h bit set
+  al= non printable ascii if flag 40h set, this bit should
+      never be set, it is for error checking.  Normally, non
+      printable characters have bits 80h, and 40h zeroed.
+  al= t-code if no 80h or 40h flag bits
+
+       unshifted          shifted
+x-code t-code    name       code   name
+-----  ------- -------    -----  ----------------
+  8     
+  9       201b (Escape)	
+ 10     0x8031 (1)          0x8021 (exclam)	
+ 11     0x8032 (2)          0x8040 (at)	
+ 12     0x8033 (3)          0x8023 (numbersign)	
+ 13     0x8034 (4)          0x8024 (dollar)	
+ 14     0x8035 (5)          0x8025 (percent)	
+ 15     0x8036 (6)          0x805e (asciicircum)	
+ 16     0x8037 (7)          0x8026 (ampersand)	
+ 17     0x8038 (8)          0x802a (asterisk)	
+ 18     0x8039 (9)          0x8028 (parenleft)	
+ 19     0x8030 (0)          0x8029 (parenright)	
+ 20     0x802d (minus)      0x805f (underscore)	
+ 21     0x803d (equal)      0x802b (plus)	
+ 22       0008 (BackSpace)         (Terminate_Server)	
+ 23       0009 (Tab)          0020 (ISO_Left_Tab)	
+ 24     0x8071 (q)          0x8051 (Q)	
+ 25     0x8077 (w)          0x8057 (W)	
+ 26     0x8065 (e)          0x8045 (E)	
+ 27     0x8072 (r)          0x8052 (R)	
+ 28     0x8074 (t)          0x8054 (T)	
+ 29     0x8079 (y)          0x8059 (Y)	
+ 30     0x8075 (u)          0x8055 (U)	
+ 31     0x8069 (i)          0x8049 (I)	
+ 32     0x806f (o)          0x804f (O)	
+ 33     0x8070 (p)          0x8050 (P)	
+ 34     0x805b (bracketleft)   0x807b (braceleft)	
+ 35     0x805d (bracketright)  0x807d (braceright)	
+ 36       000d (Return)	
+ 37       20e3 (Control_L)	
+ 38     0x8061 (a)          0x8041 (A)	
+ 39     0x8073 (s)          0x8053 (S)	
+ 40     0x8064 (d)          0x8044 (D)	
+ 41     0x8066 (f)          0x8046 (F)	
+ 42     0x8067 (g)          0x8047 (G)	
+ 43     0x8068 (h)          0x8048 (H)	
+ 44     0x806a (j)          0x804a (J)	
+ 45     0x806b (k)          0x804b (K)	
+ 46     0x806c (l)          0x804c (L)	
+ 47     0x803b (semicolon)  0x803a (colon)	
+ 48     0x8027 (apostrophe) 0x8022 (quotedbl)	
+ 49     0x8060 (grave)      0x807e (asciitilde)	
+ 50       20e1 (Shift_L)	
+ 51     0x805c (backslash)  0x807c (bar)	
+ 52     0x807a (z)          0x805a (Z)	
+ 53     0x8078 (x)          0x8058 (X)	
+ 54     0x8063 (c)          0x8043 (C)	
+ 55     0x8076 (v)          0x8056 (V)	
+ 56     0x8062 (b)          0x8042 (B)	
+ 57     0x806e (n)          0x804e (N)	
+ 58     0x806d (m)          0x804d (M)	
+ 59     0x802c (comma)      0x803c (less)	
+ 60     0x802e (period)     0x803e (greater)	
+ 61     0x802f (slash)      0x803f (question)	
+ 62       20e2 (Shift_R)	
+ 63       00aa (KP_Multiply)       (XF86_ClearGrab)	
+ 64       20e9 (Alt_L)	            (Meta_L)	
+ 65     0x8020 (space)	
+ 66       20e5 (Caps_Lock)	
+ 67       00be (F1)	   (XF86_Switch_VT_1)	
+ 68       00bf (F2)	   (XF86_Switch_VT_2)	
+ 69       00c0 (F3)	   (XF86_Switch_VT_3)	
+ 70       00c1 (F4)	   (XF86_Switch_VT_4)	
+ 71       00c2 (F5)	   (XF86_Switch_VT_5)	
+ 72       00c3 (F6)	   (XF86_Switch_VT_6)	
+ 73       00c4 (F7)	   (XF86_Switch_VT_7)	
+ 74       00c5 (F8)	   (XF86_Switch_VT_8)	
+ 75       00c6 (F9)	   (XF86_Switch_VT_9)	
+ 76       00c7 (F10)	   (XF86_Switch_VT_10)	
+ 77       007f (Num_Lock) (Pointer_EnableKeys)	
+ 78       0014 (Scroll_Lock)	
+ 79       0095 (KP_Home)  00b7 (KP_7)	
+ 80       0097 (KP_Up)	   00b8 (KP_8)	
+ 81       009a (KP_Pgup ) 00b9 (KP_9)	
+ 82       00ad (KP_Subtract) 0023 (XF86_Prev_VMode)	
+ 83       0096 (KP_Left)  00b4 (KP_4)	
+ 84       009d (KP_Begin) 00b5 (KP_5)	
+ 85       0098 (KP_Right) 00b6 (KP_6)	
+ 86       00ab (KP_Add)   0022 (XF86_Next_VMode)	
+ 87       009c (KP_End)   00b1 (KP_1)	
+ 88       0099 (KP_Down)  00b2 (KP_2)	
+ 89       009b (KP_Pgdn)  00b3 (KP_3)	
+ 90       009e (KP_Insert)00b0 (KP_0)	
+ 91       009f (KP_Delete)00ae (KP_Decimal)	
+ 92     
+ 93       007e (Mode_switch)	
+ 94       803c (less)          0x803e (greater) 
+ 95       00c8 (F11)	 000b   (XF86_Switch_VT_11)	
+ 96       00c9 (F12)    000c   (XF86_Switch_VT_12)	
+ 97       0050 (Home)	
+ 98       0052 (Up)	
+ 99       0055 (Pgup )	
+100       0051 (Left)	
+101     
+102       0053 (Right)	
+103       0057 (End)	
+104       0054 (Down)	
+105       0056 (Pgdn)	
+106       0063 (Insert)	
+107       00ff (Delete)	
+108       008d (KP_Enter)	
+109       20e4 (Control_R)	
+110       0013 (Pause)  006b (Break)	
+111       0061 (Print)  0015 (Sys_Req)	
+112       00af (KP_Divide)   (XF86_Ungrab)	
+113       20ea (Alt_R)  20e8 (Meta_R)	
+
+    error = sign flag set
+    success -
+              
+ NOTES
+   source file: x_key_translate
+
+-----------------------------------------------------------------------
+9 activate_window - focus and show window
+-----------------------------------------------------------------------
+     This function switches to desktop containing
+     target window and requests the window manager
+     to focus it and bring it to top.
+ INPUTS
+  eax = window id to activate
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+              
+ NOTES
+   source file: activate_window.asm
+
+-----------------------------------------------------------------------
+10 select_desktop - send desktop select to window manager
+-----------------------------------------------------------------------
+ INPUTS
+  eax = desktop number
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+              
+ NOTES
+   source file: select_desktop.asm
+
+-----------------------------------------------------------------------
+11 window_move_resize - window move/resize 
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id to move/resize
+    esi = ptr to block with:
+          dw new x pixel column
+          dw new y pixel row
+          dw new window width in pixels
+          dw new window height in pixels
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+ NOTES
+   source file: window_move_resize.asm
+   To resize our window, assume it is focused at
+   start of execution and get its id with:
+   x_get_input_focus.  
+
+-----------------------------------------------------------------------
+12 x_wm_hints - send window size to manager
+-----------------------------------------------------------------------
+ INPUTS
+  eax = window id
+  esi = pointer to block
+     cw_x:		dw 0    ;pixel column adr
+     cw_y:		dw 0    ;pixel row adr
+     cw_width          dw 0    ;pixel width
+     cw_height: 	dw 0    ;lixel height
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+    [sequence] - sequence number of packet sent
+              
+ NOTES
+   source file: x_wm_hints.asm
+
+-----------------------------------------------------------------------
+13 atom_NET_ACTIVE_WINDOW - get atom NET_ACTIVE_WINDOW
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success eax -> atom
+              
+ NOTES
+   source file: atom_NET_ACTIVE_WINDOW.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+14 atom_NET_CLIENT_LIST - get atom NET_CLIENT_LIST
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success eax -> atom
+              
+ NOTES
+   source file: atom_NET_CLIENT_LIST.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+15 atom_NET_CURRENT_DESKTOP - get atom NET_CURRENT_DESKTOP
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success eax -> atom
+              
+ NOTES
+   source file: atom_NET_CURRENT_DESKTOP.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+16 atom_NET_NUMBER_OF_DESKTOPS - get atom NET_NUMBER_OF_DESKTOPS
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success eax -> atom
+              
+ NOTES
+   source file: atom_NET_NUMBER_OF_DESKTOPS.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+17 atom_NET_WM_DESKTOP - get atom NET_WM_DESKTOP
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success eax -> atom
+              
+ NOTES
+   source file: atom_NET_WM_DESKTOP.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+18 atom_NET_WM_PID - get atom NET_WM_PID
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success eax -> atom
+              
+ NOTES
+   source file: atom_NET_WINDOW_PID.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+19 current_desktop - get current desktop from window mgr
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success eax -> number of desktops
+              
+ NOTES
+   source file: current_desktop.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+20 get_client_list - get list of window manager window id's
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success esi -> client window id list
+               ecx = number of entries
+              
+ NOTES
+   source file: get_client_list.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+21 get_windows_desktop - get desktop# for window
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success eax -> desktop number that
+                      contains window
+              
+ NOTES
+   source file: get_windows_desktop.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+22 number_of_desktops - get number of desktops from window mgr
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success eax -> number of desktops
+              
+ NOTES
+   source file: number_of_desktops.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+23 win_associated_pid - get pid (program) for window
+-----------------------------------------------------------------------
+ INPUTS
+    eax =  window id
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success eax = pid
+              
+ NOTES
+   source file: win_associated_pid.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+24 wm_class - get property wm_class
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success ecx -> returned packet
+               edi = pointer to name
+               eax = length of name
+              
+ NOTES
+   source file: wm_class.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+25 wm_name - get property wm_name
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success ecx -> returned packet
+               edi = pointer to name
+               eax = length of name
+              
+ NOTES
+   source file: wm_name.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+26 x_mouse_decode - associate process with screen area
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = window block
+  ecx = event packet pointer
+  esi = decode table ptr
+        decode table entries:
+                              db (starting col) character
+                              db (ending col) character
+                              db (starting row) character
+                              db (ending row) character
+                              dd process adr
+                                     .
+                              dd 0 ;end of table
+ OUTPUT:
+    eax = 0 if no process found for click area
+          process address if click in table
+    flags set for jz (no process) or jnz (process found)
+              
+ NOTES
+   source file: x_mouse_decode
+
+-----------------------------------------------------------------------
+27 x_query_pointer - query pointer position
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id to query
+    ecx = buffer to hold reply packet
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success ecx -> buffer with:
+      db reply 1=success 0=fail
+      db -
+      dw sequence#
+      dd reply length (zero)
+      dd root window id
+      dd child window id (0=no child)
+      dw root x position (pixel column)
+      dw root y position (pixel row)
+      dw child x position (pixel column)
+      dw child y position (pixel row)
+      dw event mask
+         SETofKEYBUTMASK
+          #x0001	 Shift
+          #x0002	 Lock
+          #x0004	 Control
+          #x0008	 Mod1
+          #x0010	 Mod2
+          #x0020	 Mod3
+          #x0040	 Mod4
+          #x0080	 Mod5
+          #x0100	 Button1
+          #x0200	 Button2
+          #x0400	 Button3
+          #x0800	 Button4
+          #x1000	 Button5
+          #xE000	 unused but must be zero
+              
+ NOTES
+   source file: x_query_pointer.asm
+
+-----------------------------------------------------------------------
+28 poll_socket - check if key avail.
+-----------------------------------------------------------------------
+ INPUTS
+    eax = fd (file descriptor)
+    edx = milliscond wait count,
+          -1=forever, 0=immediate return
+ OUTPUT
+    flags set "js" - error (check before jnz)
+              "jz" - no event waiting, or timeout
+              "jnz" - event ready 
+ NOTES
+    source file: poll_socket.asm
+
+-----------------------------------------------------------------------
+29 window_event_decode - wait for events and decode actions
+-----------------------------------------------------------------------
+ INPUTS
+    ebp = ptr to window block
+    edi = ptr to x command to call, if zero
+          no command is called.
+          If command is called, all events are
+          handled until command completes.
+          window_event_decode exits when command is done.
+          If no command is passed, window_event_decode
+          waits foreveer.
+
+    eax = ptr to event processing list.  The list
+          is used to process all packets from the
+          server.
+
+           dd  Error              ;0
+           dd  CommandDone        ;1
+           dd  KeyPress           ;2
+           dd  KeyRelease         ;3
+           dd  ButtonPress        ;4
+           dd  ButtonRelease      ;5
+           dd  MotionNotify       ;6
+           dd  EnterNotify        ;7
+           dd  LeaveNotify        ;8
+           dd  FocusIn            ;9
+           dd  FocusOut           ;10
+           dd  KeymapNotify       ;11
+           dd  Expose             ;12
+           dd  GraphicsExpose     ;13
+           dd  NoExpose           ;14
+           dd  VisibilityNotify   ;15
+           dd  CreateNotify       ;16
+           dd  DestroyNotify		;17
+           dd  UnmapNotify		;18
+           dd  MapNotify		;19
+           dd  MapRequest		;20
+           dd  ReparentNotify		;21
+           dd  ConfigureNotify		;22
+           dd  ConfigureRequest	;23
+           dd  GravityNotify		;24
+           dd  ResizeRequest		;25
+           dd  CirculateNotify		;26
+           dd  CirculateRequest	;27
+           dd  PropertyNotify		;28
+           dd  SelectionClear		;29
+           dd  SelectionRequest	;30
+           dd  SelectionNotify		;31
+           dd  ColormapNotify		;32
+           dd  ClientMessage		;33
+           dd  MappingNotify		;34
+
+          The events after last enabled event are
+          not used, and the table can be truncated
+          to save memory.
+
+          actions can force window_event_decode to exit
+          by returning a negative.  The negative
+          value of 80000000h is treated as a normal
+          exit without error.
+
+    failure - eax=negative error code
+              flags set for js
+           -1=reply read error (buffer error)
+           -2=error packet in buffer
+           -3=reply out of sequence
+           -4=timeout expired or servers in tryagain loop
+           -5=unexpected event while waiting for reply.
+           -6=socket dead
+           -x=all other errors are from kernel
+    success - eax = number of bytes read from server
+              ecx = pointer to reply buffer info.            
+              (see file event_info.inc for buffer data)
+               
+ NOTES
+   source file: window_event_decode.asm
+   This function works in two modes.  If a action
+   is provided it returns after doing the action.
+   Any events found will also be processed.
+   If no action is passed, then this function wait
+   forever and processes events.
+
+-----------------------------------------------------------------------
+30 window_event_enable - enable window events
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = window block
+  ebx = flag bits for events of interest
+    0x00000001 KeyPress
+    0x00000002 KeyRelease
+    0x00000004 ButtonPress
+    0x00000008 ButtonRelease
+    0x00000010 EnterWindow
+    0x00000020 LeaveWindow
+    0x00000040 PointerMotion
+    0x00000080 PointerMotionHint
+    0x00000100 Button1Motion
+    0x00000200 Button2Motion
+    0x00000400 Button3Motion
+    0x00000800 Button4Motion
+    0x00001000 Button5Motion
+    0x00002000 ButtonMotion
+    0x00004000 KeymapState
+    0x00008000 Exposure
+    0x00010000 VisibilityChange
+    0x00020000 StructureNotify
+    0x00040000 ResizeRedirect
+    0x00080000 SubstructureNotify
+    0x00100000 SubstructureRedirect
+    0x00200000 FocusChange
+    0x00400000 PropertyChange
+    0x00800000 ColormapChange
+    0x01000000 OwnerGrabButton
+    0xFE000000 unused but must be zero
+ OUTPUT:
+    error = sign flag set
+    success - returns the following items in window block
+              
+ NOTES
+   source file: window_event_enable.asm
+
+-----------------------------------------------------------------------
+31 x_check_event - check if events ready or pending
+-----------------------------------------------------------------------
+ INPUTS
+   none
+ OUTPUT:
+   eax = -1 "js" error
+          0 "jz" no socket pkts, no pending replies
+          1  socket pkt avail.
+          2  expecting reply
+          3  socket pkt avail. & expecting reply
+ NOTES
+   source file: x_check_event.asm
+
+-----------------------------------------------------------------------
+32 x_connect - connect to x server
+-----------------------------------------------------------------------
+ INPUTS
+    env_stack library function must be called before
+              using x_connect
+ OUTPUT:
+    flag set (jns) if success
+      and [socket_fd] global set to socket fd (dword)
+          [x_id_base] base for id assign (dword)
+          [root_win_id] set (dword)
+          [root_win_pix_width] set (word)
+          [root_win_pix_height] set (word)
+          [root_win_color_map] set (dword)
+          lib_buf has connection reply
+          connection_reply_length = size of reply
+    flag set (js) if err, eax=error code
+    ecx points to connection table as follows:
+         c_reply_code	db 0
+       		db 0	;unused
+         c_proto_major	dw 0
+         c_proto_minor	dw 0
+         c_append_len	dw 0	;dword len
+         c_release_num	dd 0
+         x_id_base	dd 0
+         c_id_mask	dd 0
+         c_motion_buf_len dd 0
+         c_vendor_len	dw 0
+         c_max_req_size	dw 0
+         c_screen_cnt	db 0	;number of screen struc's at end
+         c_format_cnt	db 0  ;number of format struc's at end
+         c_img_byte_ordr	db 0	;image byte order 0=lsb 1=msb
+         c_map_byte_ordr	db 0	;bitmap byte order 0=least sig first
+         c_scan_unit	db 0
+         c_scan_pad	db 0
+         c_min_keycode	db 0
+         c_max_keycode	db 0
+
+         c_depth		db 0
+         c_bytes_per_pix	db 0
+         c_scanline_pad	db 0
+                               db 0	;pad
+         root_win_id	dd 0
+         root_win_color_map	dd 0
+         c_white_pixel	dd 0
+         c_black_pixel	dd 0
+         c_event_mask	dd 0
+         root_win_pix_width	dw 0
+         root_win_pix_height	dw 0
+         c_width_mil	dw 0
+         c_height_mil	dw 0
+         c_min_maps	dw 0
+         c_max_maps	dw 0
+         c_root_visual	dd 0
+         c_backing	db 0 ;0=never 1=when mapped 2=always
+         c_save_under	db 0 ;bool
+         c_root_depth	db 0
+         c_depth_cnt	db 0 ;number of depths that follow
+        
+ NOTES
+   source file: x_connect.asm
+
+-----------------------------------------------------------------------
+33 x_disconnect - disconnect from x server
+-----------------------------------------------------------------------
+ INPUTS
+  [socket_fd] - global set by x_connect
+; OUTPUT:
+   "js" flag set if error
+              
+ NOTES
+   source file: x_disconnect
+
+-----------------------------------------------------------------------
+34 x_flush - send queued events to x server
+-----------------------------------------------------------------------
+   the x_send_request function buffers all output
+   and sends if buffer becomes full or the program
+   waits for input.  This function flushes (sends)
+   the buffer to the x server.
+ INPUTS
+    none
+ OUTPUT:
+    sign flag set if error and eax modified
+    all other registers preserved.
+        
+ NOTES
+   source file: x_send_request.asm
+
+-----------------------------------------------------------------------
+35 x_interatom - lookup atom code
+-----------------------------------------------------------------------
+ INPUTS
+    esi = ptr to atom name string
+
+ OUTPUT:
+    flags set for jns-success  js-error
+    eax = atom code
+              
+ NOTES
+   source file: x_interatom.asm
+
+-----------------------------------------------------------------------
+36 x_list_extension - get list of extensions
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    failure - eax = negative error code
+              flags set for "js"
+    success - eax positive read length and flag set "jns"
+              ecx = buffer ptr with
+  resb 1  ;1 Reply
+  resb 1  ;number of names returned
+  resb 2  ;sequence number
+  resb 4  ;reply length
+  resb 24 ;unused
+  resb 1  ;lenght of extension n
+  resb x  ;extension n string
+;  resb 1  ;length of extension n+1
+  resb x  ;extension n+1 string
+              
+ NOTES
+   source file: x_list_extension.asm
+
+-----------------------------------------------------------------------
+37 x_query_extension - check for x server extension
+-----------------------------------------------------------------------
+ INPUTS
+    esi = ptr to extension name
+    ecx = extension name length
+ OUTPUT:
+    failure - eax = negative error code
+              flags set for "js"
+    success - eax extension op code
+              ecx = buffer ptr with
+  resb 1  ;1 Reply
+  resb 1  ; unused
+  resb 2  ;sequence number
+  resb 4  ;dword count (reply length)
+  resb 1  ;0=not present
+  resb 1  ;major op code
+  resb 1  ;first-event
+  resb 1  ;first-error
+  resb 20 ;filler
+              
+ NOTES
+   source file: x_query_extension.asm
+
+-----------------------------------------------------------------------
+38 x_read_socket - read x server socket
+-----------------------------------------------------------------------
+ INPUTS
+    eax = wait length in milliseconds
+          0=no wait,immediate check for data
+         -1=forever
+    ecx = buffer for data
+    edx = buffer length
+
+    note: the sequence number queue set
+          by x_send_request may be used.
+
+ OUTPUT:
+    success state          
+     flag set (jns) if success - expected reply or event
+     eax = number of bytes in buffer
+     ecx = reply buffer ptr 
+    fail state
+     flags - set for js
+     eax = negative error
+           -1=reply read error (buffer error)
+           -2=error packet in buffer
+           -3=reply out of sequence
+           -4=timeout expired or servers in tryagain loop
+           -5=unexpected event while waiting for reply.
+           -6=socket died
+           -x=all other errors are from kernel
+   
+ NOTES
+   source file: x_read_socket.asm
+   see file event_info.inc for reply codes
+   This is the low level function used by all other
+   x server packet read functions.  See also,
+   x_wait_event
+   x_wait_reply
+   x_wait_big_reply
+   window_event_decode
+
+-----------------------------------------------------------------------
+39 x_send_request - send request to x server
+-----------------------------------------------------------------------
+ INPUTS
+    ecx = packet ptr
+    edx = packet length, negative packet lenght
+          indicates a reply is expected.  Length
+          is can be set negative with "neg edx"
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+    [sequence] - sequence number of packet sent
+        
+ NOTES
+   source file: x_send_request.asm
+   If socket_fd is zero this functions connects to
+   x socket.  If the packet lenght is negative a
+   reply is expected and the sequence# is stored
+   for retrevial by x_read_socket
+
+-----------------------------------------------------------------------
+40 x_wait_big_reply - wait xx millsecods for big reply
+-----------------------------------------------------------------------
+ INPUTS
+    ecx = buffer for reply data
+    edx = buffer size
+ OUTPUT:
+    failure - eax=negative error code
+              flags set for js
+           -1=reply read error (buffer error)
+           -2=error packet in buffer
+           -3=reply out of sequence
+           -4=timeout expired or servers in tryagain loop
+           -5=unexpected event while waiting for reply.
+           -6=socket dead
+           -x=all other errors are from kernel
+    success - eax = number of bytes read from server
+              ecx = pointer to reply buffer info.            
+              (see file event_info.inc for buffer data)    
+ NOTES
+   source file: x_wait_big_reply.asm
+   If replies are not pending this function will
+   return an error of -1
+   If reply does not occur within 2 seconds a timeout
+   error will be returned
+
+-----------------------------------------------------------------------
+41 x_wait_event - wait forever and read event packet
+-----------------------------------------------------------------------
+ INPUTS
+    none 
+ OUTPUT:
+    failure - eax=negative error code
+              flags set for js
+           -1=reply read error (buffer error)
+           -2=error packet in buffer
+           -3=reply out of sequence
+           -4=timeout expired or servers in tryagain loop
+           -5=unexpected event while waiting for reply.
+           -6=socket dead
+           -x=all other errors are from kernel
+    success - eax = number of bytes read from server
+              ecx = pointer to reply buffer info.            
+              (see file event_info.inc for buffer data)    
+ NOTES
+   source file: x_wait_event.asm
+   If replies are pending this function will
+   return an error of -1
+
+-----------------------------------------------------------------------
+42 x_wait_reply - wait for xx milliseconds for reply
+-----------------------------------------------------------------------
+ INPUTS
+    none 
+ OUTPUT:
+    failure - eax=negative error code
+              flags set for js
+           -1=reply read error (buffer error)
+           -2=error packet in buffer
+           -3=reply out of sequence
+           -4=timeout expired or servers in tryagain loop
+           -5=unexpected event while waiting for reply.
+           -6=socket dead
+           -x=all other errors are from kernel
+    success - eax = number of bytes read from server
+              ecx = pointer to reply buffer info.            
+              (see file event_info.inc for buffer data)    
+ NOTES
+   source file: x_wait_reply.asm
+   If replies are not pending this function will
+   return an error of -1
+   If reply does not occur within 2 seconds a timeout
+   error will be returned
+
+-----------------------------------------------------------------------
+43 color_id_lookup - color number to color id
+-----------------------------------------------------------------------
+  Colors id's are pre built by window_pre in
+  a table that can be indexed by color number.
+ INPUTS
+   eax = color number
+   color numbers 00=white
+                 04=grey
+                 08=skyblue
+                 12=blue
+                 16=navy
+                 20=cyan
+                 24=green
+                 28=yellow
+                 32=gold
+                 36=tan
+                 40=brown
+                 44=orange
+                 48=red
+                 52=maroon
+                 56=pink
+                 60=violet
+                 64=purple
+                 68=black
+; OUTPUT:
+   eax = color id
+              
+ NOTES
+   source file: color_id_lookup.asm
+
+-----------------------------------------------------------------------
+44 color_num_lookup - convert color id to color number
+-----------------------------------------------------------------------
+ INPUTS
+   eax = color id
+
+ OUTPUT:
+   al = color number
+   color numbers 00=white
+                 04=grey
+                 08=skyblue
+                 12=blue
+                 16=navy
+                 20=cyan
+                 24=green
+                 28=yellow
+                 32=gold
+                 36=tan
+                 40=brown
+                 44=orange
+                 48=red
+                 52=maroon
+                 56=pink
+                 60=violet
+                 64=purple
+                 68=black
+              
+ NOTES
+   source file: color_num_lookup.asm
+
+-----------------------------------------------------------------------
+45 window_color - set color number active
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = window block ptr
+  ebx = foreground color number (see below)
+  ecx = backgruond color number (see below)
+       white        ;color #00
+       grey         ;       04
+       skyblue              08
+       blue                 12
+       navy                 16
+       cyan                 20
+       green                24
+       yellow               28
+       gold                 32
+       tan                  36
+       brown                40
+       orange               44
+       red                  48
+       maroon               52
+       pink                 56
+       violet               60
+       purple               64
+       black                68
+; OUTPUT:
+    error = sign flag set for js
+    success = sign flag set fo jns
+ NOTES
+   source file: window_create.asm
+   Color selection stays active for window writes
+   and clears.  If fonts are changed, the default
+   colors are restored from window create.  
+
+-----------------------------------------------------------------------
+46 window_id_color - set color id's active
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = window block ptr
+  ebx = foreground color id
+  ecx = backgruond color id
+
+ OUTPUT:
+    error = sign flag set for js
+    success = sign flag set fo jns
+ NOTES
+   source file: window_create.asm
+   Color selection stays active for window writes
+   and clears.  If fonts are changed, the default
+   colors are restored from window create.  
+
+-----------------------------------------------------------------------
+47 x_allocate_named_color - ask for color id
+-----------------------------------------------------------------------
+    Ask server for color id of ascii name.
+ INPUTS
+    ebp = window block
+    eax = color map
+    esi = name string (max size 15 characters)    
+
+ OUTPUT:
+    flags set for jns-success  js-error
+    eax = return code from x_wait1 or error code
+          all negative numbers are error
+    ebx = color id or zero if failure
+    ecx = pointer to buffer with x struc
+       resb 1 ;reply code 1=ok
+       resb 1 ;unused
+       resw 1 ;sequence#
+       resd 1 ;reply length
+       resd 1 ;color code (ebx)
+       resw 1 ;red
+       resw 1 ;green
+       resw 1 ;blue
+       resw 1 ;visual red
+       resw 1 ;visual green
+       resw 1 ;visual blue
+              
+ NOTES
+   source file: x_allocate_named_color.asm
+
+-----------------------------------------------------------------------
+48 x_change_gc_colors - set active colors for window
+-----------------------------------------------------------------------
+    (next window write will use these colors)
+ INPUTS
+    eax = window id
+    ebx = foreground color
+    ecx = background color
+ OUTPUT:
+    none
+              
+ NOTES
+   source file: x_change_gc_colors.asm
+
+-----------------------------------------------------------------------
+49 window_clear - clear window              
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = window block ptr
+  eax = 0 for default window color
+        1 for current color seting
+
+ OUTPUT:
+    error = sign flag set for js
+    success = sign flag set for jns
+              
+ NOTES
+   source file: window_clear.asm
+
+-----------------------------------------------------------------------
+50 window_clear_area - clear with window color
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = window block ptr
+  eax = x location (column)
+  ebx = y location (row)
+  ecx = width (chars)
+  edx = height (chars)
+  esi = flag 0=default window color  1=current color
+        setting.
+ OUTPUT:
+    error = sign flag set for js
+    success = sign flag set for jns
+              
+ NOTES
+   source file: window_clear_area.asm
+
+-----------------------------------------------------------------------
+51 window_create - create x window
+-----------------------------------------------------------------------
+  Font and window size from window_pre can be used
+  to set window size and position.  From this the total
+  character rows and columns is calculated and the widow
+  is mapped (displayed).
+  
+ INPUTS
+  function window_pre must be called first.
+  ebp = window block created by window_pre
+
+  esi = ptr to window size request as follows:
+        resw 1 ;x pixel column location
+        resw 1 ;y pixel row location
+        resw 1 ;screen width in pixels
+        resw 1 ;screen height in pixels
+ OUTPUT:
+    error = sign flag set
+
+     The window is maped (visable)
+     Keyboard, mouse, and expose events are enabled.
+              
+ NOTES
+   source file: window_create.asm
+
+-----------------------------------------------------------------------
+52 window_kill - destroy window
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = window block ptr
+
+ OUTPUT:
+    error = sign flag set for js
+    success = sign flag set of jns
+              
+ NOTES
+   source file: window_kill.asm
+
+-----------------------------------------------------------------------
+53 window_lower - move window to bottom of stack
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success
+      ecx = id of top window
+      edx = input id
+      ebx = 0 if in sync             
+ NOTES
+   source file: window_lower.asm
+
+-----------------------------------------------------------------------
+54 window_name - set window name and title
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = window block ptr
+  esi = ptr to window name (appears in title)
+ OUTPUT:
+    error = sign flag set for js
+    success
+      ebp = window block with following filled in:
+              
+ NOTES
+   source file: window_name.asm
+
+-----------------------------------------------------------------------
+55 window_pre - setup for window_create
+-----------------------------------------------------------------------
+   Clears the input buffer, connects to the
+   x server if necessary, then fills in
+   parts of the input_block (ebp).
+ INPUTS
+  env_stack -  needs to be called at top of
+               program using window_pre function.
+  ebp = buffer to hold win block (input block)
+  eax = work buffer of size 24000+
+  edx = work buffer size
+  ecx = color number (see window_pre)
+  ebx = font width in pixels, 8,9,etc.
+   
+ OUTPUT:
+    error = sign flag set for "js" instruction
+    success, win block built (see file window.inc)
+
+    The following win block fields are useful for
+    window_create setup.
+
+     .s_root_width    resd 1 ;root width in pixels
+     .s_root_height   resd 1 ;root height in pixels
+     .s_char_width resd 1
+     .s_char_height resd 1
+
+ NOTES
+   This function provides the initial id to use
+   as a base for assigning future id's.
+
+   Also, it provides the root window size which can
+   be used to size window requests.  We can't exceed
+   the root widow size, but we can make smaller
+   windows
+
+   If sucessful, the window is created with keyboard,
+   mouse, and exposure events enabled.  The background
+   color, size, and window position will be set.
+   
+   source file: window_pre.asm
+
+-----------------------------------------------------------------------
+56 window_raise - raise window to top
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success
+      ecx = id of raised window
+      edx = input id
+      ebx = 0 if in sync             
+ NOTES
+   source file: window_raise.asm
+
+-----------------------------------------------------------------------
+57 x_change_attributes - change a window attribute
+-----------------------------------------------------------------------
+ INPUTS
+    ebp = window block
+    eax = mask
+     #x00000001 	 background-pixmap
+     #x00000002 	 background-pixel
+     #x00000004 	 border-pixmap
+     #x00000008 	 border-pixel
+     #x00000010 	 bit-gravity
+     #x00000020 	 win-gravity
+     #x00000040 	 backing-store
+     #x00000080 	 backing-planes
+     #x00000100 	 backing-pixel
+     #x00000200 	 override-redirect
+     #x00000400 	 save-under
+     #x00000800 	 event-mask
+     #x00001000 	 do-not-propagate-mask
+     #x00002000 	 colormap
+     #x00004000 	 cursor
+
+   ebx = value
+
+     4  PIXMAP		 background-pixmap
+        0	       None
+        1	       ParentRelative
+     4  CARD32		 background-pixel
+     4  PIXMAP		 border-pixmap
+        0	       CopyFromParent
+     4  CARD32		 border-pixel
+     1  BITGRAVITY 	 bit-gravity
+     1  WINGRAVITY 	 win-gravity
+     1			 backing-store
+        0	       NotUseful
+        1	       WhenMapped
+        2	       Always
+     4  CARD32		 backing-planes
+     4  CARD32		 backing-pixel
+     1  BOOL		 override-redirect
+     1  BOOL		 save-under
+     4  SETofEVENT 	 event-mask
+     4  SETofDEVICEEVENT	 do-not-propagate-mask
+     4  COLORMAP		 colormap
+        0	       CopyFromParent
+     4  CURSOR		 cursor
+        0	       None
+
+   ecx = window id
+
+ OUTPUT:
+    flags set for success-jns  or error-js
+    eax = lenght of reply pkt or negative error
+    ebx = 0 if sequence# in sync
+    ecx = ptr to reply packet
+
+ NOTES
+   source file: x_change_attributes.asm
+
+-----------------------------------------------------------------------
+58 x_configure_window - get list of windows
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id to move/resize
+    ebx = bit mask
+    esi = ptr to list of word values
+
+     bit mask bits and values possible are:
+      0000001h  ;new x pixel column (window position)
+      0000002h  ;new y pixel row (window position)
+      0000004h  ;new window width
+      0000008h  ;new window height
+      0000010h  ;new border width
+      0000020h  ;sibling
+      0000040h  ;stack-mode flag
+
+     values:
+       dw x pixel column adr
+       dw y pixel column adr
+       dw window pixel width
+       dw window pixel height
+       dw window border width
+       dd sibling
+       db stack mode 0=above
+                     1=below
+                     2=topIf
+                     3=bottomIf
+                     4=opposite
+
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+              
+ NOTES
+   source file: x_configure_window.asm
+
+-----------------------------------------------------------------------
+59 x_create_gc - create graphic context 
+-----------------------------------------------------------------------
+ INPUTS
+    eax = cid id to create
+    ebx = drawable (window id)
+    esi = ptr to value list (including mask at front)
+ OUTPUT:
+    none
+              
+ NOTES
+   source file: x_create_gc.asm
+
+-----------------------------------------------------------------------
+60 x_create_window - create window within server
+-----------------------------------------------------------------------
+    (window can be displayed with x_map_windoe)
+ INPUTS
+  esi = pointer to block
+     cw_wid		dd 0    ;window id to create, 2a00001h
+     cw_parent 	dd 0    ;parent window id, 63
+     cw_x:		dw 0    ;pixel column adr
+     cw_y:		dw 0    ;pixel row adr
+     cw_width          dw 0    ;pixel width
+     cw_height: 	dw 0    ;lixel height
+     cw_background_color dd 0
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+    [sequence] - sequence number of packet sent
+              
+ NOTES
+   source file: x_create_window.asm
+
+-----------------------------------------------------------------------
+61 x_destroy_window - destroy window
+-----------------------------------------------------------------------
+ INPUTS
+  eax = window id to destroy
+ OUTPUT:
+    none (no reply is expected)
+              
+ NOTES
+   source file: x_destroy_window.asm
+
+-----------------------------------------------------------------------
+62 x_freegc - discard window information in server
+-----------------------------------------------------------------------
+    (window does not exist after this call)
+ INPUTS
+  eax = window id to map
+ OUTPUT:
+    none (no reply is expected)
+              
+ NOTES
+   source file: x_freegc.asm
+
+-----------------------------------------------------------------------
+63 x_map_win - show window 
+-----------------------------------------------------------------------
+ INPUTS
+  eax = window id to map
+ OUTPUT:
+    none (no reply is expected)
+              
+ NOTES
+   source file: x_map_win.asm
+
+-----------------------------------------------------------------------
+64 x_reparent_window - get list of windows
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id of new parent
+    ebx = window id of target window
+
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+              
+ NOTES
+   source file: x_reparent_window.asm
+
+-----------------------------------------------------------------------
+65 x_replace_string_property - change a window property
+-----------------------------------------------------------------------
+ INPUTS
+    ebp = window block
+    eax = window id
+    ebx = property atom 39=WM_NAME (appears on title bar)
+                        37=WM_ICON_NAME
+                        24=WM_CLASS
+                        22=WM_COMMAND
+                      0x128=WM_LOCALE_NAME
+    esi = string ptr
+
+ OUTPUT:
+    flags set for jns-success  js-error
+              
+ NOTES
+   source file: x_change_string_property.asm
+
+-----------------------------------------------------------------------
+66 x_set_input_focus - set input focus
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id
+ OUTPUT:
+    none
+ NOTES
+   source file: x_set_input_focus.asm
+
+-----------------------------------------------------------------------
+67 window_find - search for window
+-----------------------------------------------------------------------
+ INPUTS
+    al = flag 0=search x win titles,  1=search x win class
+              2=search win mgr titles 3=search win mgr class
+    ebx = ptr to asciiz search string
+          (Can be fragment or partial string
+           that occurs within title or class)
+    ecx = work buffer to hold windows.  Size
+          greater than: ( (max windows) * 4 ) + 30
+          Memory fault could occur if buffer too small
+    edx = buffer length
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success ecx -> buffer with:
+      window id's, end of list has
+      dword with zero.
+              
+ NOTES
+   source file: window_find.asm
+   lib_buf is used as work buffer
+
+-----------------------------------------------------------------------
+68 x_get_geometry - get window geometry
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id to query
+ OUTPUT:
+    flag set (jns) if success
+      eax = return from socket read (size of read)
+    flag set (js) if err, eax=error code
+
+    if success, ecx points to lib_buf with:
+     db reply, 1=ok 0=failure
+     db depth
+     dw sequence#
+     dd 0 (reply length)
+     dd window (root id)
+     dw x location of win, pixel column
+     dw y location of win, pixel row
+     dw width, pixel width
+     dw height, pixel height
+     dw border width
+
+     !! Note: the x,y location is relative to parents
+              origon.  Often these values are zero if
+              outside parent.  The border width is also
+              zero, and all three are zero for pixmaps.
+         
+ NOTES
+   source file: x_get_geometry.asm
+
+-----------------------------------------------------------------------
+69 x_get_input_focus - get focus
+-----------------------------------------------------------------------
+    (find out who has active window)
+ INPUTS
+    none
+ OUTPUT:
+    flags set for js(error) or jns(success)
+    if error eax = error code
+    if success lib_buf and [ecx] contain:
+     db reply 1=success 0=fail
+     db revert_to 0=none 1=pointerroot 2=parent
+     dw sequence#
+     dd 0 (reply length)
+     dd window (window id that has focus)
+        0=no focus, 1=ptr root        
+ NOTES
+   source file: x_get_input_focus.asm
+
+-----------------------------------------------------------------------
+70 x_get_property - get property status
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id to query
+    ecx = buffer
+    edx = buffer length
+    esi = property (atom)
+    edi = type (atom)
+          pre defined atoms
+            PRIMARY         1      WM_NORMAL_HINTS  40
+            SECONDARY       2      WM_SIZE_HINTS    41
+            ARC             3      WM_ZOOM_HINTS    42
+            ATOM            4      MIN_SPACE        43
+            BITMAP          5      NORM_SPACE       44
+            CARDINAL        6      MAX_SPACE        45
+            COLORMAP        7      END_SPACE        46
+            CURSOR          8      SUPERSCRIPT_X    47
+            CUT_BUFFER0     9      SUPERSCRIPT_Y    48
+            CUT_BUFFER1     10      SUBSCRIPT_X     49
+            CUT_BUFFER2     11      SUBSCRIPT_Y     50
+            CUT_BUFFER3     12      UNDERLINE_POSITION  51
+            CUT_BUFFER4     13      UNDERLINE_THICKNESS 52
+            CUT_BUFFER5     14      STRIKEOUT_ASCENT 53
+            CUT_BUFFER6     15      STRIKEOUT_DESCENT 54
+            CUT_BUFFER7     16      ITALIC_ANGLE     55
+            DRAWABLE        17      X_HEIGHT         56
+            FONT            18      QUAD_WIDTH       57
+            INTEGER         19      WEIGHT           58
+            PIXMAP          20      POINT_SIZE       59
+            POINT           21      RESOLUTION       60
+            RECTANGLE       22      COPYRIGHT        61
+            RESOURCE_MANAGER 23      NOTICE          62
+            RGB_COLOR_MAP   24      FONT_NAME        63
+            RGB_BEST_MAP    25      FAMILY_NAME      64
+            RGB_BLUE_MAP    26      FULL_NAME        65
+            RGB_DEFAULT_MAP 27      CAP_HEIGHT       66
+            RGB_GRAY_MAP    28      WM_CLASS         67
+            RGB_GREEN_MAP   29      WM_TRANSIENT_FOR 68
+            RGB_RED_MAP     30
+            STRING          31
+            VISUALID        32
+            WINDOW          33
+            WM_COMMAND      34
+            WM_HINTS        35
+            WM_CLIENT_MACHINE 36
+            WM_ICON_NAME    37
+            WM_ICON_SIZE    38
+            WM_NAME         39
+
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success ecx
+      db reply 1=success 0=fail
+      db format
+      dw sequence#
+      dd reply length (dword count)
+      dd type
+      dd bytes-after
+      dd length of value
+         0 for format 0
+         n for format 8
+         n/2 for format 16
+         n/4 for format 32
+      times 12 unused
+      dd list of byte
+              
+ NOTES
+   source file: x_get_property.asm
+
+-----------------------------------------------------------------------
+71 x_get_selection_owner - get selection owner
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+    
+    if success ecx -> lib_buf which contains:
+     db reply 1=success 0=failure
+     db -
+     dw sequence#
+     dd 0 (reply length)
+     dd WINDOW (0=no owner) else ?
+
+ NOTES
+   source file: x_get_selection_owner.asm
+   We request owner of atom WINDOW, don't
+   know if this is ueeful?
+
+-----------------------------------------------------------------------
+72 x_get_window_attributes - get window attributes
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id to query
+ OUTPUT:
+    fail state
+     flags - set for js
+     eax = negative error, -1=timeout,else sys err
+    success state          
+     flag set (jns) if success
+     eax = number of reply bytes in buffer
+     ebx = 0 if packet has is in sync with write
+     ecx = buffer ptr (lib_buf) 
+
+    if success ecx -> lib_buf with:
+      db reply 1=success 0=fail
+      db flag 0=NotUseful 1=WhenMapped 2=always
+      dw sequence#
+      dd 3 (reply length)
+      dd visual id
+      dw class 1=inputOutput 2=inputOnly
+      db bit gravety
+      db win gravety
+      dd backing planes
+      dd backing pixel
+      db save under (bool) 1=yes 0=no
+      db map is installed (bool)
+      db map state (0=unmapped 1=unviewable 2=viewable)
+      db override redirect (bool) 0=no
+      dd color map (0=none)
+      dd all event mask
+      dd your event mask
+      dw SETofDEVICEEVENT
+              
+ NOTES
+   source file: x_get_window_attributes.asm
+
+-----------------------------------------------------------------------
+73 x_list_properties - get list of atoms (properties)
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id to query
+    ecx = buffer
+    edx = buffer length
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success ecx -> lib_buf with:
+      db reply 1=success 0=fail
+      db -
+      dw sequence#
+      dd reply length
+      dw number of atoms
+      times 22 (unused)
+      dd list of atoms
+              
+ NOTES
+   source file: x_list_properties.asm
+
+-----------------------------------------------------------------------
+74 x_query_tree - get list of windows
+-----------------------------------------------------------------------
+ INPUTS
+    eax = window id to query
+    ecx = buffer for data
+    edx = buffer length
+ OUTPUT:
+    flag set (jns) if success
+    flag set (js) if err, eax=error code
+
+    if success ecx -> buffer with:
+      db reply 1=success 0=fail
+      db -
+      dw sequence#
+      dd reply length
+      dd root window id
+      dd parent window id (0=no parent)
+      dw number of child windows
+      times 14 (unused)
+      list of windows
+              
+ NOTES
+   source file: x_query_tree.asm
+
+-----------------------------------------------------------------------
+75 x_translate_coordinates - get abs win location
+-----------------------------------------------------------------------
+    return location relative to root win
+ INPUTS
+    eax = window id to query
+ OUTPUT:
+    flag set (jns) if success
+      eax = return from socket read (size of read)
+    flag set (js) if err, eax=error code
+
+    if success, ecx points to lib_buf with:
+     db reply, 1=ok 0=failure
+     db unused
+     dw sequence#
+     dd 0 unused
+     dd child window
+     dw x location of win, pixel column
+     dw y location of win, pixel row
+
+ NOTES
+   source file: x_translate_coordinates.asm
+
+-----------------------------------------------------------------------
+76 window_font - set a new window font
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = window block with following filled in:
+  .s_font - dword font width size code starting with 8
+               size codes are: 8,9,10,11,12,14
+  .s_font_id resd 1	;font id, set by window_pre,
+
+ eax = buffer to hold font info (24000 bytes or more)
+ edx = buffer size
+
+ OUTPUT:
+    error = sign flag set for "js"
+    success - returns the following items in window block
+       .s_char_width  resd 1
+       .s_char_height resd 1
+              
+ NOTES
+   source file: window_create.asm
+   If font selection fails, it may be necessary to try a
+   another font string.
+   Font alias are at /etc/X11/fonts/misc/xfonts-base.alias
+                     /usr/share/fonts/X11/misc/fonts.alias
+   If a fixed font of the desired width is not found, another
+   font may be selected, or an error returned.
+
+-----------------------------------------------------------------------
+77 window_rel_table - display list of items 
+-----------------------------------------------------------------------
+ INPUTS
+  window_rel_table_setup must be called once
+                 before using this function.
+  ebp = ptr to window control block
+  eax = character adjustment to window column
+  ebx = character adjustement to window row
+  esi = ptr to table (see below)
+        color entry = db 16;color opcode
+                      db x ;foreground color number
+                      db x ;background color number
+
+        fill line   = db 4 ;opcode
+                      dw x ;x column (char)
+                      dw y ;y row (char)
+                      db x ;length of fill
+                      db c ;fill char
+
+        write column  db 8 ;opcode
+                      dw x ;x column (text,char)
+                      dw y ;y starting row
+                      db x ;length of write
+                      db xx ;string
+
+        write llne    db 12;opcode
+                      dw x ;x column (text,char)
+                      dw y ;y row
+                      db x ;length of string
+                      db xx;string
+
+        end of table  db 0
+
+   color numbers 00=white
+                 04=grey
+                 08=skyblue
+                 12=blue
+                 16=navy
+                 20=cyan
+                 24=green
+                 28=yellow
+                 32=gold
+                 36=tan
+                 40=brown
+                 44=orange
+                 48=red
+                 52=maroon
+                 56=pink
+                 60=violet
+                 64=purple
+                 68=black
+; OUTPUT:
+   "js" flag set if error
+              
+ NOTES
+   source file: window_rel_table.asm
+
+-----------------------------------------------------------------------
+78 window_rel_table_setup - setup for window_rel_table
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = win_block ptr
+ OUTPUT:
+              
+ NOTES
+   source file: window_rel_table.asm
+
+-----------------------------------------------------------------------
+79 window_write_line - write line at char address
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = window block ptr
+  ecx = char column (x location) 0=first col
+  edx = char row (y location) 0=first line
+  esi = text string to display
+  edi = string length
+
+ OUTPUT:
+    error = sign flag set for js
+        eax = negative error code
+    success
+        eax = write count
+              
+ NOTES
+   source file: window_write_line.asm
+
+-----------------------------------------------------------------------
+80 window_write_lines - write lines to area
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = window block ptr
+  edx = text block ptr, contains
+        dd number of rows in area
+        dd number of columns in area
+        dd starting row (0=top of window)
+        dd starting column (0=left edge)
+        dd text block ptr, lines end with 0ah,
+           end of text has zero byte
+
+ OUTPUT:
+    error = sign flag set for js
+        eax = negative error code
+    success
+        eax = postive value
+              
+ NOTES
+   source file: window_write_lines.asm
+
+-----------------------------------------------------------------------
+81 window_write_pline - write line at pixel address
+-----------------------------------------------------------------------
+ INPUTS
+  ebp = window block ptr
+  ecx = x pixel column
+  edx = y pixel row
+  esi = text string to display
+  edi = string length
+
+ OUTPUT:
+    error = sign flag set for js
+        eax = negative error code
+    success
+        eax = write count
+              
+ NOTES
+   source file: window_write_pline.asm
+
+-----------------------------------------------------------------------
+82 window_write_table - display items for text window 
+-----------------------------------------------------------------------
+ INPUTS
+  window_write_table_setup must be called once
+                 before using this function.
+  ebp = ptr to window control block
+  esi = ptr to table (see below)
+        color entry = db 16;color opcode
+                      db x ;foreground color number
+                      db x ;background color number
+
+        fill line   = db 4 ;opcode
+                      dw x ;x column (char)
+                      dw y ;y row (char)
+                      db x ;length of fill
+                      db c ;fill char
+
+        write column  db 8 ;opcode
+                      dw x ;x column (text,char)
+                      dw y ;y starting row
+                      db x ;length of write
+                      db xx ;string
+
+        write llne    db 12;opcode
+                      dw x ;x column (text,char)
+                      dw y ;y row
+                      db x ;length of string
+                      db xx;string
+
+        end of table  db 0
+
+   color numbers 00=white
+                 04=grey
+                 08=skyblue
+                 12=blue
+                 16=navy
+                 20=cyan
+                 24=green
+                 28=yellow
+                 32=gold
+                 36=tan
+                 40=brown
+                 44=orange
+                 48=red
+                 52=maroon
+                 56=pink
+                 60=violet
+                 64=purple
+                 68=black
+; OUTPUT:
+   "js" flag set if error
+              
+ NOTES
+   source file: window_write_table.asm
+
+-----------------------------------------------------------------------
+83 window_write_table_setup - setup for window_write_table
+-----------------------------------------------------------------------
+  This function must be called before using the
+  window_write_table function. 
+ INPUTS
+  ebp = win_block ptr
+ OUTPUT:
+              
+ NOTES
+   source file: window_write_table.asm
+
+-----------------------------------------------------------------------
+84 x_change_gc_font - change active font
+-----------------------------------------------------------------------
+    (next window write will use this font)
+ INPUTS
+    eax = window id
+    ebx = font id
+ OUTPUT:
+    none
+              
+ NOTES
+   source file: x_change_gc_font.asm
+
+-----------------------------------------------------------------------
+85 x_get_font_path - get paths used for font search
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    failure - eax = negative error code
+              flags set for "js"
+    success - eax positive read length and flag set "jns"
+              ecx = buffer ptr with
+  resb 1  ;1			 Reply
+  resb 1  ;			 unused
+  resb 2  ;CARD16		 sequence number
+  resb 4  ;dword count (reply length)
+  resb 2  ;number of name strings
+  resb 22 ;unused
+  resb 1  ;font strings (first byte of string is length)
+              
+ NOTES
+   source file: x_get_font_path.asm
+
+-----------------------------------------------------------------------
+86 x_list_fonts - list fonts that match pattern
+-----------------------------------------------------------------------
+ INPUTS
+    eax = work buffer of size 24000+
+    edx = buffer size
+    esi = font patterns ptr.  Each pattern is
+          terminated with zero byte, last pattern
+          has additional zero.
+ OUTPUT:
+    failure - eax = negative of error, or -1 if
+                    no string found.
+              flag set for "js"
+
+    success - flag set for "jns"
+              esi = ptr to font text
+              ecx = ptr to buffer with
+               resb 1  ;1  Reply
+               resb 1  ;    unused
+               resb 2  ;    sequence number
+               resb 4  ;    reply length
+               resb 2  ;number of name strings
+               resb 22 ;unused
+               resb 1  ;font string (first byte of string is length)
+
+               This function returns zero or one string.               
+              
+ NOTES
+   source file: x_list_fonts.asm
+
+-----------------------------------------------------------------------
+87 x_open_font - look for a named font
+-----------------------------------------------------------------------
+ INPUTS
+  eax = font id to assign
+  esi = font string
+ OUTPUT:
+    none (no reply is expected)
+              
+ NOTES
+   source file: x_open_font.asm
+
+-----------------------------------------------------------------------
+88 x_query_font - check current font state
+-----------------------------------------------------------------------
+    (if open_font failed this will return error)
+ INPUTS
+    eax = font id
+    ebx = buffer to hold font info (24000+ bytes)
+    edx = buffer size    
+ OUTPUT:
+    failure - eax = negative error code
+    success - eax = char length
+              ebx = char height
+              edx = char ascent
+              ecx = buffer ptr with
+  1  1			 Reply
+  1			 unused
+  2  CARD16		 sequence number
+  4  7+2n+3m		 reply length
+  12 CHARINFO		 min-bounds
+  4			 unused
+  12 CHARINFO		 max-bounds
+  4			 unused
+  2  CARD16		 min-char-or-byte2
+  2  CARD16		 max-char-or-byte2
+  2  CARD16		 default-char
+  2  n			 number of FONTPROPs in properties
+  1			 draw-direction
+     0	       LeftToRight
+     1	       RightToLeft
+  1  CARD8		 min-byte1
+  1  CARD8		 max-byte1
+  1  BOOL		 all-chars-exist
+  2  INT16		 font-ascent
+  2  INT16		 font-descent
+  4  m			 number of CHARINFOs in char-infos
+  8n LISTofFONTPROP	 properties
+  12m	       LISTofCHARINFOchar-infos
+
+
+  FONTPROP
+  4  ATOM		 name
+  4  <32-bits>		 value
+
+
+
+  CHARINFO
+  2  INT16		 left-side-bearing
+  2  INT16		 right-side-bearing
+  2  INT16		 character-width
+  2  INT16		 ascent
+  2  INT16		 descent
+  2  CARD16		 attributes
+
+              
+ NOTES
+   source file: x_query_font.asm
+
+-----------------------------------------------------------------------
+89 x_query_text - get lenght of text string
+-----------------------------------------------------------------------
+    (this is mostly for non-fixed fonts that have
+     varing character length.  Use fixed fonts!)
+ INPUTS
+    ebp = window block
+    eax = font id
+    esi = string ptr
+
+ OUTPUT:
+    failure: eax=negative error code
+             flags set for js
+    success: flag set for jns
+    eax = char length
+    ebx = char height
+    ecx = ptr to font struc (in lib_buf)
+     1  1			 Reply
+     1			 draw-direction
+        0	       LeftToRight
+        1	       RightToLeft
+     2  CARD16		 sequence number
+     4  0			 reply length
+     2  INT16		 font-ascent (pixels)
+     2  INT16		 font-descent (pixels)
+     2  INT16		 overall-ascent (pixels)
+     2  INT16		 overall-descent (pixels)
+     4  INT32		 overall-width (pixels)
+     4  INT32		 overall-left (pixels)
+     4  INT32		 overall-right (pixels)
+     4			 unused
+              
+ NOTES
+   source file: x_query_text.asm
+
+-----------------------------------------------------------------------
+90 x_write_block - write ascii block to window 
+-----------------------------------------------------------------------
+ INPUTS
+  eax = window id to map
+  ebx = window cid
+  ecx = x location, pixel column (0=left edge)
+  edx = y location, pixel row (0=top of win)
+  esi = string
+  edi = string length (max size is 255) 
+ OUTPUT:
+   "js" flag set if error
+              
+ NOTES
+   source file: x_write_block.asm
+
+-----------------------------------------------------------------------
+91 x_write_string - write a string to window 
+-----------------------------------------------------------------------
+ INPUTS
+  eax = window id to map
+  ebx = window cid
+  ecx = x location, pixel column (0=left column)
+  edx = y location, pixel row (0=top of window)
+  esi = string
+ OUTPUT:
+    "js" flag set for error
+              
+ NOTES
+   source file: x_write_string.asm
+
+-----------------------------------------------------------------------
+92 query_XKEYBOARD - get XKEYBOARD op code
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    failure - eax = negative error code
+              flags set for "js"
+    success - eax = XKEYBOARD op code
+              
+ NOTES
+   source file: query_XKEYBOARD.asm
+
+-----------------------------------------------------------------------
+93 query_xtest - get xtest op code
+-----------------------------------------------------------------------
+    this function queries for xtest status
+    and saves it for future queries.
+ INPUTS
+    none
+ OUTPUT:
+    failure - eax = negative error code
+              flags set for "js"
+    success - eax = xtest op code
+              
+ NOTES
+   source file: query_xtest.asm
+
+-----------------------------------------------------------------------
+94 send_keys_to_window - send keystrokes to window
+-----------------------------------------------------------------------
+ INPUTS
+  eax = window id
+  esi = key string terminated with 0
+ OUTPUT:
+  eax = error code if failure
+ NOTES
+   source file: send_keys_to_window
+
+-----------------------------------------------------------------------
+95 xtest_click - send input to window
+-----------------------------------------------------------------------
+ INPUTS
+    al = button type 1=left 2=center 3=right
+ OUTPUT:
+    failure - eax = negative error code
+              flags set for "js"
+    success - eax positive read length and flag set "jns"
+              
+ NOTES
+   source file: xtest_mouse.asm
+
+-----------------------------------------------------------------------
+96 xtest_fake_input - send input to window
+-----------------------------------------------------------------------
+ INPUTS
+    al = x code for key to send
+    ah= bit flag
+     80=printable ascii 40=non-printable
+     20=modifier key  10-numlock
+     08-alt 04-ctrl 02-caplock 01-shift
+     (only alt,ctrl,shift are checked here)
+ OUTPUT:
+    failure - eax = negative error code
+              flags set for "js"
+    success - eax positive read length and flag set "jns"
+              
+ NOTES
+   source file: xtest_fake_input.asm
+
+-----------------------------------------------------------------------
+97 xtest_grab_control - set server "grab" status
+-----------------------------------------------------------------------
+ INPUTS
+    al = flag 0=susceptable 1=impervious to grabs
+ OUTPUT:
+    failure - eax = negative error code
+              flags set for "js"
+    success - eax positive read length and flag set "jns"
+              
+ NOTES
+   source file: xtest_grab_control.asm
+
+-----------------------------------------------------------------------
+98 xtest_move_mouse - move mouse pointer
+-----------------------------------------------------------------------
+ INPUTS
+    ax = x position (pixel column)
+    bx = y position (pixel row)
+ OUTPUT:
+    failure - eax = negative error code
+              flags set for "js"
+    success - eax positive read length and flag set "jns"
+              
+ NOTES
+   source file: xtest_mouse.asm
+
+-----------------------------------------------------------------------
+99 xtest_version - get xtest extension version
+-----------------------------------------------------------------------
+ INPUTS
+    none
+ OUTPUT:
+    failure - eax = negative error code
+              flags set for "js"
+    success - eax version
+              
+ NOTES
+   source file: xtest_version.asm
+
+
+------------------------------------------------------------------
+asmlib usage hints
+------------------------------------------------------------------
+
+
+AsmLibx assumes some coding conventions as follows:
+
+ 1. the "CLD" flag is set.  Normally, this can be set
+    at the top of a program and forgotten.  It will work
+    even if we forget to do this, but good practice says
+    it should be set.
+
+ 2. Most library routines do not save registers.  This elimiates
+    a lot of stack pushes which are not necessary and speeds
+    up code.  This deviates from most other libraries, they save
+    and restore registers.      
+
+ 3. The following setup programs appear at the top of programs:
+    env_stack - save ptr to the environment stack
+
+
+Portability
+-----------
+
+  Some calls may need a 2.4 kernel or later.  The instructions
+  do not use any newer processor features and should work on
+  any 486+ processor.  It may work with a 386.
+
+  The library is tied to Linux and will not work on BSD or HERD.
+
+Documentation
+-------------
+
+  The library call descriptions are in file asmlibx.txt.
+  The demo programs might be the easiest way to see how it works.
+
+  Basically, a window is created by calling: window_pre
+                                             window_create
+
+  Then writing to the window                 window_write_line
+
+  The window colors and fonts can be changed by:
+                                             window_color
+                                             window_font
+
+       
+    

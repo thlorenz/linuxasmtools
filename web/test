@@ -1,0 +1,5 @@
+#!/bin/bash
+asmbug ./delete_if "out/*.gz" ../release
+asmbug copy -n ".gz" "../release/" out/
+#./tool/domenu
+#./tool/domenux

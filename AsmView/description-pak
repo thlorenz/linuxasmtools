@@ -1,0 +1,5 @@
+small,fast file viewer in assembler
+asmview is a console/X terminal utility
+to view files quickly.  It scrolls in all
+directions.
+http://linuxasmtools.net

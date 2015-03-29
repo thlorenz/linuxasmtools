@@ -1,0 +1,56 @@
+#! /bin/bash
+#shell script to find files or directories
+# Recursively greps down a directory tree.
+# Results are stored at: $(HOME)/.asmide/mgr as find.tmp
+
+# usage:  find <dir> <file-mask> <string> <case-flag>
+#
+# $1 = directory to start search
+# $2 = file mask
+# $3 = match string
+# $4 = case flag, i or I
+#
+f=/tmp/find.tmp
+
+#echo "par 1 " $1 > $f
+#echo "par 2 " $2 >> $f
+#echo "par 3 " $3 >> $f
+#echo "par 4 " $4 >> $f
+#echo "outfile " $f >> $f
+
+if [ $4 = "i" ]
+then
+CASE='-i'
+else
+CASE='-I'
+fi
+
+echo "" > $f
+echo "The following matches were found" >> $f
+echo "--------------------------------" >> $f
+
+
+if [ $3 = "_^_~" ]
+then
+echo "using find" >> $f
+echo "" >> $f
+find $1 -name "$2" >> $f
+else
+  if [ $1 = '.' ] ; then
+#  cd $1
+#  echo "starting" $1 >> $f 
+  echo "using fgrep" >> $f
+  echo "" >> $f
+  fgrep -lrs $CASE $3 $2 >> $f
+  else
+#  echo "1" $1
+#  echo "2" $2
+#  echo "3" $3
+#  echo "4" $4
+#  echo "case" $CASE
+  echo "using find and fgrep" >> $f
+  echo "" >> $f
+  find $1 -name "$2" | fgrep -r $CASE "$3" >> $f
+  fi
+fi
+

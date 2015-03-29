@@ -1,0 +1,265 @@
+INTRO
+-----
+
+This document describes an executable "elfdecode" and
+a general usage include file called "elfdecode.inc".
+elfdecode.inc is described last and is the prime focus
+of this document.  the executable "elfdecode" exists
+to test elfdecode.inc and as a general interrogation
+of elf files.  The executable is menu driven and needs
+a file name as parameter.  It then displays information
+from elfdecode.inc.
+
+The rest of this document describes elfdecode.inc
+
+
+elfdecode.inc
+-------------
+
+PURPOSE
+-------
+elfdecode.inc is a generic decoder of elf files.  It is
+intended as a pre processor for AsmDis,AsmSrc, and AsmBug.
+
+INPUTS
+------
+Input is any elf file name.  If debug information is present
+in the elf, it will look in the current directory for source
+files.
+
+ mov	eax,file_name_ptr
+ call	elfdecode
+
+OUTPUT
+------
+elfdecode writes its output as files in the current directory.
+The files created depend upon elf contents.  Not all elf's
+have comment information and non-dynamic files will not have
+the library and externs files.
+  .abug_header.dat	;image of header1
+  .abug_image.dat       ;load image
+  .abug_fimage.dat      ;flag image
+  .abug_sym.dat         ;symbol table
+  .abug_externs.txt     ;externals used in elf
+  .abug_lib.txt         ;libraries referenced in elf
+  .abug_comment.dat     ;comments extracted from source file
+The results will be in -al- register
+  al = 0 success
+  al = -1 'Cant write to current directory',0ah,0
+  al = -2 'File not found',0ah,0
+  al = -3 'ELF format error',0ah,0
+  al = -4 'Insufficient Memory',0ah,0
+  al = -5 'Cant access file',0ah,0
+  al = -6 'File format wrong',0ah,0
+  al = -7 'Source newer than executable',0
+note: since elfdecode is a include file the header will be
+      in memory already.
+
+--------------------------------------------------------------------
+.abug_header
+--------------------------------------------------------------------
+
+Summary of abug_header
+----------------------
+  1. Preamble - general info
+  2. Program load headers (sorted by adr)
+  3. section headers (sorted by adr)
+
++ ---------+
+| Preamble |   preamble: times (pre_struc_size) db 0
++ ---------+
+
+ At the top of .abug_header is general information
+
+  struc pre
+  .elf_type_flag resd 1 ;00000001h - dynamic section found
+                        ;00000002h - lib wrapper for HLL found
+                        ;00000004h - symbol table found
+                        ;00000008h - debug section found
+                        ;00000010h - source file found
+                        ;00000020h - debug comments found
+                        ;00000040h - no sections found (bit set)
+  .elf_phys_top		resd 1 ;start of elf header
+  .elf_phys_code_start	resd 1 ;start of code,data may proceed, may be in elf header
+  .elf_phys_exec_entry	resd 1 ;entry point
+  .elf_phys_code_end	resd 1 ;end of code
+  .elf_phys_load_end	resd 1 ;end of file data
+  .elf_phys_bss_end	resd 1 ;end of bss data
+  .app_main             resd 1 ;set if lib setup at run_physical_entry
+  (if loaded from file, the following ptrs need adjustment)
+  .pheader_ptrs: resd 8 ;last ptr is zero to signal end of list
+  .sheader_ptrs: resd 12 ;last ptr is zero
+  .target_time: resd 2
+  .target_file:	resb 128-16
+  endstruc
+
+ After the Preamble are program headers.
+
+ The .abug_header file is a map to elf contents.  Everything
+ is tied to program headers which are listed first. The following
+ structure is replicated for each loadable program header found.
+ Only loadable blocks have entries here.
+ Entries are sorted by assending phys_start address.
+
+ -----------------------+
+ program header extract |   phead: times (head_struc_size * 8) db 0
+ -----------------------+
+
+ struc head
+ .phys_start	dd 0	;load address for block
+ .phys_end	dd 0	;end address for block (beyond last byte)
+ .size		dd 0	;size of block
+ .offset	dd 0	;offset into elf file, not fimage.dat or image.dat
+ .p_flags	db 0	;flag from pheader 1=exec 2=write 4=read 8=bss
+ endstruc
+
+ .offset is initially a index into elf file, and is converted into
+        a index into both the flag and load image files
+
+ note: the .p_flag 08h (.bss) is created when the load size exceedes
+       the file size of a header entry.
+       if the .phys_start is zero then this is end of "head" structures.
+       A better way to find end of extracts is using pointers in preamble.
+
++ ------------------------+
+| section header extracts |  shead: times (shead_struc_size * 20) db 0
++ ------------------------+
+
+ The section headers are stored as offsets from "head" in file and must
+ be converted to pointers.  Only sections that are loaded are stored.
+
+ struc sect
+ .sh_addr	dd 0	;phys load address
+ .sh_size	dd 0	;size of this section
+ .sh_flags	db 0	;bits 01h=writeable 02h=allocate 04h=execute
+ .sh_name	db x	;ascii name string
+ endstruc
+
+
++--------------------------------------------------------------------
+|.abug_image and .abug_fimage
++--------------------------------------------------------------------
+
+ The abug_image conatins the loadable contents from the elf file.
+ If the blocks have gaps, fill data will be added.  It will not
+ contain any .bss sections found.
+
+ The abug_fimage will be a bit map of abug_image and also include
+ a map for .bss sections found.  Fill data will have a map  value
+ of 7fh
+
+flag image (fimage)  bit definitions
+
+ 0xxx xxxx - data
+ 1xxx xxxx - code
+
+ x0xx xxxx - start of data/instruction
+ x1xx xxxx - data/instruction body
+
+ xx00 xxxx - no label here
+ xx01 xxxx - symbol table has label for this location
+ xx10 xxxx - label hit, type in low 4 bits
+ xx11 xxxx - symbol table has label & hits, type in low 4 bits
+
+ data start states               data body states
+ -----------------               ----------------
+ 00xx 0000 - db                  0100 0000 - db,dw,dd,ptr body
+ 00xx 0001 - dw
+ 00xx 0010 - dd
+ 00xx 0011 -              
+ 00xx 0100 - string start        0100 0100 - string body
+ 00xx 1000 - repeat start        0100 1000 - repeat db body
+
+ code start states               code body state
+ -----------------               ---------------
+ 10xx 0000 - normal code         1100 0000 - non-start body
+ 10xx 0001 - jmp target
+ 10xx 0010 - call target
+
++--------------------------------------------------------------------
+|  .abug_sym.dat files (symbol table)
++--------------------------------------------------------------------
+
+;-- structure used by abug_sym.dat file
+struc sym
+.sym_adr    resd 1	;address, if not in .text.data.bss then dymamic
+.sym_typ    resb 1	;type, 50=data 60=code 00=external
+.sym_ascii  resb 1      ;asciiz symbol name
+endstruc
+
+The AsmLib function hash_add is used to build database.
+To accesss the database use hash_lookup
+
++--------------------------------------------------------------------
+|  .abug_comment.dat files (table)
++--------------------------------------------------------------------
+
+A comment consists of
+  .comment_adr dd 0 ;physical address 
+  .comment_str db x ;comment string
+
+The AsmLib function string_add is used to add
+comments to a database which can be accessed by string_lookup
+ 
++--------------------------------------------------------------------
+|  .abug_externs.dat and .abug_libs.dat                      
++--------------------------------------------------------------------
+
+ These files are simple text lists
+
+ .abug_header
++------------------+
+| preamble         |
+| ptrs to pheaders |--> ptrs (file values need conversion)
+| ptrs to sheaders |--> ptrs (file values need conversion)
++------------------+
+
+ program headers               .abug_image             .abug_fimage
++------------------+  +-->  +-----------------+      +---------------+
+|                  |  |     |  load image     |      |  flags        |
+|                  |  |     |                 |      |               |
+|                  |  |     |                 |      |               |
+|                  |  |     |                 |      |               |
+| offset           |--+     |                 |      |               |
+|                  |        |                 |      |               |
++------------------+        +-----------------+      +---------------+
+                            | optional filler |      |optional filler|
++------------------+  +-->  +-----------------+      +---------------+
+|                  |  |     |                 |      |               |
+|                  |  |     |                 |      |               |
+|                  |  |     |                 |      |               |
+|                  |  |     |                 |      |               |
+| offset to image2 |--+     |                 |      |               |
+|                  |        |                 |      |               |
++------------------+        +-----------------+      +---------------+
+                                                     |               |
++------------------+                             +-> +---------------+
+|                  |                             |   | .bss section  |
+|                  |                             |   |               |
+|                  |                             |   |               |
+|                  |                             |   |               |
+| offset .bss      |-----------------------------+   |               |
+|                  |                                 |               |
++------------------+                                 +---------------+
+                        
+                        
++------------------+    
+|                  |    
+| section index3   |    
++------------------+    
+                        
+                        
++------------------+     
+| (section 1)      |
+| section index1   |   
++------------------+   
+
++------------------+
+| (section 2)      |
+| section index2   |   
++------------------+   
+                       
+
+
+
+   

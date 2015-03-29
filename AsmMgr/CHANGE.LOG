@@ -1,0 +1,141 @@
+2005-03-12 fixed problem with highlighting selector bar
+           when it is outside window or in wrong page
+
+2005-03-12 Added highlight to executable files
+
+2005-03-13 Fixed problem with positioning select bar
+           after deleting in a directory with 2 entries
+
+2005-03-13 Fixed reading the dents for large directores
+           by modifing the library call to read until
+           a zero status is returned
+
+2005-03-13 Recoded command line entry to give feedback when
+           string is being entered and hold data if other
+           command are executed.
+
+2005-03-13 Fixed parse to halt and report bad paths entred
+
+2005-03-13 Changed ESC key while in command line entry to
+           reset data.  Changed AsmMgr esc key to null action
+
+2005-04-15 Changed command line to non-warp function so the
+           program "kate" will run.
+
+2005-04-15 Fixed problem in library with str_compare.  Added
+           new compare called str_match which works with
+           find_env_variable.
+
+2005-06-19 Removed exit using the "space" key
+
+2005-06-19 Removed project key
+
+2005-06-19 Modified makefile to install at /usr/bin and
+           /usr/share/asmmgr.  Temp files go to /tmp
+
+2005-06-19 Modified shell command entry so it does not use
+           arrow keys and they are available as menu keys.
+
+2005-06-19 Modified window and shell commands to use normal
+           screen for shell functions and alt screen to main
+           program.  The wrap logic was removed and only a
+           simple shell is used.
+
+2005-06-19 Fixed problem with running two copies of asmmgr.
+           The files stored at /tmp are now unique for each
+           asmmgr executable.
+
+2005-07-19 Fixed problem of trying to enter socket as it it
+           was a directory.  Fix was to change logic in dir_type
+           to set default type as "file"
+
+2005-07-19 Fixed problem with status line showing two "//" after
+           visiting the root "/".  The routine dir_fwd now checks
+           if we are root and avoids storing the '/'
+
+2005-08-27 put quotes around the %f substitution field in terminal.
+           This allows files with embedded spaces to be handled.
+
+2005-08-27 Added quotes to f3,f1,f8 commands to allow files
+           with embedded spaces to be deleted, viewed, and status checked
+
+2005-08-28 Revised find command results viewing to allow "esc" as
+           exit key.  
+
+2005-08-28 Added "esc" option to view_table which enables the escape
+           key as a trigger key.  This allows us to use escape to
+           exit the "less" program.  The f3 and ctrl-o options still
+           work also.
+
+2005-08-30 Fixed ctrl-o to re-read directories when returning to
+           the asmmgr menu mode.
+
+2005-08-31 Add right-click function for top buttons.  Any button
+           right clicked will become a bookmark for current directory.
+
+2005-09-01 Fixed problem trying to enter directory that can not be
+           accessed.  the logic at dir_fwd was changed from a dir_change
+           to read access check.
+
+2005-09-01 Fixed problem if view button (f3) is used inside an
+           empty directory.  Checked for nul directory in move_fname
+
+2005-09-13 Fixed problem with creating bookmark with right click.
+           directory names shorter than 5 characters failed.
+
+2005-10-10 Fixed segfault when huge directories entered.  This
+           occured on knoppix /dev and /usr/share/doc directories.
+           Fix was to increase size of sort_pointers buffer.
+
+2005-11-18 Fixed problems with symlinks in /dev directory.  The
+           status line was wrong and right arrow into sym link was
+           disabled.
+
+2005-12-20 Fixed problem with viewing results of "find" command.
+           The pgup/pgdn keys did not work because shell_feed_watch
+           did not decode key table correctly.
+
+2005-12-22 The alt-x keys for bookmarks, set the bookmark instead
+           of going to directory.  This was fixed by adding test
+           lookup_process.
+
+2006-01-08 Fixed problems with display settings at exit and
+           when other programs are exited.
+           on exit - reset terminal with 1bh,"c",0
+           in fprocess - reset terminal as above
+           before executing command on command line, do reset terminal
+           before switching to console, reset attributes with 0fh,1bh,"[0m",0
+
+2006-02-01 Changed all launch operations to ignore the return
+           code and not pause if error.  This involved removing
+           ignore_error_flag, and error_pause
+
+2006-02-02 Fixed a problem introduced with changes to handle symlinks.
+           The dir_bak key failed after switching windows with tab.
+           It was caused by "symlink_flag" being set in dir_fwd code.
+
+2006-02-03 Changed handling of errors from external programs run
+           by asmmgr.  The status line now displays their return
+           code.  Changes were made to program fprocess and the
+           internal "launch" program to pass errors on and build
+           message.  Every program that called launch was changed
+           to set the "40h" bit it cmd_status so pre-built return
+           message is displayed.
+
+2006-02-03 The F11 file compare function failed in files were in
+           different directories.  This was fixed by switching
+           windows and picking up files for other window.
+
+2006-02-12 Fixed two problems with project setup.  The selection
+           of project directory used <enter> as right-arrow if
+           directory was selected.  It was changed back to a
+           selection key
+           Also, the sample programs failed because of a bug in
+           the Linux kernel which requires a program have a
+           .data section.  The fix was to add a .data section.
+
+2008-01-10 Changed file_write_open to force umask.  This insures
+          the /tmp/right.0 file will have permissions of 666q.
+          Otherwise root asmmgr can create files only accessable
+          as root.
+

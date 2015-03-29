@@ -1,0 +1,74 @@
+        
+----------------------------------------------------------------------------
+  9 link           - make a new name for a file
+----------------------------------------------------------------------------
+  mov  eax,009
+  mov  ebx,oldname  ;ptr to old asciz name
+  mov  ecx,newname  ;ptr to new asciz name
+  int  80h
+
+       link  creates  a  new  link  (also known as a hard link) to an existing
+       file.
+
+       If newpath exists it will not be overwritten.
+
+       This new name may be used exactly as the old  one  for  any  operation;
+       both names refer to the same file (and so have the same permissions and
+       ownership) and it is impossible to tell which name was the original.
+
+RETURN VALUE
+       On  success,  zero is returned.  On error a negative code is returned
+
+ERRORS
+       EXDEV  oldpath and newpath are not on the same filesystem.
+
+       EPERM  The filesystem containing oldpath and newpath does  not  support
+              the creation of hard links.
+
+       EFAULT oldpath or newpath points outside your accessible address space.
+
+       EACCES Write access to the directory containing newpath is not  allowed
+              for  the  process's  effective uid, or one of the directories in
+              oldpath or newpath did not allow search (execute) permission.
+
+       ENAMETOOLONG
+              oldpath or newpath was too long.
+
+       ENOENT A directory component in oldpath or newpath does not exist or is
+              a dangling symbolic link.
+
+       ENOTDIR
+              A component used as a directory in oldpath or newpath is not, in
+              fact, a directory.
+
+       ENOMEM Insufficient kernel memory was available.
+
+       EROFS  The file is on a read-only filesystem.
+
+       EEXIST newpath already exists.
+
+       EMLINK The file referred to by oldpath already has the  maximum  number
+              of links to it.
+
+       ELOOP  Too many symbolic links were encountered in resolving oldpath or
+              newpath.
+
+       ENOSPC The device containing the file has no room for the new directory
+              entry.
+
+       EPERM  oldpath is a directory.
+
+       EIO    An I/O error occurred.
+
+NOTES
+       Hard links, as created by link, cannot span filesystems. Use symlink if
+       this is required.
+
+BUGS
+       On NFS file systems, the return code may  be  wrong  in  case  the  NFS
+       server  performs  the link creation and dies before it can say so.  Use
+       stat to find out if the link got created.
+
+SEE ALSO
+       symlink, unlink, rename, open, stat
+

@@ -1,0 +1,7 @@
+assembler help system
+asmref is a console/X terminal utility
+providing a reference to the LinuxAsmTools
+family of programs.  It is a standalone
+program which covers the Linux assembler
+world.
+http://linuxasmtools.net

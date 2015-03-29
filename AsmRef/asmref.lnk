@@ -1,0 +1,137 @@
+** AsmRef Help System ** select topic
+-------------------------------------
+
+Kernel Functions   <_1_>    functions sorted by name
+                   <_2_>    functions sorted by number
+                   <_3_>    functions sorted by type
+                   <_e_>    sample code for kernel functions
+Kernel info
+                   <_4_>    kernel errors
+                   <_5_>    symbols from include files
+                   <_6_>    kernel structures
+                   <_7_>    proc file system
+                   <_8_>    signals
+Terminal info
+                   <_9_>    terminal introduction
+                   <_10_>   ascii codes
+                   <_11_>   keyboard codes
+                   <_12_>   display control sequences
+                   <_13_>   terminal state (termios)
+                   <_13a_>  terminal description (terminfo)
+General info
+                   <_14_>   nasm instruction ref
+                   <_15_>   instruction ref
+                   <_16_>   summary of unix utilities
+                   <_17_>   gcc compiler
+                   <_18_>   ld linker
+                   <_19_>   objdump (elf file dump)
+                   <_20_>   strace (execution trace)
+                   <_21_>   make files
+                   <_22_>   linking to external libraries
+AsmTools - libs
+                   <_23_>   intro to asmlib
+                   <_24_>   index to asmlib functions
+                   <_25_>   asmlib examples, ainfo, format_doc, sort
+                   <_26_>   x server library
+                   <_27_>   asmlibx example programs
+AsmTools - Intro
+                   <_28_>   intro
+                   <_29_>   faq
+                   <_30_>   quick reference
+AsmTools - dev
+                   <_31_>   AsmBug - terminal debugger
+                   <_32_>   AsmDis - disassembler
+                   <_33_>   AsmSrc - source code generator
+                   <_34_>   AsmProj - set up for new project
+                   <_35_>   AsmTrace - program trace
+                   <_35a_>  Tracex - Trace xserver protocall
+                   <_36_>   MiniBug - console debugger
+AsmTools - help
+                   <_37_>   AsmRef - assembler reference
+                   <_38_>   ElfDecode - elf decoder
+                   <_39_>   fileset - file status veiwer
+AsmTools - util
+                   <_40_>   AsmMgr - development manager
+                   <_41_>   AsmFile - file manager
+                   <_42_>   AsmTimer - time program execution
+                   <_43_>   AsmFind - search for files and data
+                   <_44_>   AsmView - text viewer
+                   <_45_>   AsmLinks - text viewer with links
+AsmTools - text
+                   <_46_>   AsmEdit - editor plus
+                   <_47_>   (unused)
+                   <_48_>   AsmPlan - todo database
+                   <_49_>   AsmPub - documentation generator
+                   <_50_>   Domac - macro processor
+AsmTools - example
+                   <_51_>   AsmColor - colors for asmlib
+                   <_52_>   key_echo - show key codes
+                   <_53_>   crt_test - check terminal
+                   <_54_>   AsmMenu - script menu aide
+                   <_55_>   file_browse - file selector
+                   <_56_>   sort - file sort
+                   <_57_>   step test
+                   <_58_>   walk test
+                   <_59_>   format_doc - replace demo
+----------------------------------------------------
+<_1_>=/usr/share/doc/asmref/k_name_calls.lnk
+<_2_>=/usr/share/doc/asmref/k_num_calls.lnk
+<_3_>=/usr/share/doc/asmref/k_type_calls.lnk
+<_e_>=/usr/share/doc/asmref/k_code.lnk
+<_4_>=/usr/share/doc/asmref/kinfo/k_err.txt
+<_5_>=/usr/share/doc/asmref/kinfo/k_include.txt
+<_6_>=/usr/share/doc/asmref/kinfo/k_structures.txt
+<_7_>=/usr/share/doc/asmref/kinfo/k_proc.txt
+<_8_>=/usr/share/doc/asmref/kinfo/k_signals.txt
+<_9_>=/usr/share/doc/asmref/term/terminal_intro.txt
+<_10_>=/usr/share/doc/asmref/term/term_ascii.txt
+<_11_>=/usr/share/doc/asmref/term/term_keys.txt
+<_12_>=/usr/share/doc/asmref/term/term_vt.txt
+<_13_>=/usr/share/doc/asmref/term/termios.txt
+<_13a_>=/usr/share/doc/asmref/term/terminfo.txt
+<_28_>=/usr/share/doc/asmref/tutor/a_overview.txt
+<_29_>=/usr/share/doc/asmref/tutor/a_faq.txt
+<_30_>=/usr/share/doc/asmref/tutor/a_quick.txt
+<_40_>=/usr/share/doc/asmref/progs/asmmgr.txt
+<_32_>=/usr/share/doc/asmref/progs/asmdis.txt
+<_31_>=/usr/share/doc/asmref/progs/asmbug.txt
+<_46_>=/usr/share/doc/asmref/progs/asmedit.txt
+<_33_>=/usr/share/doc/asmref/progs/asmsrc.txt
+<_35_>=/usr/share/doc/asmref/progs/asmtrace.txt
+<_35a_>=/usr/share/doc/asmref/progs/tracex.txt
+<_51_>=/usr/share/doc/asmref/progs/asmcolor.txt
+<_49_>=/usr/share/doc/asmref/progs/asmpub.txt
+<_48_>=/usr/share/doc/asmref/progs/asmplan.txt
+<_34_>=/usr/share/doc/asmref/progs/asmproject.txt
+<_42_>=/usr/share/doc/asmref/progs/asmtimer.txt
+<_23_>=/usr/share/doc/asmref/lib/asmlib_intro.txt
+<_24_>=/usr/share/doc/asmref/lib/asmlib.txt
+<_25_>=/usr/share/doc/asmref/asmlibe.lnk
+<_26_>=/usr/share/doc/asmref/lib/asmlibx.txt
+<_27_>=/usr/share/doc/asmref/asmlibxe.lnk
+<_43_>=/usr/share/doc/asmref/progs/asmfind.txt
+<_44_>=/usr/share/doc/asmref/progs/asmview.txt
+<_52_>=/usr/share/doc/asmref/progs/key_echo.txt
+<_53_>=/usr/share/doc/asmref/progs/crt_test.txt
+<_45_>=/usr/share/doc/asmref/progs/asmlinks.txt
+<_54_>=/usr/share/doc/asmref/progs/asmmenu.txt
+<_41_>=/usr/share/doc/asmref/progs/asmfile.txt
+<_14_>=/usr/share/doc/asmref/cpu/x86_nasm.txt
+<_15_>=/usr/share/doc/asmref/cpu/x86_ref.txt
+<_16_>=/usr/share/doc/asmref/unix/utility_survey.txt
+<_17_>=/usr/share/doc/asmref/unix/u_gcc.txt
+<_18_>=/usr/share/doc/asmref/unix/u_ld.txt
+<_19_>=/usr/share/doc/asmref/unix/u_objdump.txt
+<_20_>=/usr/share/doc/asmref/unix/u_strace.txt
+<_21_>=/usr/share/doc/asmref/unix/u_make.txt
+<_22_>=/usr/share/doc/asmref/unix/ext_lib.txt
+<_37_>=/usr/share/doc/asmref/progs/asmref.txt
+<_38_>=/usr/share/doc/asmref/progs/elfdecode.txt
+<_39_>=/usr/share/doc/asmref/progs/fileset.txt
+<_50_>=/usr/share/doc/asmref/progs/domac.txt
+<_55_>=/usr/share/doc/asmref/progs/file_browse.txt
+<_56_>=/usr/share/doc/asmref/progs/sort.txt
+<_59_>=/usr/share/doc/asmref/progs/format_doc.txt
+<_36_>=/usr/share/doc/asmref/progs/minibug.txt
+<_57_>=/usr/share/doc/asmref/progs/steptest.txt
+<_58_>=/usr/share/doc/asmref/progs/walktest.txt

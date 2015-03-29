@@ -1,0 +1,320 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>AsmMgr file manager</title>
+ <meta name="keywords" content="file manager, assembler, linux, utilities, x86, assembly, tools, IDE, development, programming, debugger, disassembler">
+ <meta name="description" content="file manager with buttons for assembler development">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+
+<br>
+NAME<br>
+<br>
+ asmmgr - file manager for assembler programmers<br>
+<br>
+DESCRIPTION<br>
+<br>
+ AsmMgr is an assembler IDE front end. It calls several<br>
+ support programs and can coordinate development. The<br>
+ design and key usage is similar to the mc file manager.<br>
+<br>
+ When configured for assembler development the top row<br>
+ of buttons provide compile and debug buttons. The<br>
+ "project" button will list installed tools, create<br>
+ project directories, open projects, build makefiles,<br>
+ build sample source files, and assist with setting<br>
+ up projects. <br>
+<br>
+ AsmMgr was written to ease assembly development and<br>
+ remove some of the hurdles faced by novice programmers.<br>
+<br>
+ AsmMgr is part of a collection of programs that can work<br>
+ together or work as stand alone functions. These programs<br>
+ are:<br>
+  asmbug  - debugger<br>
+  asmsrc  - source code generator<br>
+  asmdis  - disassembler<br>
+  asmedit - editor<br>
+  asmlib -  library<br>
+  asmplan - todo list (design functions planned)<br>
+  asmref  - extensive help system<br>
+  asmfunc - helper programs for asmedit, asmmgr, and others<br>
+  asmmgr - front end<br>
+  asmpub - builds documents from comments in source (in design)<br>
+  asmsrc - generates nasm source from ELF executable<br>
+<br>
+STARTUP WINDOW<br>
+<br>
+ The middle buttons are file related and work on the highlighted file.<br>
+ For move or copy operations the highlighted file/directory is moved to<br>
+ directory shown in opposing panel.<br>
+<br>
+ The bottom line is always available for shell commands.<br>
+<br>
+ the top row of buttons are user defined. The defaults are<br>
+ setup to create an ide for assembler. All top buttons are<br>
+ attached to external programs or scripts.<br>
+<br>
+USAGE<br>
+<br>
+ When first loaded, AsmMgr looks for paths on the command<br>
+ line and if not found it used the $HOME directory.<br>
+ AsmMgr can accept paths for the two windows.<br>
+<br>
+ Another somewhat invisible input is from a collection of<br>
+ files that configure the program and control how it reacts<br>
+ to user input. These files can describe projects, buttons,<br>
+ button actions, and other parameters.<br>
+<br>
+QUICK START<br>
+<br>
+ To quickly set up an assembler project, simply click the<br>
+ project button and fill out the form. Then select open<br>
+ project from within the project setup dialog. The new<br>
+ project will appear in the left panel. Click the "make"<br>
+ button to compile the sample source file and click the<br>
+ "debug" button to enter the debugger.<br>
+<br>
+MOUSE<br>
+<br>
+ The mouse is active in all windows (if AsmMgr is executed in<br>
+ an xterm). In console mode, the keyboard is used. In most<br>
+ menu's the up/down arrow keys followed by enter, will select<br>
+ options. Escape or ctrl-O can be used to exit most windows.<br>
+<br>
+ Mouse Usage<br>
+<br>
+ All buttons can be selected by mouse clicks. The right/left<br>
+ panels can be activated by mouse clicks and once selected<br>
+ individual files can be highlighted.<br>
+<br>
+ Clicking a highlighed entry will result in an action<br>
+ AsmMgr thinks is appropiate. If executable is found, it<br>
+ will be started, if directory it will be entered, etc.<br>
+<br>
+ Right clicks on top button row will convert button into<br>
+ a bookmark using currently active directory.<br>
+<br>
+ Top button bar<br>
+<br>
+ The top buttons can be configured with "setup" as either<br>
+ functions or bookmarks. A bookmark label has to start<br>
+ with the "/" character and functions can be any executable.<br>
+ All top buttons result in execution of a shell command.<br>
+<br>
+ Since some of the buttons call scripts it is easy to change<br>
+ the way they operate. Each top button executable receives<br>
+ the selected right/left window entries as parameters.<br>
+<br>
+ Bookmark buttons have a short cut feature that sets the<br>
+ current directory to bookmark. Simply right-click on<br>
+ a top line button and it becomes a bookmark.<br>
+<br>
+ vertical button bar<br>
+<br>
+ The status button brings up a table showing the<br>
+ status of current highlighted entry. It also allows<br>
+ attributes and owners to be changed.<br>
+<br>
+ The open button works on highlighted entry. If a<br>
+ directory is highlighted, it is entered. If a file<br>
+ is highlighted it is decoded using a table of<br>
+ instructions (see setup function to edit table).<br>
+ If the file is an executable it will be executed.<br>
+<br>
+ the view button works on highlighted entry. It<br>
+ will try to determine viewing options using a<br>
+ table of instructions. (see setup button to<br>
+ edit table).<br>
+<br>
+ The edit button starts an editor on the currently<br>
+ highlighted file. The default editor can be selected<br>
+ from the setup button.<br>
+<br>
+ Copy transfers files/directories from on panel to<br>
+ the other. An option to change names occurs before<br>
+ the copy.<br>
+<br>
+ Move will move files and directories and rename<br>
+ them. To rename anything set both panels to the<br>
+ same location an use move with name change.<br>
+<br>
+ Delete is a very dangerous button. Beware, it does<br>
+ not ask first.<br>
+<br>
+ Expand knows about most compression types and expands<br>
+ them.<br>
+<br>
+ Tar.gz makes compressed files in only one format. <br>
+<br>
+ Compare will compare the two text files in right<br>
+ and left panels. It uses an external program to<br>
+ do this which can be changed by editing the compare<br>
+ script. Initially AsmMgr expects the program<br>
+ xxdiff to be available and does nothing if not found.<br>
+<br>
+ Print needs to be setup for your printer. It is<br>
+ currently setup for a deskjet 500 which may not<br>
+ be ideal. The print script can be edited to<br>
+ change its operation.<br>
+<br>
+ The terminal button can be used to check on the results<br>
+ of AsmMgr shell commands or work in the shell. Once in<br>
+ the shell it is necessary to type "exit" to leave.<br>
+<br>
+ Another way to enter and leave the terminal is with the<br>
+ ctrl-o key. This is easy to remember since it is used<br>
+ to exit many commands that call terminal programs.<br>
+<br>
+ The terminal entry line accepts all alpha characters typed.<br>
+ Pressing &lt;return&gt; will execute the line. Note: if no<br>
+ characters have been typed, the &lt;return&gt; key is connected<br>
+ to the open button.<br>
+<br>
+ The highlighted file can be inserted into a terminal command<br>
+ by entering "%f". For example: to edit the current file with<br>
+ vi type:<br>
+  <br>
+     vi %f &lt;enter&gt;<br>
+<br>
+ Note: Since typing &lt;Enter&gt; can execute a highlighted program<br>
+ or run data on the terminal it is necessary to keep AsmMgr<br>
+ informed about which is needed. To help with this the terminal<br>
+ line is highlighted whenever AsmMgr thinks it is being used<br>
+ to enter commands. To get out of the entry mode, type ESC or<br>
+ any non-alpha key.<br>
+<br>
+Keyboard commands<br>
+<br>
+  ctrl-x      -  exit<br>
+  alt-x       -  exit<br>
+  alt-q       -  exit<br>
+<br>
+  tab    - switch panels<br>
+<br>
+  ctrl-o - switch to and from the terminal display<br>
+<br>
+  right/left<br>
+  arrow keys - traverse directory tree<br>
+<br>
+  up/down<br>
+  arrow keys - traverse up/down file list<br>
+<br>
+  pgup/pgdn  - page up down file selection panel<br>
+<br>
+  enter - same as open button<br>
+<br>
+  ESC,q,ctrl-o are all used to exit helper programs<br>
+  run by asmmgr. A few helper programs require other<br>
+  keys to exit and for these programs ctrl-c always<br>
+  works. For example the "less" viewer is run when<br>
+  the F3 key is pressed. Normally, "less" uses the<br>
+  'q' key to exit. Asmmgr also recognizes ESC, F3,<br>
+  and ctrl-c as exit keys.<br>
+<br>
+  all other keys are show on buttons and usage is<br>
+  obvious.<br>
+<br>
+INSTALL<br>
+<br>
+  The command "make install" as root can be used to<br>
+  install AsmMgr. Program can be uninstalled with<br>
+  "make uninstall".<br>
+<br>
+Configuration<br>
+<br>
+  The "setup" button can be used to edit the<br>
+  configuration files and change AsmMgr operation.<br>
+  <br>
+  Access button  file name        Description<br>
+  -------------  --------------   ------------------------<br>
+  setup          config.tbl       general settings<br>
+  setup          top_buttons.tbl  defines buttons on top row<br>
+  setup          open_button.tbl  defines open button action<br>
+  setup          view_button.tbl  defines view button action<br>
+  project        project.tbl      describes projects<br>
+<br>
+  The top row buttons can also be bookmarks which are<br>
+  set from the "setup" button or right click.<br>
+<br>
+<br>
+DEPENDENCIES<br>
+<br>
+  Optional compile dependency: AsmLib<br>
+<br>
+  AsmMgr calls numerous UNIX utilities, too many<br>
+  for a short list.  If a feature does not work or<br>
+  a file type will can not be viewed, then install<br>
+  the program that can not be found.  Normally, the<br>
+  most used programs are already installed.<br>
+       <br>
+      </big><br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

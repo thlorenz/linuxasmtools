@@ -1,0 +1,4 @@
+touch asmlib_display_demo1.3Å[14~
+nasm -g -felf asmlib_display_demo1.3Å[14~
+ld -static -o asmlib_display_demo1 asmlib_display_demo1.o /usr/lib/asmlib.a
+ld: warning: cannot find entry symbol _start; not setting start address

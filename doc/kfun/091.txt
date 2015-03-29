@@ -1,0 +1,46 @@
+
+----------------------------------------------------------------------------
+memory  91 munmap         - unmap files or devices into memory
+----------------------------------------------------------------------------
+
+  // munmap: closes a memory mapped file.
+  mov  eax,091
+  mov  ebx,start   ;page aligned address
+  mov  ecx,length  ;
+  int  80h
+
+       The  munmap  system call deletes the mappings for the specified address
+       range, and causes further references to addresses within the  range  to
+       generate  invalid  memory references.  The region is also automatically
+       unmapped when the process is terminated.  On the  other  hand,  closing
+       the file descriptor does not unmap the region.
+
+       The  address  start must be a multiple of the page size. All pages con-
+       taining a part of the indicated range are unmapped, and subsequent ref-
+       erences to these pages will generate SIGSEGV. It is not an error if the
+       indicated range does not contain any mapped pages.
+
+       For file-backed mappings, the st_atime field for the mapped file may be
+       updated at any time between the mmap() and the corresponding unmapping;
+       the first reference to a mapped page will update the field  if  it  has
+       not been already.
+
+       The  st_ctime  and st_mtime field for a file mapped with PROT_WRITE and
+       MAP_SHARED will be updated after a write  to  the  mapped  region,  and
+       before  a  subsequent msync() with the MS_SYNC or MS_ASYNC flag, if one
+       occurs.
+
+RETURN VALUE
+       On success, munmap returns 0, on failure a negative error code
+
+
+ERRORS
+       EINVAL We don't like start or length or offset.  (E.g.,  they  are  too
+              large, or not aligned on a PAGESIZE boundary.)
+
+SEE ALSO
+       getpagesize,  mlock,  mmap2,  msync, shm_open,
+       B.O. Gallmeister, POSIX.4, O'Reilly, pp. 128-129 and 389-391.
+
+
+

@@ -1,0 +1,59 @@
+
+--------------------------------------------------------------------
+270 tgkill        -  send signal to one specific thread
+--------------------------------------------------------------------
+
+  mov  eax,270
+  mov  ebx,tgid   ;thread group ID of the thread
+  mov  ecx,pid    ;PID of the thread
+  mov  edx,sig    ;signal to be sent
+  int  80h
+
+SYNOPSIS
+
+       int tgkill(int tgid, int tid, int sig);
+
+DESCRIPTION
+       The tkill() system call is analogous to kill(2), except when the speci‐
+       fied process is part of a  thread  group  (created  by  specifying  the
+       CLONE_THREAD flag in the call to clone(2)).  Since all the processes in
+       a thread group have the same PID, they cannot be individually  signaled
+       with  kill(2).   With tkill(), however, one can address each process by
+       its unique TID.
+
+       The tgkill() call improves on tkill() by allowing the caller to specify
+       the  thread  group  ID of the thread to be signaled, protecting against
+       TID reuse.  If the tgid is specified as -1, tgkill()  degenerates  into
+       tkill().
+
+       These  are  the  raw  system call interfaces, meant for internal thread
+       library use.
+
+RETURN VALUE
+       On success, zero is returned.  On error, -1 is returned, and  errno  is
+       set appropriately.
+
+ERRORS
+       EINVAL An invalid TID or signal was specified.
+
+       EPERM  Permission denied.  For the required permissions, see kill(2).
+
+       ESRCH  No  process  with  the specified thread ID (and thread group ID)
+              exists.
+
+VERSIONS
+       tkill() is supported since Linux 2.4.19 / 2.5.4.  tgkill() was added in
+       Linux 2.5.75.
+
+CONFORMING TO
+       tkill()  and tgkill() are Linux specific and should not be used in pro‐
+       grams that are intended to be portable.
+
+NOTES
+       Glibc does not provide wrapper for these system calls; call them  using
+       syscall(2).
+
+SEE ALSO
+       gettid, kill
+
+

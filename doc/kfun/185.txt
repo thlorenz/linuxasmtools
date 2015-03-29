@@ -1,0 +1,44 @@
+
+----------------------------------------------------------------------------
+ 185 capset        - set process capabilities
+----------------------------------------------------------------------------
+  mov   eax,185
+  mov   ebx,header
+  mov   ecx,data
+
+
+       As of Linux 2.2, the power of the superuser (root) has been partitioned
+       into a set of discrete capabilities.  Every process has a set of effec-
+       tive  capabilities  identifying which capabilities (if any) it may cur-
+       rently exercise.  Every process also has a set of inheritable capabili-
+       ties  that  may  be  passed through an execve(2) and a set of permitted
+       capabilites that it can make effective or inheritable.
+
+       This function is the raw kernel interface for settng
+       capabilities.  Not only are these system calls specific to Linux,
+       but the kernel API is likely to change and use of these  functions  (in
+       particular  the  format of the cap_user_*_t types) is subject to change
+       with each kernel revision.
+
+       The portable interfaces are  cap_set_proc(3)  and  cap_get_proc(3);  if
+       possible  you should use those interfaces in applications.  If you wish
+       to use the Linux extensions in applications, you should use the easier-
+       to-use interfaces capsetp(3) and capgetp(3).
+
+RETURN VALUE
+       On  success,  zero is returned.  On error a negative code is returned
+
+ERRORS
+       EINVAL One of the arguments was invalid.
+
+       EPERM  An attempt was made to add a capability to the Permitted set, or
+              to set a capability in the Effective or Inheritable sets that is
+              not in the Permitted set.
+
+FURTHER INFORMATION
+       The portable interface to the capability querying and setting functions
+       is provided by the libcap library and is available from here:
+       ftp://ftp.kernel.org/pub/linux/libs/security/linux-privs
+
+
+

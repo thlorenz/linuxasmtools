@@ -1,0 +1,5 @@
+file chooser for console/terminals
+file_browse provides a scrolled window
+that allows a file to be selected.  It
+is used by other programs.
+http://linuxasmtools.net

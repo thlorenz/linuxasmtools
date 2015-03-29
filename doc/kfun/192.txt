@@ -1,0 +1,188 @@
+
+----------------------------------------------------------------------------
+ 192 mmap2         - map files or devices into memory
+----------------------------------------------------------------------------
+    mov  eax,192
+    mov  ebx,page    ;page aligned address
+    mov  ecx,size    ;page sligned size (file size)
+    mov  edx,prot    ;
+    mov	 esi,flags
+    mov  edi,fd      ;descriptor
+    mov  ebp,offset  ;displacemnt into file, 4k units
+    int  80h
+
+
+  mmap2 - map files or devices into memory
+
+
+prot
+----
+       The prot argument describes the desired memory protection (and must not
+       conflict  with the open mode of the file). It is either PROT_NONE or is
+       the bitwise OR of one or more of the other PROT_* flags.
+
+        PROT_READ	0x1		/* page can be read */
+        PROT_WRITE	0x2		/* page can be written */
+        PROT_EXEC	0x4		/* page can be executed */
+        PROT_SEM	0x8		/* page may be used for atomic ops */
+        PROT_NONE	0x0		/* page can not be accessed */
+        PROT_GROWSDOWN	0x01000000	/* mprotect flag: extend change to start of growsdown vma */
+        PROT_GROWSUP	0x02000000	/* mprotect flag: extend change to end of growsup vma */
+
+flags
+-----
+       The flags parameter specifies the type of the  mapped  object,  mapping
+       options  and  whether modifications made to the mapped copy of the page
+       are private to the process or are to be shared with  other  references.
+       It has bits
+
+        MAP_SHARED	0x01		/* Share changes */
+        MAP_PRIVATE	0x02		/* Changes are private */
+        MAP_TYPE	0x0f		/* Mask for type of mapping */
+        MAP_FIXED	0x10		/* Interpret addr exactly */
+        MAP_ANONYMOUS	0x20		/* don't use a file */
+
+       MAP_FIXED  Do  not  select  a different address than the one specified.
+                  If the specified address cannot be used, mmap will fail.  If
+                  MAP_FIXED  is  specified,  start  must  be a multiple of the
+                  pagesize.  Use of this option is discouraged.
+
+       MAP_SHARED Share this mapping with all other processes  that  map  this
+                  object.   Storing  to the region is equivalent to writing to
+                  the file.  The  file  may  not  actually  be  updated  until
+                  msync(2) or munmap(2) are called.
+
+       MAP_PRIVATE
+                  Create  a  private  copy-on-write  mapping.   Stores  to the
+                  region do not affect the original file.  It  is  unspecified
+                  whether  changes  made  to  the file after the mmap call are
+                  visible in the mapped region.
+
+       You must specify exactly one of MAP_SHARED and MAP_PRIVATE.
+
+       The above three flags are described in POSIX.1b (formerly POSIX.4)  and
+       SUSv2.  Linux also knows about the following non-standard flags:
+
+
+        MAP_GROWSDOWN	0x0100		/* stack-like segment */
+        MAP_DENYWRITE	0x0800		/* ETXTBSY */
+        MAP_EXECUTABLE	0x1000		/* mark it as an executable */
+        MAP_LOCKED	0x2000		/* pages are locked */
+        MAP_NORESERVE	0x4000		/* don't check for reservations */
+        MAP_POPULATE	0x8000		/* populate (prefault) pagetables */
+        MAP_NONBLOCK	0x10000		/* do not block on IO */
+
+
+       MAP_DENYWRITE
+              This  flag is ignored.  (Long ago, it signalled that attempts to
+              write to the underlying file should fail with ETXTBUSY. But this
+              was a source of denial-of-service attacks.)
+
+       MAP_EXECUTABLE
+              This flag is ignored.
+
+       MAP_NORESERVE
+              (Used  together  with  MAP_PRIVATE.)  Do  not reserve swap space
+              pages for this mapping. When swap space is reserved, one has the
+              guarantee  that  it  is possible to modify this private copy-on-
+              write region.  When it is not reserved  one  might  get  SIGSEGV
+              upon a write when no memory is available.
+
+       MAP_LOCKED
+              (Linux  2.5.37  and  later)  Lock the pages of the mapped region
+              into memory in the manner of mlock().  This flag is  ignored  in
+              older kernels.
+
+       MAP_GROWSDOWN
+              Used for stacks. Indicates to the kernel VM system that the map-
+              ping should extend downwards in memory.
+
+
+#define MAP_ANONYMOUS	0x20		/* don't use a file */
+#define MAP_ANON	MAP_ANONYMOUS
+#define MAP_FILE	0
+
+       MAP_ANONYMOUS
+              The mapping is not backed by any file; the fd and  offset  argu-
+              ments  are ignored.  This flag in conjunction with MAP_SHARED is
+              implemented since Linux 2.4.
+
+       MAP_ANON
+              Alias for MAP_ANONYMOUS. Deprecated.
+
+       MAP_FILE
+              Compatibility flag. Ignored.
+
+       MAP_32BIT
+              Put the mapping into the first 2GB of the process address space.
+              Ignored  when MAP_FIXED is set. This flag is currently only sup-
+              ported on x86-64 for 64bit programs.
+
+       Some systems document the additional flags MAP_AUTOGROW, MAP_AUTORESRV,
+       MAP_COPY, and MAP_LOCAL.
+
+       fd  should  be a valid file descriptor, unless MAP_ANONYMOUS is set, in
+       which case the argument is ignored.
+
+       offset should be a multiple of the page size as  returned  by  getpage-
+       size(2).
+
+       Memory  mapped  by  mmap  is  preserved  across  fork(2), with the same
+       attributes.
+
+       A file is mapped in multiples of the page size. For a file that is  not
+       a  multiple  of  the  page  size,  the  remaining memory is zeroed when
+       mapped, and writes to that region are not written out to the file.  The
+       effect  of changing the size of the underlying file of a mapping on the
+       pages that correspond to added  or  removed  regions  of  the  file  is
+       unspecified.
+
+DESCRIPTION
+       The  mmap2(192)  system  call operates in exactly the same way as mmap,
+       except that the final argument specifies the offset into  the  file  in
+       4096-byte  units  (instead  of  bytes,  as  is  done by mmap).  This
+       enables applications that use a 32-bit off_t to map large files (up  to
+       2^44 bytes).
+
+       some typical calls to mmap2:
+       mov  eax,192        mov  eax,192       ;mmap2 kerenl function
+       mov  ebx,0          mov  ebx,0x8063000 ;address to map
+       mov  ecx,4096       mov  ecx,4096      ;size (page multiple)
+       mov  edx,3          mov  edx,3         ;PROT_READ + PROT_WRITE
+       mov  esi,1          mov  esi,12h       ;flags
+       mov  edi,(fd)       mov  edi,(fd)      ;open file descriptor
+       mov  ebp,0          mov  ebp,0         ;page offset into file (0,1,2..)
+       int  80h            int  80h
+
+RETURN VALUE
+       On  success, mmap2 returns a pointer to the mapped area. On error
+       a negative code is returned
+
+ERRORS
+       EFAULT Problem with getting the data from userspace.
+
+       EINVAL (Various platforms where the page size is not 4096 bytes.)  off‐
+              set * 4096 is not a multiple of the system page size.
+
+       mmap2() can return any of the same errors as mmap(2).
+
+VERSIONS
+       mmap2() is available since Linux 2.3.31.
+
+CONFORMING TO
+       This system call is Linux specific.
+
+NOTES
+       Nowadays,  the  glibc  mmap() wrapper function invokes this system call
+       rather than the mmap(2) system call.
+
+       On ia64, the unit for offset is actually the system page  size,  rather
+       than 4096 bytes.
+
+SEE ALSO
+       getpagesize, mmap, mremap, msync, shm_open
+
+
+
+Linux                             2007-07-08                          MMAP2(2)
+

@@ -1,0 +1,202 @@
+  extern lib_buf
+
+
+  struc	stat_struc
+.st_dev: resd 1
+.st_ino: resd 1
+.st_mode: resw 1
+.st_nlink: resw 1
+.st_uid: resw 1
+.st_gid: resw 1
+.st_rdev: resd 1
+.st_size: resd 1
+.st_blksize: resd 1
+.st_blocks: resd 1
+.st_atime: resd 1
+.__unused1: resd 1
+.st_mtime: resd 1
+.__unused2: resd 1
+.st_ctime: resd 1
+.__unused3: resd 1
+.__unused4: resd 1
+.__unused5: resd 1
+;  ---  stat_struc_size
+  endstruc
+
+
+
+  [section .text]
+
+;****f* file/dir_status *
+;
+; NAME
+;>1 file
+;  dir_status - check if directory exists
+; INPUTS
+;     ebx = path for directory
+; OUTPUT
+;    eax = negative error if problems, js,jns flags
+;          set for conditonal jump
+;    ecx = fstat buffer ptr if success
+;          (see lstat kernel call)
+; NOTES
+;   source file: file_dir.asm
+;   kernel: lstat (107)
+;   temp buffer lib_buf is used.
+;<
+; * ----------------------------------------------
+;*******
+  global dir_status
+dir_status:
+  mov	eax,107
+  mov	ecx,lib_buf
+  int	80h
+  or	eax,eax
+  ret
+ 
+;****f* file/dir_change *
+; NAME
+;>1 file
+;  dir_change - change current working directory
+; INPUTS
+;    ebx = path of new dir
+; OUTPUT
+;    eax = negative if error
+; NOTES
+;   source file: file_dir.asm
+;   kernel: chdir (12)
+;<
+; * ----------------------------------------------
+;*******
+  global dir_change
+dir_change:
+  mov	eax,12
+  int	80h
+  or	eax,eax
+  ret
+
+;****f* file/dir_delete *
+; NAME
+;>1 file
+;  dir_delete - delete an empty directory
+; INPUTS
+;    ebx = path of directory
+; OUTPUT
+;    eax = negative error# if problem
+; NOTES
+;   source file: file_dir.asm
+;   kernel: rmdir(40)
+;<
+; * ----------------------------------------------
+;*******
+  global dir_delete
+dir_delete:
+  mov	eax,40
+  int	80h
+  or	eax,eax
+  ret
+
+;****f* file/dir_create *
+; NAME
+;>1 file
+;  dir_create - create a new directory
+; INPUTS
+;    ebx = path of new directory
+; OUTPUT
+;    eax = negative error# if problem
+; NOTES
+;   source file: file_dir.asm
+;   kernel: mkdir(39)
+;   This function creates a user read/write directory
+;   if other directories are needed use kernel call
+;<
+; * ----------------------------------------------
+;*******
+  global dir_create
+dir_create:
+  mov	eax,39
+  mov	ecx,40755q		;read/write flag
+  int	80h			;create /home/xxxx/a
+  or	eax,eax			;set sign bit incase error reported
+  ret
+
+;****f* file/dir_read *
+; NAME
+;>1 file
+;  dir_read - open, read, close a directory structure
+; INPUTS
+;     ebx = directory path
+;     edi = buffer to hold directory info
+;     ecx = size of buffer 
+; OUTPUT
+;    eax = negative error# if problems, -1 = buffer too small
+;        = size of read if eax is positive
+;    ebx = dir size if eax=-1
+; NOTES
+;   source file: file_dir.asm
+;   kernel open(5) getdents(141) close(6)
+;<
+; * ----------------------------------------------
+;*******
+;---------------------------------------------------------------
+; read directory at default_path
+;
+  global dir_read
+dir_read:
+  mov	[dr_buf_size],ecx
+  mov	[dr_buf],edi
+  cld
+  mov	al,0
+  rep	stosb
+
+  mov	eax,5			;open
+  mov	ecx,200000h		;directory
+  int	80h
+
+  or	eax,eax
+  js	dr_exit1		;exit if error
+
+  mov	ebx,eax
+  mov	[dr_fd],ebx
+  mov	eax,108
+  mov	ecx,lib_buf + 200	;use lib_buf for fstat buffer
+  int	80h
+  or	eax,eax
+  js	dr_exit1		;jmp if file does not exist
+
+  mov	eax,-1			;preload error
+  mov	ebx,[lib_buf + 200 + stat_struc.st_size]
+  cmp	ebx,[dr_buf_size]
+  ja	dr_exit1		;exit if buffer too small
+
+  mov	ecx,[dr_buf]		;get buffer
+  mov	edx,[dr_buf_size]	;get buffer size
+dr_rd_lp:
+  mov	ebx,[dr_fd]		;restore fd
+  mov	eax,141
+  int	80h			;read
+  or	eax,eax
+  js	dr_cont			;jmp if error
+  jz	dr_got_all		;jmp if everything read
+  add	ecx,eax			;move buffe ptr fwd
+  sub	edx,eax			;adjust size of buffer
+  jmp	short dr_rd_lp
+dr_got_all:
+  sub	ecx,[dr_buf]		;compute size of read
+  mov	eax,ecx
+dr_cont:
+  push	eax			;save size of read/error
+  mov	ebx,[dr_fd]
+  mov	eax,6
+  int	80h			;close
+  pop	eax
+dr_exit1:
+dr_exit:
+  or	eax,eax
+  ret
+  
+  [section .data]
+dr_fd:		dd	0
+dr_buf_size	dd	0
+dr_buf		dd	0
+  [section .text]

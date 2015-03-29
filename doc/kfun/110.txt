@@ -1,0 +1,50 @@
+
+
+----------------------------------------------------------------------------
+system 110 iopl                    - iopl   - change I/O privilege level
+----------------------------------------------------------------------------
+  mov  eax,110
+  mov  ebx,level
+  int  80h
+
+       iopl  changes the I/O privilege level of the current process, as speci-
+       fied in level. Only the super user can call this function.
+
+       This call is necessary to allow 8514-compatible X servers to run  under
+       Linux.   Since  these  X servers require access to all 65536 I/O ports,
+       the ioperm call is not sufficient.
+
+       In addition to granting unrestricted I/O  port  access,  running  at  a
+       higher  I/O  privilege  level also allows the process to disable inter-
+       rupts.  This will probably crash the system, and is not recommended.
+
+       Permissions are inherited by fork and exec.
+
+       The I/O privilege level for a normal process is 0.
+
+       This call is mostly for the i386 architecture.  On many other architec-
+       tures it does not exist or will always return an error.
+
+RETURN VALUE
+       On  success,  zero is returned.  On error a negative code is returned
+
+ERRORS
+       EINVAL level is greater than 3.
+
+       EPERM  The current user is not the super-user.
+
+       ENOSYS This call is unimplemented.
+
+CONFORMING TO
+       iopl is Linux specific and should not be used in processes intended  to
+       be portable.
+
+NOTES
+       Libc5  treats  it  as  a system call and has a prototype in <unistd.h>.
+       Glibc1 does not have a  prototype.  Glibc2  has  a  prototype  both  in
+       <sys/io.h>  and  in <sys/perm.h>.  Avoid the latter, it is available on
+       i386 only.
+
+SEE ALSO
+       ioperm
+

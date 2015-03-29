@@ -1,0 +1,14 @@
+hitting the space bar does not terminate error.
+sometimes error leaves the keyboard in wrong state? multiple errorss?
+
+can we save and restore the cursor positon?  We are using same display
+as parent and need to avoid confusion.
+
+change message to say, press enter key.
+
+also display error # ?
+
+add help option.
+
+add option to display all errors
+

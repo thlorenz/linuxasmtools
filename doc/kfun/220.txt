@@ -1,0 +1,54 @@
+
+----------------------------------------------------------------------------
+220 getdents64       - get directory entry information
+----------------------------------------------------------------------------
+
+  mov  eax,220
+  mov  ebx,fd     ;file descriptor
+  mov  ecx,dirent ;pointer to buffer
+  mov  edx,count  ;size of buffer
+  int  80h
+
+       The  system  call  getdents  reads  several  dirent structures from the
+       directory pointed at by fd into the memory area "buf".
+       The parameter count is the size of the memory area.
+
+       The dirent structure is declared as follows:
+
+                  dirent struc
+                  .d_ino       resd 1 ; inode number */
+                  .d_off       resd 1 ; offset to next dirent */
+                  .d_reclen    resw 1 ; length of this dirent */
+                  .d_name      resb 256 ; file name (null-terminated) */
+                  endstruc
+
+       d_ino  is an inode number.  d_off is the distance from the start of the
+       directory to the start of the next dirent.  d_reclen  is  the  size  of
+       this entire dirent.  d_name is a null-terminated file name.  d_name
+       has a max size of 255 characters followed by null termination.
+
+       This call supersedes readdir.
+
+RETURN VALUE
+       On success, the number of bytes read is returned.  On end of directory,
+       0 is returned.  On error a negative code is returned
+
+ERRORS
+       EBADF  Invalid file descriptor fd.
+
+       EFAULT Argument points outside the calling process's address space.
+
+       EINVAL Result buffer is too small.
+
+       ENOENT No such directory.
+
+       ENOTDIR
+              File descriptor does not refer to a directory.
+
+SEE ALSO
+       readdir
+
+
+
+
+

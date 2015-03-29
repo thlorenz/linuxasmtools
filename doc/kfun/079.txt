@@ -1,0 +1,49 @@
+
+
+----------------------------------------------------------------------------
+ 79 settimeofday   - set time
+----------------------------------------------------------------------------
+  mov  eax,079
+  mov  ebx,tv   ;ptr to time data
+  mov  ecx,tz   ;ptr to time zone data (not used)
+  int  80h
+
+       The function settimeofday can set the time.
+       The tv argument is a timeval struct, as specified
+       in <sys/time.h>:
+
+       struct timeval
+               .tv_sec  resd 1 ;  seconds */
+               .tv_usec resd 1 ;  microseconds */
+       endstric
+
+       and gives the number of seconds and microseconds since the  Epoch  (see
+       time).  The tz argument is a timezone :
+
+       struct timezone
+               tz_minuteswest resd 1 ; /* minutes W of Greenwich */
+               tz_dsttime     resd 1 ;     /* type of dst correction */
+       endstruc
+
+       The  use  of  the timezone struct is obsolete; the tz_dsttime field has
+       never been used under Linux
+
+       If  either  tv or tz is null, the corresponding structure is not set or
+       returned.
+
+       Only the super user may use settimeofday.
+
+RETURN VALUE
+       settimeofday return 0 for success, or negative code for  failure
+
+ERRORS
+       EPERM  settimeofday is called by someone other than the superuser.
+
+       EINVAL Timezone (or something else) is invalid.
+
+       EFAULT One of tv or tz pointed outside your accessible address space.
+
+SEE ALSO
+       date, adjtimex, time, ctime, ftime
+
+

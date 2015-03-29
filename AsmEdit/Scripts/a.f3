@@ -1,0 +1,20 @@
+#! /bin/bash
+make &> /tmp/asmedit.tmp.2
+#
+# NAME
+#>1 script
+#  a.f3 - example compiler interface
+# INPUTS
+#  $1 is name of program being edited.
+#  The parmaeter can be used to call compiler
+#  or makefiles can be called.  The example
+#  scripts call a makefile.
+# OUTPUT
+#  The output of any make or compile operation
+#  can be piped to $HOME/.a/tmp.2 for display.
+#  This puts the compile messages in a window
+#  on the right side of edit screen.
+# NOTES
+# * file:  a.f3
+#<
+# * ----------------------------------------------

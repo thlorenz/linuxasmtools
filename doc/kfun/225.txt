@@ -1,0 +1,64 @@
+
+----------------------------------------------------------------------------
+225 readahead           - Read pages and cache pages         
+----------------------------------------------------------------------------
+
+  mov eax,225
+  mov ebx,fd    ;open file descriptor
+  mov ecx,seek  ;offset into file
+  mov edx,count ;read count         
+  int 80h
+
+ This adds the request to the page cache if it isn't already there,
+ else it reads the data.  
+
+  Reading data ahead often finds errors on CD/DVD media
+  and this will result in error returns (eax = negative code)
+  Normally the size of a sucessful read is returned by
+  readahead.
+
+SYNOPSIS
+       #define _GNU_SOURCE
+       #include <fcntl.h>
+
+       ssize_t readahead(int fd, off64_t *offset, size_t count);
+
+DESCRIPTION
+       readahead() populates the page cache with data from a file so that sub‐
+       sequent reads from that file will not block on disk I/O.  The fd  argu‐
+       ment  is  a  file  descriptor identifying the file which is to be read.
+       The offset argument specifies the starting point from which data is  to
+       be  read  and  count  specifies the number of bytes to be read.  I/O is
+       performed in whole pages, so that offset is effectively rounded down to
+       a page boundary and bytes are read up to the next page boundary greater
+       than or equal to (offset+count).  readahead() does not read beyond  the
+       end  of the file.  readahead() blocks until the specified data has been
+       read.  The current file offset of the open file referred to  by  fd  is
+       left unchanged.
+
+RETURN VALUE
+       On  success, readahead returns 0; on failure a negative code is returned
+
+ERRORS
+       EBADF  fd is not a valid file descriptor or is not open for reading.
+
+       EINVAL fd does not refer to a file type to  which  readahead()  can  be
+              applied.
+
+VERSIONS
+       The readahead system call appeared in Linux 2.4.13; glibc support has
+       been provided since version 2.3.
+
+CONFORMING TO
+       The readahead system call is Linux specific, and its  use  should  be
+       avoided in portable applications.
+
+SEE ALSO
+       lseek, madvise, mmap, posix_fadvise, read
+
+
+
+Linux                             2007-07-26                      READAHEAD(2)
+
+
+

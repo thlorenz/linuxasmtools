@@ -1,0 +1,29 @@
+
+----------------------------------------------------------------------------
+ 42 pipe           - create pipe
+----------------------------------------------------------------------------
+  mov  eax,042
+  mov  ebx,buf
+  int  80h
+
+buf    dd 0	;set to fd(0) for reading
+       dd 0	;set to fd(1) for writing
+
+       pipe creates a pair of file descriptors, pointing to a pipe inode, and
+       places them in the array pointed to by "buf".   buf[0]  is  for
+       reading, buf[1] is for writing.
+
+RETURN VALUE
+       On  success,  zero is returned.  On error negative code
+
+ERRORS
+       EMFILE Too many file descriptors are in use by the process.
+
+       ENFILE The system file table is full.
+
+       EFAULT filedes is not valid.
+
+SEE ALSO
+       read, write, fork, socketpair
+
+

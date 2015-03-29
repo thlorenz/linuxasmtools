@@ -1,0 +1,7 @@
+formats text files
+format_doc is a example program from
+AsmLib.  It can replace all strings in
+a file with new strings and make other
+adjustments.
+format_doc runs in console or X terminal.
+http://linuxasmtools.net

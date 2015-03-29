@@ -1,0 +1,40 @@
+
+NAME
+
+  fileset - display and change file status
+
+SYNOPSIS
+
+    fileset <file>
+    file can have full path or just file
+    name. File can also be directory
+
+DESCRIPTION
+
+    fileset presents an interactive form showing
+    file status and highlighted areas for change.
+    The mouse or keyboard can be used to select
+    items for change.       
+
+USAGE
+
+    The file attributes can be set with a single
+    click, but do not become effective until the
+    apply button is activated. The attributes will
+    then be set and read back. If they were set
+    the display will now show the new setting.
+
+FILES
+
+    source file is fileset.asm
+
+SEE ALSO
+
+    asmmgr asmfile
+ 
+AUTHOR
+ Jeff Owens jko@linuxasmtools.net
+
+COPYRIGHT
+ Copyright (C) 2007 Jeff Owens
+ This program comes with absolutely NO WARRANTY

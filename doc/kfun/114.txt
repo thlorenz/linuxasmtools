@@ -1,0 +1,89 @@
+
+----------------------------------------------------------------------------
+114 wait4          - wait for process termination, BSD style
+----------------------------------------------------------------------------
+  mov  eax,114             ;kernel function number
+  mov  ebx,pid             ;process id to wait for (see following)
+  mov  ecx,status          ;pointer to status storage area.
+  mov  edx,options         ;control bits (see following)
+  mov  esi,rusage_struc    ;pointer to struc
+  int  byte 80h
+
+
+       The wait4 function suspends execution of the current process until a
+       child as specified by the pid argument has exited, or until a signal is
+       delivered whose action is to terminate the current process or to call a
+       signal handling function.  If a child as requested by pid has already
+       exited by the time of the call (a  so-called  "zombie"  process), the
+       function returns immediately.  Any system resources used by the child
+       are freed.
+
+  pid - The value of pid can be one of:
+
+       < -1   which means to wait for any child process whose process group ID
+              is equal to the absolute value of pid.
+
+       -1     which means to wait for any child process; this is equivalent to
+              calling wait3.
+
+       0      which means to wait for any child process whose process group ID
+              is equal to that of the calling process.
+
+       > 0    which  means  to wait for the child whose process ID is equal to
+              the value of pid.
+
+  status - function 114 stores status as word at location pointed to by "status".
+       If the "status" pointer is zero, no status will be stored.  Status is stored
+       when wait4 returns a PID in eax register.  
+
+       The value stored at status consists of:
+
+       byte 1                   byte 2
+       (bl in trace_wait call)  (bh in trace_wait call)
+       -----------------------  -----------------------
+       0   =process exited      kernel exit call reg "bl"
+       1-7e=process killed      signal# that killed process
+       7f  =process stopped     signal# that stopped process
+       ff  =process continued   singal# that continued process
+
+       
+  options - The value of options is a bitwise OR of zero or more of  the
+            following constants:
+
+       WNOHANG (1)
+              which  means  to return immediately if no child is there to be
+              waited for.  Returns error if child dies, Returns zero if no
+              change in child status.  Returns pid is child has stopped and
+              fills in the "status" information.
+
+       WUNTRACED (2)
+              which means to also return for children which are  stopped,  and
+              whose status has not been reported.
+
+  rusage - pointer to buffer for rusage storage of rusage information.
+       If rusage is not NULL, the struct rusage as defined in <sys/resource.h>
+       it  points  to  will  be  filled  with  accounting  information.  See
+       getrusage(2) for details.
+
+RETURN VALUES
+       The  process  ID of the child which exited, -1 on error (in particular,
+       when no unwaited-for child processes of the specified  kind  exist)  or
+       zero if WNOHANG was used and no child was available yet.  In the latter
+       two cases errno will be set appropriately.
+
+       eax = process ID - normal return for stopped child
+           = negative   - error code
+           = zero       - WNOHANG status has not changed
+ 
+ERRORS
+       ECHILD No unwaited-for child process as specified does exist.
+
+       EINTR  if WNOHANG was not set and an unblocked signal or a SIGCHLD  was
+              caught.
+
+       EINVAL Invalid value for options given for wait4.
+
+SEE ALSO
+       signal, getrusage,
+
+

@@ -1,0 +1,18 @@
+ ** AsmLib Example Programs **
+--------------------------------------------
+<ainfo> info file browser, sys_wrap demo
+<fileset> show and change file attributes
+<file_browse> select file and directory
+<format_doc> format text fles
+<sort> sort text file by first column
+<step_test> step fitness measure
+<walk_test> walk fitness measure
+---------------------------------------
+<ainfo>=/usr/share/doc/asmref/progs/ainfo.txt
+<fileset>=/usr/share/doc/asmref/progs/fileset.txt
+<file_browse>=/usr/share/doc/asmref/progs/file_browse.txt
+<format_doc>=/usr/share/doc/asmref/progs/format_doc.txt
+<sort>=/usr/share/doc/asmref/progs/sort.txt
+<step_test>=/usr/share/doc/asmref/progs/steptest.txt
+<walk_test>=/usr/share/doc/asmref/progs/walktest.txt
+

@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>AsmPub assembler comment extractor</title>
+ <meta name="keywords" content="docuentation, assembler, linux, utilities, comments, x86, assembly, tools, development, programming">
+ <meta name="description" content="build documents from comments in assembler source files">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+
+NAME<br>
+<br>
+ asmpub - create document from comments in source<br>
+<br>
+SYNOPSIS<br>
+<br>
+    asmpub &lt;switches&gt; -o &lt;name&gt; target<br>
+<br>
+           where: &lt;switches&gt; can be:<br>
+                  -c(n) - comment character used in source files<br>
+                      example:  -c; for ";" character<br>
+                                -c# for "#" character<br>
+                     Note: no spaces can separate a -x flag and<br>
+                        associated value. thus, -r 2 is illegal.<br>
+                        Shells assume some characters have special<br>
+                        meaning and need to be told to ignore them.<br>
+                        Thus, the -c; parameter must be quoted as '-c;'<br>
+                  -f1 = format 1 (normal)<br>
+                  -f2 = format 2 (library) (see below)<br>
+                  -i  = write index file, uses -o switch to get path<br>
+                        and appends extension of .index<br>
+                  -k  = show sort key in index<br>
+                  -n  = number sections in index and title lines<br>
+                  -r(n) = recurse to  depth (n)<br>
+                      where:  default=current dir (-r1)<br>
+                              -r = recurse all directories<br>
+                              -r2 = recurse to a depth of 2<br>
+                  -s  = sort sections<br>
+           where:<br>
+                  -o(name) = base name for index and output files:<br>
+                  Note: output file is stored in current directory<br>
+                        if full path is not provided. No space<br>
+                        between -o and (name).<br>
+           where: target can be:<br>
+                  path to start search with optional file mask.<br>
+                  example:  /home/sam/project/  &lt;- scan all files<br>
+                                                   at /project<br>
+                            /home/sam/project/*.asm &lt;- scan all<br>
+                                                   files ending with<br>
+                                                   ".asm" at /project<br>
+                            /home/sam/mak*  &lt;- scan all files starting<br>
+                                               with "mak"<br>
+                  note: A full target path must be provided. Examples:<br>
+                            $HOME/source/'*.asm'<br>
+                            /home/sam/source<br>
+                            /home/sam/source/'*.asm'<br>
+                        Shells treat "*" as a special character and<br>
+                        must be told to ignore it. Thus, it must be<br>
+                        quoted. Example -o*.asm  --&gt; '-o*.asm'<br>
+<br>
+DESCRIPTION<br>
+<br>
+ asmpub has two modes. In mode 1 comments are extracted<br>
+ from source files if they are identified with special markers.<br>
+ The comments are moved to a output file with minimal processing.<br>
+ This mode can be modified somewhat by using command line<br>
+ parameters.<br>
+<br>
+ asmpub's second mode is designed for libraries. It can separate<br>
+ each comment block, identity a title, sort by type and title,<br>
+ number each section, build a index file, and do other processing.<br>
+<br>
+    operation:<br>
+    ----------<br>
+          asmpub extracts each block of text and removes the<br>
+          leading comment character. If the sort flag flag<br>
+          is enabled the blocks are sorted. Next, numbering<br>
+          is applied if enabled. The index is then written<br>
+          if enabled. Finally, the comment blocks are written<br>
+          and formatting applied.<br>
+<br>
+    format of comment block in source file<br>
+    --------------------------------------<br>
+<br>
+    the following assumes the comment character is ";"<br>
+    <br>
+    each comment block begins with line: ";&gt;1" followed by optional<br>
+    sort keys:   The end of the block is specified by ";&lt;1"<br>
+    Continuation block can start with ";&gt;2" and end with ";&lt;1".<br>
+    The continuation block are appended to preceding block and<br>
+    sorted with it. All comment block lines must begin at left<br>
+    edge as follows:<br>
+      summary:  ;&gt;1  &lt;-- begins comment block & has sort strings<br>
+                ;&gt;2  &lt;-- begins continuation block, sorted with parent<br>
+                ;&lt;1  &lt;-- ends comment or continuation block<br>
+                ;    &lt;-- normal text within comment block<br>
+<br>
+    the block beginning can have a sort key following the ";&gt;1" string.<br>
+    the sort string can be any string and can be preceded by a space.<br>
+    example:  ;&gt;1 key1-key2<br>
+    the sort string can appear as headers in index file if switch -k<br>
+    is used.<br>
+<br>
+    f1 format - The comment blocks are written as found. (the<br>
+                leading comment character removed)  If numbering<br>
+                is enabled it will be insert at front of first line<br>
+                after the ";&gt;" header line. The ";&gt;" header line<br>
+                and other control lines will be removed.<br>
+<br>
+    f2 format - The f2 format is for libraries and works like f1<br>
+                format with the following additions:  A blank line<br>
+                is added at start of each block. this is followed<br>
+                by a line of dashes, then the first comment line.<br>
+                Next, another line of dashes is inserted. This<br>
+                is followed by the remaining data from comment section.<br>
+<br>
+<br>
+EXAMPLE<br>
+ <br>
+ the documentation for asmlib is created by asmpub.<br>
+<br>
+<br>
+AUTHOR<br>
+ Jeff Owens &lt;jko@bsn1.net&gt;<br>
+<br>
+COPYRIGHT<br>
+ Copyright (C) 2007 Jeff Owens<br>
+ This program comes with absolutely NO WARRANTY<br>
+<br>
+      <br>
+      </big><br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

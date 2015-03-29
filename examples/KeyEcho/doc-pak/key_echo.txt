@@ -1,0 +1,31 @@
+NAME
+
+ key_echo - display hex codes issued with key press
+
+SYNOPSIS
+
+ key_echo
+ no parameters are used by key_echo
+
+DESCRIPTION
+
+ the unix keyboard uses several bytes to report some
+ key presses. For example, the arrow keys can generate
+ several different strings of bytes. A sequence of bytes
+ always starts with the escape character (1bh).
+
+ Programs need to handle all the byte sequences possible
+ for a key and key_echo helps by displaying the output
+ for the current terminal.
+
+USAGE
+
+   All keys on keyboard result in a display except
+   for the "q" key which exits the program.
+
+AUTHOR
+ Jeff Owens <jko@bsn1.net>
+
+COPYRIGHT
+ Copyright (C) 2007 Jeff Owens
+ This program comes with absolutely NO WARRANTY

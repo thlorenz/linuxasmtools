@@ -1,0 +1,12 @@
+#! /bin/bash
+# setup script, temp stub till setup available
+
+#----------------------------------------------------------
+# pause - wait for user to read message
+
+file=$HOME/.asmide/mgr/config.tbl
+
+cat $file | sed '-e s/0_/1_/' > $file
+
+
+ 

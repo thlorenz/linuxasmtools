@@ -1,0 +1,33 @@
+
+----------------------------------------------------------------------------
+system  86 uselib                  - select shared library
+----------------------------------------------------------------------------
+  mov  eax,086
+  mov  ebx,library
+  int  80h
+
+       uselib selects the shared library binary that will be used by the call-
+       ing process.
+
+RETURN VALUE
+       On success, zero is returned.  On error, a negative code is returned
+
+ERRORS
+       In  addition to all of the error codes returned by open and mmap,
+       the following may also be returned:
+
+
+       ENOEXEC
+              The file specified by library is not  executable,  or  does  not
+              have the correct magic numbers.
+
+       EACCES The library specified by library is not readable.
+
+CONFORMING TO
+       uselib() is Linux specific, and should not be used in programs intended
+       to be portable.
+
+SEE ALSO
+       mmap, open
+
+

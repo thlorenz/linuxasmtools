@@ -1,0 +1,51 @@
+
+---------------------------------------------------------------------
+249 io_cancel   - Cancel an outstanding asynchronous I/O operation
+---------------------------------------------------------------------
+
+  mov  eax,249
+  mov  ebx,ctx_id   ;context of previously submitted by [272]io_submit opr to cancel
+  mov  ecx,iocb     ;pointer to iocb *iocbp, aio request block data array
+  mov  edx,result   ;pointer to cancelled event data
+  int  80h
+
+
+SYNOPSIS
+       #include <libaio.h>
+
+       int io_cancel(aio_context_t ctx_id, struct iocb *iocb,
+                     struct io_event *result);
+
+       Link with -laio.
+
+DESCRIPTION
+       io_cancel() attempts to cancel an asynchronous I/O operation previously
+       submitted with io_submit(2).  ctx_id is the AIO context ID of the oper‐
+       ation  to  be canceled.  If the AIO context is found, the event will be
+       canceled and then copied into the memory pointed to by  result  without
+       being placed into the completion queue.
+
+RETURN VALUE
+       io_cancel()  returns  0  on  success; on failure, it returns one of the
+       errors listed under ERRORS.
+
+ERRORS
+       EINVAL The AIO context specified by ctx_id is invalid.
+
+       EFAULT One of the data structures points to invalid data.
+
+       EAGAIN The iocb specified was not canceled.
+
+       ENOSYS io_cancel() is not implemented on this architecture.
+
+VERSIONS
+       The asynchronous I/O system calls first appeared in Linux  2.5,  August
+       2002.
+
+CONFORMING TO
+       io_cancel()  is  Linux specific and should not be used in programs that
+       are intended to be portable.
+
+SEE ALSO
+       io_setup, io_destroy, io_getevents, io_submit
+

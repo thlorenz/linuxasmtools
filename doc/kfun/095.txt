@@ -1,0 +1,87 @@
+
+----------------------------------------------------------------------------
+ 95 fchown         - change ownership of a open file
+----------------------------------------------------------------------------
+  mov   eax,095         ;fchown: changes the owner of a file.
+  mov   ebx,fd          ;open file descriptor
+  mov   ecx,owner       ;new owner id or -1
+  mov   edx,group       ;new group id or -1
+  int   80h
+
+       The  owner of the file specified by fd is changed.  Only the
+       super-user may change the owner of a file.  The owner  of  a  file  may
+       change the group of the file to any group of which that owner is a mem-
+       ber.  The super-user may change the group arbitrarily.
+
+       If the owner or group is specified as -1, then that ID is not  changed.
+
+       When  the  owner  or  group of an executable file are changed by a non-
+       super-user, the S_ISUID and S_ISGID mode bits are cleared.  POSIX  does
+       not  specify  whether this also should happen when root does the chown;
+       the Linux behaviour depends on the kernel version.  In case of  a  non-
+       group-executable  file  (with  clear S_IXGRP bit) the S_ISGID bit indi-
+       cates mandatory locking, and is not cleared by a chown.
+
+
+RETURN VALUE
+       On success, zero is returned.  On error, a negative code is returned
+
+ERRORS
+       Depending  on  the file system, other errors can be returned.  The more
+       general errors for chown are listed below:
+
+
+       EPERM  The effective UID does not match the owner of the file,  and  is
+              not zero; or the owner or group were specified incorrectly.
+
+       EROFS  The named file resides on a read-only file system.
+
+       EFAULT path points outside your accessible address space.
+
+       ENAMETOOLONG
+              path is too long.
+
+       ENOENT The file does not exist.
+
+       ENOMEM Insufficient kernel memory was available.
+
+       ENOTDIR
+              A component of the path prefix is not a directory.
+
+       EACCES Search permission is denied on a component of the path prefix.
+
+       ELOOP  Too many symbolic links were encountered in resolving path.
+
+       The general errors for fchown are listed below:
+
+       EBADF  The descriptor is not valid.
+
+       ENOENT See above.
+
+       EPERM  See above.
+
+       EROFS  See above.
+
+       EIO    A low-level I/O error occurred while modifying the inode.
+
+NOTES
+       In  versions of Linux prior to 2.1.81 (and distinct from 2.1.46), chown
+       did not follow symbolic links.  Since Linux 2.1.81, chown  does  follow
+       symbolic  links,  and  there  is a new system call lchown that does not
+       follow symbolic links.  Since Linux 2.1.86, this new call (that has the
+       same  semantics  as the old chown) has got the same syscall number, and
+       chown got the newly introduced number.
+
+RESTRICTIONS
+       The  chown()  semantics  are  deliberately violated on NFS file systems
+       which have UID mapping enabled.  Additionally,  the  semantics  of  all
+       system  calls  which  access  the  file  contents are violated, because
+       chown() may cause immediate access revocation on  already  open  files.
+       Client  side  caching may lead to a delay between the time where owner-
+       ship have been changed to allow access for a user and  the  time  where
+       the file can actually be accessed by the user on other clients.
+
+SEE ALSO
+       chmod, flock chown lchown
+
+

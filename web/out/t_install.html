@@ -1,0 +1,234 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>Installing LinuxAsmtools</title>
+ <meta name="keywords" content="install, linux, LinuxAsmTools">
+ <meta name="description" content="how to install all or components of LinuxAsmTools">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+
+<!-- header here -->
+      <h2><big>LinuxAsmtools - Installation</big><br>
+      </h2>
+      <hr style="width: 100%; height: 2px;"><br>
+<!-- begin content here -->
+<br>
+AsmTools come with a common INSTALL file and a common <br>
+README. Each program uses the same process to do a<br>
+install. This process utilizes the "make" program and <br>
+is handled the same on most UNIX systems. The process <br>
+is simple:<br>
+<br>
+  1. decompress the source tar.gz<br>
+  2. (optional step)<br>
+     type "make" from the decompressed<br>
+     source file to compile<br>
+  3. as root type "make install"<br>
+<br>
+The compressed tar.gz file can be decompressed<br>
+with <br>
+      <br>
+tar zxvf &lt;program-name&gt;<br>
+      <br>
+After extracting, there should be one or more<br>
+directories created. Enter the directory that mataches<br>
+the name of tar.gz file. Inside this directory you<br>
+will find the "Makefile".<br>
+<br>
+AsmTool programs only run on x86 Linux systems<br>
+and do not need to be compiled first.<br>
+If a compile is desired, simply type make. All<br>
+this should work without problems if the following<br>
+programs are available:<br>
+<br>
+bash - or possibly sh needed by makefile<br>
+sed - stream editor (almost always available)<br>
+make - GNU make needed for install,compile<br>
+install - needed to copy programs<br>
+nasm - (optional), needed by compile<br>
+asmpub - (optional) used by AsmLib "make doc" option<br>
+<br>
+The Makefile also has options for uninstall,<br>
+documentation, and cleanup. <br>
+<br>
+Details<br>
+-------<br>
+<br>
+AsmTools each have a separate makefile and can be<br>
+installed individually. It is also possilbe to obtain <br>
+the complete source tree and compile everything.<br>
+<br>
+The easiest way to work with AsmMgr and AsmEdit is to <br>
+ obtain the complete package because this includes the<br>
+ library that is needed for compiles, and all the<br>
+documentation that is made available by AsmRef.<br>
+<br>
+The common makefile options are:<br>
+<br>
+make clean - clean up the source tree<br>
+make - make executables<br>
+make doc - make documentation<br>
+make release - create a tar.gz file<br>
+make install - run as "root" to install<br>
+make uninstall - run as "root" to uninstall<br>
+<br>
+Limitations<br>
+-----------<br>
+<br>
+<br>
+The bookmarks in AsmFile and AsmMgr are lost with a<br>
+new install.<br>
+<br>
+The file and directory structure is assumed to use<br>
+short file names without spaces inside the name. For<br>
+example a directory name could b:<br>
+<br>
+"This is a very long directory name"<br>
+<br>
+The above name would work with some programs but not<br>
+others. Also, long names would soon overflow the<br>
+internal buffers. Internal buffers expect directory<br>
+paths and names to be less than 200 bytes.<br>
+<br>
+<hr style="width: 100%; height: 2px;"><a name="README"></a><big>README</big><br>
+file from AsmTools programs<br>
+<br>
+This package is part of AsmTools (a collection of<br>
+programs for assembler developent on Linux X86 cpu's.)<br>
+<br>
+The AsmTool family consists of:<br>
+AsmEdit - editor and IDE<br>
+AsmFunc - Utility programs for developers<br>
+AsmRef - reference for assembly programming<br>
+AsmLib - library of assembler functions<br>
+AsmMgr - Front end for AsmIDE<br>
+AsmPub - Document builder (uses comments in programs)<br>
+AsmPlan - planner for AsmMgr and AsmEdit<br>
+AsmSrc - Disassembler to generate nasm source files<br>
+AsmBug - Debugger<br>
+<br>
+<br>
+The author can be found on the DesktopLinuxAsm<br>
+discussion group at yahoogroups. To join send<br>
+a blank email to:<br>
+<br>
+DesktopLinuxAsm-subscribe@yahoogroups.com<br>
+<br>
+Additional information may be available on the<br>
+home page at:<br>
+<br>
+http://linuxasmtools.net/<br>
+<br>
+http://sourceforge.net/projects/asmedit<br>
+<br>
+<br>
+Installing<br>
+----------<br>
+<br>
+see file INSTALL for more information. The AsmIDE<br>
+package consists of many programs which can be<br>
+installed separatly. All programs are selfcontained<br>
+but many also interact with other programs.<br>
+<br>
+The easiest way to get started is to install the<br>
+complete package (AsmIDE).<br>
+<br>
+Limitations<br>
+-----------<br>
+<br>
+AsmTools only run on X86 processors using<br>
+the Linux kernel version 2.4 or later. It isn't<br>
+portable to other UNIX flavors but over 90 percent<br>
+of all UNIX installations are for Linux X86.<br>
+<br>
+Also, AsmTools run in a console or terminal. If<br>
+the X window GUI is being used then, AsmTools need<br>
+to be placed in a terminal. In the console mode<br>
+it does not set up a mouse interface and relies<br>
+on the keyboard.<br>
+<br>
+Features<br>
+--------<br>
+<br>
+Many of the AsmIDE programs are described within<br>
+AsmRef and that may be a good place to begin. Each<br>
+program also has some additional documentation in<br>
+the source files.<br>
+<br>
+* Includes two editors<br>
+* Includes a debugger<br>
+* Includes a library of over 400 functions<br>
+* Includes a filemanager<br>
+* Includes a source generation program.<br>
+* Includes a documentation aide.<br>
+* Includes a project setup and planner<br>
+* Includes many small utilities<br>
+<br>
+<!-- END of the content cell --></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>
+

@@ -1,0 +1,26 @@
+
+
+----------------------------------------------------------------------------
+115 swapoff        - stop swapping to file/device
+----------------------------------------------------------------------------
+  mov  eax,115
+  mov  ebx,path
+  int  80h
+
+       swapoff stops swapping to the file or block device specified  by
+       path.
+
+RETURN VALUE
+       On success, zero is returned.  On error a negative code is returned
+
+ERRORS
+       Many other errors can occur if path is not valid.
+
+       EPERM  The  user  is  not  the  super-user,  or more than MAX_SWAPFILES
+              (defined to be 8 in Linux 1.3.6) are in use.
+
+
+SEE ALSO
+       mkswap, swapon, swapoff
+
+

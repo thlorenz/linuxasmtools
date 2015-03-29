@@ -1,0 +1,7 @@
+library for assembler programmers
+asmlib is a general library with over
+800 funtions.  It is used by over
+30 programs in the LinuxAsmTools
+family.
+It supports console or X terminal programs
+http://linuxasmtools.net

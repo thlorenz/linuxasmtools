@@ -1,0 +1,618 @@
+
+NAME
+ asmedit - text editor enhanced for assembler development
+
+SYNOPSIS
+ asmedit <file1> <file2>
+ Starting with no parameters. Without parameters AsmEdit looks for
+ the history file and uses it to load the last active edit file.
+ If a file has been deleted the edit session starts with an
+ un-named file.
+ Starting with one file. With one file the editor begins with
+ a single window and whatever starting mode has been setup.
+ Starting with two files brings up the first file in a single
+ window. Typing "w" or "o" shows the other file.
+
+DESCRIPTION
+ AsmEdit is based on an editor developed at Intel around 1983.
+ The current version has some enhancements, including a
+ help facility, mouse menus, and improved windowing.
+ Feature Summary- small executable size
+                  mouse or keyboard controls
+                  edits anything that will fit in memory
+                  dual window modes
+                  highlights assembly language comments
+                  compiles and shows errors
+                  simple calculator
+                  macros
+                  optional helper programs, spelling, etc.
+                  paragraphing
+                  hex input and character display
+                  
+ The editor can be used in the full screen edit mode but
+ is more useful if the "command" mode is utilized. Basically,
+ the editor has two modes. In the command mode most of the
+ alpha keys become commands. The "f" key becomes find and
+ the "c" key becomes "calc". Additionally, upper case keys
+ trigger menus while in command mode. Text entry begins
+ by entering the edit mode (full screen edit).
+ The "command" mode is triggered by the ESC key and "edit"
+ mode can be triggered by the key "i" for insert and
+ "x" for overtype. 
+ To get started in "command" mode a series of menus can be
+ activated by pressing the "space" bar or any command using
+ upper case letters. Additionally, any mouse operation
+ triggers the menus. 
+ The next few sections focus on the basic keyboard commands
+ and assume the mouse along with its menus can explain themselves.
+
+USAGE
+ AsmEdit can be used as a IDE (Integrated Development Environment)
+ for writing assembler programs. If the edit file ends with
+ .asm, .s, or .inc it will trigger some basic syntax highlighting.
+ The function keys launch compile and debug programs. Sample,
+ scripts are provided and anyone familiar will shell scripts can
+ customize the IDE functions.
+ See sections 5 and 6 for function key setup.
+ Like other text editors AsmEdit can be used for general purpose
+ edit functions. It does not impose any format on files and
+ has been used to modify binary files. The paragraph function
+ makes it useful for creating ascii text and it easily connects
+ to spell checkers (see section 5). The macro command allows
+ minimal text formatting and calc sometimes helps with programming.
+
+  command mode keys     command menu keys 
+  -----------------     ----------------- 
+  a - again		A - abort files   
+  b - block		B - block menu    
+  c - calc		C - calc          
+  d - del block		D - del block     
+  e - execute		E - exit editor   
+  f - find		F - find menu     
+  g - get		G - get block     
+  h - help		H - help          
+  i - insert mode	I - insert mode   
+  j - jump menu		J - jump menu
+  k -                   K - find backwards 
+  l -                   L - goto line      
+  m - macro             M - misc menu      
+  n -                   N - new file
+  o - other             O - other file
+  p - paragraph         P - paragraph
+  q - quit menu		Q - quit menu
+  r - replace		R - replace
+  s -                   S - setup
+  t - tag               T - edit menu
+  u -                   U - update file
+  v -                   V - save file as
+  w - window split      W - window menu
+  x - overtype mode     X - overtype mode
+  y -                   Y - insert file
+  z -                   Z - abort edit session
+                        space - main menu
+                       F1 - help
+                       F2 - project planner
+                       F3 - compile (a.f3 user defined)
+                       F4 - debug (a.f4 user defined)
+  tab other window     F5 - spell (a.f5 user defined)
+  -   find reverse     F6 - compare (a.f6 user defined)
+  ^a  delete right     F7 - print (a.f7 user defined)
+  ^x  delete left      F8 - calls user file a.f8
+  ^z  delete line      F9 - calls user file a.f9
+  ^u  restore line     F10 - quick exit
+  ^r  enter hex char   F11 - calls user file a.f11
+ 
+  Mouse controls
+
+ The mouse operates as follows:
+   * click in window moves the cursor
+   * click selects any window it occurs in.
+   * click on "buttons" select and execute actions.
+   * right click will inspect data at cursor and launch
+     browser or email client or ask for input.
+ All left click mouse activity triggers menus.
+ To bring up the mouse menus any upper case command can be
+ used. Commands are indicated on menus by an appropriate
+ upper case character. Additionally, pressing space bar
+ while in command mode will trigger the menus.
+ 
+    Keyboard commands
+
+ The keyboard is completely redefined for each mode. Since
+ AsmEdit only has two basic modes (command and edit) this doesn't
+ cause much confusion. In Edit mode the expected alpha keys
+ enter text and the control/function keys deal with cursor movement
+ and other functions. The "command" mode uses the alpha keys for
+ commands and minimizes finger movement (not much ctrl, meta key
+ or multiple key pressing).
+ The rest of this section describes the keys used in "command"
+ mode.
+   
+    keys associated with File operations
+
+ AsmEdit works with two files and a buffer. If additional files
+ are needed they can be loaded but only two files are active
+ at one time. The program can start with zero, one, or two
+ files. If file names are not provided the program still
+ allows work to proceed on two unnamed files. Since the
+ program always tries to load the last file accessed it seldom
+ starts with zero files.
+ The "q" key begins a two key command. The second key is
+ prompted for but most users just ignore the dialog and
+ press two keys quickly in session. The key pairs that
+ work with "q" are:
+ q a - abort all files without saving or asking any questions.
+ q e - save all modified files and exit, ask for names in unnamed.
+ q i - save active file and load (initialize) new file
+ q u - save copy of active file (update) and continue editing
+ q w - change name of active file and write it out. Then
+      continue editing without modifying the original file
+      F10 is an alternative command to quit and avoids the
+      above menus.
+ The buffer is explained in section 4.3 (Working with blocks
+ of text). This includes inserting files and moving blocks
+ of text around.
+
+ Three window arrangements are available. They are: single
+ split horizontal, and split vertical.
+ w - toggles between three window styles.
+ o - stays in current window style and shows "other" file.
+     Pressing "o" again, toggles back to original file.
+ 
+    Cursor Movement and text editing
+
+ Cursor keys are available in both the "edit" and "command" mode.
+ They include the usual: pgdn, pgup, up, down, home, end, Ins,
+ Del, right, left, and Backspace keys.
+ t - opens up a dialog to set tags a,b,c,d
+     Normally, one just types "ta" and ignores the
+     dialog.
+ j - opens up the jump dialog with these options:
+     l - jump to line number
+     s - jump to start of file
+     e - jump to end of file
+     a - jump to tag a
+     b - jump to tag b
+     c - jump to tag c
+     d - jump to tag d
+     
+  The following keys assist with editing text and selecting
+  edit modes
+ i - enter the "insert" edit mode and leaves command mode
+ x - enter the "overtype" edit mode and leaves command mode
+ ^a - (ctrl & a) delete line characters to right of cursor
+ ^x - (ctrl & x) delete line characters to left of cursor
+ ^z - (ctrl & z) delete a line
+ ^u - restore a deleted line, (can restore same line over and over)
+ ^r - enter hex character. This works in all modes and when
+      entering search strings. Each hex character is expected to
+      be two characters long. Thus entering zero would require
+      "00" entry.
+      note: The ^ indicates "Ctrl" key is held down.
+  
+    Blocks and Finding/Replacing text
+
+ f - find text. The text string is terminated by typing
+     ESC. Strings can contain CR (carriage returns) and
+     LF (line feed) characters) along with other hex characters.
+ - - The "-" key is used to find text above the cursor.
+ r - find and replace. This command includes some query features
+     and will prompt for multiple replaces.
+ a - again. repeats the last find operation or macro.
+     
+  Keys associated with buffers and blocks of text.
+ b - begin block at current cursor position. Typing "b" again
+     ends the block and puts a copy in the buffer. If the "d"
+     is pressed to end a block the text is deleted and placed
+     in the buffer.
+ d - same as "b" but used to cut a block out and move it to the
+     buffer.
+ g - inserts the buffer at cursor or inserts a file a cursor. To
+     insert buffer type "gb" to insert file type "gf". Typing
+     "g" followed by enter will default to "gb" and get the
+     the buffer.
+     note:  The b,d,g commands are used to move blocks of text
+            within a file and between files. The buffer holds
+            only one block and it remains in the buffer when
+            new files are loaded or until a new block is placed
+            in the buffer.
+     note:  The "gf" command will pop up a file selector if it is
+            installed.
+            
+    Misc. functions
+
+ c - starts a simple calculator on he status line
+       examples:  1+2 <enter>
+                  -1+2 <enter>
+                  fffffff1h <enter>
+                  -1 <enter>
+                  abch + 3 <enter>
+ p - displays paragraph prompt. Text at the cursor can be
+     paragraphed or margins set. The macro command can be
+     used to repeat paragraphing and do a whole document.
+     Paragraphs are defined as staring by two carriage returns
+     and terminated by two carriage returns. It the cursor is
+     anywhere inside a paragraph the program search both directions
+     for pairs of carriage returns and this defines the area that
+     will be processed.
+ m - begin macro definition. Pressing "m" again in command mode
+     ends the macro. Status line is colored red while macro mode
+     is active.
+ e - executes a defined macro.
+ a - repeats execution
+ s - setup is launched.
+ F1 - help
+ F2 - launch project planner
+ 
+ note: the remaining function keys are user defined, see
+       next section.
+
+   User defined functions (function keys, help)
+
+ The function key menu does not appear on the main menu
+ because it is user defined and difficult to document in
+ advance. A menu can be found by pressing the space bar
+ twice while in "command" mode. This is hidden and describes
+ the default/authors configuration.
+
+ F3 - The F3 key is designed for running a make file or compiler.
+      It calls a user defined scrip named a.f3 and provides the
+      edit file as parameter 1 ($1 if in script). The script is
+      expected to write its results (compile errors) to a file
+      named "tmp.2". This file is read when script completes
+      and placed in a window next to the source code.
+      A side effect of F3 is an automatic update of the source
+      file (file1) if it has changed.
+      The sample a.f3 script calls "make" and is installed
+      at $HOME/.asmide/edit/a.f3. A custom script called a.f3 can be
+      placed in the working directory and it will be executed
+      instead of the one at $HOME/.asmide/edit. This allows special
+      handling of compiles.
+      
+ F4 - The F4 key is setup for running a debugger. It passes the
+      current file with tail stripped off. if the file was called
+      file.asm the .asm will be stripped and only "file" passed.
+      No data is read back from the debugger.
+      If many files are edited and then combined into one executable
+      a local copy of the a.f4 script can be created to always
+      debug the master file. AsmEdit will look for helper programs in
+      the local directory first, then look in $HOME/.asmide/edit/ and finally
+      the path will be searched. The local copy of a.f4 could be
+      written as:  #! /bin/bash
+                   kdbg my_program
+ F5-F9 are user defined and call scripts a.f5 through a.f9. Each
+      script is passed a copy of the edit file and when done the
+      program reads the edit file back. This allows spell checkers
+      to make modifications. It is assumed that print programs and
+      others will not modify the file.
+      If the program is working with two files then two parameters
+      will be passed to the called script. This allows compare
+      programs to be implemented.
+      See example scripts and make files for more information.
+ The help command text can be changed by editing file a.hlp
+ which is kept with the executable.
+ The cursor keys work in help mode along with the "f" find
+ command. The easiest way to get around is with a mouse. Menu
+ items  exist for the major sections.
+HISTORY AND THEORY
+  This projects began as an attempt to port a large
+  collection of DOS programs/libraries to Linux.
+  When it became clear that existing assembler tools
+  were not comfortable, work began on a rough IDE. A
+  few months later a version of nasm with symbolic
+  information was discovered and the kdbg debugger
+  became available. kdbg allowed debugging to occur
+  while viewing the source file, and setting breakpoints
+  was reduced to a single mouse click. This combination
+  make debugging assembler programs much easier.
+  The best part was being able to view comments in the
+  source file. Us old brain dead programmers need all
+  the help we can get and without comments we go around
+  in big circles.
+  To obtain syntax highlighting in AsmEdit the edit file
+  name must end with ".asm" or ".s" or ".inc". This
+  enables comment highlighting. For ".s" files the
+  comment character is "#" and for all others it is
+  ";". This isn't full syntax highlighting but
+  it does make a big difference when reading source
+  files.
+  The function key F3 is designed to compile programs
+  if an appropriate script (a.f3) is available. Section
+  11 has an example script.
+  The function key F4 is designed to run a debugger.
+  The example script in section 11 calls up kdbg.
+  Other function keys can be used to compare files
+  or do other functions. The process works like this:
+  Begin editing source file. Once editing starts AsmEdit
+  call be called without parameters and it remembers
+  the file and cursor position.
+  Create a "Makefile" to compile your program. The
+  F3 function can then be used to compile programs
+  and AsmEdit automatically places error information
+  in a side window.
+  Once the program is built the debugger can be called
+  with F4. At this point it is important to enable
+  source debugging with symbols.
+
+  In 2007 the AsmBug debugger was written and it is
+  now the default. Also, it was designed for assembler
+  work. It shows symbols and comments added to right
+  of instructions.
+
+  I found debuggers like the program to begin with "_start"
+  or "main" labels and have the labels declared global.
+  If the "ld" link program is used it sometimes needs a
+  reference to the library "ld-linux.so.2". Also, modifying
+  the ELF format seems to confuse some debuggers. 
+  An example Makefile can be found in section 11
+
+    Project Planning
+
+  Function key F2 attempts to launch the "plan" program
+  for entering reminders and planning of tasks. The plan
+  program is a separate program which must be installed
+  if this feature is desired. It is normally included with
+  the editor. 
+
+   Installation and file list
+
+  See file INSTALL or just type "make install" as root.
+  To install the AsmEdit executable manually , move it to any
+  directory reachable by $PATH or create a alias for the
+  current shell.
+  AsmEdit will run by itself but many of the commands will
+  be terse and not friendly. The AsmFunc package adds
+  features most users will want. It can be installed
+  at any time using "make install" from within its source
+  directory. 
+
+RESTRICTIONS
+
+  AsmEdit only works on Linux x86 platforms and probably
+  needs a kernel of 2.4 or older.
+  It can edit any file that fits in memory. I've loaded
+  6 megabyte files and some operations are slower due
+  to the file size. It is better to work in smaller
+  pieces and merge later.
+  The mouse, color, fonts, and cursor movements depend upon
+  terminal features. They should work with all xterm
+  clones but the Linux console does not support the mouse.
+  AsmEdit is covered by the GNU license. See file COPYING
+  for more information.
+
+COMPILING
+
+  The compiler is compiled with the latest version
+  of nasm. Originally it was compiled with
+  nasm version 98.22, with a symbolic
+  debug patch applied. Patch is available from:
+   http://ls7-www.cs.uni-dortmund.de/%7Ewawro/index.html
+  Older versions of nasm tend to fail.
+  Other versions of this editor have a "set" command to
+  configure the program. This version has a "s" setup
+  window along with tables and scripts that can be
+  easily modified. I'm lazy and have not implemented
+  the original set style command.
+  AsmEdit code is very easy to reconfigure
+  because it is driven by a set of table. The only problem
+  is knowing how the tables work and which ones to modify.
+  Here is some basic information on the tables:
+  Colors are kept in a series of dwords starting with
+  norm_text_color. The comments in source describe formats
+  and the color labels describe their function.
+  Keyboard mapping is controlled by a series of tables and
+  every key has a separate mapping for the two modes (command,
+  edit). The keystring_tbl is searched after
+  every key press for a match. If found the "find location"
+  becomes an index into another set of tables which describe
+  the process to call. This process is coded as a one byte
+  index into the final table which is a list of addresses
+  or processes.
+  This allows all the editor keys to be redefined by simply
+  working with tables.
+  The mouse is defined by another set of tables which are
+  used to decode clicks, associate processing with clicks,
+  and display buttons. These tables are defined in a
+  list as:
+  dd	m1_menu
+  dd	m2_quit
+  dd	m3_window
+  dd	m4_jump
+  dd	m5_misc
+  dd	m6_edit
+  dd	m7_find
+  dd	m8_block
+  dd	m9_function
+  dd	m10_help
+  The format of table entries:  dword(process)
+                                string(button text)
+                                string terminator(number from 1-8)
+  This simple format provides enough information to display
+  menus and decode them. To change a process just replace the
+  name and rewrite the button text. Oh yes, the number of
+  spaces between buttons is controlled by number in string
+  terminator.
+  And so on.. the comments in source have more information.
+    
+    History and credits
+
+ Predecessors to AsmEdit went by various names. One was called
+ "Aedit" and another "Alter" along with a few other names.
+ The original documentation was published at Intel on 
+ January of 1983.
+ First coded in the PLM language and soon ported to DOS
+ by wrapping the editor in a conversion layer. Eventually,
+ it was re-written in "c" and became mbedit. A free
+ copy of mbedit is available for many platforms and can
+ be found with a web search.
+ 
+    http://home.t-online.de/home/braun-m
+ The author of AsmEdit can be contacted at jko@bsn1.net
+EXAMPLE SCRIPTS
+example "compile" script attached to function key F3 by creating
+file "a.f3"
+   #! /bin/bash
+   make &> $HOME/.asmide/edit/tmp.2
+
+example debug script attached to function key F4 by creating
+file "a.f4"
+   
+   #! /bin/bash
+   kdbg $1
+   
+example spell script attached to function key F5 by creating
+file "a.f5"
+   
+   #! /bin/bash
+   aspell -c $1
+   
+example compare script attached to function key F6 by creating
+file "a.f6"
+   
+   #! /bin/bash
+   # compare two files and optionally make changes
+   xxdiff $1 $2
+   
+example print script attached to function key F7 by creating
+file "a.f7"
+   
+   #! /bin/bash
+   DIALOG=${DIALOG=dialog}
+   tempfile=`tempfile 2>/dev/null` || tempfile=/tmp/test$$
+   trap "rm -f $tempfile" 0 1 2 5 15
+   
+   $DIALOG --default-item "1up" --clear --title "Print Format" \
+           --menu "We are about to format an ascii file\n\
+   for printing. Select style of formatting.\n\n" \
+   26 61 16 \
+           "1up"   "1up +                   (90col 65rows)" \
+           "1upT"  "1up + title             (90col 63rows)" \
+           "1upB"  "1up +       big-font    (74col 55rows)" \
+           "2up"   "2up +                   (71col 62rows)" \
+           "2upT"  "2up + title             (71col 60rows)" \
+           "1upM"  "1up +      Mini-font    (  col   rows)" \
+           "2upM"  "2up +      Mini-font    (  col   rows)" \
+           "lan1"  "lanscape  small-font    (  col   rows)" \
+           "lan2"  "lanscape medium-font    (  col   rows)" \
+           "lan3"  "lanscape    big-font    (  col   rows)" 2> $tempfile
+   
+   retval=$?
+   
+   #echo "`cat $tempfile` chosen."
+   choice=`cat $tempfile`
+   #echo $choice
+   if [ $retval = 0 ]; then
+    {
+       if [ $choice = '1up' ]; then
+          # print bold without title
+          enscript $1 --no-header -f Courier-Bold10 -M Letterdj -c 
+       fi
+       if [ $choice = '1upT' ]; then
+          # print  with title
+          enscript $1 --fancy-header -f Courier-Bold10 -M Letterdj -c
+       fi
+       if [ $choice = '1upB' ]; then
+          # print big type without headers
+          enscript $1 --no-header -f Courier-Bold12 -M Letterdj -c
+          echo "1upB"
+       fi
+       if [ $choice = '2up' ]; then
+          # print bold without title
+          enscript $1 --no-header -f Courier-Bold8 -M Letterdj -c -2r
+          echo "2up"
+       fi
+       if [ $choice = '2upT' ]; then
+          # print bold with title
+          enscript $1 --fancy-header -f Courier-Bold8 -M Letterdj -c -2r
+          echo "2upT"
+       fi
+       if [ $choice = '2upB' ]; then
+          # print bold without headers
+          enscript $1 --no-header -f Courier-Bold10 -M Letterdj -c -2r
+          echo "2upB"
+       fi
+       if [ $choice = '1upM' ]; then
+          # print bold without headers
+          enscript $1 --no-header -f Courier-Bold8 -M Letterdj -c
+          echo "2upB"
+       fi
+       if [ $choice = '2upM' ]; then
+          # print bold without headers
+          enscript $1 --no-header -f Courier-Bold6 -M Letterdj -c -2r
+          echo "2upB"
+       fi
+       if [ $choice = 'lan1' ]; then
+          # print bold without headers
+          enscript $1 --no-header -f Courier-Bold8 -M Letterdj -c -r
+          echo "2upB"
+       fi
+       if [ $choice = 'lan2' ]; then
+          # print bold without headers
+          enscript $1 --no-header -f Courier-Bold10 -M Letterdj -c -r
+          echo "2upB"
+       fi
+       if [ $choice = 'lan3' ]; then
+          # print bold without headers
+          enscript $1 --no-header -f Courier-Bold12 -M Letterdj -c -r
+          echo "2upB"
+       fi
+    }
+   fi
+-------------------------------------------------------------------
+#Example Makefile, note: tab locations can be important in makefiles.
+all:	a dir
+
+a: a.o 
+	ld -o a a.o
+#	strip --strip-all a
+a.o: a.asm
+#	/usr/bin/nasm -g -felf -oa.o a.asm
+	~/bin/nasm -g -felf -oa.o a.asm
+
+dir: dir.o 
+	ld -o dir dir.o
+#	strip --strip-all dir
+dir.o: dir.asm
+	~/bin/nasm -g -felf -odir.o dir.asm
+
+FILES
+
+ The latest version of AsmEdit can be obtained from:
+ http://sourceforge.net/projects/asmedit. This document
+ assumes the package AsmFunc is also installed. AsmFunc
+ extends AsmEdit and makes if easier to use.
+
+DEPENDENCIES
+
+  Optional compile dependency: AsmLib
+
+  Optional helper programs: AsmRef
+                            file_browse
+                            AsmPlan
+
+SEE ALSO
+
+ asmmgr(1) asmref(1) asmedit(1)
+ 
+AUTHOR
+
+ Jeff Owens <jko@bsn1.net>
+
+COPYRIGHT
+
+ Copyright (C) 2007 Jeff Owens
+ This program comes with absolutely NO WARRANTY
+
+--------------------------------------------------
+bug reports and comments are welcome. Due to spam
+problems the author uses small discussion lists
+for communication. One option is to use the form
+at sourceforge.
+http://sourceforge/projects/asmedit
+Another option is to join the DesktopLinuxAsm
+group at Yahoo. This can be done by sending
+a blank email to:
+DesktopLinuxAsm-subscribe@yahoogroups.com
+or visiting:
+http://groups.yahoo.com/group/DesktopLinuxAsm
+     

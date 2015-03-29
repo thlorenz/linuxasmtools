@@ -1,0 +1,5 @@
+#! /bin/bash
+# normal window
+
+norm='\E[?47l'
+echo -e $norm

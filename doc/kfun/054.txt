@@ -1,0 +1,1153 @@
+----------------------------------------------------------------------------
+ 54 ioctl          - control device
+----------------------------------------------------------------------------
+  // ioctl2 - two parameter form of the ioctl function.
+  mov  eax,054
+  mov  ebx,d
+  mov  ecx,request
+  int  80h
+
+  // ioctl3 - three parameter form of the ioctl function.
+  mov  eax,054
+  mov  ebx,d
+  mov  ecx,request
+  mov  edx,argp
+  int  80h
+
+DESCRIPTION
+       The ioctl function manipulates the underlying device parameters of spe-
+       cial files.  In particular, many operating characteristics of character
+       special  files  (e.g. terminals) may be controlled with ioctl requests.
+       The argument d must be an open file descriptor.
+
+       The second argument is a  device-dependent  request  code.   The  third
+       argument  is  an  untyped  pointer  to memory.  It's traditionally char
+       *argp (from the days before void * was valid C), and will be  so  named
+       for this discussion.
+
+       An ioctl request has encoded in it whether the argument is an in param-
+       eter or out parameter, and the size of  the  argument  argp  in  bytes.
+       Macros  and  defines used in specifying an ioctl request are located in
+       the file <sys/ioctl.h>.
+
+ERRORS
+       09 EBADF  d is not a valid descriptor.
+
+       14 EFAULT argp references an inaccessible memory area.
+
+       25 ENOTTY d is not associated with a character special device.
+
+       25 ENOTTY The specified request does not apply to the kind of object  that
+              the descriptor d references.
+
+       22 EINVAL Request or argp is not valid.
+
+NOTE
+       In  order  to  use this call, one needs an open file descriptor.  Often
+       the open(2) call has unwanted side effects, that can be  avoided  under
+       Linux by giving it the O_NONBLOCK flag.
+
+
+NAME
+       ioctl_list - list of ioctl calls in Linux/i386 kernel
+
+
+DESCRIPTION
+       This  is  Ioctl List 1.3.27, a list of ioctl calls in Linux/i386 kernel
+       1.3.27.  It contains 421 ioctls from /usr/include/{asm,linux}/*.h.  For
+       each  ioctl,  its  numerical value, its name, and its argument type are
+       given.
+
+       An argument type of 'const struct foo *' means the argument is input to
+       the  kernel.  'struct foo *' means the kernel outputs the argument.  If
+       the kernel uses the argument for both input and output, this is  marked
+       with // I-O.
+
+       Some  ioctls  take  more  arguments or return more values than a single
+       structure.  These are marked // MORE and documented further in a  sepa-
+       rate section.
+
+IOCTL STRUCTURE
+       Ioctl command values are 32-bit constants.   In  principle  these  con-
+       stants  are  completely  arbitrary, but people have tried to build some
+       structure into them.
+
+       The old Linux situation was that of mostly 16-bit constants, where  the
+       last  byte  is  a  serial number, and the preceding byte(s) give a type
+       indicating the driver. Sometimes the major number was  used:  0x03  for
+       the  HDIO_*  ioctls, 0x06 for the LP* ioctls. And sometimes one or more
+       ASCII letters were used. For example, TCGETS has value 0x00005401, with
+       0x54  =  'T' indicating the terminal driver, and CYGETTIMEOUT has value
+       0x00435906, with 0x43 0x59 = 'C' 'Y' indicating the cyclades driver.
+
+       Later (0.98p5) some more information was built into  the  number.   One
+       has  2  direction  bits (00: none, 01: write, 10: read, 11: read/write)
+       followed by 14 size bits (giving the size of the argument), followed by
+       an  8-bit type (collecting the ioctls in groups for a common purpose or
+       a common driver), and an 8-bit serial number.
+
+       The macros describing this structure  live  in  <asm/ioctl.h>  and  are
+       _IO(type,nr)    and    {_IOR,_IOW,_IOWR}(type,nr,size).     They    use
+       sizeof(size) so that size is a misnomer here - this third parameter  is
+       a data type.
+
+       Note that the size bits are very unreliable - in lots of cases they are
+       wrong - either because of buggy macros using sizeof(sizeof(struct)), or
+       because of legacy values.
+
+       Thus,  it seems that the new structure only gave disadvantages: it does
+       not help in checking, but it causes  varying  values  for  the  various
+       architectures.
+
+
+RETURN VALUE
+       Decent  ioctls  return  0  on success and -1 on error, while any output
+       value is stored via the argument. However, quite a few ioctls  in  fact
+       return an output value.  This is not yet indicated below.
+
+
+       // Main table.
+
+       // <include/asm-i386/socket.h>
+       0x00008901  FIOSETOWN              const int *
+       0x00008902  SIOCSPGRP              const int *
+       0x00008903  FIOGETOWN              int *
+       0x00008904  SIOCGPGRP              int *
+       0x00008905  SIOCATMARK             int *
+       0x00008906  SIOCGSTAMP             timeval *
+
+       // <include/asm-i386/termios.h>
+       0x00005401  TCGETS            struct termios *
+       0x00005402  TCSETS            const struct termios *
+       0x00005403  TCSETSW           const struct termios *
+       0x00005404  TCSETSF           const struct termios *
+       0x00005405  TCGETA            struct termio *
+       0x00005406  TCSETA            const struct termio *
+       0x00005407  TCSETAW           const struct termio *
+       0x00005408  TCSETAF           const struct termio *
+       0x00005409  TCSBRK            int
+       0x0000540A  TCXONC            int
+       0x0000540B  TCFLSH            int
+       0x0000540C  TIOCEXCL               void
+       0x0000540D  TIOCNXCL               void
+       0x0000540E  TIOCSCTTY              int
+       0x0000540F  TIOCGPGRP              pid_t *
+       0x00005410  TIOCSPGRP              const pid_t *
+       0x00005411  TIOCOUTQ               int *
+       0x00005412  TIOCSTI           const char *
+       0x00005413  TIOCGWINSZ             struct winsize *
+       0x00005414  TIOCSWINSZ             const struct winsize *
+       0x00005415  TIOCMGET               int *
+       0x00005416  TIOCMBIS               const int *
+       0x00005417  TIOCMBIC               const int *
+       0x00005418  TIOCMSET               const int *
+       0x00005419  TIOCGSOFTCAR      int *
+       0x0000541A  TIOCSSOFTCAR      const int *
+       0x0000541B  FIONREAD               int *
+       0x0000541B  TIOCINQ           int *
+       0x0000541C  TIOCLINUX              const char *             // MORE
+       0x0000541D  TIOCCONS               void
+       0x0000541E  TIOCGSERIAL            struct serial_struct *
+       0x0000541F  TIOCSSERIAL            const struct serial_struct *
+       0x00005420  TIOCPKT           const int *
+       0x00005421  FIONBIO           const int *
+       0x00005422  TIOCNOTTY              void
+       0x00005423  TIOCSETD               const int *
+       0x00005424  TIOCGETD               int *
+       0x00005425  TCSBRKP           int
+       0x00005426  TIOCTTYGSTRUCT         struct tty_struct *
+       0x00005450  FIONCLEX               void
+       0x00005451  FIOCLEX           void
+       0x00005452  FIOASYNC               const int *
+       0x00005453  TIOCSERCONFIG          void
+       0x00005454  TIOCSERGWILD      int *
+       0x00005455  TIOCSERSWILD      const int *
+       0x00005456  TIOCGLCKTRMIOS         struct termios *
+       0x00005457  TIOCSLCKTRMIOS         const struct termios *
+       0x00005458  TIOCSERGSTRUCT         struct async_struct *
+       0x00005459  TIOCSERGETLSR          int *
+       0x0000545A  TIOCSERGETMULTI        struct serial_multiport_struct *
+       0x0000545B  TIOCSERSETMULTI        const struct serial_multiport_struct *
+
+       // <include/linux/ax25.h>
+       0x000089E0  SIOCAX25GETUID         const struct sockaddr_ax25 *
+       0x000089E1  SIOCAX25ADDUID         const struct sockaddr_ax25 *
+       0x000089E2  SIOCAX25DELUID         const struct sockaddr_ax25 *
+       0x000089E3  SIOCAX25NOUID          const int *
+       0x000089E4  SIOCAX25DIGCTL         const int *
+       0x000089E5  SIOCAX25GETPARMS       struct ax25_parms_struct *    // I-O
+       0x000089E6  SIOCAX25SETPARMS       const struct ax25_parms-struct *
+
+       // <include/linux/cdk.h>
+       0x00007314  STL_BINTR              void
+       0x00007315  STL_BSTART             void
+       0x00007316  STL_BSTOP              void
+       0x00007317  STL_BRESET             void
+
+       // <include/linux/cdrom.h>
+       0x00005301  CDROMPAUSE             void
+       0x00005302  CDROMRESUME            void
+       0x00005303  CDROMPLAYMSF      const struct cdrom_msf *
+       0x00005304  CDROMPLAYTRKIND        const struct cdrom_ti *
+       0x00005305  CDROMREADTOCHDR        struct cdrom_tochdr *
+       0x00005306  CDROMREADTOCENTRY      struct cdrom_tocentry *       // I-O
+       0x00005307  CDROMSTOP              void
+       0x00005308  CDROMSTART             void
+       0x00005309  CDROMEJECT             void
+       0x0000530A  CDROMVOLCTRL      const struct cdrom_volctrl *
+       0x0000530B  CDROMSUBCHNL      struct cdrom_subchnl *        // I-O
+       0x0000530C  CDROMREADMODE2         const struct cdrom_msf * // MORE
+       0x0000530D  CDROMREADMODE1         const struct cdrom_msf * // MORE
+       0x0000530E  CDROMREADAUDIO         const struct cdrom_read_audio *    // MORE
+       0x0000530F  CDROMEJECT_SW          int
+       0x00005310  CDROMMULTISESSION      struct cdrom_multisession *   // I-O
+       0x00005311  CDROM_GET_UPC          struct { char [8]; } *
+       0x00005312  CDROMRESET             void
+       0x00005313  CDROMVOLREAD      struct cdrom_volctrl *
+       0x00005314  CDROMREADRAW      const struct cdrom_msf * // MORE
+       0x00005315  CDROMREADCOOKED        const struct cdrom_msf * // MORE
+       0x00005316  CDROMSEEK              const struct cdrom_msf *
+
+       // <include/linux/cm206.h>
+       0x00002000  CM206CTL_GET_STAT      int
+       0x00002001  CM206CTL_GET_LAST_STAT int
+
+       // <include/linux/cyclades.h>
+       0x00435901  CYGETMON               struct cyclades_monitor *
+       0x00435902  CYGETTHRESH            int *
+       0x00435903  CYSETTHRESH            int
+       0x00435904  CYGETDEFTHRESH         int *
+       0x00435905  CYSETDEFTHRESH         int
+       0x00435906  CYGETTIMEOUT      int *
+       0x00435907  CYSETTIMEOUT      int
+       0x00435908  CYGETDEFTIMEOUT        int *
+       0x00435909  CYSETDEFTIMEOUT        int
+
+       // <include/linux/ext2_fs.h>
+       0x80046601  EXT2_IOC_GETFLAGS      int *
+       0x40046602  EXT2_IOC_SETFLAGS      const int *
+       0x80047601  EXT2_IOC_GETVERSION         int *
+       0x40047602  EXT2_IOC_SETVERSION         const int *
+
+       // <include/linux/fd.h>
+       0x00000000  FDCLRPRM               void
+       0x00000001  FDSETPRM               const struct floppy_struct *
+       0x00000002  FDDEFPRM               const struct floppy_struct *
+       0x00000003  FDGETPRM               struct floppy_struct *
+       0x00000004  FDMSGON           void
+       0x00000005  FDMSGOFF               void
+       0x00000006  FDFMTBEG               void
+       0x00000007  FDFMTTRK               const struct format_descr *
+       0x00000008  FDFMTEND               void
+       0x0000000A  FDSETEMSGTRESH         int
+       0x0000000B  FDFLUSH           void
+       0x0000000C  FDSETMAXERRS      const struct floppy_max_errors *
+       0x0000000E  FDGETMAXERRS      struct floppy_max_errors *
+       0x00000010  FDGETDRVTYP            struct { char [16]; } *
+       0x00000014  FDSETDRVPRM            const struct floppy_drive_params *
+       0x00000015  FDGETDRVPRM            struct floppy_drive_params *
+       0x00000016  FDGETDRVSTAT      struct floppy_drive_struct *
+       0x00000017  FDPOLLDRVSTAT          struct floppy_drive_struct *
+       0x00000018  FDRESET           int
+       0x00000019  FDGETFDCSTAT      struct floppy_fdc_state *
+       0x0000001B  FDWERRORCLR            void
+       0x0000001C  FDWERRORGET            struct floppy_write_errors *
+       0x0000001E  FDRAWCMD               struct floppy_raw_cmd *  // MORE   // I-O
+       0x00000028  FDTWADDLE              void
+
+       // <include/linux/fs.h>
+       0x0000125D  BLKROSET               const int *
+       0x0000125E  BLKROGET               int *
+       0x0000125F  BLKRRPART              void
+       0x00001260  BLKGETSIZE             int *
+       0x00001261  BLKFLSBUF              void
+       0x00001262  BLKRASET               int
+       0x00001263  BLKRAGET               int *
+       0x00000001  FIBMAP            int *                    // I-O
+       0x00000002  FIGETBSZ               int *
+
+       // <include/linux/hdreg.h>
+       0x00000301  HDIO_GETGEO            struct hd_geometry *
+       0x00000302  HDIO_GET_UNMASKINTR         int *
+       0x00000304  HDIO_GET_MULTCOUNT          int *
+       0x00000307  HDIO_GET_IDENTITY      struct hd_driveid *
+       0x00000308  HDIO_GET_KEEPSETTINGS  int *
+       0x00000309  HDIO_GET_CHIPSET       int *
+       0x0000030A  HDIO_GET_NOWERR        int *
+       0x0000030B  HDIO_GET_DMA      int *
+       0x0000031F  HDIO_DRIVE_CMD         int *                    // I-O
+       0x00000321  HDIO_SET_MULTCOUNT          int
+       0x00000322  HDIO_SET_UNMASKINTR         int
+       0x00000323  HDIO_SET_KEEPSETTINGS  int
+       0x00000324  HDIO_SET_CHIPSET       int
+       0x00000325  HDIO_SET_NOWERR        int
+       0x00000326  HDIO_SET_DMA      int
+
+       // <include/linux/if_eql.h>
+       0x000089F0  EQL_ENSLAVE            struct ifreq *      // MORE // I-O
+       0x000089F1  EQL_EMANCIPATE         struct ifreq *      // MORE // I-O
+       0x000089F2  EQL_GETSLAVECFG        struct ifreq *      // MORE // I-O
+       0x000089F3  EQL_SETSLAVECFG        struct ifreq *      // MORE // I-O
+       0x000089F4  EQL_GETMASTRCFG        struct ifreq *      // MORE // I-O
+       0x000089F5  EQL_SETMASTRCFG        struct ifreq *      // MORE // I-O
+
+       // <include/linux/if_plip.h>
+       0x000089F0  SIOCDEVPLIP            struct ifreq *           // I-O
+
+       // <include/linux/if_ppp.h>
+       0x00005490  PPPIOCGFLAGS      int *
+       0x00005491  PPPIOCSFLAGS      const int *
+       0x00005492  PPPIOCGASYNCMAP        int *
+       0x00005493  PPPIOCSASYNCMAP        const int *
+       0x00005494  PPPIOCGUNIT            int *
+       0x00005495  PPPIOCSINPSIG          const int *
+       0x00005497  PPPIOCSDEBUG      const int *
+       0x00005498  PPPIOCGDEBUG      int *
+       0x00005499  PPPIOCGSTAT            struct ppp_stats *
+       0x0000549A  PPPIOCGTIME            struct ppp_ddinfo *
+       0x0000549B  PPPIOCGXASYNCMAP       struct { int [8]; } *
+       0x0000549C  PPPIOCSXASYNCMAP       const struct { int [8]; } *
+       0x0000549D  PPPIOCSMRU             const int *
+       0x0000549E  PPPIOCRASYNCMAP        const int *
+       0x0000549F  PPPIOCSMAXCID          const int *
+
+       // <include/linux/ipx.h>
+       0x000089E0  SIOCAIPXITFCRT         const char *
+       0x000089E1  SIOCAIPXPRISLT         const char *
+       0x000089E2  SIOCIPXCFGDATA         struct ipx_config_data *
+
+       // <include/linux/kd.h>
+       0x00004B60  GIO_FONT               struct { char [8192]; } *
+       0x00004B61  PIO_FONT               const struct { char [8192]; } *
+       0x00004B6B  GIO_FONTX              struct console_font_desc *  // MORE I-O
+       0x00004B6C  PIO_FONTX              const struct console_font_desc * //MORE
+       0x00004B70  GIO_CMAP               struct { char [48]; } *
+       0x00004B71  PIO_CMAP               const struct { char [48]; }
+       0x00004B2F  KIOCSOUND              int
+       0x00004B30  KDMKTONE               int
+       0x00004B31  KDGETLED               char *
+       0x00004B32  KDSETLED               int
+       0x00004B33  KDGKBTYPE              char *
+       0x00004B34  KDADDIO           int                 // MORE
+       0x00004B35  KDDELIO           int                 // MORE
+       0x00004B36  KDENABIO               void                // MORE
+       0x00004B37  KDDISABIO              void                // MORE
+       0x00004B3A  KDSETMODE              int
+       0x00004B3B  KDGETMODE              int *
+       0x00004B3C  KDMAPDISP              void                // MORE
+       0x00004B3D  KDUNMAPDISP            void                // MORE
+       0x00004B40  GIO_SCRNMAP            struct { char [E_TABSZ]; } *
+       0x00004B41  PIO_SCRNMAP            const struct { char [E_TABSZ]; } *
+       0x00004B69  GIO_UNISCRNMAP         struct { short [E_TABSZ]; } *
+       0x00004B6A  PIO_UNISCRNMAP         const struct { short [E_TABSZ]; } *
+       0x00004B66  GIO_UNIMAP             struct unimapdesc * // MORE   // I-O
+       0x00004B67  PIO_UNIMAP             const struct unimapdesc *     // MORE
+       0x00004B68  PIO_UNIMAPCLR          const struct unimapinit *
+       0x00004B44  KDGKBMODE              int *
+       0x00004B45  KDSKBMODE              int
+       0x00004B62  KDGKBMETA              int *
+       0x00004B63  KDSKBMETA              int
+       0x00004B64  KDGKBLED               int *
+       0x00004B65  KDSKBLED               int
+       0x00004B46  KDGKBENT               struct kbentry *         // I-O
+       0x00004B47  KDSKBENT               const struct kbentry *
+       0x00004B48  KDGKBSENT              struct kbsentry *        // I-O
+       0x00004B49  KDSKBSENT              const struct kbsentry *
+       0x00004B4A  KDGKBDIACR             struct kbdiacrs *
+       0x00004B4B  KDSKBDIACR             const struct kbdiacrs *
+       0x00004B4C  KDGETKEYCODE      struct kbkeycode *       // I-O
+       0x00004B4D  KDSETKEYCODE      const struct kbkeycode *
+       0x00004B4E  KDSIGACCEPT            int
+
+       // <include/linux/lp.h>
+       0x00000601  LPCHAR            int
+       0x00000602  LPTIME            int
+       0x00000604  LPABORT           int
+       0x00000605  LPSETIRQ               int
+       0x00000606  LPGETIRQ               int *
+       0x00000608  LPWAIT            int
+       0x00000609  LPCAREFUL              int
+       0x0000060A  LPABORTOPEN            int
+       0x0000060B  LPGETSTATUS            int *
+       0x0000060C  LPRESET           void
+       0x0000060D  LPGETSTATS             struct lp_stats *
+
+       // <include/linux/mroute.h>
+       0x000089E0  SIOCGETVIFCNT          struct sioc_vif_req *         // I-O
+       0x000089E1  SIOCGETSGCNT      struct sioc_sg_req *          // I-O
+
+       // <include/linux/mtio.h>
+       0x40086D01  MTIOCTOP               const struct mtop *
+       0x801C6D02  MTIOCGET               struct mtget *
+       0x80046D03  MTIOCPOS               struct mtpos *
+       0x80206D04  MTIOCGETCONFIG         struct mtconfiginfo *
+       0x40206D05  MTIOCSETCONFIG         const struct mtconfiginfo *
+
+       // <include/linux/netrom.h>
+       0x000089E0  SIOCNRGETPARMS         struct nr_parms_struct * // I-O
+       0x000089E1  SIOCNRSETPARMS         const struct nr_parms_struct *
+       0x000089E2  SIOCNRDECOBS      void
+       0x000089E3  SIOCNRRTCTL            const int *
+
+       // <include/linux/sbpcd.h>
+       0x00009000  DDIOCSDBG              const int *
+       0x00005382  CDROMAUDIOBUFSIZ       int
+
+       // <include/linux/scc.h>
+       0x00005470  TIOCSCCINI             void
+       0x00005471  TIOCCHANINI            const struct scc_modem *
+       0x00005472  TIOCGKISS              struct ioctl_command *        // I-O
+       0x00005473  TIOCSKISS              const struct ioctl_command *
+       0x00005474  TIOCSCCSTAT            struct scc_stat *
+
+       // <include/linux/scsi.h>
+       0x00005382  SCSI_IOCTL_GET_IDLUN   struct { int [2]; } *
+       0x00005383  SCSI_IOCTL_TAGGED_ENABLE    void
+       0x00005384  SCSI_IOCTL_TAGGED_DISABLE   void
+       0x00005385  SCSI_IOCTL_PROBE_HOST  const int *              // MORE
+
+       // <include/linux/smb_fs.h>
+       0x80027501  SMB_IOC_GETMOUNTUID         uid_t *
+
+       // <include/linux/sockios.h>
+       0x0000890B  SIOCADDRT              const struct rtentry *        // MORE
+       0x0000890C  SIOCDELRT              const struct rtentry *        // MORE
+       0x00008910  SIOCGIFNAME            char []
+       0x00008911  SIOCSIFLINK            void
+       0x00008912  SIOCGIFCONF            struct ifconf *          // MORE   // I-O
+       0x00008913  SIOCGIFFLAGS      struct ifreq *           // I-O
+       0x00008914  SIOCSIFFLAGS      const struct ifreq *
+       0x00008915  SIOCGIFADDR            struct ifreq *           // I-O
+       0x00008916  SIOCSIFADDR            const struct ifreq *
+       0x00008917  SIOCGIFDSTADDR         struct ifreq *           // I-O
+       0x00008918  SIOCSIFDSTADDR         const struct ifreq *
+       0x00008919  SIOCGIFBRDADDR         struct ifreq *           // I-O
+       0x0000891A  SIOCSIFBRDADDR         const struct ifreq *
+       0x0000891B  SIOCGIFNETMASK         struct ifreq *           // I-O
+       0x0000891C  SIOCSIFNETMASK         const struct ifreq *
+       0x0000891D  SIOCGIFMETRIC          struct ifreq *           // I-O
+       0x0000891E  SIOCSIFMETRIC          const struct ifreq *
+       0x0000891F  SIOCGIFMEM             struct ifreq *           // I-O
+       0x00008920  SIOCSIFMEM             const struct ifreq *
+       0x00008921  SIOCGIFMTU             struct ifreq *           // I-O
+       0x00008922  SIOCSIFMTU             const struct ifreq *
+       0x00008923  OLD_SIOCGIFHWADDR      struct ifreq *           // I-O
+       0x00008924  SIOCSIFHWADDR          const struct ifreq *          // MORE
+       0x00008925  SIOCGIFENCAP      int *
+       0x00008926  SIOCSIFENCAP      const int *
+       0x00008927  SIOCGIFHWADDR          struct ifreq *           // I-O
+       0x00008929  SIOCGIFSLAVE      void
+       0x00008930  SIOCSIFSLAVE      void
+       0x00008931  SIOCADDMULTI      const struct ifreq *
+       0x00008932  SIOCDELMULTI      const struct ifreq *
+       0x00008940  SIOCADDRTOLD      void
+       0x00008941  SIOCDELRTOLD      void
+       0x00008950  SIOCDARP               const struct arpreq *
+       0x00008951  SIOCGARP               struct arpreq *               // I-O
+       0x00008952  SIOCSARP               const struct arpreq *
+       0x00008960  SIOCDRARP              const struct arpreq *
+       0x00008961  SIOCGRARP              struct arpreq *               // I-O
+       0x00008962  SIOCSRARP              const struct arpreq *
+       0x00008970  SIOCGIFMAP             struct ifreq *           // I-O
+       0x00008971  SIOCSIFMAP             const struct ifreq *
+
+       // <include/linux/soundcard.h>
+       0x00005100  SNDCTL_SEQ_RESET       void
+       0x00005101  SNDCTL_SEQ_SYNC        void
+       0xC08C5102  SNDCTL_SYNTH_INFO      struct synth_info *      // I-O
+       0xC0045103  SNDCTL_SEQ_CTRLRATE         int *                    // I-O
+       0x80045104  SNDCTL_SEQ_GETOUTCOUNT int *
+       0x80045105  SNDCTL_SEQ_GETINCOUNT  int *
+       0x40045106  SNDCTL_SEQ_PERCMODE         void
+       0x40285107  SNDCTL_FM_LOAD_INSTR   const struct sbi_instrument *
+       0x40045108  SNDCTL_SEQ_TESTMIDI         const int *
+       0x40045109  SNDCTL_SEQ_RESETSAMPLES     const int *
+       0x8004510A  SNDCTL_SEQ_NRSYNTHS         int *
+       0x8004510B  SNDCTL_SEQ_NRMIDIS          int *
+       0xC074510C  SNDCTL_MIDI_INFO       struct midi_info *       // I-O
+       0x4004510D  SNDCTL_SEQ_THRESHOLD   const int *
+       0xC004510E  SNDCTL_SYNTH_MEMAVL         int *                    // I-O
+       0x4004510F  SNDCTL_FM_4OP_ENABLE   const int *
+       0xCFB85110  SNDCTL_PMGR_ACCESS          struct patmgr_info *          // I-O
+       0x00005111  SNDCTL_SEQ_PANIC       void
+       0x40085112  SNDCTL_SEQ_OUTOFBAND   const struct seq_event_rec *
+       0xC0045401  SNDCTL_TMR_TIMEBASE         int *                    // I-O
+       0x00005402  SNDCTL_TMR_START       void
+       0x00005403  SNDCTL_TMR_STOP        void
+       0x00005404  SNDCTL_TMR_CONTINUE         void
+       0xC0045405  SNDCTL_TMR_TEMPO       int *                    // I-O
+       0xC0045406  SNDCTL_TMR_SOURCE      int *                    // I-O
+       0x40045407  SNDCTL_TMR_METRONOME   const int *
+       0x40045408  SNDCTL_TMR_SELECT      int *                    // I-O
+       0xCFB85001  SNDCTL_PMGR_IFACE      struct patmgr_info *          // I-O
+       0xC0046D00  SNDCTL_MIDI_PRETIME         int *                    // I-O
+       0xC0046D01  SNDCTL_MIDI_MPUMODE         const int *
+       0xC0216D02  SNDCTL_MIDI_MPUCMD          struct mpu_command_rec * // I-O
+       0x00005000  SNDCTL_DSP_RESET       void
+       0x00005001  SNDCTL_DSP_SYNC        void
+       0xC0045002  SNDCTL_DSP_SPEED       int *                    // I-O
+       0xC0045003  SNDCTL_DSP_STEREO      int *                    // I-O
+       0xC0045004  SNDCTL_DSP_GETBLKSIZE  int *                    // I-O
+       0xC0045006  SOUND_PCM_WRITE_CHANNELS    int *                    // I-O
+       0xC0045007  SOUND_PCM_WRITE_FILTER int *                    // I-O
+       0x00005008  SNDCTL_DSP_POST        void
+       0xC0045009  SNDCTL_DSP_SUBDIVIDE   int *                    // I-O
+       0xC004500A  SNDCTL_DSP_SETFRAGMENT int *                    // I-O
+       0x8004500B  SNDCTL_DSP_GETFMTS          int *
+       0xC0045005  SNDCTL_DSP_SETFMT      int *                    // I-O
+       0x800C500C  SNDCTL_DSP_GETOSPACE   struct audio_buf_info *
+       0x800C500D  SNDCTL_DSP_GETISPACE   struct audio_buf_info *
+       0x0000500E  SNDCTL_DSP_NONBLOCK         void
+       0x80045002  SOUND_PCM_READ_RATE         int *
+       0x80045006  SOUND_PCM_READ_CHANNELS     int *
+       0x80045005  SOUND_PCM_READ_BITS         int *
+       0x80045007  SOUND_PCM_READ_FILTER  int *
+       0x00004300  SNDCTL_COPR_RESET      void
+       0xCFB04301  SNDCTL_COPR_LOAD       const struct copr_buffer *
+       0xC0144302  SNDCTL_COPR_RDATA      struct copr_debug_buf *       // I-O
+       0xC0144303  SNDCTL_COPR_RCODE      struct copr_debug_buf *       // I-O
+       0x40144304  SNDCTL_COPR_WDATA      const struct copr_debug_buf *
+       0x40144305  SNDCTL_COPR_WCODE      const struct copr_debug_buf *
+       0xC0144306  SNDCTL_COPR_RUN        struct copr_debug_buf *       // I-O
+       0xC0144307  SNDCTL_COPR_HALT       struct copr_debug_buf *       // I-O
+       0x4FA44308  SNDCTL_COPR_SENDMSG         const struct copr_msg *
+       0x8FA44309  SNDCTL_COPR_RCVMSG          struct copr_msg *
+       0x80044D00  SOUND_MIXER_READ_VOLUME     int *
+       0x80044D01  SOUND_MIXER_READ_BASS  int *
+       0x80044D02  SOUND_MIXER_READ_TREBLE     int *
+       0x80044D03  SOUND_MIXER_READ_SYNTH int *
+       0x80044D04  SOUND_MIXER_READ_PCM   int *
+       0x80044D05  SOUND_MIXER_READ_SPEAKER    int *
+       0x80044D06  SOUND_MIXER_READ_LINE  int *
+       0x80044D07  SOUND_MIXER_READ_MIC   int *
+       0x80044D08  SOUND_MIXER_READ_CD         int *
+       0x80044D09  SOUND_MIXER_READ_IMIX  int *
+       0x80044D0A  SOUND_MIXER_READ_ALTPCM     int *
+       0x80044D0B  SOUND_MIXER_READ_RECLEV     int *
+       0x80044D0C  SOUND_MIXER_READ_IGAIN int *
+       0x80044D0D  SOUND_MIXER_READ_OGAIN int *
+       0x80044D0E  SOUND_MIXER_READ_LINE1 int *
+       0x80044D0F  SOUND_MIXER_READ_LINE2 int *
+       0x80044D10  SOUND_MIXER_READ_LINE3 int *
+       0x80044D1C  SOUND_MIXER_READ_MUTE  int *
+       0x80044D1D  SOUND_MIXER_READ_ENHANCE    int *
+       0x80044D1E  SOUND_MIXER_READ_LOUD  int *
+       0x80044DFF  SOUND_MIXER_READ_RECSRC     int *
+       0x80044DFE  SOUND_MIXER_READ_DEVMASK    int *
+       0x80044DFD  SOUND_MIXER_READ_RECMASK    int *
+       0x80044DFB  SOUND_MIXER_READ_STEREODEVS int *
+       0x80044DFC  SOUND_MIXER_READ_CAPS  int *
+       0xC0044D00  SOUND_MIXER_WRITE_VOLUME    int *                    // I-O
+       0xC0044D01  SOUND_MIXER_WRITE_BASS int *                    // I-O
+       0xC0044D02  SOUND_MIXER_WRITE_TREBLE    int *                    // I-O
+       0xC0044D03  SOUND_MIXER_WRITE_SYNTH     int *                    // I-O
+       0xC0044D04  SOUND_MIXER_WRITE_PCM  int *                    // I-O
+       0xC0044D05  SOUND_MIXER_WRITE_SPEAKER   int *                    // I-O
+       0xC0044D06  SOUND_MIXER_WRITE_LINE int *                    // I-O
+       0xC0044D07  SOUND_MIXER_WRITE_MIC  int *                    // I-O
+       0xC0044D08  SOUND_MIXER_WRITE_CD   int *                    // I-O
+       0xC0044D09  SOUND_MIXER_WRITE_IMIX int *                    // I-O
+       0xC0044D0A  SOUND_MIXER_WRITE_ALTPCM    int *                    // I-O
+       0xC0044D0B  SOUND_MIXER_WRITE_RECLEV    int *                    // I-O
+       0xC0044D0C  SOUND_MIXER_WRITE_IGAIN     int *                    // I-O
+       0xC0044D0D  SOUND_MIXER_WRITE_OGAIN     int *                    // I-O
+       0xC0044D0E  SOUND_MIXER_WRITE_LINE1     int *                    // I-O
+       0xC0044D0F  SOUND_MIXER_WRITE_LINE2     int *                    // I-O
+       0xC0044D10  SOUND_MIXER_WRITE_LINE3     int *                    // I-O
+       0xC0044D1C  SOUND_MIXER_WRITE_MUTE int *                    // I-O
+       0xC0044D1D  SOUND_MIXER_WRITE_ENHANCE   int *                    // I-O
+       0xC0044D1E  SOUND_MIXER_WRITE_LOUD int *                    // I-O
+       0xC0044DFF  SOUND_MIXER_WRITE_RECSRC    int *                    // I-O
+
+       // <include/linux/umsdos_fs.h>
+       0x000004D2  UMSDOS_READDIR_DOS          struct umsdos_ioctl *         // I-O
+       0x000004D3  UMSDOS_UNLINK_DOS      const struct umsdos_ioctl *
+       0x000004D4  UMSDOS_RMDIR_DOS       const struct umsdos_ioctl *
+       0x000004D5  UMSDOS_STAT_DOS        struct umsdos_ioctl *         // I-O
+       0x000004D6  UMSDOS_CREAT_EMD       const struct umsdos_ioctl *
+       0x000004D7  UMSDOS_UNLINK_EMD      const struct umsdos_ioctl *
+       0x000004D8  UMSDOS_READDIR_EMD          struct umsdos_ioctl *         // I-O
+       0x000004D9  UMSDOS_GETVERSION      struct umsdos_ioctl *
+       0x000004DA  UMSDOS_INIT_EMD        void
+       0x000004DB  UMSDOS_DOS_SETUP       const struct umsdos_ioctl *
+       0x000004DC  UMSDOS_RENAME_DOS      const struct umsdos_ioctl *
+
+       // <include/linux/vt.h>
+       0x00005600  VT_OPENQRY             int *
+       0x00005601  VT_GETMODE             struct vt_mode *
+       0x00005602  VT_SETMODE             const struct vt_mode *
+       0x00005603  VT_GETSTATE            struct vt_stat *
+       0x00005604  VT_SENDSIG             void
+       0x00005605  VT_RELDISP             int
+       0x00005606  VT_ACTIVATE            int
+       0x00005607  VT_WAITACTIVE          int
+       0x00005608  VT_DISALLOCATE         int
+       0x00005609  VT_RESIZE              const struct vt_sizes *
+       0x0000560A  VT_RESIZEX             const struct vt_consize *
+
+
+
+       // More arguments.
+
+       Some ioctl's take a pointer to a structure which contains additional
+       pointers.  These are documented here in alphabetical order.
+
+       CDROMREADAUDIO takes an input pointer 'const struct cdrom_read_audio *'.
+       The 'buf' field points to an output buffer
+       of length 'nframes * CD_FRAMESIZE_RAW'.
+
+       CDROMREADCOOKED, CDROMREADMODE1, CDROMREADMODE2, and CDROMREADRAW take
+       an input pointer 'const struct cdrom_msf *'.  They use the same pointer
+       as an output pointer to 'char []'.  The length varies by request.  For
+       CDROMREADMODE1, most drivers use 'CD_FRAMESIZE', but the Optics Storage
+       driver uses 'OPT_BLOCKSIZE' instead (both have the numerical value
+       2048).
+
+                CDROMREADCOOKED      char [CD_FRAMESIZE]
+                CDROMREADMODE1       char [CD_FRAMESIZE or OPT_BLOCKSIZE]
+                CDROMREADMODE2       char [CD_FRAMESIZE_RAW0]
+                CDROMREADRAW         char [CD_FRAMESIZE_RAW]
+
+       EQL_ENSLAVE, EQL_EMANCIPATE, EQL_GETSLAVECFG, EQL_SETSLAVECFG,
+       EQL_GETMASTERCFG, and EQL_SETMASTERCFG take a 'struct ifreq *'.
+       The 'ifr_data' field is a pointer to another structure as follows:
+
+                EQL_ENSLAVE               const struct slaving_request *
+                EQL_EMANCIPATE       const struct slaving_request *
+                EQL_GETSLAVECFG      struct slave_config *         // I-O
+                EQL_SETSLAVECFG      const struct slave_config *
+                EQL_GETMASTERCFG          struct master_config *
+                EQL_SETMASTERCFG          const struct master_config *
+
+       FDRAWCMD takes a 'struct floppy raw_cmd *'.  If 'flags & FD_RAW_WRITE'
+       is non-zero, then 'data' points to an input buffer of length 'length'.
+       If 'flags & FD_RAW_READ' is non-zero, then 'data' points to an output
+       buffer of length 'length'.
+
+       GIO_FONTX and PIO_FONTX take a 'struct console_font_desc *' or
+       a 'const struct console_font_desc *', respectively.  'chardata' points to
+       a buffer of 'char [charcount]'.  This is an output buffer for GIO_FONTX
+       and an input buffer for PIO_FONTX.
+
+       GIO_UNIMAP and PIO_UNIMAP take a 'struct unimapdesc *' or
+       a 'const struct unimapdesc *', respectively.  'entries' points to a buffer
+       of 'struct unipair [entry_ct]'.  This is an output buffer for GIO_UNIMAP
+       and an input buffer for PIO_UNIMAP.
+
+       KDADDIO, KDDELIO, KDDISABIO, and KDENABIO enable or disable access to
+       I/O ports.  They are essentially alternate interfaces to 'ioperm'.
+
+       KDMAPDISP and KDUNMAPDISP enable or disable memory mappings or I/O port
+       access.  They are not implemented in the kernel.
+
+       SCSI_IOCTL_PROBE_HOST takes an input pointer 'const int *', which is a
+       length.  It uses the same pointer as an output pointer to a 'char []'
+       buffer of this length.
+
+       SIOCADDRT and SIOCDELRT take an input pointer whose type depends on
+       the protocol:
+
+                Most protocols       const struct rtentry *
+                AX.25           const struct ax25_route *
+                NET/ROM              const struct nr_route_struct *
+
+       SIOCGIFCONF takes a 'struct ifconf *'.  The 'ifc_buf' field points to a
+       buffer of length 'ifc_len' bytes, into which the kernel writes a list of
+       type 'struct ifreq []'.
+
+       SIOCSIFHWADDR takes an input pointer whose type depends on the protocol:
+
+                Most protocols       const struct ifreq *
+                AX.25           const char [AX25_ADDR_LEN]
+
+       TIOCLINUX takes a 'const char *'.  It uses this to distinguish several
+       independent sub-cases.  In the table below, 'N + foo' means 'foo' after
+       an N-byte pad.  'struct selection' is implicitly defined
+       in 'drivers/char/selection.c'
+
+                TIOCLINUX-2               1 + const struct selection *
+                TIOCLINUX-3               void
+                TIOCLINUX-4               void
+                TIOCLINUX-5               4 + const struct { long [8]; } *
+                TIOCLINUX-6               char *
+                TIOCLINUX-7               char *
+                TIOCLINUX-10         1 + const char *
+
+
+       // Duplicate ioctls
+
+       This list does not include ioctls in the range SIOCDEVPRIVATE and
+       SIOCPROTOPRIVATE.
+
+       0x00000001  FDSETPRM               FIBMAP
+       0x00000002  FDDEFPRM               FIGETBSZ
+       0x00005382  CDROMAUDIOBUFSIZ       SCSI_IOCTL_GET_IDLUN
+       0x00005402  SNDCTL_TMR_START       TCSETS
+       0x00005403  SNDCTL_TMR_STOP        TCSETSW
+       0x00005404  SNDCTL_TMR_CONTINUE         TCSETSF
+
+
+;---------------------------------------
+
+/* Used for packet mode */
+#define TIOCPKT_DATA             0
+#define TIOCPKT_FLUSHREAD        1
+#define TIOCPKT_FLUSHWRITE       2
+#define TIOCPKT_STOP             4
+#define TIOCPKT_START            8
+#define TIOCPKT_NOSTOP          16
+#define TIOCPKT_DOSTOP          32
+
+#define TIOCSER_TEMT    0x01    /* Transmitter physically empty */
+
+;-----------------------------------------
+
+
+NAME
+  termios,  tcgetattr,  tcsetattr, tcsendbreak, tcdrain, tcflush, tcflow,
+  cfmakeraw, cfgetospeed, cfgetispeed, cfsetispeed, cfsetospeed,  tcgetp-
+  grp, tcsetpgrp - get and set terminal attributes, line control, get and
+  set baud rate, get and set terminal foreground process group ID
+
+SYNOPSIS
+  #include <termios.h>
+  #include <unistd.h>
+
+  int tcgetattr(int fd, struct termios *termios_p);
+  int tcsetattr(int fd, int optional_actions, struct termios *termios_p);
+  int tcsendbreak(int fd, int duration);
+  int tcdrain(int fd);
+  int tcflush(int fd, int queue_selector);
+  int tcflow(int fd, int action);
+  int cfmakeraw(struct termios *termios_p);
+  speed_t cfgetispeed(struct termios *termios_p);
+  speed_t cfgetospeed(struct termios *termios_p);
+  int cfsetispeed(struct termios *termios_p, speed_t speed);
+  int cfsetospeed(struct termios *termios_p, speed_t speed);
+  pid_t tcgetpgrp(int fd);
+  int tcsetpgrp(int fd, pid_t pgrpid);
+
+DESCRIPTION
+  The  termios  functions  describe  a general terminal interface that is
+  provided to control asynchronous communications ports.
+
+  Many of the functions described here have a termios_p argument that  is
+  a pointer to a termios structure.  This structure contains at least the
+  following members:
+
+         tcflag_t c_iflag;      /* input modes */
+         tcflag_t c_oflag;      /* output modes */
+         tcflag_t c_cflag;      /* control modes */
+         tcflag_t c_lflag;      /* local modes */
+         cc_t c_cc[NCCS];       /* control chars */
+
+  c_iflag flag constants:
+
+0000001  IGNBRK Ignore BREAK condition on input.
+0000002  BRKINT If IGNBRK is set, a BREAK is ignored.  If  it  is  not  set  but
+         BRKINT  is  set, then a BREAK causes the input and output queues
+         to be flushed, and if the terminal is the  controlling  terminal
+         of a foreground process group, it will cause a SIGINT to be sent
+         to this foreground  process  group.   When  neither  IGNBRK  nor
+         BRKINT  are  set,  a BREAK reads as a NUL character, except when
+         PARMRK is set, in which case it reads as the  sequence  \377  \0
+         \0.
+0000004  IGNPAR Ignore framing errors and parity errors.
+0000010  PARMRK If  IGNPAR is not set, prefix a character with a parity error or
+         framing error with \377 \0.  If neither  IGNPAR  nor  PARMRK  is
+         set,  read  a  character with a parity error or framing error as
+         \0.
+0000020  INPCK  Enable input parity checking.
+#define ISTRIP  0000040
+#define INLCR   0000100
+#define IGNCR   0000200
+#define ICRNL   0000400
+#define IUCLC   0001000
+#define IXON    0002000
+#define IXANY   0004000
+#define IXOFF   0010000
+#define IMAXBEL 0020000
+#define IUTF8   0040000
+  ISTRIP Strip off eighth bit.
+  INLCR  Translate NL to CR on input.
+  IGNCR  Ignore carriage return on input.
+  ICRNL  Translate CR to newline on input (unless  IGNCR  is set).
+  IUCLC    Map uppercase characters to lowercase on input.
+  IXON   Enable XON/XOFF flow control on output.
+  IXANY  (not in POSIX.1; XSI) Enable any character to restart output.
+  IXOFF  Enable XON/XOFF flow control on input.
+  IMAXBEL  Ring bell when input queue is full.  Linux does
+         not implement this bit, and acts as if it is always set.
+
+  c_oflag flag constants
+
+#define OPOST   0000001
+#define OLCUC   0000002
+#define ONLCR   0000004
+#define OCRNL   0000010
+#define ONOCR   0000020
+#define ONLRET  0000040
+#define OFILL   0000100
+#define OFDEL   0000200
+#define NLDLY   0000400
+#define   NL0   0000000
+#define   NL1   0000400
+#define CRDLY   0003000
+#define   CR0   0000000
+#define   CR1   0001000
+#define   CR2   0002000
+#define   CR3   0003000
+#define TABDLY  0014000
+#define   TAB0  0000000
+#define   TAB1  0004000
+#define   TAB2  0010000
+#define   TAB3  0014000
+#define   XTABS 0014000
+#define BSDLY   0020000
+#define   BS0   0000000
+#define   BS1   0020000
+#define VTDLY   0040000
+#define   VT0   0000000
+#define   VT1   0040000
+#define FFDLY   0100000
+#define   FF0   0000000
+#define   FF1   0100000
+  OPOST  Enable implementation-defined output processing.
+  OLCUC  Map lowercase characters to uppercase on output.
+  ONLCR  (XSI) Map NL to CR-NL on output.
+  OCRNL  Map CR to NL on output.
+  ONOCR  Don't output CR at column 0.
+  ONLRET Don't output CR.
+  OFILL  Send fill characters for a delay, rather than using a timed delay.
+  OFDEL  Fill character is ASCII DEL (0177).  If unset,
+         fill character is ASCII NUL.
+  NLDLY  Newline delay mask.  Values are NL0 and NL1.
+  CRDLY  Carriage return delay mask.  Values are CR0, CR1, CR2, or CR3.
+  TABDLY Horizontal tab delay mask.  Values are TAB0,  TAB1,  TAB2,  TAB3
+         (or  XTABS).   A  value of TAB3, that is, XTABS, expands tabs to
+         spaces (with tab stops every eight columns).
+  BSDLY  Backspace delay mask.  Values are BS0 or BS1.  (not implemented.)
+  VTDLY  Vertical tab delay mask.  Values are VT0 or VT1.
+  FFDLY  Form feed delay mask.  Values are FF0 or FF1.
+
+  c_cflag flag constants:
+
+#define CBAUD   0010017
+#define  B0     0000000         /* hang up */
+#define  B50    0000001
+#define  B75    0000002
+#define  B110   0000003
+#define  B134   0000004
+#define  B150   0000005
+#define  B200   0000006
+#define  B300   0000007
+#define  B600   0000010
+#define  B1200  0000011
+#define  B1800  0000012
+#define  B2400  0000013
+#define  B4800  0000014
+#define  B9600  0000015
+#define  B19200 0000016
+#define  B38400 0000017
+#define EXTA B19200
+#define EXTB B38400
+#define CSIZE   0000060
+#define   CS5   0000000
+#define   CS6   0000020
+#define   CS7   0000040
+#define   CS8   0000060
+#define CSTOPB  0000100
+#define CREAD   0000200
+#define PARENB  0000400
+#define PARODD  0001000
+#define HUPCL   0002000
+#define CLOCAL  0004000
+#define CBAUDEX 0010000
+#define    B57600 0010001
+#define   B115200 0010002
+#define   B230400 0010003
+#define   B460800 0010004
+#define   B500000 0010005
+#define   B576000 0010006
+#define   B921600 0010007
+#define  B1000000 0010010
+#define  B1152000 0010011
+#define  B1500000 0010012
+#define  B2000000 0010013
+#define  B2500000 0010014
+#define  B3000000 0010015
+#define  B3500000 0010016
+#define  B4000000 0010017
+#define CIBAUD    002003600000  /* input baud rate (not used) */
+#define CMSPAR    010000000000          /* mark or space (stick) parity */
+#define CRTSCTS   020000000000          /* flow control */
+  CBAUD    Baud speed mask (4+1 bits).
+  CBAUDEX Extra baud speed mask (1 bit), included in CBAUD.
+  CSIZE  Character size mask.  Values are CS5, CS6, CS7, or CS8.
+  CSTOPB Set two stop bits, rather than one.
+  CREAD  Enable receiver.
+  PARENB Enable parity generation on output and parity checking for input.
+  PARODD Parity for input and output is odd.
+  HUPCL  hang up
+  CLOCAL Ignore modem control lines.
+  LOBLK  Block output from a noncurrent shell layer. (For use by shl.)
+  CIBAUD (not  in POSIX) Mask for input speeds. The values for the CIBAUD
+         bits are the same as the values for the CBAUD bits, shifted left
+         IBSHIFT bits.
+  CRTSCTS  Enable RTS/CTS (hardware) flow control.
+
+  c_lflag flag constants:
+
+#define ISIG    0000001
+#define ICANON  0000002
+#define XCASE   0000004
+#define ECHO    0000010
+#define ECHOE   0000020
+#define ECHOK   0000040
+#define ECHONL  0000100
+#define NOFLSH  0000200
+#define TOSTOP  0000400
+#define ECHOCTL 0001000
+#define ECHOPRT 0002000
+#define ECHOKE  0004000
+#define FLUSHO  0010000
+#define PENDIN  0040000
+#define IEXTEN  0100000
+  ISIG   When  any  of  the  characters  INTR,  QUIT,  SUSP, or DSUSP are
+         received, generate the corresponding signal.
+  ICANON Enable canonical mode.  This enables the special characters EOF,
+         EOL,  EOL2, ERASE, KILL, LNEXT, REPRINT, STATUS, and WERASE, and
+         buffers by lines.
+  XCASE    not supported under Linux) If ICANON is also set,
+         terminal  is  uppercase  only.  Input is converted to lowercase,
+         except for characters preceded by \.  On output, uppercase char-
+         acters  are preceded by \ and lowercase characters are converted
+         to uppercase.
+  ECHO   Echo input characters.
+  ECHOE  If ICANON is also set, the ERASE character erases the  preceding
+         input character, and WERASE erases the preceding word.
+  ECHOK  If ICANON is set, the KILL character erases the current line.
+  ECHONL If ICANON is set, echo the NL character even if ECHO is not set.
+  ECHOCTL If ECHO is also set, ASCII control signals other
+         than TAB, NL, START, and STOP are echoed as ^X, where X  is  the
+         character  with ASCII code 0x40 greater than the control signal.
+         For example, character 0x08 (BS) is echoed as ^H.
+  ECHOPRT If ICANON and IECHO are also set, characters  are
+         printed as they are being erased.
+  ECHOKE If ICANON is also set, KILL is echoed by erasing
+         each character on the line, as specified by ECHOE and ECHOPRT.
+  DEFECHO  Echo only when a process is reading.
+  FLUSHO    not  supported  under  Linux)  Output  is  being
+         flushed.   This flag is toggled by typing the DISCARD character.
+  NOFLSH Disable flushing the input and output queues when generating the
+         SIGINT, SIGQUIT and SIGSUSP signals.
+  TOSTOP Send  the  SIGTTOU  signal  to the process group of a background
+         process which tries to write to its controlling terminal.
+  PENDIN   not supported under Linux) All characters in  the
+         input  queue  are  reprinted  when  the  next character is read.
+         (bash handles typeahead this way.)
+  IEXTEN Enable implementation-defined input processing.  This  flag,  as
+         well as ICANON must be enabled for  the special characters EOL2,
+         LNEXT, REPRINT, WERASE to be interpreted, and for the IUCLC flag
+         to be effective.
+
+
+/* tcflow() and TCXONC use these */
+#define TCOOFF          0
+#define TCOON           1
+#define TCIOFF          2
+#define TCION           3
+
+/* tcflush() and TCFLSH use these */
+#define TCIFLUSH        0
+#define TCOFLUSH        1
+#define TCIOFLUSH       2
+
+/* tcsetattr uses these */
+#define TCSANOW         0
+#define TCSADRAIN       1
+#define TCSAFLUSH       2
+
+  The  c_cc  array  defines the special control characters.  The symbolic
+  indices (initial values) and meaning are:
+
+0 VINTR  (003, ETX, Ctrl-C, or also 0177, DEL, rubout) Interrupt  charac-
+         ter.  Send  a  SIGINT  signal.  Recognized when ISIG is set, and
+         then not passed as input.
+1 VQUIT  (034, FS, Ctrl-\) Quit character. Send SIGQUIT  signal.   Recog-
+         nized when ISIG is set, and then not passed as input.
+2 VERASE (0177, DEL, rubout, or 010, BS, Ctrl-H, or also #) Erase charac-
+         ter. This erases the previous not-yet-erased character, but does
+         not erase past EOF or beginning-of-line.  Recognized when ICANON
+         is set, and then not passed as input.
+3 VKILL  (025, NAK, Ctrl-U, or Ctrl-X, or also @)  Kill  character.  This
+         erases  the input since the last EOF or beginning-of-line.  Rec-
+         ognized when ICANON is set, and then not passed as input.
+4 VEOF   (004, EOT, Ctrl-D) End-of-file character.  More precisely:  this
+         character  causes the pending tty buffer to be sent to the wait-
+         ing user program without waiting for end-of-line.  If it is  the
+         first  character  of  the  line,  the read() in the user program
+         returns 0, which signifies end-of-file.  Recognized when  ICANON
+         is set, and then not passed as input.
+6 VMIN   Minimum number of characters for non-canonical read.
+11 VEOL   (0,  NUL)  Additional  end-of-line  character.   Recognized when
+         ICANON is set.
+5 VTIME  Timeout in deciseconds for non-canonical read.
+16 VEOL2    0, NUL) Yet another end-of-line character.   Rec-
+         ognized when ICANON is set.
+7 VSWTCH   not supported under Linux; 0, NUL) Switch charac-
+         ter. (Used by shl only.)
+8  VSTART (021, DC1, Ctrl-Q) Start character. Restarts output  stopped  by
+         the  Stop  character.  Recognized when IXON is set, and then not
+         passed as input.
+9  VSTOP  (023, DC3, Ctrl-S) Stop character. Stop output until Start char-
+         acter  typed.   Recognized when IXON is set, and then not passed
+         as input.
+10  VSUSP  (032, SUB, Ctrl-Z) Suspend character. Send SIGTSTP signal.  Rec-
+         ognized when ISIG is set, and then not passed as input.
+  VDSUSP (not  in  POSIX;  not  supported  under  Linux; 031, EM, Ctrl-Y)
+         Delayed suspend character: send SIGTSTP signal when the  charac-
+         ter  is  read  by  the user program.  Recognized when IEXTEN and
+         ISIG are set, and the system supports job control, and then  not
+         passed as input.
+15  VLNEXT (not  in  POSIX; 026, SYN, Ctrl-V) Literal next. Quotes the next
+         input character, depriving it of  a  possible  special  meaning.
+         Recognized when IEXTEN is set, and then not passed as input.
+14  VWERASE    027, ETB, Ctrl-W) Word erase.  Recognized when
+         ICANON and IEXTEN are set, and then not passed as input.
+12  VREPRINT  022,  DC2,  Ctrl-R)  Reprint  unread  characters.
+         Recognized when ICANON and IEXTEN are set, and then not passed
+         as input.
+13  VDISCARD  not supported under Linux; 017, SI, Ctrl-O)  Tog-
+         gle: start/stop discarding pending output.  Recognized when IEX-
+         TEN is set, and then not passed as input.
+  VSTATUS  not supported under Linux; status  request:  024,DC4, Ctrl-T).
+
+  These  symbolic  subscript values are all different, except that VTIME,
+  VMIN may have the same value as VEOL,  VEOF,  respectively.   (In  non-
+  canonical mode the special character meaning is replaced by the timeout
+  meaning. MIN represents the minimum number of characters that should be
+  received  to  satisfy the read. TIME is a decisecond-valued timer. When
+  both are set, a read will wait until at least one  character  has  been
+  received,  and  then  return as soon as either MIN characters have been
+  received or time TIME has passed since the last character was received.
+  If only MIN is set, the read will not return before MIN characters have
+  been received. If only TIME is set, the read will  return  as  soon  as
+  either  at  least  one  character has been received, or the timer times
+  out. If neither is set, the read will return immediately,  only  giving
+  the currently already available characters.)
+
+  tcgetattr()  gets the parameters associated with the object referred by
+  fd and stores them in the termios structure  referenced  by  termios_p.
+  This  function  may  be invoked from a background process; however, the
+  terminal attributes may be subsequently changed by  a  foreground  pro-
+  cess.
+
+  tcsetattr()  sets  the  parameters associated with the terminal (unless
+  support is required from the underlying hardware that is not available)
+  from  the termios structure referred to by termios_p.  optional_actions
+  specifies when the changes take effect:
+
+  TCSANOW          the change occurs immediately.
+  TCSADRAIN
+         the change occurs after all output written to fd has been trans-
+         mitted.   This  function should be used when changing parameters
+         that affect output.
+  TCSAFLUSH
+         the change  occurs  after  all  output  written  to  the  object
+         referred by fd has been transmitted, and all input that has been
+         received but not read will be discarded  before  the  change  is
+         made.
+
+  tcsendbreak()  transmits  a continuous stream of zero-valued bits for a
+  specific duration, if the terminal is using  asynchronous  serial  data
+  transmission.   If  duration is zero, it transmits zero-valued bits for
+  at least 0.25 seconds, and not more that 0.5 seconds.  If  duration  is
+  not  zero, it sends zero-valued bits for duration*N seconds, where N is
+  at least 0.25, and not more than 0.5.
+
+  If the terminal is not using  asynchronous  serial  data  transmission,
+  tcsendbreak() returns without taking any action.
+
+  tcdrain()  waits  until all output written to the object referred to by
+  fd has been transmitted.
+
+  tcflush() discards data written to the object referred to by fd but not
+  transmitted,  or  data received but not read, depending on the value of
+  queue_selector:
+
+  TCIFLUSH  flushes data received but not read.
+  TCOFLUSH  flushes data written but not transmitted.
+  TCIOFLUSH flushes both data received but not read, and
+            data  written  but not transmitted.
+
+  tcflow()  suspends  transmission  or  reception  of  data on the object
+  referred to by fd, depending on the value of action:
+
+  TCOOFF suspends output.
+  TCOON  restarts suspended output.
+  TCIOFF transmits a STOP character, which stops the terminal device from
+         transmitting data to the system.
+  TCION  transmits  a  START  character, which starts the terminal device
+         transmitting data to the system.
+
+  The default on open of a terminal file is that neither  its  input  nor
+  its output is suspended.
+
+  The baud rate functions are provided for getting and setting the values
+  of the input and output baud rates in the termios structure.   The  new
+  values do not take effect until tcsetattr() is successfully called.
+
+  Setting  the  speed to B0 instructs the modem to "hang up".  The actual
+  bit rate corresponding to B38400 may be altered with setserial(8).
+
+  The input and output baud rates are stored in the termios structure.
+
+  cfmakeraw sets the terminal attributes as follows:
+              termios_p->c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP
+                              |INLCR|IGNCR|ICRNL|IXON);
+              termios_p->c_oflag &= ~OPOST;
+              termios_p->c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
+              termios_p->c_cflag &= ~(CSIZE|PARENB);
+              termios_p->c_cflag |= CS8;
+
+  cfgetospeed() returns the output baud rate stored in the termios struc-
+  ture pointed to by termios_p.
+
+  cfsetospeed() sets the output baud rate stored in the termios structure
+  pointed to by termios_p to speed, which must be one of these constants:
+
+  cfgetispeed()  returns the input baud rate stored in the termios struc-
+  ture.
+
+  cfsetispeed() sets the input baud rate stored in the termios  structure
+  to  speed.   If the input baud rate is set to zero, the input baud rate
+  will be equal to the output baud rate.
+
+  tcgetpgrp() returns process group ID of foreground processing group, or
+  -1 on error.
+
+  tcsetpgrp()  sets process group ID to pgrpid.  pgrpid must be the ID of
+  a process group in the same session.
+
+RETURN VALUE
+  cfgetispeed() returns the input baud rate stored in the termios  struc-
+  ture.
+
+  cfgetospeed() returns the output baud rate stored in the termios struc-
+  ture.
+
+  tcgetpgrp() returns process group ID of foreground processing group, or
+  -1 on error.
+
+  All other functions return:
+
+  0      on success.
+  -1     on failure and set errno to indicate the error.
+
+  Note  that  tcsetattr() returns success if any of the requested changes
+  could be successfully carried out.   Therefore,  when  making  multiple
+  changes  it may be necessary to follow this call with a further call to
+  tcgetattr() to check that all changes have been performed successfully.
+
+

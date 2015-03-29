@@ -1,0 +1,195 @@
+
+Intro to Linux terminals
+------------------------
+
+Linux has two terminal types; the console and x-terminal.
+The console is provided by kernel and does not support
+a mouse.  The x-terminal runs under x-windows and comes
+in various flavors.  The programs "xterm", "konsole", and
+"rxvt" are examples of x-terminals.
+
+Linix programs can also work with windows rather than
+terminals.  Window programming information can be found
+at http://linuxasmtools/x .  This article only talks
+about terminals.
+
+All terminals accept ascii characters as input and either
+display the ascii or interpret the ascii as a special command.
+Special commands are called control sequences and begin with
+the escape (1bh) character.
+
+Ascii has many different definitions.  See menu item "ascii"
+for one definition.
+
+The special control sequences are called vt (virtual terminal)
+control sequences and have a long history and several levels
+of features.  See menu item "vt-control sequences" for more
+information.
+
+Terminals can also be everything from a teletype, plasma
+display, or hand-held device.  To accommodate the various
+types of terminals, a descriptive table exists.  This
+table is called "termios" and can be set by programs.
+See menu item "termios" for a description of this table.
+
+Most program start by setting the terminal to "raw" mode
+by changing termios.  Raw mode allows a program to read
+individual keys from the keyboard.  The default state
+of terminals is called "cooked mode" and it passes complete
+lines of text to programs.
+
+The use of terminals can be complex, but asmlib tries to
+provide terminal functions that work on Linux and are
+easy to understand.
+
+Terminal output
+---------------
+
+Normally the programmer sends ascii characters to file
+descriptor "1" and they appear on the screen.  Everything
+works, and we do not need to look any deeper into the
+terminal handling.  We do need to be aware that terminals
+can be disconnected and our output will not appear on
+the screen. Also, a Linux system can have many terminals
+and our output may be piped to a file or captured by
+other programs.
+
+It would take a book to describe all the fine points
+of terminal handling, and one of the best is:
+
+  Advanced Programming in the UNIX Environment
+  by Richard Stevens, Shephen A Rago
+
+Most programmers ignore all the details and use library
+functions to do the work.  If they never run into
+problems or special cases, all is well.  Within
+the AsmTools two simple output functions are:
+
+  stdout_str - send a string of characters to stdout
+  crt_write  - write a block of characters to stdout
+
+Output data can be normal ascii characters or special
+control sequences.  The control sequences are described
+in asmref file "term_vt.txt".  Normally a control
+sequence begins with the escape character "1bh" and is
+followed by several more characters.
+
+Using control sequences it is possible to define a screen
+size, set colors, enable mouse handling, and most things
+related to display handling.
+
+When running in the console the control characters are
+handled by the kernal and we need to send the sequences
+known to the kernel.  When running in a X terminal, it
+is not as easy.  Each X terminal (xterm, konsole, rxvt)
+recognize a different set of sequences and we need to
+be careful.  Probably the best path is to only use
+a set of common sequences that most terminals will
+recognize.
+
+There are several programs to test a terminals handling
+of control sequences.  The program "vtest" is probably
+the most used.
+
+Terminal input
+--------------
+
+On the surface, terminal input looks simple.  We read
+stdin and get a keyboard character.  In fact, many
+programs do just that, and ignore all the possible
+problems.  We do need to be aware that terminals can
+be piped, redirected, disconnected, and reading
+single characters provide garbage.
+
+This section will not go into terminal handling, but
+will assume the terminal is setup correctly and
+a read will return characters from the keyboard. For
+most systems this means the keyboard was set to "raw"
+mode by the programmer.
+
+When we read a key it can be coded as a single byte
+or may be up to 7 bytes long. The encoding for a
+key may also change and be different in different
+programs.  We may read half a key and not know where
+a key sequence starts.  One solution to these
+problems is use library functions that hide the
+details.  If AsmLib is being used the following
+functions will be of interest:
+
+  read_stdin - read one character from keyboard
+  terminfo_read - read key encoding file
+  terminfo_decode_setup - build decode tables
+  terminfo_decode2 - decode keyboard key
+
+Next, we discuss some of the problems with key handling.
+
+What code does this key generate?
+---------------------------------
+
+We can easily find a key code by running one of the
+many key echo probrams. AsmTools has a program called
+key_echo that does this job and more.
+
+Unfortunatly, this is not enough. Key codes can
+be different in the console or for a specific
+X terminal. It is even possible for other programs
+to change key codes.  Instead, we need build a
+table with all the possible codes or look in
+the terminfo file for the current key code state.
+
+A even better approach is to look in terminfo for
+key definitions and if not found use a default
+set of codes that has been pre defined.  The
+AsmTools library functions provide a somewhat
+complex interface to accomplish this.
+
+The "terminfo_decode_setup" will build a decode
+table using a simple "and"/"or" decision process.
+
+Key code handling can be messy, but here are some
+suggestions follow:
+
+1. Standard ascii and many keys encoded as a single
+   byte, do not need any lookup or special handling.
+   The terminfo_decode1 program will identify these
+   keys. 
+2. Multi byte keys need to use a terminfo lookup,
+   followed by a "or" command to select defauls
+   if not found in terminfo.  The terminfo_setup
+   program can handle this.
+3. If a decode table is overkill, the terminfo
+   extract program will return codes for a
+   single key.
+
+
+Where does a key end?
+---------------------
+
+When a key consists of multiple bytes, we need to know where
+it ends.  for example, someone may have key repeat enabled
+and pressing the down-arrow key.  Our buffer will fill with
+multi byte sequnces and we may interrupt it and have a partial
+sequence in the buffer.  Next time we read, the tail of last
+sequence will end up in our buffer.
+
+Each library handles this differently, and AsmTools uses
+the "read_stdin" function to block keys.  It will do
+a flush of all keys before starting, then read until no
+more data is available.  Finally, it checks for multiple
+keys in buffer and selects the first one.
+
+
+What is the escape problem?
+---------------------------
+
+Most multi byte characters begin with a escape code (1bh),
+but what if you press the escape key?  Is it a multi byte
+key or a single escape.  The simple key detection in
+"read_stdin" is enough to handle this problem. A bigger
+problem that plagues many "C" libraries is pressing
+two escape characters quickly. They force a delay after
+the first escape and the keyboard performance becomes
+very sluggish.  AsmTools functions avoid this problem
+by not using any delays.
+ 
+

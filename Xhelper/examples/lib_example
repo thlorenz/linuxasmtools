@@ -1,0 +1,29 @@
+#!/bin/bash
+#This script demonstrates using a library of xhelper
+#functions in a shell script.
+
+#execute xhelper commands at label1
+xhelper $0 -goto label1
+#insert shell commands here
+xhelper $0 -goto label2
+#insert shell commands here
+xhelper $0 -goto label3
+# stop script using "exit 0"
+exit 0
+
+#xhelper functions are placed here
+^show ("starting")
+^show ("error")
+^stop
+
+label1:
+^show ("this is label1")
+^stop
+
+label2:
+^show ("this is label2")
+^stop
+
+label3:
+^show ("this is label3")
+^stop

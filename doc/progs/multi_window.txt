@@ -1,0 +1,18 @@
+
+ NAME
+
+  multi-window - display window
+
+INPUTS
+
+ pressing any key or mouse button will move to
+ second window or exit program.
+
+ OUTPUT:
+
+   window with different colors and fonts are
+    displayed
+              
+ NOTES
+
+  source file: /demo/simple-window.asm

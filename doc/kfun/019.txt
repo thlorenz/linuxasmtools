@@ -1,0 +1,52 @@
+
+----------------------------------------------------------------------------
+ 19 lseek          - reposition read/write file offset
+----------------------------------------------------------------------------
+  mov  eax,019
+  mov  ebx,fd       ;file descriptor
+  mov  ecx,offset   ;offset (displacement) into file
+  mov  edx,origin   ;flag defining offset type (also known as whence)
+  int  80h
+
+       The lseek function repositions the offset of the file (fd)
+       as specified by whence
+
+    origin (whence)
+    ---------------
+
+       SEEK_SET (0) -The offset from beginning of file
+       SEEK_CUR (1) -The offset from current location
+       SEEK_END (2) -The offset from end of file
+
+       The lseek function allows the file offset to be set beyond the  end  of
+       the existing end-of-file of the file (but this does not change the size
+       of the file).  If data is later written at this point, subsequent reads
+       of  the  data  in the gap return bytes of zeros (until data is actually
+       written into the gap).
+
+RETURN VALUE
+       Upon successful completion, lseek returns the resulting offset location
+       as  measured  in  bytes  from  the beginning of the file.  Otherwise, a
+       negative error is returned.
+
+ERRORS
+       EBADF  fildes is not an open file descriptor.
+
+       ESPIPE fildes is associated with a pipe, socket, or FIFO.
+
+       EINVAL whence  is  not  one  of  SEEK_SET,  SEEK_CUR,  SEEK_END, or the
+              resulting file offset would be negative.
+
+       EOVERFLOW
+              The resulting file offset cannot is incorrect
+
+RESTRICTIONS
+       Some devices are incapable of seeking and POSIX does not specify  which
+       devices must support it.
+
+       Linux  specific  restrictions:  using  lseek  on  a  tty device returns
+       ESPIPE.
+
+SEE ALSO
+       dup, fork, open, fseek
+

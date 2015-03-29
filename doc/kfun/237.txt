@@ -1,0 +1,64 @@
+
+------------------------------------------------------------------------------
+237 fremovexattr     - remove an extended attribute
+------------------------------------------------------------------------------
+
+  mov  eax,23f
+  mov  ebx,fd    ;open file descriptor
+  mov  ecx,name  ;ponter to name
+
+
+SYNOPSIS
+       #include <sys/types.h>
+       #include <attr/xattr.h>
+
+       int removexattr(const char *path, const char *name);
+       int lremovexattr(const char *path, const char *name);
+       int fremovexattr(int filedes, const char *name);
+
+DESCRIPTION
+       Extended attributes are name:value pairs associated with inodes (files,
+       directories, symbolic links, etc).  They are extensions to  the  normal
+       attributes  which  are  associated with all inodes in the system (i.e.,
+       the stat(2) data).  A complete overview of extended attributes concepts
+       can be found in attr(5).
+
+       removexattr()  removes  the  extended  attribute identified by name and
+       associated with the given path in the filesystem.
+
+       lremovexattr() is identical to removexattr(), except in the case  of  a
+       symbolic  link,  where  the extended attribute is removed from the link
+       itself, not the file that it refers to.
+
+       fremovexattr()  is  identical  to  removexattr(),  only  the   extended
+       attribute  is  removed  from  the  open  file pointed to by filedes (as
+       returned by open(2)) in place of path.
+
+       An extended attribute name is a  simple  null-terminated  string.   The
+       name includes a namespace prefix; there may be several, disjoint names‐
+       paces associated with an individual inode.
+
+RETURN VALUE
+       On success, zero is returned.  On failure a negative code is returned
+
+       If the named attribute does not exist, errno is set to ENOATTR.
+
+       If extended attributes are not supported by the filesystem, or are dis‐
+       abled, errno is set to ENOTSUP.
+
+       The errors documented for the stat(2) system call are  also  applicable
+       here.
+
+VERSIONS
+       These system calls have been available on Linux since kernel 2.4; glibc
+       support is provided since version 2.3.
+
+CONFORMING TO
+       These system calls are Linux specific.
+
+SEE ALSO
+       getxattr,  listxattr,  open
+       attr, stat, attr
+
+
+

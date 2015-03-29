@@ -1,0 +1,6 @@
+show codes for key press plus other info.
+key_echo is a example program for
+AsmLib.  It shows key codes and checks
+if they have a terminfo entry.
+key_echo runs in console or X terminal.
+http://linuxasmtools.net

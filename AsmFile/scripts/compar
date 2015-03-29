@@ -1,0 +1,15 @@
+#! /bin/bash
+xxdiff=$(which xxdiff)
+if [ -x "$xxdiff" ]; then
+# compare two files and optionally make changes
+xxdiff $1 $2
+exit
+fi
+clear
+echo "program xxdiff needed for compare"
+echo "press <enter key> to continue"
+read key
+
+# other compare programs that may be useful
+# compare (hex compare)
+#

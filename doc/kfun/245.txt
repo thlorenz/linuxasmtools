@@ -1,0 +1,65 @@
+
+------------------------------------------------------------------
+245 io_setup    - Create an asynchronous ('realtime') I/O context
+------------------------------------------------------------------
+
+[section .data]
+ctxp;	dd	0	;storage for context ptr
+[section .text]
+  mov  eax,245
+  mov  ebx,nr_events ;number of events an async i/o context can receive
+  mov  ecx,ctxp      ;pointer to received context handle
+  int  80h
+  .
+
+
+DESCRIPTION
+       io_setup()  creates an asynchronous I/O context capable of receiving at
+       least nr_events.  ctxp must not point to existing aio context.  It also
+       must be initialized to 0 prior to the call.  On successful
+       creation of the AIO context appears as:
+
+       ecx -> ctxp -> context handle (same as aio_ring_base)
+                      dd id (address of aio_ring_base)
+                      dd nr (number of contexts possible)
+                      dd head
+                      dd tail
+                      dd magic (a10a10a1)
+                      dd compat
+                      dd incompat
+                      dd header_len
+                      dq event1_data (kernel sets to handler)
+                      dq event1_obj  (iocb ptr for event1)
+                      dq event1_result (eax return code)
+                      dq event1_result (suplemental result)
+
+      Once created an AIO context can be reused for reads,writes, etc.
+       
+RETURN VALUE
+       io_setup()  returns  0  on  success;  on failure, it returns one of the
+       errors listed under ERRORS.
+
+ERRORS
+       EINVAL ctxp is not initialized,  or  the  specified  nr_events  exceeds
+              internal limits. nr_events should be greater than 0.
+
+       EFAULT An invalid pointer is passed for ctxp.
+
+       ENOMEM Insufficient kernel resources are available.
+
+       EAGAIN The  specified  nr_events  exceeds the user’s limit of available
+              events.
+
+       ENOSYS io_setup() is not implemented on this architecture.
+
+VERSIONS
+       The asynchronous I/O system calls first appeared in Linux  2.5,  August
+       2002.
+
+CONFORMING TO
+       io_setup()  is  Linux  specific and should not be used in programs that
+       are intended to be portable.
+
+SEE ALSO
+       io_destroy, io_getevents, io_submit, io_cancel
+

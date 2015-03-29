@@ -1,0 +1,74 @@
+
+----------------------------------------------------------------------------
+241 sched_setaffinity       - set a process's CPU affinity mask
+----------------------------------------------------------------------------
+  mov  eax,241
+  mov  ebx,pid  ;process id or zero
+  mov  ecx,len  ;length of affinity bit mask
+  mov  edx,mask ;affinity bit mask
+  int  80h
+
+       sched_setaffinity sets the CPU affinity mask of the process denoted  by
+       pid.  If pid is zero, then the current process is used.
+
+       The  affinity  mask  is represented by the bitmask stored in mask.  The
+       least significant bit corresponds to the first logical processor number
+       on  the  system, while the most significant bit corresponds to the last
+       logical processor number on the system.  A set  bit  corresponds  to  a
+       legally  schedulable CPU while an unset bit corresponds to an illegally
+       schedulable CPU.  In other words, a process is bound to and  will  only
+       run on processors whose corresponding bit is set.  Usually, all bits in
+       the mask are set.
+
+       The argument len is the length of the data pointed to  by  mask.   Nor-
+       mally this is the size of a word on the system.  For compatibility with
+       future versions of the Linux kernel, since this size  can  change,  the
+       bitmask  supplied must be at least as large as the affinity mask stored
+       in the kernel.
+
+       The function sched_getaffinity writes into the pointer supplied by mask
+       that  is  size  len  the affinity mask of process pid.  If pid is zero,
+       then the mask of the current process is returned.
+
+
+RETURN VALUE
+       On success, sched_setaffinity returns 0, on error a negative code
+       is returned
+
+
+ERRORS
+       EFAULT A supplied memory address was invalid.
+
+       ESRCH  The process whose ID is pid could not be found.
+
+       EPERM  The  calling  process  does not have appropriate privileges. The
+              process calling sched_setaffinity needs an effective  uid  equal
+              to  the euid or uid of the process identified by pid, or it must
+              possess the CAP_SYS_NICE capability.
+
+       EINVAL The affinity bitmask mask contains no processors that are physi-
+              cally  on  the system or the length len is smaller than the size
+              of the affinity mask used by the kernel.
+
+HISTORY
+       The affinity syscalls were  introduced  in  Linux  kernel  2.5.8.   The
+       library  calls  were  introduced  in  glibc 2.3, and are still in glibc
+       2.3.2. Later glibc 2.3.2 development versions changed this interface to
+       one without the len field, and still later versions reverted again. The
+       glibc prototype is now
+
+       /* Set the CPU affinity for a task */
+       extern int sched_setaffinity (pid_t pid, size_t cpusetsize,
+                                     const cpu_set_t *cpuset);
+
+       /* Get the CPU affinity for a task */
+       extern int sched_getaffinity (pid_t pid, size_t cpusetsize,
+                                     cpu_set_t *cpuset);
+
+SEE ALSO
+       sched_setscheduler(2),     sched_getscheduler(2),      sched_get_prior-
+       ity_max(2), sched_get_priority_min(2), nice(2), setpriority(2), getpri-
+       ority(2),
+
+       sched_setscheduler(2) has a description of the Linux scheduling scheme.
+

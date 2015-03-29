@@ -1,0 +1,7 @@
+
+2008-01-25  The handling of "clone" may have a problem.  The
+            kernel test case pth_str01 fails.  see
+            kernel/sched/pthreads/pth_str01.c
+
+2008-01-27  The test case at /ltp/testcases/syscalls/epoll
+            fails.

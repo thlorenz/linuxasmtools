@@ -1,0 +1,93 @@
+minibug - debugger for ELF executables
+
+USAGE
+
+ minibug [-a] file
+
+where  -a      attach to running file
+       file    is name of file to debug
+
+DESCRIPTION
+
+minibug is a simple console or terminal debugger.
+It provides a main window with rgister display, breakpoint
+display, a code display, and memory display.
+
+Two keys cycle through window:
+  w - select next window
+  W - selects mini window when in debug window
+
+Initially the debug (main window) is displayed with
+a small mini window on the right side. The mini window
+can be toggled between several modes by pressing shift
+w (upper case w).
+
+The debug window can be replaced with several other windows
+by pressing the w key. Each press will show a different window.
+Also windows can be selected by pressing alt key and first
+letter of their name.
+
+MiniBug starts in debug window, recognizing the following keys:
+ ?-window help                f-find label, or register name
+ w-toggle to next win         <enter>-find next
+ W-toggle mini win on right   alt-letter -select window by letter 
+ s-step                       up-scroll up
+ o-step over                  down-scroll down 
+ g-go                         pgup-page up 
+ q-quit                       pgdn-page down 
+ h-help
+
+Register window recognizes the following keys:
+ ?-window help               alt-letter -select window by letter 
+ w-toggle to next win        q-quit to debug window
+ e-edit register value
+
+Memory window recognizes the following keys:
+ ?-window help               alt-letter -select window by letter 
+ w-toggle to next win        q-quit to debug window
+ e-edit memory value         f-find label or register
+ b-show bytes   2-show words   d-show dwords
+ up/down-scroll up/down      pgup/pgdn-page up/down
+
+Break window recognizes the following keys:
+ ?-window help               alt-letter -select window by letter 
+ w-toggle to next win        q-quit to debug window
+ a-add breakpoint
+ c-clear breakpoints
+
+Note: breaks may be easier to set from the debug window.
+      using f(find) and b(break-here)
+
+Stack window recognizes the following keys: 
+ ?-window help               alt-letter -select window by letter 
+ w-toggle to next win        q-quit to debug window
+ up-scroll up
+ down-scroll down 
+ pgup-page up 
+ pgdn-page down
+
+
+PROBLEMS
+
+MiniBug sometimes fails to disassemble correctly. This
+often occurs if data is included within the .text section.
+Stepping into the code may fix the disassembly.
+
+FILES
+
+MiniBug is contained within one file and does not
+use any support files
+
+SEE ALSO
+
+asmbug asmdis
+
+AUTHOR
+
+Jeff Owens <jko@bsn1.net>
+
+COPYRIGHT
+
+GNU Copyright (C) 2007 Jeff Owens
+This program comes with absolutely NO WARRANTY
+

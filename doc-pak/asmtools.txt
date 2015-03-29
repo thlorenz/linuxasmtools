@@ -1,0 +1,39 @@
+Asmtools is a large collection of programs in
+assembler.  The following programs are installed:
+
+drwxr-xr-x root/root         0 2009-04-10 12:11 ./usr/lib/
+-rw-r--r-- root/root    682344 2009-04-10 12:11 ./usr/lib/asmlib.a
+-rw-r--r-- root/root    146838 2009-04-10 12:11 ./usr/lib/asmlibx.a
+drwxr-xr-x root/root         0 2009-04-10 12:11 ./usr/bin/
+-rwxr-xr-x root/root      7104 2009-04-10 12:11 ./usr/bin/asmpub
+-rwxr-xr-x root/root     17948 2009-04-10 12:11 ./usr/bin/viewer
+-rwxrwxrwx root/root     21284 2009-04-10 12:11 ./usr/bin/asmedit
+-rwxr-xr-x root/root     13768 2009-04-10 12:11 ./usr/bin/asmfind
+-rwxr-xr-x root/root        53 2009-04-10 12:11 ./usr/bin/asmref
+-rwxr-xr-x root/root     33188 2009-04-10 12:11 ./usr/bin/asmmgr
+-rwxr-xr-x root/root     12448 2009-04-10 12:11 ./usr/bin/asmview
+-rwxr-xr-x root/root      7136 2009-04-10 12:11 ./usr/bin/asmmenu
+-rwxr-xr-x root/root     34784 2009-04-10 12:11 ./usr/bin/asmfile
+-rwxr-xr-x root/root     18404 2009-04-10 12:11 ./usr/bin/elfdecode
+-rwxr-xr-x root/root      8028 2009-04-10 12:11 ./usr/bin/asmtimer
+-rwxr-xr-x root/root     17859 2009-04-10 12:11 ./usr/bin/opener
+-rwxr-xr-x root/root     32952 2009-04-10 12:11 ./usr/bin/asmdis
+-rwxr-xr-x root/root     29204 2009-04-10 12:11 ./usr/bin/asmplan
+-rwxr-xr-x root/root     31724 2009-04-10 12:11 ./usr/bin/asmsrc
+-rwxr-xr-x root/root     30016 2009-04-10 12:11 ./usr/bin/asmide
+-rwxr-xr-x root/root     11736 2009-04-10 12:11 ./usr/bin/copy
+-rwxr-xr-x root/root     22624 2009-04-10 12:11 ./usr/bin/asmproject
+-rwxr-xr-x root/root     21472 2009-04-10 12:11 ./usr/bin/fileset
+-rwxr-xr-x root/root     59572 2009-04-10 12:11 ./usr/bin/asmbug
+-rwxr-xr-x root/root     22644 2009-04-10 12:11 ./usr/bin/xhelper
+-rwxr-xr-x root/root     68716 2009-04-10 12:11 ./usr/bin/asmtrace
+-rwxr-xr-x root/root      8876 2009-04-10 12:11 ./usr/bin/asmlinks
+-rwxr-xr-x root/root      9356 2009-04-10 12:11 ./usr/bin/file_browse
+-rwxr-xr-x root/root     12620 2009-04-10 12:11 ./usr/bin/domac
+-rwxr-xr-x root/root     28472 2009-04-10 12:11 ./usr/bin/tracex
+-rwxr-xr-x root/root     51956 2009-04-10 12:11 ./usr/bin/minibug
+-rwxrw-rw- jeff/root        47 2009-04-10 12:11 ./home/jeff/bin/a
+
+Many of the programs have "man" pages and some have documentation
+at /usr/share/doc/(name of program).  Additionally, the "asmref"
+program provides a lot of data.

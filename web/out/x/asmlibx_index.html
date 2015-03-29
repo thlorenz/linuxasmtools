@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>Index of asmlibx</title>
+ <meta name="keywords" content="AsmLibx, assembler, linux, utilities, x86, assembly, tools, development, programming, debugger">
+ <meta name="description" content="Index of X function library">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>XAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="library.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="xasm_tutor.html">X tutoral</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+
+<br>
+ -- keyboard -- <br>
+1 ascii_to_xkey - ascii code to x key code<br>
+2 x_change_keyboard_control - change keyboard state<br>
+3 x_edit_key_decode - associate process with key<br>
+4 x_get_keyboard_control - get keyboard state<br>
+5 x_get_keyboard_mapping - get map file for keyboard<br>
+6 x_get_text - get string in scrolled window line<br>
+7 x_key_decode - associate process with key<br>
+8 x_key_translate - convert event packet to key codes<br>
+<br>
+ -- mgr_ctrl -- <br>
+9 activate_window - focus and show window<br>
+10 select_desktop - send desktop select to window manager<br>
+11 window_move_resize - window move/resize <br>
+12 x_wm_hints - send window size to manager<br>
+<br>
+ -- mgr_info -- <br>
+13 atom_NET_ACTIVE_WINDOW - get atom NET_ACTIVE_WINDOW<br>
+14 atom_NET_CLIENT_LIST - get atom NET_CLIENT_LIST<br>
+15 atom_NET_CURRENT_DESKTOP - get atom NET_CURRENT_DESKTOP<br>
+16 atom_NET_NUMBER_OF_DESKTOPS - get atom NET_NUMBER_OF_DESKTOPS<br>
+17 atom_NET_WM_DESKTOP - get atom NET_WM_DESKTOP<br>
+18 atom_NET_WM_PID - get atom NET_WM_PID<br>
+19 current_desktop - get current desktop from window mgr<br>
+20 get_client_list - get list of window manager window id's<br>
+21 get_windows_desktop - get desktop# for window<br>
+22 number_of_desktops - get number of desktops from window mgr<br>
+23 win_associated_pid - get pid (program) for window<br>
+24 wm_class - get property wm_class<br>
+25 wm_name - get property wm_name<br>
+<br>
+ -- mouse -- <br>
+26 x_mouse_decode - associate process with screen area<br>
+27 x_query_pointer - query pointer position<br>
+<br>
+ -- server -- <br>
+28 poll_socket - check if key avail.<br>
+29 window_event_decode - wait for events and decode actions<br>
+30 window_event_enable - enable window events<br>
+31 x_check_event - check if events ready or pending<br>
+32 x_connect - connect to x server<br>
+33 x_disconnect - disconnect from x server<br>
+34 x_flush - send queued events to x server<br>
+35 x_interatom - lookup atom code<br>
+36 x_list_extension - get list of extensions<br>
+37 x_query_extension - check for x server extension<br>
+38 x_read_socket - read x server socket<br>
+39 x_send_request - send request to x server<br>
+40 x_wait_big_reply - wait xx millsecods for big reply<br>
+41 x_wait_event - wait forever and read event packet<br>
+42 x_wait_reply - wait for xx milliseconds for reply<br>
+<br>
+ -- win_color -- <br>
+43 color_id_lookup - color number to color id<br>
+44 color_num_lookup - convert color id to color number<br>
+45 window_color - set color number active<br>
+46 window_id_color - set color id's active<br>
+47 x_allocate_named_color - ask for color id<br>
+48 x_change_gc_colors - set active colors for window<br>
+<br>
+ -- win_ctrl -- <br>
+49 window_clear - clear window              <br>
+50 window_clear_area - clear with window color<br>
+51 window_create - create x window<br>
+52 window_kill - destroy window<br>
+53 window_lower - move window to bottom of stack<br>
+54 window_name - set window name and title<br>
+55 window_pre - setup for window_create<br>
+56 window_raise - raise window to top<br>
+57 x_change_attributes - change a window attribute<br>
+58 x_configure_window - get list of windows<br>
+59 x_create_gc - create graphic context <br>
+60 x_create_window - create window within server<br>
+61 x_destroy_window - destroy window<br>
+62 x_freegc - discard window information in server<br>
+63 x_map_win - show window <br>
+64 x_reparent_window - get list of windows<br>
+65 x_replace_string_property - change a window property<br>
+66 x_set_input_focus - set input focus<br>
+<br>
+ -- win_info -- <br>
+67 window_find - search for window<br>
+68 x_get_geometry - get window geometry<br>
+69 x_get_input_focus - get focus<br>
+70 x_get_property - get property status<br>
+71 x_get_selection_owner - get selection owner<br>
+72 x_get_window_attributes - get window attributes<br>
+73 x_list_properties - get list of atoms (properties)<br>
+74 x_query_tree - get list of windows<br>
+75 x_translate_coordinates - get abs win location<br>
+<br>
+ -- win_text -- <br>
+76 window_font - set a new window font<br>
+77 window_rel_table - display list of items <br>
+78 window_rel_table_setup - setup for window_rel_table<br>
+79 window_write_line - write line at char address<br>
+80 window_write_lines - write lines to area<br>
+81 window_write_pline - write line at pixel address<br>
+82 window_write_table - display items for text window <br>
+83 window_write_table_setup - setup for window_write_table<br>
+84 x_change_gc_font - change active font<br>
+85 x_get_font_path - get paths used for font search<br>
+86 x_list_fonts - list fonts that match pattern<br>
+87 x_open_font - look for a named font<br>
+88 x_query_font - check current font state<br>
+89 x_query_text - get lenght of text string<br>
+90 x_write_block - write ascii block to window <br>
+91 x_write_string - write a string to window <br>
+<br>
+ -- xtest -- <br>
+92 query_XKEYBOARD - get XKEYBOARD op code<br>
+93 query_xtest - get xtest op code<br>
+94 send_keys_to_window - send keystrokes to window<br>
+95 xtest_click - send input to window<br>
+96 xtest_fake_input - send input to window<br>
+97 xtest_grab_control - set server "grab" status<br>
+98 xtest_move_mouse - move mouse pointer<br>
+99 xtest_version - get xtest extension version<br>
+      <br>
+      </big><br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

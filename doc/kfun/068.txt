@@ -1,0 +1,10 @@
+
+----------------------------------------------------------------------------
+ 68 sgetmask        - get signal mask 
+----------------------------------------------------------------------------
+
+  This is reported to be a libc function, not a kernel
+  call.
+
+  (use sigaction instead)
+

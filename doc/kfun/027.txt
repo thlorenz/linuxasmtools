@@ -1,0 +1,33 @@
+
+----------------------------------------------------------------------------
+ 27 alarm           - set an alarm clock for delivery of a signal
+----------------------------------------------------------------------------
+  mov   eax,027
+  mov   ebx,seconds
+  int   80h
+
+       alarm  arranges  for a SIGALRM signal to be delivered to the process in
+       seconds seconds.
+
+       If seconds is zero, no new alarm is scheduled.
+
+       In any event any previously set alarm is cancelled.
+
+RETURN VALUE
+       alarm returns the number of  seconds  remaining  until  any  previously
+       scheduled alarm was due to be delivered, or zero if there was no previ-
+       ously scheduled alarm.
+
+NOTES
+       alarm and setitimer share the same timer; calls to one  will  interfere
+       with use of the other.
+
+       sleep()  may  be implemented using SIGALRM; mixing calls to alarm() and
+       sleep() is a bad idea.
+
+       Scheduling delays can, as ever, cause the execution of the  process  to
+       be delayed by an arbitrary amount of time.
+
+SEE ALSO
+       setitimer,   signal,  sigaction,  gettimeofday,  select,
+       pause, sleep

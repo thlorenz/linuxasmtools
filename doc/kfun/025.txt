@@ -1,0 +1,24 @@
+
+----------------------------------------------------------------------------
+ 25 stime          - set time
+----------------------------------------------------------------------------
+  mov  eax,025
+  mov  ebx,tptr   ;ptr to seconds since jan 1 1970
+  int  80h
+
+       stime sets the system's idea of the time and date.  The dword time, pointed
+       to by tptr, is measured in seconds from 00:00:00 GMT January 1,  1970.
+       may only be executed by the super user.
+
+RETURN VALUE
+       On  success,  zero is returned, else a negative error.
+
+ERRORS
+       EPERM  The caller is not the super-user.
+
+       EFAULT Error in getting information from user space.
+
+SEE ALSO
+       date, settimeofday
+
+

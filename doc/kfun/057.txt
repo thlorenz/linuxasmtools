@@ -1,0 +1,41 @@
+
+----------------------------------------------------------------------------
+ 57 setpgid        - set process group 
+----------------------------------------------------------------------------
+  mov  eax,57 
+  mov  ebx,pid   ;process id
+  mov  ecx,pgid  ;process group id
+  int  80h
+
+       setpgid  sets  the  process group ID of the process specified by pid to
+       pgid.  If pid is zero, the process ID of the current process  is  used.
+       If  pgid  is  zero,  the  process ID of the process specified by pid is
+       used.  If setpgid is used to move a process from one process  group  to
+       another  (as  is  done  by  some  shells when creating pipelines), both
+       process groups must be part of the same session.   In  this  case,  the
+       pgid  specifies  an existing process group to be joined and the session
+       ID of that group must match the session ID of the joining process.
+
+RETURN VALUE
+       On success, setpgid return zero.  On error a negative code
+
+ERRORS
+       EINVAL pgid is less than 0 (setpgid, setpgrp).
+
+       EACCES An attempt was made to change the process group ID of one of the
+              children  of  the calling process and the child had already per-
+              formed an execve (setpgid, setpgrp).
+
+       EPERM  An attempt was made to move a process into a process group in  a
+              different  session,  or to change the process group ID of one of
+              the children of the calling process and the child was in a  dif-
+              ferent  session,  or to change the process group ID of a session
+              leader (setpgid, setpgrp).
+
+       ESRCH  pid is not the current process and not a child of the current
+              process.
+
+SEE ALSO
+       getuid, setsid, tcgetpgrp, tcsetpgrp
+
+

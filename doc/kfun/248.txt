@@ -1,0 +1,85 @@
+
+-----------------------------------------------------------------------
+248 io_submit   - Submit asynchronous I/O blocks for processing
+-----------------------------------------------------------------------
+
+  mov  eax,248
+  mov  ebx,ctx_id     ;context ptr returned by io_setup
+  mov  ecx,nr         ;number of events submitted
+  mov  edx,iocb_list  ;**iocbpp, array of nr ai/o request blocks
+  int  80h
+
+
+SYNOPSIS
+       int io_submit(aio_context_t ctx_id, long nr, struct iocb **iocbpp);
+
+DESCRIPTION
+       io_submit() queues nr I/O request blocks for processing in the AIO con‐
+       text ctx_id.  iocbpp should be an array of nr AIO request blocks, which
+       will be submitted to context ctx_id.
+
+ ebx
+ ---
+       ebx contains context ptr (same as aio_ring_base).  This ptr is
+       returned by io_setup and points to:
+                      dd id (address of aio_ring_base)=this address
+                      dd nr (number of contexts possible)
+                      dd head
+                      dd tail
+                      dd magic (a10a10a1)
+                      dd compat
+                      dd incompat
+                      dd header_len
+                      dq event1_data (set to handler from io_submit)
+                      dq event1_obj  (iocb ptr for event1)
+                      dq event1_result (eax return code)
+                      dq event1_result (suplemental result)
+
+ edx
+ ---
+
+        edx points to a list of pointers.  Are they 32 or 64 bit entries?
+          dd iocb_1  ;first event ptr
+          dd iocb_2  ;second event ptr
+             .
+
+        each event (iocb) contains:
+         dq aio_handler ;pointer to event handler (provided in io_submit)
+         dq aio_key        ;can be zero
+         dw aio_lio_opcode ;0=read 1=write 2=fsync 3=fdsync 4=readx 5=poll 6=nop
+         dw aio_reqprio    ;priority, can be zero
+         dd aio_filedes    ;fd
+         dq sio_nbytes     ;buffer size
+         dq aio_offset     ;offset into file
+
+
+RETURN VALUE
+       On  success,  io_submit()  returns the number of iocbs submitted (which
+       may be 0 if nr is zero); on failure,  it  returns  one  of  the  errors
+       listed under ERRORS.
+
+ERRORS
+       EINVAL The aio_context specified by ctx_id is invalid.  nr is less than
+              0.  The iocb at *iocbpp[0] is not properly initialized,  or  the
+              operation  specified  is  invalid for the file descriptor in the
+              iocb.
+
+       EFAULT One of the data structures points to invalid data.
+
+       EBADF  The file descriptor specified in the first iocb is invalid.
+
+       EAGAIN Insufficient resources are available to queue any iocbs.
+
+       ENOSYS io_submit() is not implemented on this architecture.
+
+VERSIONS
+       The asynchronous I/O system calls first appeared in Linux  2.5,  August
+       2002.
+
+CONFORMING TO
+       io_submit()  is  Linux specific and should not be used in programs that
+       are intended to be portable.
+
+SEE ALSO
+       io_setup, io_destroy, io_getevents, io_cancel
+

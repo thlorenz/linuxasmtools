@@ -1,0 +1,134 @@
+
+
+----------------------------------------------------------------------------
+  7 waitpid        - wait for process termination  
+----------------------------------------------------------------------------
+  mov  eax,7
+  mov  ebx,pid
+  mov  ecx,status       ;null or pointer or buffer to hold status
+  mov  edx,options      ;null or WNOHANG, WUNTRACED
+
+
+       The waitpid function suspends execution of the current process until  a
+       child as specified by the pid argument has exited, or until a signal is
+       delivered whose action is to terminate the current process or to call a
+       signal  handling  function.  If a child has already
+       exited by the time of the call  (a  so-called  "zombie"  process),  the
+       function  returns  immediately.  Any system resources used by the child
+       are freed.
+
+       pid
+       ---
+
+       < -1   which means to wait for any child process whose process group ID
+              is equal "pid" passed in ebx
+
+       -1     which  means to wait for any child process; this is the same be-
+              haviour which wait exhibits.
+
+       0      which means to wait for any child process whose process group ID
+              is equal to that of the calling process.
+
+       > 0    which  means  to wait for the child whose process ID is equal to
+              the value of pid.
+
+       options
+       -------
+
+       The value of options is an OR of zero or more  of  the  following  con-
+       stants:
+
+       WNOHANG (1)
+              which means to return immediately if no child has exited.
+
+       WUNTRACED (2)
+              which  means  to also return for children which are stopped (but
+              not traced), and whose status has not been reported.  Status for
+              traced  children which are stopped is provided also without this
+              option.
+
+       status
+       ------
+
+       The status returned by wait4(114) and waitpid(7) kernel calls
+       if normal exit (eax=0), A dword buffer is large enough to hold
+       status.
+
+       byte 1                   byte 2
+       (bl in trace_wait call)  (bh in trace_wait call)
+       -----------------------  -----------------------
+       0   =process exited      kernel exit call reg "bl"
+       1-7e=process killed      signal# that killed process
+       7f  =process stopped     signal# that stopped process
+       ff  =process continued   singal# that continued process
+
+
+       (For Linux-only options, see below.)
+
+       If status is not NULL, wait or waitpid store status information in  the
+       location pointed to by status.
+
+
+RETURN VALUE
+       The process ID of the child which exited, or zero if WNOHANG  was  used
+       and  no child was available, or a negative error code
+
+ERRORS
+       ECHILD if the process specified in pid does not exist or is not a child
+              of the calling process.  (This can happen for one's own child if
+              the action for SIGCHLD is set to SIG_IGN.  See  also  the  LINUX
+              NOTES section about threads.)
+
+       EINVAL if the options argument was invalid.
+
+       EINTR  if  WNOHANG was not set and an unblocked signal or a SIGCHLD was
+              caught.
+
+NOTES
+       The Single Unix Specification describes a flag SA_NOCLDWAIT  (not  sup-
+       ported under Linux) such that if either this flag is set, or the action
+       for SIGCHLD is set to SIG_IGN then children that  exit  do  not  become
+       zombies and a call to wait() or waitpid() will block until all children
+       have exited, and then fail with errno set to ECHILD.
+
+       The original POSIX standard left the behaviour of  setting  SIGCHLD  to
+       SIG_IGN  unspecified.   Later  standards,  including  SUSv2  and  POSIX
+       1003.1-2001 specify the behaviour just described as  an  XSI-compliance
+       option.   Linux  does  not conform to the second of the two points just
+       described: if a wait() or waitpid() call is made while SIGCHLD is being
+       ignored, the call behaves just as though SIGCHLD were not being igored,
+       that is, the call blocks until  the  next  child  terminates  and  then
+       returns the PID and status of that child.
+
+LINUX NOTES
+       In  the  Linux kernel, a kernel-scheduled thread is not a distinct con-
+       struct from a process. Instead, a thread is simply a  process  that  is
+       created  using  the  Linux-unique  clone system call; other routines
+       such as the  portable  pthread_create(3)  call  are  implemented  using
+       clone.   Before  Linux  2.4,  a  thread was just a special case of a
+       process, and as a consequence one thread could not wait on the children
+       of  another  thread,  even  when  the latter belongs to the same thread
+       group.  However, POSIX prescribes such functionality, and  since  Linux
+       2.4  a  thread  can,  and  by  default  will, wait on children of other
+       threads in the same thread group.
+
+       The following Linux-specific options are for use with children  created
+       using clone.
+
+       __WCLONE
+              Wait  for "clone" children only.  If omitted then wait for "non-
+              clone" children only.  (A "clone" child is one which delivers no
+              signal, or a signal other than SIGCHLD to its parent upon termi-
+              nation.)  This option is ignored if __WALL is also specified.
+
+       __WALL (Since Linux 2.4) Wait for  all  children,  regardless  of  type
+              ("clone" or "non-clone").
+
+       __WNOTHREAD
+              (Since  Linux  2.4) Do not wait for children of other threads in
+              the same thread group. This was the default before Linux 2.4.
+
+SEE ALSO
+       clone, ptrace, signal, wait4, pthread_create, signal
+
+

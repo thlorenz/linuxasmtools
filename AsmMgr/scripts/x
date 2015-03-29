@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#awk=$(which awk)
+#gawk=$(which gawk)
+#mawk=$(which mawk)
+#if [ -x "$mawk" ]; then
+# echo found $mawk
+#../doc/man/txt2man -t AsmBug asmbug.txt | gzip -c > asmide.1.gz
+ ./txt2man -t AsmBug asmbug.txt | gzip -c > asmbug.1.gz 
+# exit
+# fi
+

@@ -1,0 +1,45 @@
+
+NAME
+
+   steptest - Aerobic Step Test
+
+OVERVIEW
+
+   This test is designed to measure your cardiovascular endurance. Using
+   a 12 inch high bench (or a similar sized stair in your house), step on
+   and off for 3 minutes.
+     * Step up with one foot and then the other.
+     * Step down with one foot followed by the other foot.
+     * Try to maintain a steady four beat cycle. It's easy to maintain if
+       you say "up, up, down, down". Go at a steady and consistent pace.
+     * At the end of 3 minutes, remain standing, wait 5 seconds, then
+       take your pulse for 15 seconds. Multiply by 4 to give your heart
+       rate for one minute.[218] For more information about taking your
+       heart rate.
+     * Compare your result to the chart below.
+
+
+   3 Minute Step Test (Men) 
+
+            Age      18-25    26-35  36-45    46-55   56-65    65+
+         Excellent    <79     <81      <83     <87     <86     <88
+            Good      79-89   81-89  83-96    87-97   86-97   88-96
+       Above Average  90-99   90-99  97-103  98-105  98-103   97-103
+          Average    100-105 100-107 104-112 106-116 104-112 104-113
+       Below Average 106-116 108-117 113-119 117-122 113-120 114-120
+            Poor     117-128 118-128 120-130 123-132 121-129 121-130
+         Very Poor    >128    >128    >130    >132    >129    >130
+
+   3 Minute Step Test (Women) 
+
+            Age      18-25    26-35   36-45   46-55   56-65    65+
+         Excellent     <85     <88     <90     <94     <95     <90
+            Good      85-98   88-99   90-102  95-104  86-97  90-102
+       Above Average 99-108  100-111 103-110 105-115 105-112 103-115
+          Average    109-117 112-119 111-118 116-120 113-118 116-122
+       Below Average 118-126 120-126 119-128 121-129 119-128 123-128
+            Poor     127-140 127-138 129-140 130-135 129-139 129-134
+         Very Poor    >140    >138     >140    >135   >139    >134
+
+     Source: Canadian Public Health Association Project.
+

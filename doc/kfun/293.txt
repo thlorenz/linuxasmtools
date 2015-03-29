@@ -1,0 +1,30 @@
+
+--------------------------------------------------------------------
+293 inotify_rm_watch  - unset inotify watch
+--------------------------------------------------------------------
+
+  mov  eax,293
+  mov  ebx,fd  ;file descriptor
+  mov  ecx,wd  ;watch descriptor
+  int  80h
+
+   Removes an existing watch from an inotify instance.
+   Removing a watch causes an IN_IGNORED event to be generated for this
+   watch descriptor.
+
+args
+----
+
+ ebx File descriptor associated with the inotify instance.
+
+ ecx Watch descriptor with whom the watch is associated.
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EBADF ebx is not a valid file descriptor.
+   -EINVAL The watch descriptor ecx is not valid; or ebx is not an
+     inotify file descriptor.
+
+   Available since 2.6.13

@@ -1,0 +1,530 @@
+
+; The collection of values associated with the calendric
+; representation of a time.
+
+%include "time.inc"
+
+
+ [section .text]
+
+  extern get_raw_time
+  extern raw2seconds
+  extern seconds2bins
+  extern bins2ascii
+  extern seconds2timeregs
+  extern seconds2dateregs
+  extern regs2ascii
+  extern ascii2days
+  extern leap_count
+  extern leap_check
+  extern days2ascii
+  extern raw2ascii
+
+;  extern mmap_open_ro
+ 
+  global _start
+  global main
+
+_start:
+main:
+  call	display_lf
+  call	test_raw2ascii
+  call	file_date_test
+  call	test_days2ascii
+
+  call	display_lf
+  call	test_leap_check
+  call	test_ascii2days
+  call	test_regs2ascii
+  call	test_seconds2timeregs
+  call  test_seconds2dateregs
+  call show_date
+
+  call	display_lf
+  call	display_lf
+  mov	eax,100000
+  call	test_leap_check_
+  mov	eax,100000
+  call	test_ascii2days_
+  mov	eax,100000
+  call	test_regs2ascii_
+  mov	eax,100000
+  call	test_seconds2timeregs_
+  mov	eax,100000
+  call  test_seconds2dateregs_
+  mov	eax,100000
+  call show_date_
+
+  call	display_lf
+  call	display_lf
+  mov	eax,10000000
+  call	test_ascii2days_
+  mov	eax,10000000
+  call	test_regs2ascii_
+  mov	eax,10000000
+  call	test_seconds2timeregs_
+  mov	eax,10000000
+  call  test_seconds2dateregs_
+  mov	eax,10000000
+  call show_date_
+ 
+  mov	eax,1
+  int	80h
+
+;--------------------------------------------
+test_raw2ascii:
+  call	get_raw_time
+  mov	edi,out_buf
+  mov	ebx,format
+  call	raw2ascii
+  ret
+
+  [section .data]
+out_buf: times 50 db ' '
+format:
+  db '6+ 2, 7+ 0 1-2-0 3:4:58 9 (6- 7-)',0
+
+;--------------------------------------------
+file_date_test:
+  mov	ebx,filename
+  mov	eax,107
+fsn_10:
+  mov	ecx,status	; fstat buffer
+  int	80h
+  or	eax,eax
+  js	fe_exit			;jmp if file does not exist
+fsn_20:
+  mov	eax,[st_ctime]		;get time
+  mov	edi,tmf
+  call	test_entry1
+  mov	eax,[st_mtime]		;get time
+  mov	edi,tmf
+  call	test_entry2
+fe_exit:
+  ret
+
+filename db 'x',0
+;--------------------------------------------
+test_days2ascii:
+  call	get_raw_time
+  mov	edi,tmf
+  call	raw2seconds
+  call	seconds2dateregs
+  call	display_number
+  mov	ecx,n9
+  call	crt_str
+  mov	ebp,formatx
+  mov	ebx,buf
+  call	days2ascii
+  mov	byte [edi],0
+  mov	ecx,buf
+  call	crt_str
+  ret
+
+formatx:  db 'year=0 month=1 day=2',0ah,0
+;--------------------------------------------
+test_leap_check:
+  call	get_raw_time
+  mov	edi,tmf
+  call	raw2seconds
+test_leap_check_:
+  mov	dword [leap_cnt],0
+  call	seconds2dateregs	;get year
+  mov	[target_date],ebx	;save year
+  mov	eax,ebx
+  call	display_number
+  mov	ecx,n8
+  call	crt_str
+  call	leap_count
+  call	display_number
+  mov	eax,1970		;loop starting year
+tlp:
+  inc	eax
+  cmp	eax,[target_date]
+  jae	t20			;exit if done  
+  push	eax
+  call	leap_check
+  pop	eax
+  jnc	t10
+  inc	dword [leap_cnt]
+t10:
+  jmp	tlp
+t20:
+  mov	eax,[leap_cnt]
+  call	display_number
+  call	display_lf
+  ret
+  
+
+  [section .data]
+leap_cnt:  dd	0
+target_date: dd	0
+  [section .text]
+
+;--------------------------------------------
+test_ascii2days:
+  call	get_raw_time		;returns raw time in eax,ebx
+  mov	edi,tmf			;not needed if eax=seconds on exit
+  call	raw2seconds
+test_ascii2days_:
+  call	seconds2dateregs
+  call	display_number
+  mov	ecx,n7
+  call	crt_str
+  mov	eax,buf
+  mov	ebp,format_str2
+  call	regs2ascii
+  mov	esi,buf
+  call	ascii2days
+  call	display_number
+  call	display_lf
+  ret
+
+format_str2: db '012',0
+;--------------------------------------------
+test_regs2ascii:
+  call	get_raw_time		;returns raw time in eax,ebx
+test_entry1:
+  mov	edi,tmf			;not needed if eax=seconds on exit
+  call	raw2seconds
+test_entry2:
+test_regs2ascii_:
+  call	display_number
+  call	seconds2timeregs
+  call	seconds2dateregs
+; edi = hour cl=min ch=sec dh=day of week dl=day of week
+; esi=month# ebx=year
+  mov	eax,buf
+  mov	ebp,format_string
+  call	regs2ascii
+
+; A newline is appended, the string is output to stdout, and the
+; program exits.
+
+  mov	al, 10
+  stosb
+  mov	ecx,buf
+  mov	edx, edi		;compute length
+  sub	edx, ecx		; of output string
+  mov	ebx,1			;stdout
+  mov	eax,4
+  int	80h
+  ret
+  
+;--------------------------------------------
+test_seconds2dateregs:
+  mov	eax,[tmf + time.at]
+;  mov	eax,0
+test_seconds2dateregs_:
+  call	display_number
+  mov	ecx,n4
+  call	crt_str
+  call	seconds2dateregs
+; display days,year,mo,day
+  push	edx
+  mov	eax,[tmf + time.at]
+  call	display_number
+  mov	eax,ebx			;get year
+  call	display_number
+  mov	eax,esi			;get month
+  call	display_number
+  pop	edx
+  xor	eax,eax
+  mov	al,dl			;get day of month
+  
+  call	display_number
+  mov	ecx,n6
+  call	crt_str
+  mov	al,dh
+  call	display_number
+  call	display_lf
+  ret
+;--------------------------------------------
+test_seconds2timeregs:
+  mov	eax,[tmf + time.at]	;get adjusted time
+;  mov	eax,0
+test_seconds2timeregs_:
+  call	display_number
+  mov	ecx,n3
+  call	crt_str
+  call	seconds2timeregs
+;  push	eax
+  mov	eax,edi
+  call	display_number
+;  pop	edx
+  xor	eax,eax
+  mov	al,cl
+  call	display_number
+  xor	eax,eax
+  mov	al,ch
+  call	display_number
+  call	display_lf
+  ret
+;--------------------------------------------
+
+
+show_date_:
+  sub	eax,[tmf + time.zo]	;adjust input
+  jmp	show_entry
+
+show_date:
+  nop
+  call	get_raw_time		;returns raw time in eax,ebx
+;  call	time_get_raw		;returns raw time in eax,ebx
+;  call	display_lf
+  call	display_number
+show_entry:
+  mov	ecx,n1			;;
+  call	crt_str			;;
+  mov	edi,tmf
+  call	raw2seconds
+  call	display_number
+  call	display_lf
+;  mov	edi,tmf			;time build structure
+;  mov	edx,buf			;work buffer of length xxx
+;  call	time_adjust		;return adjusted seconds in eax
+  mov	ebp,tmf		;redundant, fix
+  call	display_number
+  mov	ecx,n2
+  call	crt_str
+  call	seconds2bins
+
+  mov	eax,[tmf+time.yr]
+  call	display_number
+  mov	eax,[tmf+time.mo]
+  call	display_number
+  mov	eax,[tmf+time.dy]
+  call	display_number
+  mov	eax,[tmf+time.hr]
+  call	display_number
+  mov	eax,[tmf+time.mn]
+  call	display_number
+  mov	ecx,n5
+  call	crt_str
+  mov	eax,[tmf+time.dc]	;get days since 1970
+  call	display_number
+  call	display_lf
+  
+; All representable values have now been calculated. edi is changed
+; to point to the output buffer. The program then proceeds to render
+; the format string into buf by calling ftime.
+
+  mov	ebx,tmf
+  mov	ebp,format_string
+  mov	edi,buf
+  call	bins2ascii
+
+; A newline is appended, the string is output to stdout, and the
+; program exits.
+
+  mov	al, 10
+  stosb
+  mov	ecx,buf
+  mov	edx, edi		;compute length
+  sub	edx, ecx		; of output string
+  mov	ebx,1			;stdout
+  mov	eax,4
+  int	80h
+  ret
+
+
+;----------------------------------------------------------
+format_string:
+  db '6+ 2, 7+ 0 1-2-0 3:4:58 9 (6- 7-)',0
+;----------------------------------------------------------
+;****f* str/str_move *
+;
+; NAME
+;  str_move - move asciiz string
+; INPUTS
+;  * esi = input string ptr (asciiz)
+;  * edi = destination ptr
+; OUTPUT
+;  * edi points at zero (end of moved asciiz string)
+; NOTES
+;  * file str_move.asm
+;  * ----------------------------------------------
+;*******
+  global str_move
+str_move:
+  cld
+ms_loop:
+  lodsb
+  stosb
+  or	al,al
+  jnz	ms_loop	;loop till done
+  dec	edi
+  ret
+
+;----------------------------------------------------------
+
+; NAME
+;  is_number - check if ascii number
+; INPUTS
+;  * al = ascii char
+; OUTPUT
+;  * eq flag set for je if alpha
+; NOTES
+; * file: /key_mouse/key_decode.asm
+; * ----------------------------------------------
+  global is_number
+is_number:
+  cmp	al,'0'
+  jb	not_number
+  cmp	al,'9'
+  ja	not_number
+  cmp	al,al
+not_number:
+  ret
+;----------------------------------------------------------
+  [section .text]
+;------------------------------------------------------------
+;   crt_str - display asciiz string at curent cursor position
+; INPUTS
+;  * ecx = ptr to string
+; OUTPUT
+; * uses current color, see crt_set_color, crt_clear
+; NOTES
+;  * file crt_str.asm
+;  * ---------------------------------------------------
+	%define stdout 0x1
+	%define stderr 0x2
+
+crt_str:
+  pusha
+  xor edx, edx
+.count_again:	
+  cmp [ecx + edx], byte 0x0
+  je .done_count
+  inc edx
+  jmp .count_again
+.done_count:	
+  mov eax, 0x4			; system call 0x4 (write)
+  mov ebx, stdout			; file desc. is stdout
+  int 0x80
+  popa
+  ret
+;--------------------------------------------------------------
+;  display_number - convert binary dword to left justified ascii string
+; INPUTS
+;  *  eax = binary value
+;     edi = buffer
+; OUTPUT
+; NOTES
+;  * file: dword_to_ascii.asm
+;  * ----------------------------------------------
+
+dword_to_ascii:
+  mov	ecx,10
+  xchg eax,ebx
+xta_entry:
+  xchg eax,ebx
+  cdq
+  div ecx
+  xchg eax,ebx
+  mov al,dl
+  and al,0fh
+  add al,'0'
+  push	eax
+  or	ebx,ebx		;check if done
+  jz	xta_end	;jmp if correct number of digits stored
+  call	xta_entry
+xta_end:
+  pop	eax
+  stosb
+  ret
+;---------------------------------------------------------
+; input: eax = number
+; output: number display + blank at end
+display_number:
+  pusha
+  mov	edi,buf
+  call  dword_to_ascii
+  mov	al,' '
+  stosb
+  mov	al,0
+  stosb
+  mov	ecx,buf
+  call	crt_str
+  popa
+  ret
+
+;---------------------------------------------------------- 
+display_lf:
+  pusha
+  mov	ecx,eol
+  call	crt_str
+  popa
+  ret
+
+eol: db 0ah,0
+;-------------------------------------------------------;
+; NAME
+;  ascii_to_dword - convert decimal ascii string to binary
+; INPUTS
+;  * esi = ptr to ascii string
+; OUTPUT
+;  * ecx = binary value
+; NOTES
+;  * file: ascii_to_dword.asm
+;  * ----------------------------------------------
+;*******
+ global ascii_to_dword
+ascii_to_dword:
+  xor	ecx,ecx
+  xor	eax,eax
+  mov	bl,9
+  cld
+atd_lp:
+  lodsb
+  sub al,'0'
+  js atd_exit
+  cmp al,bl
+  ja atd_exit
+  lea ecx,[ecx+4*ecx]
+  lea ecx,[2*ecx+eax]
+  jmp short atd_lp
+atd_exit:
+  ret
+
+;----------------------------------------------------------
+n1:	db	'raw2seconds output->',0
+n2:	db	'seconds2bins year,month,day,hour,min ->',0
+n3:     db	'seconds2timeregs hr,min,sec ->',0
+n4: db 'seconds2dateregs days,year,mo,day ->',0
+n5: db 'days=',0
+n6: db 'dow(0=sun)',0
+n7: db '<- days ascii2days days ->',0
+n8: db '<- year -> leap_count out=',0
+n9: db ' days2ascii ',0
+
+;---------------------------------------------------------- 
+ [section .bss]
+
+status:
+st_dev: resd 1
+st_ino: resd 1
+st_mode: resw 1
+st_nlink: resw 1
+st_uid: resw 1
+st_gid: resw 1
+st_rdev: resd 1
+st_size: resd 1
+st_blksize: resd 1
+st_blocks: resd 1
+st_atime: resd 1
+__unused1: resd 1
+st_mtime: resd 1
+__unused2: resd 1
+st_ctime: resd 1
+__unused3: resd 1
+__unused4: resd 1
+__unused5: resd 1
+;  ---  stat_struc_size
+
+; The time structure.
+tmf:		resb	time_size
+; The output buffer that the formatting string is rendered into.
+buf:		resb	8192
+
+end

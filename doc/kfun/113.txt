@@ -1,0 +1,23 @@
+
+
+----------------------------------------------------------------------------
+ 113 vm86old       - enter virtual 8086 mode
+----------------------------------------------------------------------------
+  mov  eax,113
+  mov  ebx,v86_struc
+  int  80h
+
+       enter virtual 86 mode.  Present in pre 2.0.38 kernels
+
+
+RETURN VALUE
+       unknown
+
+ERRORS
+
+CONFORMING TO
+       This  function  is  Linux-specific,  and should not be used in programs
+       intended to be portable.
+
+NOTES
+       this call was vm86 in pre 2.0.38 kernels

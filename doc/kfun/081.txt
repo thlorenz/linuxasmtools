@@ -1,0 +1,39 @@
+
+----------------------------------------------------------------------------
+ 81 setgroups      - set list of supplementary group IDs
+----------------------------------------------------------------------------
+  mov eax,081
+  mov ebx,size  ;size of buffer with group info
+  mov ecx,list  ;ptr to buffer with group info
+  int 80h
+
+      Sets the supplementary group IDs  for  the  process.   Only  the
+      super-user may use this function.
+
+RETURN VALUE
+      On success, zero is returned.  On error, a negative code is returned
+
+ERRORS
+       EFAULT list has an invalid address.
+
+       EPERM  For setgroups, the user is not the super-user.
+
+       EINVAL For  setgroups,  size  is  greater  than  NGROUPS  (32 for Linux
+              2.0.32).  For getgroups, size is less than the number of supple-
+              mentary group IDs, but is not zero.
+
+NOTES
+       A  process  can have up to at least NGROUPS_MAX supplementary group IDs
+       in addition to the effective group ID. The set of  supplementary  group
+       IDs  is inherited from the parent process and may be changed using set-
+       groups.  The maximum number of supplementary group  IDs  can  be  found
+       using sysconf(3):
+           long ngroups_max;
+           ngroups_max = sysconf(_SC_NGROUPS_MAX);
+       The  maximal  return  value of getgroups cannot be larger than one more
+       than the value obtained this way.
+
+SEE ALSO
+        getgid, setgid
+
+

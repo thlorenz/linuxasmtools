@@ -1,0 +1,625 @@
+  ** sample code for kernal functions **
+--------------------------------------------------------------
+<001> exit                   - terminate the current process
+<002> fork                   - create a child process 
+<003> read                   - read from a file descriptor
+<004> write                  - write to a file descriptor
+<005> open                   - open and possibly create a file or device
+<006> close                  - close a file descriptor
+<007> waitpid                - wait for process termination  
+<008> creat                  - create a file
+<009> link                   - make a new name for a file
+<010> unlink                 - delete a name and possibly the file it refers to
+<011> execve                 - execute program
+<012> chdir                  - change working directory
+<013> time                   - get time in seconds
+<014> mknod                  - create a special or ordinary file
+<015> chmod                  - change permissions of a file
+<016> lchown                 - change ownership of a file
+<017> break                  - 
+<018> oldstat                - obsolete
+<019> lseek                  - reposition read/write file offset
+<020> getpid                 - process identification
+<021> mount                  - mount and unmount filesystems
+<022> umount                 - mount and unmount filesystems
+<023> setuid                 - set user identity
+<024> getuid                 - get user identity 
+<025> stime                  - set time
+<026> ptrace                 - process trace
+<027> alarm                  - set an alarm clock for delivery of a signal
+<028> oldfstat               - obsolete DO NOT USE
+<029> pause                  - wait for signal
+<030> utime                  - change access and/or modification times
+<031> stty                   - 
+<032> gtty                   - 
+<033> access                 - check user's permissions for a file
+<034> nice                   - change process priority
+<035> ftime                  -  return date and time
+<036> sync                   - commit buffer cache to disk
+<037> kill                   - send signal to a process
+<038> rename                 - change the name or location of a file
+<039> mkdir                  - create a directory
+<040> rmdir                  - delete a directory
+<041> dup                    - duplicate a file descriptor
+<042> pipe                   - create pipe
+<043> times                  - get process times
+<044> prof                   - 
+<045> brk                    - change data segment size
+<046> setgid                 - set group identity
+<047> getgid                 - get group identity
+<048> signal                 - ANSI C signal handling
+<049> geteuid                - get user identity
+<050> getegid                - get group identity
+<051> acct                   - switch process accounting on or off
+<052> umount2                - mount and unmount filesystems
+<053> lock                   - 
+<054> ioctl                  - control device
+<055> fcntl                  - manipulate file descriptor
+<056> mpx                    - 
+<057> setpgid                - set process group 
+<058> ulimit                 - 
+<059> oldolduname            - obsolete
+<060> umask                  - set file creation mask
+<061> chroot                 - change root directory
+<062> ustat                  - get file system statistics 
+<063> dup2                   - duplicate a file descriptor
+<064> getppid                - get process identification
+<065> getpgrp                - set/get process group
+<066> setsid                 - creates a session and sets the process group ID
+<067> sigaction              - POSIX signal handling
+<068> sgetmask               - retrieves the signal mask of the set of currently blocked signals
+<069> ssetmask               - sets the signal mask of the set of currently blocked signals
+<070> setreuid               - set real and/or effective user ID
+<071> setregid               - set real and / or effective group ID
+<072> sigsuspend             - POSIX signal handling functionsx
+<073> sigpending             - POSIX signal handling functions
+<074> sethostname            - set host name 
+<075> setrlimit              - set resource limits and usage
+<076> getrlimit              - get resource limits and usage
+<077> getrusage              - get resource limits and usage
+<078> gettimeofday           - get time
+<079> settimeofday           - set time
+<080> getgroups              - get list of supplementary group IDs
+<081> setgroups              - set list of supplementary group IDs
+<082> select                 - synchronous I/O
+<083> symlink                - make a new name for a file
+<084> oldlstat               - obsolete
+<085> readlink               - read value of a symbolic link
+<086> uselib                 - select shared library
+<087> swapon                 - start/stop swapping to file/device
+<088> reboot                 - reboot or enable/disable Ctrl-Alt-Del
+<089> readdir                - read directory entry
+<090> mmap                   - map or unmap files or devices into memory
+<091> munmap                 - unmap files or devices into memory
+<092> truncate               - truncate file to specified length 
+<093> ftruncate              - truncate file to specified length 
+<094> fchmod                 - change permissions of a file
+<095> fchown                 - change ownership of a file 
+<096> getpriority            - get program scheduling priority
+<097> setpriority            - set program scheduling priority
+<098> profil                 -  execution time profile
+<099> statfs                 - get file system statistics
+<100> fstatfs                - get file system statistics
+<101> ioperm                 - set port input/output permissions
+<102> socketcall             - socket system calls
+<103> syslog                 - read and/or clear kernel message ring buffer
+<104> setitimer              - set an interval timer
+<105> getitimer              - get  value of an interval timer
+<106> stat                   - get file status
+<107> lstat                  - get file status
+<108> fstat                  - get file status
+<109> olduname               - obsolete
+<110> iopl                   - change I/O privilege level
+<111> vhangup                - virtually hangup the current tty
+<112> idle                   - make process 0 idle
+<113> vm86old                - enter virtual 8086 mode
+<114> wait4                  - wait for process termination, BSD style
+<115> swapoff                - stop swapping to file/device
+<116> sysinfo                - returns information on overall system statistics
+<117> ipc                    - System V IPC system calls
+<118> fsync                  - synchronize  a file's complete in-core state with
+<119> sigreturn              - return from signal handler and cleanup stack frame
+<120> clone                  - create a child process
+<121> setdomainname          - get/set domain name
+<122> uname                  - get name and information about current kernel
+<123> modify_ldt             - get or set ldt
+<124> adjtimex               - tune kernel clock
+<125> mprotect               - control allowable accesses to a region of memory
+<126> sigprocmask            - POSIX signal handling functions
+<127> create_module          - create a loadable module entry
+<128> init_module            - initialize a loadable module entry
+<129> delete_module          - delete a loadable module entry 
+<130> get_kernel_syms        - retrieve exported kernel and module symbols 
+<131> quotactl               - manipulate disk quotas
+<132> getpgid                - set/get process group
+<133> fchdir                 - change working directory
+<134> bdflush                - start, flush, or tune buffer-dirty-flush daemon
+<135> sysfs                  - get file system type information
+<136> personality            - set the process execution domain
+<137> afs_syscall            -  
+<138> setfsuid               - set user identity used for file system checks
+<139> setfsgid               - set group identity used for file system checks
+<140> llseek                 - reposition read/write file offset
+<141> getdents               - get directory entries
+<142> newselect              - sync I/O multiplexing
+<143> flock                  - apply or remove an advisory lock on an open file
+<144> msync                  - synchronize a file with a memory map
+<145> readv                  - read data into multiple buffers
+<146> writev                 - read or write a vector
+<147> getsid                 - get session ID
+<148> fdatasync              - synchronize a file's in-core data with that on disk
+<149> sysctl                 - read/write system parameters
+<150> mlock                  - disable paging for some parts of memory 
+<151> munlock                - reenable paging for some parts of memory
+<152> mlockall               - disable paging for calling process
+<153> munlockall             - reenable paging for calling process
+<154> sched_setparam         - set scheduling parameters
+<155> sched_getparam         - get scheduling parameters
+<156> sched_setscheduler     - set scheduling algo/param
+<157> sched_getscheduler     - get scheduling algo/param
+<158> sched_yield            - yield the processor
+<159> sched_get_priority_max - get maximum priority value
+<160> sched_get_priority_min - get minimum priority value
+<161> sched_rr_get_interval  - get the SCHED_RR interval for the named process
+<162> nanosleep              - pause execution for a specified time
+<163> mremap                 - re-map a virtual memory address
+<164> setresuid              - set real user ID
+<165> getresuid              - get real, effective and saved user or group ID
+<166> vm86                   - enter virtual 8086 mode
+<167> query_module           - query the kernel for bits pertaining to modules
+<168> poll                   - wait for some event on a file descriptor
+<169> nfsservctl             - syscall interface to kernel nfs daemon
+<170> setresgid              - set real/effective/saved set-group ID
+<171> getresgid              - get real/effective/saved set-group ID
+<172> prctl                  - operations on a process
+<173> rt_sigreturn           - real time sigreturn
+<174> rt_sigaction           - setup rt sighnd (RTL)
+<175> rt_sigprocmask         - real time sigprocmask
+<176> rt_sigpending          - real time sigaction
+<177> rt_sigtimedwait        - real time sigtimedwait
+<178> rt_sigqueueinfo        - real time sigqueueingo
+<179> rt_sigsuspend          - real time sigsuspend
+<180> pread64                - read/write without moving file descriptor
+<181> pwrite64               - write to file descriptor at offset
+<182> chown                  - change ownership of a file
+<183> getcwd                 - get current working directory
+<184> capget                 - get process capabilities
+<185> capset                 - set process capabilities
+<186> sigaltstack            - get or set alternate signal stack content
+<187> sendfile               - transfer data between file descriptors
+<188> getpmsg                - 
+<189> putpmsg                - 
+<190> vfork                  - create a child process and block parent
+<191> ugetrlimit             - 
+<192> mmap2                  - map files or devices into memory
+<193> truncate64             - truncates file to the specified length (LFS version of truncate)
+<194> ftruncate64            - truncates file to the specified length (LFS version of ftruncate)
+<195> stat64                 - obtains information about a file (LFS version of stat)
+<196> lstat64                - obtains information about a file (LFS version of lstat)
+<197> fstat64                - obtains information about a file (LFS version of fstat)
+<198> lchown32               - same as lchown
+<199> getuid32               - same as getuid
+<200> getgid32               - same as getgid
+<201> geteuid32              - same as geteuid
+<202> getegid32              - same as getegid
+<203> setreuid32             - same as setreuid
+<204> setregid32             - same as setregid
+<205> getgroups32            - same as getgroups
+<206> setgroups32            - same as setgroups
+<207> fchown32               - same as fchown
+<208> setresuid32            - same as setresuid
+<209> getresuid32            - same as getresuid
+<210> setresgid32            - same as setresgid
+<211> getresgid32            - same as getresgid
+<212> chown32                - same as chown
+<213> setuid32               - same as setuid
+<214> setgid32               - same as setgid
+<215> setfsuid32             - same as setfsuid
+<216> setfsgid32             - same as setfsgid
+<217> pivot_root             - change the root file system
+<218> mincore                - get information on whether pages are in core 
+<219> madvise                - give advice about use of memory
+<220> getdents64             - get directory entries (LFS version of getdents)
+<221> fcntl64                - do operations on a file descriptor (LFS version of fcntl)
+<223> rsbac                  - 
+<224> gettid                 - get thread identification
+<225> readahead              - read in advance one or more pages
+<226> setxattr               - set an extended attribute value
+<227> lsetxattr              - set extended attributes
+<228> fsetxattr              - set extended attribute
+<229> getxattr               - retrieve an extended attribute value
+<230> lgetxattr              - get extended attribute
+<231> fgetxattr              - get extended attribute
+<232> listxattr              - list extended attribute names
+<233> llistxattr             - list extended attributes
+<234> flistxattr             - list extended attribute
+<235> removexattr            - remove an extended attribute
+<236> lremovexattr           - remove extended attributes
+<237> fremovexattr           - remove extended attribute
+<238> tkill                  - send a signal to a single process
+<239> sendfile64             - transfer data between file descriptors (LFS version of sendfile)
+<240> futex                  - Fast Userspace Locking system call
+<241> sched_setaffinity      - set a process's CPU affinity mask
+<242> sched_getaffinity      - get a process's CPU affinity mask
+<243> set_thread_area        - set a Thread Local Storage (TLS) area
+<244> get_thread_area        - get a Thread Local Storage (TLS) area 
+<245> io_setup               - Create an asynchronous I/O context
+<246> io_destroy             - Destroy an asynchronous I/O context 
+<247> io_getevents           - Read asynchronous I/O events from the completion queue
+<248> io_submit              - Submit asynchronous I/O blocks for processing
+<249> io_cancel              - Cancel an outstanding asynchronous I/O operation
+<250> fadvise64              - gives the kernel an 'advice' on how it should use a file handle
+<251> free_hugepages         - free huge memory pages
+<252> exit_group             - exit all process's in group
+<253> lookup_dcookie         - return a directory entry's path
+<254> epoll_create           - open an epoll file descriptor
+<255> epoll_ctl              - control interface for an epoll descriptor
+<256> epoll_wait             - wait for an I/O event on an epoll file descriptor
+<257> remap_file_pages       - create a non-linear file mapping
+<258> set_tid_address        - set pointer to thread ID
+<259> timer_create           - timer create 
+<260> timer_settime          - timer set
+<261> timer_gettime          - timer get time
+<262> timer_getoverrun       - timer get overrun
+<263> timer_delete           - timer delete
+<264> clock_settime          - set specified time
+<265> clock_gettime          - get specified time
+<266> clock_getres           - get clock precision 
+<267> clock_nanosleep        - process sleep
+<268> statfs64               - obtain information about mounted file system (LFS version of statfs)
+<269> fstatfs64              - obtain information about mounted file system (LFS version of fstatfs)
+<270> tgkill                 - send signal to one specific thread
+<271> utimes                 - change access and/or modification times of an inodetimes    
+<272> fadvise64_64           - gives the kernel an 'advice' on how it should use a file handle
+<273> vserver                - 
+<274> mbind                  - set NUMA memory policy for a memory range
+<275> get_mempolicy          - get NUMA memory policy for a process
+<276> set_mempolicy          - set NUMA memory policy for a process
+<277> mq_open                - create a new POSIX message queue or open an existing queue
+<278> mq_unlink              - 
+<279> mq_timedsend           - 
+<280> mq_timedreceive        - 
+<281> mq_notify              - enable/disable notifications for POSIX message queues
+<282> mq_getsetattr          - get or set message queue attributes
+<283> kexec_load             - 
+<284> waitid                 - suspend execution of the current process until a child has changed state
+<286> add_key                - creates a new key and add it to the nominated keyring
+<288> keyctl                 - kernel's key management facility manipulation functions
+<287> request_key            - 
+<289> ioprio_set             - set the I/O scheduling class and priority of one or more processes
+<290> ioprio_get             - get the I/O scheduling class and priority of one or more processes
+<291> inotify_init           - initialize a new inotify instance 
+<292> inotify_add_watch      - add a watch to or modify an existing watch of an initialized inotify instance
+<293> inotify_rm_watch       - removes an existing watch from an inotify instance
+<295> openat                 - opens and possibly creates a file or device relative to a directory file descriptor
+<296> mkdirat                - create a directory relative to a directory file descriptor
+<297> mknodat                - create a filesystem node relative to a directory file descriptor
+<298> fchownat               - change ownership of a file relative to a directory file descriptor
+<299> futimesat              - change the access/modification times of an file relative to a directory desriptor
+<300> unknown                -
+<301> unlinkat               - remove a directory entry relative to a directory file descriptor
+<302> renameat               - rename a file relative to directory file descriptors
+<303> linkat                 - create a file link relative to directory file descriptors
+<304> symlinkat              - create a symbolic link relative to a directory file descriptor
+<305> readlink               - reads value of a symbolic link relative to a directory file descriptor
+<306> fchmodat               - change S_ISUID, S_ISGID, S_ISVTX, and permission bits of a file 
+<307> faccessat              - determine accessibility of a file relative to a directory file descriptor
+<309> ppoll                  - wait for an event on a file descriptor or until a signal is caught
+<310> unshare                - allow a process to disassociate parts of its execution context 
+<311> set_robust             -
+<312> get_robust             -
+<313> splice                 -
+<314> sync_file_range        - synchronize a file segment with disk  
+-------------------------------------------------------------------
+<000>=/usr/share/doc/asmref/snippets/000.asm
+<001>=/usr/share/doc/asmref/snippets/001.asm
+<002>=/usr/share/doc/asmref/snippets/002.asm
+<003>=/usr/share/doc/asmref/snippets/003.asm
+<004>=/usr/share/doc/asmref/snippets/004.asm
+<005>=/usr/share/doc/asmref/snippets/005.asm
+<006>=/usr/share/doc/asmref/snippets/006.asm
+<007>=/usr/share/doc/asmref/snippets/007.asm
+<008>=/usr/share/doc/asmref/snippets/008.asm
+<009>=/usr/share/doc/asmref/snippets/009.asm
+<010>=/usr/share/doc/asmref/snippets/010.asm
+<011>=/usr/share/doc/asmref/snippets/011.asm
+<012>=/usr/share/doc/asmref/snippets/012.asm
+<013>=/usr/share/doc/asmref/snippets/013.asm
+<014>=/usr/share/doc/asmref/snippets/014.asm
+<015>=/usr/share/doc/asmref/snippets/015.asm
+<016>=/usr/share/doc/asmref/snippets/016.asm
+<017>=/usr/share/doc/asmref/snippets/017.asm
+<018>=/usr/share/doc/asmref/snippets/018.asm
+<019>=/usr/share/doc/asmref/snippets/019.asm
+<020>=/usr/share/doc/asmref/snippets/020.asm
+<021>=/usr/share/doc/asmref/snippets/021.asm
+<022>=/usr/share/doc/asmref/snippets/022.asm
+<023>=/usr/share/doc/asmref/snippets/023.asm
+<024>=/usr/share/doc/asmref/snippets/024.asm
+<025>=/usr/share/doc/asmref/snippets/025.asm
+<026>=/usr/share/doc/asmref/snippets/026.asm
+<027>=/usr/share/doc/asmref/snippets/027.asm
+<028>=/usr/share/doc/asmref/snippets/028.asm
+<029>=/usr/share/doc/asmref/snippets/029.asm
+<030>=/usr/share/doc/asmref/snippets/030.asm
+<031>=/usr/share/doc/asmref/snippets/031.asm
+<032>=/usr/share/doc/asmref/snippets/032.asm
+<033>=/usr/share/doc/asmref/snippets/033.asm
+<034>=/usr/share/doc/asmref/snippets/034.asm
+<035>=/usr/share/doc/asmref/snippets/035.asm
+<036>=/usr/share/doc/asmref/snippets/036.asm
+<037>=/usr/share/doc/asmref/snippets/037.asm
+<038>=/usr/share/doc/asmref/snippets/038.asm
+<039>=/usr/share/doc/asmref/snippets/039.asm
+<040>=/usr/share/doc/asmref/snippets/040.asm
+<041>=/usr/share/doc/asmref/snippets/041.asm
+<042>=/usr/share/doc/asmref/snippets/042.asm
+<043>=/usr/share/doc/asmref/snippets/043.asm
+<044>=/usr/share/doc/asmref/snippets/044.asm
+<045>=/usr/share/doc/asmref/snippets/045.asm
+<046>=/usr/share/doc/asmref/snippets/046.asm
+<047>=/usr/share/doc/asmref/snippets/047.asm
+<048>=/usr/share/doc/asmref/snippets/048.asm
+<049>=/usr/share/doc/asmref/snippets/049.asm
+<050>=/usr/share/doc/asmref/snippets/050.asm
+<051>=/usr/share/doc/asmref/snippets/051.asm
+<052>=/usr/share/doc/asmref/snippets/052.asm
+<053>=/usr/share/doc/asmref/snippets/053.asm
+<054>=/usr/share/doc/asmref/snippets/054.asm
+<055>=/usr/share/doc/asmref/snippets/055.asm
+<056>=/usr/share/doc/asmref/snippets/056.asm
+<057>=/usr/share/doc/asmref/snippets/057.asm
+<058>=/usr/share/doc/asmref/snippets/058.asm
+<059>=/usr/share/doc/asmref/snippets/059.asm
+<060>=/usr/share/doc/asmref/snippets/060.asm
+<061>=/usr/share/doc/asmref/snippets/061.asm
+<062>=/usr/share/doc/asmref/snippets/062.asm
+<063>=/usr/share/doc/asmref/snippets/063.asm
+<064>=/usr/share/doc/asmref/snippets/064.asm
+<065>=/usr/share/doc/asmref/snippets/065.asm
+<066>=/usr/share/doc/asmref/snippets/066.asm
+<067>=/usr/share/doc/asmref/snippets/067.asm
+<068>=/usr/share/doc/asmref/snippets/068.asm
+<069>=/usr/share/doc/asmref/snippets/069.asm
+<070>=/usr/share/doc/asmref/snippets/070.asm
+<071>=/usr/share/doc/asmref/snippets/071.asm
+<072>=/usr/share/doc/asmref/snippets/072.asm
+<073>=/usr/share/doc/asmref/snippets/073.asm
+<074>=/usr/share/doc/asmref/snippets/074.asm
+<075>=/usr/share/doc/asmref/snippets/075.asm
+<076>=/usr/share/doc/asmref/snippets/076.asm
+<077>=/usr/share/doc/asmref/snippets/077.asm
+<078>=/usr/share/doc/asmref/snippets/078.asm
+<079>=/usr/share/doc/asmref/snippets/079.asm
+<080>=/usr/share/doc/asmref/snippets/080.asm
+<081>=/usr/share/doc/asmref/snippets/081.asm
+<082>=/usr/share/doc/asmref/snippets/082.asm
+<083>=/usr/share/doc/asmref/snippets/083.asm
+<084>=/usr/share/doc/asmref/snippets/084.asm
+<085>=/usr/share/doc/asmref/snippets/085.asm
+<086>=/usr/share/doc/asmref/snippets/086.asm
+<087>=/usr/share/doc/asmref/snippets/087.asm
+<088>=/usr/share/doc/asmref/snippets/088.asm
+<089>=/usr/share/doc/asmref/snippets/089.asm
+<090>=/usr/share/doc/asmref/snippets/090.asm
+<091>=/usr/share/doc/asmref/snippets/091.asm
+<092>=/usr/share/doc/asmref/snippets/092.asm
+<093>=/usr/share/doc/asmref/snippets/093.asm
+<094>=/usr/share/doc/asmref/snippets/094.asm
+<095>=/usr/share/doc/asmref/snippets/095.asm
+<096>=/usr/share/doc/asmref/snippets/096.asm
+<097>=/usr/share/doc/asmref/snippets/097.asm
+<098>=/usr/share/doc/asmref/snippets/098.asm
+<099>=/usr/share/doc/asmref/snippets/099.asm
+<100>=/usr/share/doc/asmref/snippets/100.asm
+<101>=/usr/share/doc/asmref/snippets/101.asm
+<102>=/usr/share/doc/asmref/snippets/102.asm
+<103>=/usr/share/doc/asmref/snippets/103.asm
+<104>=/usr/share/doc/asmref/snippets/104.asm
+<105>=/usr/share/doc/asmref/snippets/105.asm
+<106>=/usr/share/doc/asmref/snippets/106.asm
+<107>=/usr/share/doc/asmref/snippets/107.asm
+<108>=/usr/share/doc/asmref/snippets/108.asm
+<109>=/usr/share/doc/asmref/snippets/109.asm
+<110>=/usr/share/doc/asmref/snippets/110.asm
+<111>=/usr/share/doc/asmref/snippets/111.asm
+<112>=/usr/share/doc/asmref/snippets/112.asm
+<113>=/usr/share/doc/asmref/snippets/113.asm
+<114>=/usr/share/doc/asmref/snippets/114.asm
+<115>=/usr/share/doc/asmref/snippets/115.asm
+<116>=/usr/share/doc/asmref/snippets/116.asm
+<117>=/usr/share/doc/asmref/snippets/117.asm
+<118>=/usr/share/doc/asmref/snippets/118.asm
+<119>=/usr/share/doc/asmref/snippets/119.asm
+<120>=/usr/share/doc/asmref/snippets/120.asm
+<121>=/usr/share/doc/asmref/snippets/121.asm
+<122>=/usr/share/doc/asmref/snippets/122.asm
+<123>=/usr/share/doc/asmref/snippets/123.asm
+<124>=/usr/share/doc/asmref/snippets/124.asm
+<125>=/usr/share/doc/asmref/snippets/125.asm
+<126>=/usr/share/doc/asmref/snippets/126.asm
+<127>=/usr/share/doc/asmref/snippets/127.asm
+<128>=/usr/share/doc/asmref/snippets/128.asm
+<129>=/usr/share/doc/asmref/snippets/129.asm
+<130>=/usr/share/doc/asmref/snippets/130.asm
+<131>=/usr/share/doc/asmref/snippets/131.asm
+<132>=/usr/share/doc/asmref/snippets/132.asm
+<133>=/usr/share/doc/asmref/snippets/133.asm
+<134>=/usr/share/doc/asmref/snippets/134.asm
+<135>=/usr/share/doc/asmref/snippets/135.asm
+<136>=/usr/share/doc/asmref/snippets/136.asm
+<137>=/usr/share/doc/asmref/snippets/137.asm
+<138>=/usr/share/doc/asmref/snippets/138.asm
+<139>=/usr/share/doc/asmref/snippets/139.asm
+<140>=/usr/share/doc/asmref/snippets/140.asm
+<141>=/usr/share/doc/asmref/snippets/141.asm
+<142>=/usr/share/doc/asmref/snippets/142.asm
+<143>=/usr/share/doc/asmref/snippets/143.asm
+<144>=/usr/share/doc/asmref/snippets/144.asm
+<145>=/usr/share/doc/asmref/snippets/145.asm
+<146>=/usr/share/doc/asmref/snippets/146.asm
+<147>=/usr/share/doc/asmref/snippets/147.asm
+<148>=/usr/share/doc/asmref/snippets/148.asm
+<149>=/usr/share/doc/asmref/snippets/149.asm
+<150>=/usr/share/doc/asmref/snippets/150.asm
+<151>=/usr/share/doc/asmref/snippets/151.asm
+<152>=/usr/share/doc/asmref/snippets/152.asm
+<153>=/usr/share/doc/asmref/snippets/153.asm
+<154>=/usr/share/doc/asmref/snippets/154.asm
+<155>=/usr/share/doc/asmref/snippets/155.asm
+<156>=/usr/share/doc/asmref/snippets/156.asm
+<157>=/usr/share/doc/asmref/snippets/157.asm
+<158>=/usr/share/doc/asmref/snippets/158.asm
+<159>=/usr/share/doc/asmref/snippets/159.asm
+<160>=/usr/share/doc/asmref/snippets/160.asm
+<161>=/usr/share/doc/asmref/snippets/161.asm
+<162>=/usr/share/doc/asmref/snippets/162.asm
+<163>=/usr/share/doc/asmref/snippets/163.asm
+<164>=/usr/share/doc/asmref/snippets/164.asm
+<165>=/usr/share/doc/asmref/snippets/165.asm
+<166>=/usr/share/doc/asmref/snippets/166.asm
+<167>=/usr/share/doc/asmref/snippets/167.asm
+<168>=/usr/share/doc/asmref/snippets/168.asm
+<169>=/usr/share/doc/asmref/snippets/169.asm
+<170>=/usr/share/doc/asmref/snippets/170.asm
+<171>=/usr/share/doc/asmref/snippets/171.asm
+<172>=/usr/share/doc/asmref/snippets/172.asm
+<173>=/usr/share/doc/asmref/snippets/173.asm
+<174>=/usr/share/doc/asmref/snippets/174.asm
+<175>=/usr/share/doc/asmref/snippets/175.asm
+<176>=/usr/share/doc/asmref/snippets/176.asm
+<177>=/usr/share/doc/asmref/snippets/177.asm
+<178>=/usr/share/doc/asmref/snippets/178.asm
+<179>=/usr/share/doc/asmref/snippets/179.asm
+<180>=/usr/share/doc/asmref/snippets/180.asm
+<181>=/usr/share/doc/asmref/snippets/181.asm
+<182>=/usr/share/doc/asmref/snippets/182.asm
+<183>=/usr/share/doc/asmref/snippets/183.asm
+<184>=/usr/share/doc/asmref/snippets/184.asm
+<185>=/usr/share/doc/asmref/snippets/185.asm
+<186>=/usr/share/doc/asmref/snippets/186.asm
+<187>=/usr/share/doc/asmref/snippets/187.asm
+<188>=/usr/share/doc/asmref/snippets/188.asm
+<189>=/usr/share/doc/asmref/snippets/189.asm
+<190>=/usr/share/doc/asmref/snippets/190.asm
+<191>=/usr/share/doc/asmref/snippets/191.asm
+<192>=/usr/share/doc/asmref/snippets/192.asm
+<193>=/usr/share/doc/asmref/snippets/193.asm
+<194>=/usr/share/doc/asmref/snippets/194.asm
+<195>=/usr/share/doc/asmref/snippets/195.asm
+<196>=/usr/share/doc/asmref/snippets/196.asm
+<197>=/usr/share/doc/asmref/snippets/197.asm
+<198>=/usr/share/doc/asmref/snippets/198.asm
+<199>=/usr/share/doc/asmref/snippets/199.asm
+<200>=/usr/share/doc/asmref/snippets/200.asm
+<201>=/usr/share/doc/asmref/snippets/201.asm
+<202>=/usr/share/doc/asmref/snippets/202.asm
+<203>=/usr/share/doc/asmref/snippets/203.asm
+<204>=/usr/share/doc/asmref/snippets/204.asm
+<205>=/usr/share/doc/asmref/snippets/205.asm
+<206>=/usr/share/doc/asmref/snippets/206.asm
+<207>=/usr/share/doc/asmref/snippets/207.asm
+<208>=/usr/share/doc/asmref/snippets/208.asm
+<209>=/usr/share/doc/asmref/snippets/209.asm
+<210>=/usr/share/doc/asmref/snippets/210.asm
+<211>=/usr/share/doc/asmref/snippets/211.asm
+<212>=/usr/share/doc/asmref/snippets/212.asm
+<213>=/usr/share/doc/asmref/snippets/213.asm
+<214>=/usr/share/doc/asmref/snippets/214.asm
+<215>=/usr/share/doc/asmref/snippets/215.asm
+<216>=/usr/share/doc/asmref/snippets/216.asm
+<217>=/usr/share/doc/asmref/snippets/217.asm
+<218>=/usr/share/doc/asmref/snippets/218.asm
+<219>=/usr/share/doc/asmref/snippets/219.asm
+<220>=/usr/share/doc/asmref/snippets/220.asm
+<221>=/usr/share/doc/asmref/snippets/221.asm
+<223>=/usr/share/doc/asmref/snippets/223.asm
+<224>=/usr/share/doc/asmref/snippets/224.asm
+<225>=/usr/share/doc/asmref/snippets/225.asm
+<226>=/usr/share/doc/asmref/snippets/226.asm
+<227>=/usr/share/doc/asmref/snippets/227.asm
+<228>=/usr/share/doc/asmref/snippets/228.asm
+<229>=/usr/share/doc/asmref/snippets/229.asm
+<230>=/usr/share/doc/asmref/snippets/230.asm
+<231>=/usr/share/doc/asmref/snippets/231.asm
+<232>=/usr/share/doc/asmref/snippets/232.asm
+<233>=/usr/share/doc/asmref/snippets/233.asm
+<234>=/usr/share/doc/asmref/snippets/234.asm
+<235>=/usr/share/doc/asmref/snippets/235.asm
+<236>=/usr/share/doc/asmref/snippets/236.asm
+<237>=/usr/share/doc/asmref/snippets/237.asm
+<238>=/usr/share/doc/asmref/snippets/238.asm
+<239>=/usr/share/doc/asmref/snippets/239.asm
+<240>=/usr/share/doc/asmref/snippets/240.asm
+<241>=/usr/share/doc/asmref/snippets/241.asm
+<242>=/usr/share/doc/asmref/snippets/242.asm
+<243>=/usr/share/doc/asmref/snippets/243.asm
+<244>=/usr/share/doc/asmref/snippets/244.asm
+<245>=/usr/share/doc/asmref/snippets/245.asm
+<246>=/usr/share/doc/asmref/snippets/246.asm
+<247>=/usr/share/doc/asmref/snippets/247.asm
+<248>=/usr/share/doc/asmref/snippets/248.asm
+<249>=/usr/share/doc/asmref/snippets/249.asm
+<250>=/usr/share/doc/asmref/snippets/250.asm
+<251>=/usr/share/doc/asmref/snippets/251.asm
+<252>=/usr/share/doc/asmref/snippets/252.asm
+<253>=/usr/share/doc/asmref/snippets/253.asm
+<254>=/usr/share/doc/asmref/snippets/254.asm
+<255>=/usr/share/doc/asmref/snippets/255.asm
+<256>=/usr/share/doc/asmref/snippets/256.asm
+<257>=/usr/share/doc/asmref/snippets/257.asm
+<258>=/usr/share/doc/asmref/snippets/258.asm
+<259>=/usr/share/doc/asmref/snippets/259.asm
+<260>=/usr/share/doc/asmref/snippets/260.asm
+<261>=/usr/share/doc/asmref/snippets/261.asm
+<262>=/usr/share/doc/asmref/snippets/262.asm
+<263>=/usr/share/doc/asmref/snippets/263.asm
+<264>=/usr/share/doc/asmref/snippets/264.asm
+<265>=/usr/share/doc/asmref/snippets/265.asm
+<266>=/usr/share/doc/asmref/snippets/266.asm
+<267>=/usr/share/doc/asmref/snippets/267.asm
+<268>=/usr/share/doc/asmref/snippets/268.asm
+<269>=/usr/share/doc/asmref/snippets/269.asm
+<270>=/usr/share/doc/asmref/snippets/270.asm
+<271>=/usr/share/doc/asmref/snippets/271.asm
+<272>=/usr/share/doc/asmref/snippets/272.asm
+<273>=/usr/share/doc/asmref/snippets/273.asm
+<274>=/usr/share/doc/asmref/snippets/274.asm
+<275>=/usr/share/doc/asmref/snippets/275.asm
+<276>=/usr/share/doc/asmref/snippets/276.asm
+<277>=/usr/share/doc/asmref/snippets/277.asm
+<278>=/usr/share/doc/asmref/snippets/278.asm
+<279>=/usr/share/doc/asmref/snippets/279.asm
+<280>=/usr/share/doc/asmref/snippets/280.asm
+<281>=/usr/share/doc/asmref/snippets/281.asm
+<282>=/usr/share/doc/asmref/snippets/282.asm
+<283>=/usr/share/doc/asmref/snippets/283.asm
+<284>=/usr/share/doc/asmref/snippets/284.asm
+<286>=/usr/share/doc/asmref/snippets/286.asm
+<287>=/usr/share/doc/asmref/snippets/287.asm
+<288>=/usr/share/doc/asmref/snippets/288.asm
+<289>=/usr/share/doc/asmref/snippets/289.asm
+<290>=/usr/share/doc/asmref/snippets/290.asm
+<291>=/usr/share/doc/asmref/snippets/291.asm
+<292>=/usr/share/doc/asmref/snippets/292.asm
+<293>=/usr/share/doc/asmref/snippets/293.asm
+<295>=/usr/share/doc/asmref/snippets/295.asm
+<296>=/usr/share/doc/asmref/snippets/296.asm
+<297>=/usr/share/doc/asmref/snippets/297.asm
+<298>=/usr/share/doc/asmref/snippets/298.asm
+<299>=/usr/share/doc/asmref/snippets/299.asm
+<300>=/usr/share/doc/asmref/snippets/300.asm
+<301>=/usr/share/doc/asmref/snippets/301.asm
+<302>=/usr/share/doc/asmref/snippets/302.asm
+<303>=/usr/share/doc/asmref/snippets/303.asm
+<304>=/usr/share/doc/asmref/snippets/304.asm
+<305>=/usr/share/doc/asmref/snippets/305.asm
+<306>=/usr/share/doc/asmref/snippets/306.asm
+<307>=/usr/share/doc/asmref/snippets/307.asm
+<309>=/usr/share/doc/asmref/snippets/309.asm
+<310>=/usr/share/doc/asmref/snippets/310.asm
+<311>=/usr/share/doc/asmref/snippets/311.asm
+<312>=/usr/share/doc/asmref/snippets/312.asm
+<313>=/usr/share/doc/asmref/snippets/313.asm
+<314>=/usr/share/doc/asmref/snippets/314.asm
+

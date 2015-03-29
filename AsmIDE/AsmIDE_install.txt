@@ -1,0 +1,7 @@
+To install AsmIDE, enter directory /AsmIDE
+and as root do:
+
+  make install
+
+Typically this can be done by: "sudo make install"
+or by executing "su" first, then "make install"

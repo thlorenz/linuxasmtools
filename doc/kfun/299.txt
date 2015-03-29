@@ -1,0 +1,68 @@
+
+---------------------------------------------------------------------
+299 futimesat  - change access relative
+---------------------------------------------------------------------
+
+  mov  eax,299
+  mov  ebx,descriptor
+  mov  ecx,pathname   ;pointer to asciiz path
+  mov  edx,timeval    ;ponter to timeval struc
+  int  80h
+
+   Changes the access and modification times of an file realtive to a
+   directory desriptor.
+   The function sys_utimes allows specification of time stamps with a
+   resolution of 1 microsecond.
+
+args
+----
+
+ ebx Directory descriptor.
+
+ ecx A pointer to a null-terminated string specifying the pathname of
+   the file.
+   If the pathname is relative, then it is interpreted relative to the
+   directory referred to by the file descriptor ebx (rather than relative
+   to the current working directory of the calling process, as is done by
+   sys_ utimes for a relative pathname).
+   If the pathname is relative and ebx is the special value AT_FDCWD,
+   then pathname is interpreted relative to the current working directory
+   of the calling process.
+   If the pathname is absolute, then ebx is ignored.
+
+ edx A pointer to a timeval structure containing new access and
+   modification times:
+
+   struct timeval
+   tv_sec  resd ?
+   tv_usec resd ?
+   endstruc
+
+   Where tv_sec refers to access time and tv_usec refers to modification
+   time.
+
+Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EACCES Search permission is denied for one of the directories in the
+     path prefix of pathname.
+     -or-
+     ecx is NULL and the process does not have permission to change the
+     time stamps.
+   -ENOENT Pathanme pointed by ebx does not exist.
+   -EPERM ecxis not NULL and the process does not have permission to
+     change the time stamps.
+   -EROFS Pathname pointed by ebx resides on a read-only file system.
+   -EBADF ebx is not a valid file descriptor.
+   -ENOTDIR Pathname is a relative path and ebx is a file descriptor
+     referring to a file other than a directory.
+
+   Linux does not allow changing the time stamps on an immutable file, or
+   setting the time stamps to something other than the current time on an
+   append-only file.
+
+   Available since 2.6.16
+

@@ -1,0 +1,78 @@
+NAME
+
+ asmref - assembler reference for developers
+
+SYNOPSIS
+
+no parameters are used with asmref
+
+ AsmRef is this assembler help system. The AsmRef
+ program displays a menu of topics for selection by
+ mouse clicks.
+
+DESCRIPTION
+
+ AsmRef includes a viewer and menu system to
+ access a large collection of information files.
+ Topics include: kernel calls, structures, errors,
+ and structures. X86 assembly information. Info
+ on Linux terminals and information for the
+ AsmTools program collection.
+
+USAGE
+
+ Topics can be displayed by clicking on a series
+ of pop up menu items.
+
+ Most display can be exited by the ESC key.
+
+
+Finding Kernel Calls
+--------------------
+
+Kernel calls are grouped by topic. If a call
+is related to signals it will be in the
+topic "signal". To find the call or topic
+use one of the index files:
+
+  - call numbers  - calls indexed by number
+  - call names    - calls indexed by name
+  - call topic    - calls indexed by topic
+
+ERRORS
+
+ Yes, there are errors. If you find this reference useful
+ then help others by reporting errors or revising
+ the data and sending the results to:
+
+ jeff at jko@bsn1.net
+
+ Please use this information and extend it. The only
+ restriction is to keep the GNU protection.
+
+SEE ALSO
+ asmmgr(1) asmedit(1)
+ 
+AUTHOR
+ Jeff Owens
+
+COPYRIGHT
+ Copyright (C) 2007 Jeff Owens
+ This program comes with absolutely NO WARRANTY
+
+------------------------
+
+ The author can be found on the DesktopLinuxAsm
+ discussion group at yahoogroups. To join send
+ a blank email to:
+
+   DesktopLinuxAsm-subscribe@yahoogroups.com
+
+ Additional information may be available on the
+ home page at:
+
+ http://linuxasmtools.net/
+
+
+
+

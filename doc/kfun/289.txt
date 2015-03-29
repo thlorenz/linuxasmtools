@@ -1,0 +1,133 @@
+
+--------------------------------------------------------------------
+289 ioprio_set  - set I/O scheduling priority
+--------------------------------------------------------------------
+
+  mov  eax,289
+  mov  ebx,op
+  mov  ecx,p1
+  mov  edx,p2
+  int  80h
+
+   Set the I/O scheduling class and priority of one or more processes.
+
+args
+----
+
+ ebx This argument determines how the argument in ecx is interpreted,
+   and has one of the following values:
+
+	IOPRIO_WHO_PROCESS = 1
+	IOPRIO_WHO_PGRP = 2
+	IOPRIO_WHO_USER = 3
+
+   IOPRIO_WHO_PROCESS ecx contains a process ID identifying a single
+   process.
+   IOPRIO_WHO_PGRP ecx contains a process group ID identifying all the
+   members of a process group.
+   IOPRIO_WHO_USER ecx contains a user ID identifying all of the
+   processes that have a matching real UID.
+
+ ecx This arguments depends on the value of ebx. See above.
+
+ edx A bit mask that specifies both the scheduling class and the
+   priority to be assigned to the target process(es). The ioprio value is
+   assembled in the following way:
+   (class shl IOPRIO_CLASS_SHIFT) or data
+   Where class is the scheduling class and data is the priority. (See the
+   Remarks section for more information on scheduling classes and
+   priorities.)
+   I/O priorities are supported for reads and for synchronous (O_DIRECT,
+   O_SYNC) writes. I/O priorities are not supported for asynchronous
+   writes because they are issued outside the context of the program
+   dirtying the memory, and thus program-specific priorities do not
+   apply.
+
+Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EPERM The calling process does not have the privilege needed to
+     assign this ioprio to the specified process(es). See the Remarks
+     section for more information on required privileges for
+     sys_ioprio_set.
+   -ESRCH No process(es) could be found that matched the specification in
+     ebx and ecx.
+   -EINVAL Invalid value for ebx.
+
+
+   This system call only has an effect when used in conjunction with an
+   I/O scheduler that supports I/O priorities. As at kernel 2.6.17 the
+   only such scheduler is the Completely Fair Queuing (CFQ) I/O
+   scheduler.
+
+   Selecting an I/O Scheduler:
+   I/O Schedulers are selected on a per-device basis via the special file
+   /sys/block/<device>/queue/scheduler.
+   One can view the current I/O scheduler via the /sys file system. For
+   example, the following command displays a list of all schedulers
+   currently loaded in the kernel:
+
+   $ cat /sys/block/hda/queue/scheduler
+   noop anticipatory deadline [cfq]
+
+   The scheduler surrounded by brackets is the one actually in use for
+   the device (hda in the example). Setting another scheduler is done by
+   writing the name of the new scheduler to this file. For example, the
+   following command will set the set the scheduler for the hda device to
+   cfq:
+
+   $ su Password: # echo cfq > /sys/block/hda/queue/scheduler
+
+   The Completely Fair Queuing (CFQ) I/O Scheduler:
+
+   Since v3 (aka CFQ Time Sliced) CFQ implements I/O nice levels similar
+   to those of CPU scheduling. These nice levels are grouped in three
+   scheduling classes each one containing one or more priority levels:
+   IOPRIO_CLASS_RT This is the real-time I/O class. This scheduling class
+   is given higher priority than any other class: processes from this
+   class are given first access to the disk every time. Thus this I/O
+   class needs to be used with some care: one I/O real-time process can
+   starve the entire system. Within the real-time class, there are 8
+   levels of class data (priority) that determine exactly how much time
+   this process needs the disk for on each service. The highest real-time
+   priority level is 0; the lowest is 7. In the future this might change
+   to be more directly mappable to performance, by passing in a desired
+   data rate instead.
+
+   IOPRIO_CLASS_BE This is the best-effort scheduling class, which is the
+   default for any process that hasn't set a specific I/O priority. The
+   class data (priority) determines how much I/O bandwidth the process
+   will get. Best-effort priority levels are analogous to CPU nice values
+   (see [1]sys_getpriority). The priority level determines a priority
+   relative to other processes in the best-effort scheduling class.
+   Priority levels range from 0 (highest) to 7 (lowest).
+
+   IOPRIO_CLASS_IDLE This is the idle scheduling class. Processes running
+   at this level only get I/O time when no one else needs the disk. The
+   idle class has no class data. Attention is required when assigning
+   this priority class process, since it may become starved if higher
+   priority processes are constantly accessing the disk.
+
+   Refer to Documentation/block/ioprio.txt for more information on the
+   CFQ I/O Scheduler and an example program.
+   Required permissions to set I/O priorities:
+
+   Permission to change a process's priority is granted or denied based
+   on two assertions:
+
+   Process ownership: An unprivileged process may only set the I/O
+   priority of a process whose real UID matches the real or effective UID
+   of the calling process. A process which has the CAP_SYS_NICE
+   capability can change the priority of any process.
+
+   Attempts to set very high priorities
+   (IOPRIO_CLASS_RT) or very low ones (IOPRIO_CLASS_IDLE) require the
+   CAP_SYS_ADMIN capability. A call to sys_ioprio_set must follow both
+   rules, or the call will fail with the error -EPERM.
+
+
+   Available since 2.6.13
+

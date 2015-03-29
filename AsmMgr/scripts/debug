@@ -1,0 +1,4 @@
+#! /bin/bash
+# script to start debugger
+#
+asmbug $1

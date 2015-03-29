@@ -1,0 +1,540 @@
+  extern wait_event
+  extern file_close
+  extern crt_str
+  extern lib_buf
+  extern blk_clear
+  extern crt_close
+  extern bit_test
+  extern kbuf
+  extern env_shell
+  extern enviro_ptrs
+  extern termios
+  extern winsize
+  extern crt_open
+  extern install_signals
+  extern file_open
+  extern dword_to_ascii
+  extern output_winsize_0
+  extern output_termios_0
+  extern read_termios_0
+  extern read_winsize_0
+
+  [section .text]
+    
+;****f* sys/sys_wrap *
+; NAME
+;   sys_wrap - wrap around an executable and capture in/out
+; INPUTS
+;  * eax = ptr to shell command string
+;  * ebx = ptr to optional input (feed) process (see notes) 
+;  * ecx = ptr to optional output capture process (see notes)
+;  *  dl = flags, bit(0) 01h - if set sys_wrap will call shell
+;  *  -                         and assume eax is zero or shell
+;  *  -                         parameters.
+;  *  -           bit (0) 00h - sys_wrap will assume eax is pointer
+;  *  -                         to command string with program to
+;  *  -                         execute.
+;  * env_stack function must be called prior to help
+;  *       find default shell.  If env_stack is not called
+;  *       sys_wrap will try using /bin/sh as shell.
+; OUTPUT
+;  * al has status, 0 = success 
+; NOTES
+;  * file sys_wrap.asm
+;  * -
+;  * The optional feed process can be set to zero if not needed.
+;  * If a feed process address is given, it is called after data
+;  * has been read.  The buffer address is in ecx and the number
+;  * of bytes read is in edx.  The data has a zero at end.  The
+;  * feed process can change the data and byte count.  If the byte
+;  * count is set negative the wrapped child will be aborted.
+;  * summary:  input:  ecx=buffer      output:  ecx=buffer
+;  * -                 edx=byte count           edx=count or abort
+;  * After returning the data will be an input to executing child.
+;  * The following key codes will hang the shell and need to be
+;  * filtered:
+;  * - keyboard  decimal  hex  name
+;  * - --------  -------  ---  -----
+;  * - ctrl-q       17    11h   DC1
+;  * - ctrl-v       22    16h   SYN
+;  * - ctrl-x       24    18h   CAN
+;  * - ctrl-z       26    1ah   SUB
+;  * - ctrl-[       27    1bh   ESC
+;  * - ctrl-\       28    1ch   FS
+;  * - ctrl-]       29    1dh   GS
+;  * -
+;  * The optional capture process is handled like the feed process,
+;  * After returning the data will be sent to stdout.
+;  * -
+;  * The input data buffer and output data buffer use lib_buf which
+;  * can have a maximum size of 599 bytes.
+;  * ---------------------------------------------------
+;*******
+
+struc winsize_struc
+.ws_row:resw 1
+.ws_col:resw 1
+.ws_xpixel:resw 1
+.ws_ypixel:resw 1
+endstruc
+;winsize_struc_size
+
+struc termios_struc
+.c_iflag: resd 1
+.c_oflag: resd 1
+.c_cflag: resd 1
+.c_lflag: resd 1
+.c_line: resb 1
+.c_cc: resb 19
+endstruc
+;termios_struc_size:
+
+
+	%define stdout 0x1
+	%define stderr 0x2
+
+   global sys_wrap
+sys_wrap:
+  mov	byte [abort_flag],0	;reinitialize abort flag
+;  mov	[entry_stack],esp
+  mov	[users_feed_hook],ebx
+  mov	[users_capture_hook],ecx
+  test	dl,01h			;interactive shell?
+  jnz	sw_10			;jmp if interactive shell
+  mov	dword [parameter1_ptr],param1  
+  mov	[callers_cmd],eax	;ptr to program path
+  or	eax,eax
+  jnz	sw_20			;jmp if eax ok
+;interactive shell requests come here
+sw_10:				;interactive shell 
+  mov	[parameter1_ptr],eax
+  mov	dword [callers_cmd],0
+sw_20:
+  call	terminal_setup
+  call	get_master
+  js	sw_exitj		;jmp if error
+  call	get_slave
+  js	sw_exitj		;jmp if error
+; fork
+  mov	eax,2		;fork
+  int	80h
+  mov	[child_pid],eax
+  or	eax,eax
+  jnz	parent
+;----------------------------
+;child process
+  call	child_setup
+  js	sw_exitj		;exit if child having errors
+  call	child_exec
+;if child returns it was not started and we need to abort
+sw_exitj:
+  jmp	sw_exit
+;------------------------------
+parent:
+  call	parent_setup		;install signals
+  js	sw_exit1		;exit if error
+  call	parent_process
+; close open processes
+sw_exit1:			;entry point for signal SIGCHLD abort call
+  mov	ebx,[slave_fd]
+  or	ebx,ebx
+  jz	sw_exit2
+  call	file_close
+sw_exit2:
+  mov	ebx,[master_fd]
+  or	ebx,ebx
+  jz	sw_exit3
+  call	file_close
+sw_exit3:
+  call	uninstall_signal	;detatch signal handler
+  mov	ecx,eol_str
+  call	crt_str			;send eol to stdout
+;restore terminal state
+  mov	edx,saved_winsize
+  call	output_winsize_0
+  mov	edx,saved_termios
+  call	output_termios_0
+sw_exit4:
+;kill child
+  mov	eax,37
+  mov	ebx,[child_pid]
+  mov	ecx,9		;kill signal
+  int	80h
+;wait for child to exit
+wait_child:
+  mov	ebx,[child_pid]
+  mov	ecx,execve_status
+  xor	edx,edx
+  mov	eax,7
+  int	80h			;wait for child, PID in ebx
+;get status of child process
+  sub	eax,eax
+  mov	al,byte [execve_status +1]
+  or	al,al
+sw_exit:
+  ret
+
+;-------------------------------------------------
+parent_process:
+  mov	eax,162		;nanosleep
+  mov	ebx,1000	;nanoseconds
+  mov	ecx,lib_buf	;if truncated sleep, remaining time
+  mov	ecx,time	;temp buffer with zeros
+  int	80h
+;poll for inputs
+pp_10:			;main loop  
+  mov	esi,select_list	;list of fd's to poll
+  mov	eax,5		;wait five seconds
+  call	wait_event	;wait for stdin or slave
+  cmp	byte [abort_flag],1
+  je	pp_exit		;exit if abort request
+  or	eax,eax
+  js	pp_exit		;exit if error
+;;  jnz	pp_20		;jmp if event count in eax
+;;  neg	eax		;
+;;  jmp	short pp_exit	;exit if zero events found, child died?
+;eax has number of events ready(not used), do stdin first
+  mov	[event_bits_ptr],ecx  ;save ptr to wait_event output
+pp_20:
+  mov	eax,0		;stdin
+  mov	edi,ecx		;get ptr to bits from wait_event
+  call	bit_test	;is stdin ready
+  jnc	pp_40		;jmp if stdin not ready
+  call	feed_child	;go read stdin
+  or	eax,eax
+  js	pp_exit		;exit if requested or error
+pp_40:
+  mov	eax,[master_fd]
+  mov	edi,[event_bits_ptr]
+  call	bit_test
+  jnc	pp_10  		;exit if bit not set
+  call	capture_child_output
+  or	eax,eax
+  jns	pp_10
+pp_exit:
+  ret
+;---------------
+  [section .data]
+event_bits_ptr:  dd	0
+  [section .text]
+;-------------------------------------------------
+;output: eax = negative if error or exit request
+capture_child_output:
+  mov	eax,3		;read
+  mov	ebx,[master_fd]	;file descriptor
+  mov	ecx,lib_buf	;buffer
+  mov	edx,599		;max read size
+  int	80h		;read data
+  or	eax,eax		;
+  jz	cco_dead	;if zero read, assume child dead
+  cmp	eax,-4		;check if signal interrupted us
+  jne	cco_continue	;jmp if no signal error
+  xor	eax,eax		;set normal return and retry read
+  jmp	short cco_exit
+cco_continue:
+  js	cco_exit	;exit if other error occured
+  add	ecx,eax		;compute data end
+  mov	byte [ecx],0	;put zero at end of data for user process
+;we have a good read, check if caller want to be called
+  mov	ecx,lib_buf	;buffer to ecx
+  mov	edx,eax		;write count -> edx
+  mov	ebx,[users_capture_hook]
+  or	ebx,ebx
+  jz	cco_20		;jmp if no callers hook
+  call	ebx
+  or	edx,edx
+  jns	cco_20		;jmp if not abort
+  mov	eax,edx
+  jmp	short cco_exit	;exit if users done
+cco_20:
+  mov	eax,4		;write
+  mov	ebx,1		;write to stdout
+  int	80h
+  jmp	short cco_exit
+cco_dead:
+  neg	eax
+cco_exit:
+  ret
+;-------------------------------------------------
+; inputs:
+; output: eax = negative if error or exit request
+feed_child:
+  mov	eax,3			;read
+  mov	ebx,0			;stdin
+  mov	ecx,lib_buf		;buffer pointer;;
+  mov	edx,599			;buffer size
+  int	80h
+  or	eax,eax
+  js	fk_done			;exit if error
+  add	ecx,eax			;advance kbuf ptr
+  mov	byte [ecx],0		;put zero at end
+
+  mov	ecx,lib_buf		;get data buffer
+  mov	edx,eax
+;check if caller wants to be called back
+  mov	ebx,[users_feed_hook]
+  or	ebx,ebx
+  jz	fc_20			;jmp if no callers hook
+  call	ebx
+  or	edx,edx
+  jns	fc_20			;jmp if not abort
+  mov	eax,edx
+  jmp	short fk_done		;exit if users done
+fc_20:
+;write key to child
+write_key:
+  mov	eax,4
+  mov	ebx,[master_fd]
+  int	80h
+fk_done:
+  ret
+;-------------------------------------------------
+child_exec:
+  mov	edx,shell_path
+  call	env_shell	;stores shell path at lib_buf
+; execute shell program
+  mov	ebx,[execve_blk]
+  mov	ecx,execve_blk
+  mov	edx,[enviro_ptrs]
+  mov	eax,11		;execve
+  int	80h
+;we should not get here, if error then exit
+  ret
+
+;--------------
+  [section .data]
+execve_blk:		dd	shell_path	;ptr to shell path
+parameter1_ptr:		dd	param1	;ptr to parameter1
+callers_cmd:		dd	0
+			dd	0
+			dd	0
+param1:	db	'-c',0
+shell_path:	times 20 db 0
+  [section .text]
+;-------------------------------------------------
+child_setup:
+  mov	ebx,[master_fd]
+  call	file_close	;close master, not needed in slave
+;make child tty a controlling tty so that /de/tty points to us
+  mov	eax,66
+  int	80h		;setsid
+;verify we can not open /dev/tty
+  mov	eax,5		;open
+  mov	ebx,tty_path
+  mov	ecx,102h		;
+  mov	edx,1
+  int	80h
+  or	eax,eax
+  js	cs_cont		;jmp if tty state ok
+  jmp	child_error	;jump if tty state wrong (abort)
+;void associations for new tty from parent
+cs_cont:
+  mov	eax,54
+  mov	ebx,[slave_fd]
+  mov	ecx,540eh	;TIOCSCTTY
+  xor	edx,edx
+  int	80h
+;verify we can open and close tty ok
+  mov	eax,5		;open
+  mov	ebx,tty_path
+  mov	ecx,1		;O_WRONLY
+  xor	edx,edx		;edx =0
+  int	80h
+  or	eax,eax
+  js	child_errorj	;exit if can't open tty
+  mov	ebx,eax		;move fd to ebx
+  call	file_close	;close tty  
+;dup2 stdin
+  mov	eax,63		;dup2
+  mov	ebx,[slave_fd]
+  xor	ecx,ecx		;stdin
+  int	80h
+;dup2 stdout
+  mov	eax,63		;dup2
+  mov	ebx,[slave_fd]
+;  mov	ecx,1		;stdout
+  inc	ecx		;ecx->1 (stdout)
+  int	80h
+;dup stderr
+  mov	eax,63		;dup2
+  mov	ebx,[slave_fd]
+;  mov	ecx,2
+  inc	ecx		;ecx -> 2 (stderr)
+  int	80h
+;close slave_fd, don't need anymore, it is now stdin,stdout,stderr
+  mov	ebx,[slave_fd]
+  call	file_close
+
+;set cooked mode for child, done in terminal_setup
+;  or	byte [child_termios + termios_struc.c_iflag+1],5
+;  mov	word [child_termios + termios_struc.c_lflag],8a3bh
+
+;set slave terminal attributes
+  mov	eax,54		;ioctl
+  xor	ebx,ebx		;ebx=0 stdin
+  mov	ecx,5402h	;TCSETS
+  mov	edx,child_termios
+  int	80h
+  or	eax,eax
+child_errorj:
+  js	child_error
+;set slave win size
+  mov	eax,54
+  xor	ebx,ebx
+  mov	ecx,5414h	;TIOCSWINSZ
+  mov	edx,child_winsize
+  int	80h
+
+;Note: a signal SIGWINCH may be triggered here if enabled
+;did not see it in  testing?
+  or	eax,eax
+  jz	child_exit	
+child_error:
+  mov	eax,-1
+child_exit:
+  ret
+;--------------------------------------------------
+;winch_signal:
+;  ret  
+;;-------------------------------------------------
+uninstall_signal:
+  mov	ebp,no_sig_child
+  call	install_signals
+  ret
+no_sig_child:
+  db	17
+  dd	0,0,0,0,0
+;-------------------------------------------------
+parent_setup:
+  mov	ebp,sig_child
+  call	install_signals
+  xor	eax,eax
+  ret
+;-------------
+sig_child:
+  db	17		;signal number
+  dd	child_dead_signal
+  dd	0
+  dd	0
+  dd	0
+;  db	28		;sig WINCH
+;  dd	winch_signal
+;  dd	0
+;  dd	0
+;  dd	0
+;  db	20		;tpst stop typed on tty
+;  dd	stop_tty_signal
+;  dd	0
+;  dd	0
+;  dd	0
+  db	0		;end of list
+;---------------------
+;stop_tty_signal:
+;  ret
+;---------------------
+child_dead_signal:
+  mov	byte [abort_flag],1
+  ret
+;---------------
+;  [section .data]
+;entry_stack	dd	0
+;  [section .text]
+;-------------------------------------------------
+get_slave:
+  mov	eax,54		;ioctl
+  mov	ebx,[master_fd]
+  mov	ecx,80045430h	;TIOCGPTN request pts ?
+  mov	edx,lib_buf	;temp buffer
+  int	80h
+  or	eax,eax
+  js	gs_exit		;exit if error
+  mov	eax,[lib_buf]
+  mov	edi,pts_path2
+  call	dword_to_ascii
+; unlock master
+  mov	eax,54		;ioctl
+  mov	ebx,[master_fd]
+  mov	ecx,40045431h	;TIOCSPTLCK
+  mov	edx,blockx
+  int	80h
+  or	eax,eax
+  js	gs_exit
+; open slave
+  mov	eax,5
+  mov	ebx,pts_path1
+  mov	ecx,102h	;O_RDWR O_NOCTTY
+  mov	edx,0
+  int	80h
+  mov	[slave_fd],eax
+gs_exit:
+  ret
+
+blockx	dd	0
+;--------------------------------------------------
+; allocate master pty
+;  inputs; none
+;  output: eax negative if error
+;          sign bit set for js/jns
+;
+get_master:
+  mov	ebx,ptmx_path
+  mov	ecx,02			;O_RDRW
+  call	file_open
+  mov	[master_fd],eax
+gm_exit:
+  ret
+;--------------------------------------------------
+;
+terminal_setup:
+;save copy of origional termios to restore
+  mov	edx,saved_winsize
+  call	read_winsize_0
+  mov	edx,saved_termios
+  call	read_termios_0
+;save copy of termios to set child
+  mov	edx,child_winsize
+  call	read_winsize_0
+  mov	edx,child_termios
+  call	read_termios_0
+;use child termios to set parent mode
+;set raw mode for parent
+  mov	byte [child_termios + termios_struc.c_iflag+1],1	; 0d > 0a trans
+  mov	word [child_termios + termios_struc.c_lflag],8a30h
+  mov	edx,child_termios
+  call	output_termios_0
+;set raw mode for child, this will be output by child_setup
+;  and 	byte [child_termios + termios_struc.c_iflag+1],~1	;? 0d > 0a trans
+  mov	word [child_termios + termios_struc.c_lflag],8a3ah	;enable echo
+ts_done:
+  ret
+;-------------------------------
+  [section .data]
+abort_flag	db	0		;1=abort request
+child_pid	dd	0
+select_list:
+stdin_fd	dd	0
+master_fd	dd	0
+		dd	-1		;end of select list
+
+slave_fd	dd	0
+
+ptmx_path	db	'/dev/ptmx',0
+pts_path1	db	'/dev/pts/'
+pts_path2	db	0,0,0,0
+tty_path	db	'/dev/tty',0
+eol_str		db	0ah,0
+
+users_feed_hook dd	0
+users_capture_hook dd	0
+
+saved_winsize times 8  db 0
+saved_termios times 36 db 0
+
+child_termios times 36 db 0
+child_winsize times 8  db 0
+
+time:
+execve_status		db	0,0,0,0,0,0,0,0
+
+;---------------------------------------------------------
+  [section .text]

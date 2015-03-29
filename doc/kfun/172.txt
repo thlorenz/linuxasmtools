@@ -1,0 +1,104 @@
+
+----------------------------------------------------------------------------
+ 172 prctl         - operations on a process
+----------------------------------------------------------------------------
+
+  mov  eax,172
+  mov  ebx,option  ;see option list
+  mov  ecx,arg2    ;depends on option
+  mov  edx,arg3    ;depends on option
+  mov  esi,arg4    ;depends on option
+  mov  edi,arg5    ;depends on option
+  int  80h
+
+EBX options are:
+
+        PR_SET_PDEATHSIG  1 Second arg is a signal */
+        PR_GET_PDEATHSIG  2 Second arg is a ptr to return the signal */
+        PR_GET_DUMPABLE   3 get current dumpable
+        PR_SET_DUMPABLE   4 set current dumpable
+        PR_GET_UNALIGN	  5 get unaligned access control bits
+        PR_SET_UNALIGN	  6 set unaligned access control bits
+        PR_GET_KEEPCAPS   7 get drop capabilities on setuid state
+        PR_SET_KEEPCAPS   8 set drop capabilities on setuid state
+        PR_GET_FPEMU      9 get floating-point emulation control bits
+        PR_SET_FPEMU     10 set floating-point emulation control bits
+        PR_GET_FPEXC     11 get floating-point exception mode
+        PR_SET_FPEXC     12 set floating-point excemption mode
+
+       prctl is called with a first argument describing what to do (with  val-
+       ues defined in <linux/prctl.h>), and further parameters with a signifi-
+       cance depending on the first one.  The first argument can be:
+
+       PR_SET_PDEATHSIG
+              (since Linux 2.1.57) Set the parent process death signal of  the
+              current  process  to  arg2  (either  a signal value in the range
+              1..maxsig, or 0 to clear).  This is the signal that the  current
+              process  will  get  when  its parent dies. This value is cleared
+              upon a fork().
+
+       PR_GET_PDEATHSIG
+              (since Linux 2.3.15)  Read  the  current  value  of  the  parent
+              process death signal into the (int *) arg2.
+
+       PR_SET_DUMPABLE
+              (Since  Linux 2.4) Set the state of the flag determining whether
+              core dumps are produced for this process upon delivery of a sig-
+              nal  whose  default  behaviour is to produce a core dump.  (Nor-
+              mally this flag is set for a  process  by  default,  but  it  is
+              cleared  when  a set-UID or set-GID program is executed and also
+              by various system calls that manipulate process UIDs and  GIDs).
+              arg2 must be either 0 (process is not dumpable) or 1 (process is
+              dumpable).
+
+       PR_GET_DUMPABLE
+              (Since Linux 2.4) Return (as the function  result)  the  current
+              state of the calling process's dumpable flag.
+
+       PR_SET_KEEPCAPS
+              Set  the  state of the process's "keep capabilities" flag, which
+              determines whether the process's effective and  permitted  capa-
+              bility  sets  are cleared when a change is made to the process's
+              user IDs such that all of the  process's  real,  effective,  and
+              saved  set  user  IDs  become non-zero when at least one of them
+              previously had the value 0.  (By default, these credential  sets
+              are  cleared).  arg2 must be either 0 (capabilities are cleared)
+              or 1 (capabilities are kept).
+
+       PR_GET_KEEPCAPS
+              Return (as the function result) the current state of the calling
+              process's "keep capabilities" flag.
+
+       PR_GET_UNALIGN
+         PR_UNALIGN_NOPRINT	1	/* silently fix up unaligned user accesses */
+         PR_UNALIGN_SIGBUS	2	/* generate SIGBUS on unaligned user access */
+
+RETURN VALUE
+       PR_GET_DUMPABLE  and  PR_GET_KEEPCAPS  return  0  or 1 on success.  All
+       other option values return 0 on success.  On error a negative code is
+       returned.
+
+ERRORS
+       EINVAL The value of option is not recognized, or it is PR_SET_PDEATHSIG
+              and arg2 is not zero or a signal number.
+
+CONFORMING TO
+       This call is Linux-specific.  IRIX has a prctl system call (also intro-
+       duced  in  Linux  2.1.44  as irix_prctl on the MIPS architecture), with
+       prototype
+
+       ptrdiff_t prctl(int option, int arg2, int arg3);
+
+       and options to get the maximum number of processes per  user,  get  the
+       maximum  number  of  processors  the  calling process can use, find out
+       whether a specified process is currently blocked, get or set the  maxi-
+       mum stack size, etc., etc.
+
+AVAILABILITY
+       The  prctl()  systemcall  was  introduced in Linux 2.1.57.  There is no
+       prctl() library call as yet.
+
+SEE ALSO
+       signal
+
+

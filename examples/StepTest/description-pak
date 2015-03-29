@@ -1,0 +1,6 @@
+measure fitness using a step test
+steptest is a example program from
+AsmLib.  It uses a metronome and
+timer to give a fitness measure.
+steptest runs in console or X terminal.
+http://linuxasmtools.net

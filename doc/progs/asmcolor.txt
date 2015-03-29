@@ -1,0 +1,43 @@
+
+NAME
+  AsmColor - A color table is displayed with codes
+             used by AsmLib to generate colors.
+
+ INPUTS
+    usage: asmcolor <Enter>
+    No inputs are needed for AsmColor
+    ESC - exits  (also "q" exits)
+
+ OUTPUT
+    none
+
+DESCRIPTION
+    AsmColor supports AsmLib by showing colors and the
+    code needed to create the color.  All colors displayed
+    by AsmLib use this standard color encoding.
+
+    asmlib expects color information to be stored
+    in one dword as hex: dd xx--yyzz
+
+    where: xx = color attribute
+           yy = foreground color code
+           zz = background color code
+
+  foreground and background colors in hex are:
+  30-blk 31-red 32-grn 33-brn 34-blu 35-purple 36-cyan 37-gry
+
+  attributes in hex are:
+  30-normal 31-bold 34-underscore 37-inverse
+
+NOTES
+   source file:  asmcolor.asm
+
+SEE ALSO
+ asmlib
+ 
+AUTHOR
+ Jeff Owens <jko@bsn1.net>
+
+COPYRIGHT
+ Copyright (C) 2007 Jeff Owens
+ This program comes with absolutely NO WARRANTY

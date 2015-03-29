@@ -1,0 +1,119 @@
+NAME
+
+ asmpub - create document from comments in source
+
+SYNOPSIS
+
+    asmpub <switches> -o <name> target
+
+           where: <switches> can be:
+                  -c(n) - comment character used in source files
+                      example:  -c; for ";" character
+                                -c# for "#" character
+                     Note: no spaces can separate a -x flag and
+                        associated value. thus, -r 2 is illegal.
+                        Shells assume some characters have special
+                        meaning and need to be told to ignore them.
+                        Thus, the -c; parameter must be quoted as '-c;'
+                  -f1 = format 1 (normal)
+                  -f2 = format 2 (library) (see below)
+                  -i  = write index file, uses -o switch to get path
+                        and appends extension of .index
+                  -k  = show sort key in index
+                  -n  = number sections in index and title lines
+                  -r(n) = recurse to  depth (n)
+                      where:  default=current dir (-r1)
+                              -r = recurse all directories
+                              -r2 = recurse to a depth of 2
+                  -s  = sort sections
+           where:
+                  -o(name) = base name for index and output files:
+                  Note: output file is stored in current directory
+                        if full path is not provided. No space
+                        between -o and (name).
+           where: target can be:
+                  path to start search with optional file mask.
+                  example:  /home/sam/project/  <- scan all files
+                                                   at /project
+                            /home/sam/project/*.asm <- scan all
+                                                   files ending with
+                                                   ".asm" at /project
+                            /home/sam/mak*  <- scan all files starting
+                                               with "mak"
+                  note: A full target path must be provided. Examples:
+                            $HOME/source/'*.asm'
+                            /home/sam/source
+                            /home/sam/source/'*.asm'
+                        Shells treat "*" as a special character and
+                        must be told to ignore it. Thus, it must be
+                        quoted. Example -o*.asm  --> '-o*.asm'
+
+DESCRIPTION
+
+ asmpub has two modes. In mode 1 comments are extracted
+ from source files if they are identified with special markers.
+ The comments are moved to a output file with minimal processing.
+ This mode can be modified somewhat by using command line
+ parameters.
+
+ asmpub's second mode is designed for libraries. It can separate
+ each comment block, identity a title, sort by type and title,
+ number each section, build a index file, and do other processing.
+
+    operation:
+    ----------
+          asmpub extracts each block of text and removes the
+          leading comment character. If the sort flag flag
+          is enabled the blocks are sorted. Next, numbering
+          is applied if enabled. The index is then written
+          if enabled. Finally, the comment blocks are written
+          and formatting applied.
+
+    format of comment block in source file
+    --------------------------------------
+
+    the following assumes the comment character is ";"
+    
+    each comment block begins with line: ";>1" followed by optional
+    sort keys:   The end of the block is specified by ";<1"
+    Continuation block can start with ";>2" and end with ";<1".
+    The continuation block are appended to preceding block and
+    sorted with it. All comment block lines must begin at left
+    edge as follows:
+      summary:  ;>1  <-- begins comment block & has sort strings
+                ;>2  <-- begins continuation block, sorted with parent
+                ;<1  <-- ends comment or continuation block
+                ;    <-- normal text within comment block
+
+    the block beginning can have a sort key following the ";>1" string.
+    the sort string can be any string and can be preceded by a space.
+    example:  ;>1 key1-key2
+    the sort string can appear as headers in index file if switch -k
+    is used.
+
+    f1 format - The comment blocks are written as found. (the
+                leading comment character removed)  If numbering
+                is enabled it will be insert at front of first line
+                after the ";>" header line. The ";>" header line
+                and other control lines will be removed.
+
+    f2 format - The f2 format is for libraries and works like f1
+                format with the following additions:  A blank line
+                is added at start of each block. this is followed
+                by a line of dashes, then the first comment line.
+                Next, another line of dashes is inserted. This
+                is followed by the remaining data from comment section.
+
+
+EXAMPLE
+ 
+ the documentation for asmlib is created by asmpub.
+
+
+AUTHOR
+ Jeff Owens <jko@bsn1.net>
+
+COPYRIGHT
+ Copyright (C) 2007 Jeff Owens
+ This program comes with absolutely NO WARRANTY
+

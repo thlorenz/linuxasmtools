@@ -1,0 +1,34 @@
+
+----------------------------------------------------------------------------
+  34 nice          - change process priority
+----------------------------------------------------------------------------
+  mov  eax,034
+  mov  ebx,inc
+  int  80h
+
+       nice  adds "inc" to  the nice value for the calling pid.  (A large nice
+       value means a low priority.)  Only the superuser may specify a negative
+       increment, or priority increase.
+
+RETURN VALUE
+       On  success,  zero is returned. else a negative error
+
+ERRORS
+       EPERM  A non-super user attempts to do a priority increase by supplying
+              a negative inc.
+
+CONFORMING TO
+       SVr4,  SVID  EXT,  AT&T,  X/OPEN, BSD 4.3. However, the Linux and glibc
+       (earlier than glibc 2.2.4) return  value  is  nonstandard,  see  below.
+       SVr4 documents an additional EINVAL error code.
+
+NOTES
+       Note  that  the routine is documented in SUSv2 and POSIX 1003.1-2003 to
+       return the new nice value, while the Linux syscall and (g)libc (earlier
+       than glibc 2.2.4) routines return 0 on success.  The new nice value can
+       be found using getpriority(2).
+
+SEE ALSO
+       getpriority, setpriority, fork, renice
+
+

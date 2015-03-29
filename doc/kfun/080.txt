@@ -1,0 +1,38 @@
+----------------------------------------------------------------------------
+ 80 getgroups      - get list of supplementary group IDs
+----------------------------------------------------------------------------
+  mov eax,080
+  mov ebx,size   ;buffer size for list
+  mov ecx,list   ;ptr to buffer for list
+  int 80h
+
+      Up to size supplementary group IDs are returned in list.  It is
+      unspecified whether  the  effective  group  ID  of  the  calling
+      process  is included in the returned list. (Thus, an application
+      should also call getegid(2) and  add  or  remove  the  resulting
+      value.)   If  size  is zero, list is not modified, but the total
+      number of supplementary group IDs for the process is returned.
+
+RETURN VALUE
+      On  success,  the number of supplementary group IDs is returned.
+      On error, a negative code is returned
+
+ERRORS
+       EINVAL size is less than the number of supple-
+              mentary group IDs, but is not zero.
+
+NOTES
+       A  process  can have up to at least NGROUPS_MAX supplementary group IDs
+       in addition to the effective group ID. The set of  supplementary  group
+       IDs  is inherited from the parent process and may be changed using set-
+       groups.  The maximum number of supplementary group  IDs  can  be  found
+       using sysconf(3):
+           long ngroups_max;
+           ngroups_max = sysconf(_SC_NGROUPS_MAX);
+       The  maximal  return  value of getgroups cannot be larger than one more
+       than the value obtained this way.
+
+SEE ALSO
+       getgid, setgid
+
+

@@ -1,0 +1,141 @@
+
+  [section .text align=1]
+
+%include "../../include/signal.inc"
+%include "../../include/system.inc"
+%include "../../include/dcache_colors.inc"
+
+
+;external library calls follow    
+  extern sys_exit
+  extern delay
+  extern sys_read
+  extern poll_fd
+  extern env_stack
+  extern read_window_size
+
+  extern vt_setup
+  extern vt_ptty_setup
+  extern vt_flush
+  extern ptty_pid
+  extern vt_out
+  extern vt_close
+  extern vt_ptty_launch
+  extern ptty_fd
+  extern vt_in
+ 
+;The display is built in a buffer and then
+;written with dcache_flush.  First, we need
+;to find the display buffer size.
+  global _start
+_start:
+  call	env_stack
+  call	read_window_size	;needed for vt_flush
+  mov	esi,vt_setup_block
+  call	vt_setup
+
+  mov	eax,launch_name
+  call	vt_ptty_setup
+  call	vt_flush
+  call	vt_ptty_launch
+;
+  mov	ecx,help_msg
+  mov	edx,help_msg_size
+  call	vt_out
+
+event_loop:
+  mov	eax,2000
+  call	delay
+
+  mov	eax,114		;wait4
+  mov	ebx,[ptty_pid]
+  mov	ecx,status
+  mov	edx,1		;immediate rtn
+  xor	esi,esi		;used?
+  int	byte 80h
+  or	eax,eax
+  jz	no_change
+  mov	ebx,[status]	;get status
+  jmp	cleanup		;exit
+
+no_change:
+  mov	eax,[ptty_fd]
+  mov	edx,0		;immediate return
+  call	poll_fd
+  js	cleanup		;jmp if error
+  jz	check_key	;jmp no event
+
+  mov	ebx,[ptty_fd]	;read data]
+  mov	ecx,work_buf
+  mov	edx,5000
+  call	sys_read
+  or	eax,eax
+  js	cleanup
+
+  mov	edx,eax		;move amount read to edx
+  call	vt_out
+  call	vt_flush
+
+;  mov	ebx,1		;stdout
+;  mov	ecx,work_buf
+;  mov	edx,eax		;size of data
+;  call	sys_write
+  jmp	event_loop
+
+check_key:
+  mov	eax,0		;stdin
+  mov	edx,0		;immediate rtn
+  call	poll_fd
+  js	cleanup
+  jz	event_loop
+
+  mov	ebx,0
+  mov	ecx,work_buf
+  mov	edx,5000
+  call	sys_read
+  mov	edx,eax		;move amount read to edx
+  call	vt_in
+  jmp	event_loop
+
+
+
+cleanup:
+;  call  child_close
+  call	vt_close
+  call	sys_exit
+;-------------------------------------------------
+;child_close:
+;  mov	ebx,[ptty_fd]
+;  call	file_close
+;  ret
+
+;--------------------
+  [section .data]
+vt_setup_block:
+  dd 24	;rows
+  dd 80 ;columns
+  dd buffer
+  dd 1		;fd
+  dd 0	;top row
+  dd 0	;top left col
+  db grey_char + black_back
+
+
+status	dd 0
+;launch_name:	db '/home/jeff/bin/vttest',0,'-l',0,0
+;launch_name:	db '/bin/bash',0,'-c',0,'/bin/bash',0,0
+launch_name:	db '/bin/bash',0,0
+;launch_name:	db '/bin/ls',0
+;launch_name:	db '/bin/less term.asm',0
+;launch_name: db '/bin/pwd',0,0
+;launch_name: db '/usr/bin/strace',0,'-o',0,'xx',0,'/bin/bash',0,0
+;launch_name: db '/usr/bin/strace',0,'-o',0,'xx',0,'/home/jeff/work/test2',0,0
+;launch_name: db '/usr/bin/crt_test',0,0
+buffer: times 20000 db 0
+work_buf: times 5000 db 0
+
+help_msg: db "type  exit  to leave vt terminal",0ah,0dh
+ db "enter normal shell commands to test",0ah,0dh
+help_msg_size equ $ - help_msg
+  [section .text]
+

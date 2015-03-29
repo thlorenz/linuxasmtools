@@ -1,0 +1,20 @@
+
+ NAME
+
+  event - demonstrate typical event driven program
+
+ INPUTS
+
+  sending the program events after it is executing
+  will cause a display of event status.
+
+ OUTPUT:
+
+  events are shown as they occur and buttons
+  can be clicked to describe each event.
+              
+ NOTES
+  This program is useful to see key codes generated
+  by pressing keyboard keys.
+
+   source file: /demo/event.asm

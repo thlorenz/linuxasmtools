@@ -1,0 +1,239 @@
+
+;-------------  m_stack.in -------------------------------
+
+show_stack_win:
+  mov	eax,stack_header
+  call	show_header_line
+  mov	eax,stack_menu_txt	;get text for main menu
+  call	show_menu_line
+ssw_10:
+
+;display data for window
+
+  mov	eax,[aux_win_color]
+  call	crt_set_color
+
+  mov	eax,[stack_address]
+  mov	[mem_adr],eax
+
+  mov	al,[mini_win_top_line2]
+  mov	[mwin_row],al		;starting display row
+  mov	[mwin_adr_ptr],dword mwin_adr_buf
+  mov	[mwin_data_ptr],dword work_buf
+;read data from app and display each line
+ssw_lp:
+  mov	edx,[mem_adr]
+  mov	esi,mem_buf
+  call	trace_peek		;read dword of data
+  pushf
+;  call	add_label_if		;add label if found
+  mov	edi,lib_buf+100		;setup build buffer
+;check if add_label_if moved us to end of window
+  mov	eax,[mwin_row]
+  cmp	al,[mini_win_end_line]
+  jb	ssw_38			;jmp if more display room
+  popf
+  jmp	short ssw_exit
+ssw_38:
+  popf
+  jz	ssw_40			;jmp if good read
+;no data here, show message
+  mov	esi,no_data_txt
+  mov	ecx,no_data_txt_length
+  rep	movsb
+  jmp	short ssw_60		;go display line
+;display one line of data
+ssw_40:
+  call	build_stack_line		;build line in lib_buf+100
+ssw_60:
+  call	display_edi
+;;  call	update_array
+;move to next data item
+  add	[mem_adr],byte 4		;move to next address
+  inc	dword [mwin_row]
+  mov	eax,[mwin_row]
+  cmp	al,[mini_win_end_line]
+  jb	ssw_lp			;loop till done
+  cmp	[pop_help_flag],byte 0
+  je	ssw_exit
+  mov	ecx,help_on_help_msg
+  call	show_mini_help		;add help on right
+ssw_exit:
+  ret
+;-------------------------------------------------------
+;input: [mem_adr] - stack adr
+;       [mem_buf] - contents
+;       [app_esp] - esp setting
+;       edi = stuff buffer
+build_stack_line:
+  mov	esi,esp_msg
+  call	str_move		;store "esp"
+  mov	ebx,[mem_adr]
+  sub	ebx,[app_esp]		;check if +/-
+  js	bsl_minus
+  mov	al,'+'
+  jmp	short bsl_10
+bsl_minus:
+  mov	al,'-'
+  neg	ebx
+bsl_10:
+  stosb
+  mov	eax,ebx
+  call	wordto_hexascii
+  mov	al,' '
+  stosb
+  mov	eax,[mem_adr]
+  call	dwordto_hexascii	;store stack address
+  mov	al,'='
+  stosb
+  mov	eax,[mem_buf]
+  call	dwordto_hexascii	;store contents
+  mov	al,' '
+  stosb
+  call	add_label
+  ret
+  
+
+;-------------------------------------------------------
+add_label:
+  push	edi
+  mov	edi,mem_buf	;move physical address to edi
+  mov	ecx,4
+  xor	edx,edx		;use hash
+  call	hash_lookup
+  pop	edi
+  or	eax,eax
+  jnz	al_50		;jmp if no label here
+;esi points to symbol name
+  add	esi,byte 5
+  mov	al,'('
+  stosb
+  call	str_move
+  mov	al,')'
+  stosb
+al_50:
+  ret
+
+;-------------------------------------------------------
+;-------------------------------------------
+
+stack_up:
+  sub	[stack_address],byte 4
+  ret
+;-------------------------------------------
+
+stack_pgup:
+  sub	[stack_address],byte 4*10
+  ret
+;-------------------------------------------
+
+stack_down:
+  add	[stack_address],byte 4
+  ret
+;-------------------------------------------
+
+stack_pgdn:
+  add	[stack_address],byte 4*10
+  ret
+
+
+;-------------------------------------------------------
+  [section .data]
+
+esp_msg: db 'esp',0
+
+stack_address	dd 0
+
+help_on_help_msg:
+ db '?-local help            '
+ db 'w-next operational win  '
+ db 'q-quit this window      '
+ db 'up-scroll up            '
+ db 'down-scroll down        '
+ db 'pgup-page up            '
+ db 'pgdn-page down          '
+ db 'alt-(win first letter)  '
+ db '    select another win  '
+ db '                        '
+ db '                        ',0
+
+
+stack_header:
+ db ' -- STACK --',0
+stack_menu_txt:
+ db ' ? win quit _(up/down/pgup/pgdn)',0
+
+stack_win_decode_tbl:
+  db 0	;pad
+  db 2	;flag
+
+  db 'w',0
+  dd next_window
+
+  db '?',0
+  dd enable_mini_help
+
+  db 'q',0
+  dd win_quit
+
+  db 1bh,5bh,41h,0		;15 pad_up
+  dd stack_up
+
+  db 1bh,4fh,41h,0		;15 pad_up
+  dd stack_up
+
+  db 1bh,4fh,78h,0		;15 pad_up
+  dd stack_up
+
+  db 1bh,5bh,42h,0		;20 pad_down
+  dd stack_down
+
+  db 1bh,4fh,42h,0		;20 pad_down
+  dd stack_down
+
+  db 1bh,4fh,72h,0		;20 pad_down
+  dd stack_down
+
+  db 1bh,5bh,35h,7eh,0		;16 pad_pgup
+  dd stack_pgup
+
+  db 1bh,4fh,79h,0		;16 pad_pgup
+  dd stack_pgup
+
+  db 1bh,5bh,36h,7eh,0		;21 pad_pgdn
+  dd stack_pgdn
+
+  db 1bh,4fh,73h,0		;21 pad_pgdn
+  dd stack_pgdn
+
+  db 1bh,'r',0
+  dd select_reg_win
+  db 0c3h,0b2h,0
+  dd select_reg_win
+
+  db 1bh,'m',0
+  dd select_mem_win
+  db 0c3h,0adh,0
+  dd select_mem_win
+
+  db 1bh,'b',0
+  dd select_break_win
+  db 0c3h,0a2h,0
+  dd select_break_win
+
+  db 1bh,'s',0
+  dd select_stack_win
+  db 0c3h,0b3h,0
+  dd select_stack_win
+
+  db 1bh,'h',0
+  dd select_help_win
+  db 0c3h,0a8h,0
+  dd select_help_win
+
+
+;add arrow keys, pgup,pgdn here
+
+  db 0	;end of table
+
+  [section .text]

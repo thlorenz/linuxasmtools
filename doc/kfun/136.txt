@@ -1,0 +1,30 @@
+
+----------------------------------------------------------------------------
+ 136 personality   - set the process execution domain
+----------------------------------------------------------------------------
+  mov  eax,136
+  mov  ebx,persona
+  int  80h
+
+       Linux  supports different execution domains, or personalities, for each
+       process. Among other things, execution domains tell Linux  how  to  map
+       signal  numbers into signal actions. The execution domain system allows
+       Linux to provide limited support  for  binaries  compiled  under  other
+       Unix-like operating systems.
+
+       This  function  will return the current personality when persona equals
+       0xffffffff. Otherwise, it will make the execution domain referenced  by
+       persona the new execution domain of the current process.
+
+RETURN VALUE
+       On success, the previous persona is returned. On error a negative code
+       is returned
+
+ERRORS
+       EINVAL The kernel was unable to change the personality.
+
+
+FILES
+       /usr/include/linux/personality.h
+
+

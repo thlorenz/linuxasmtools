@@ -1,0 +1,412 @@
+;------------------- file: minibug.asm ---------------------------
+
+;%define LOG
+;-----------------------------------------------------------------
+;   Copyright (C) 2007 Jeff Owens
+;
+;   This program is free software: you can redistribute it and/or modify
+;   it under the terms of the GNU General Public License as published by
+;   the Free Software Foundation, either version 3 of the License, or
+;   (at your option) any later version.
+;
+;   This program is distributed in the hope that it will be useful,
+;   but WITHOUT ANY WARRANTY; without even the implied warranty of
+;   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;   GNU General Public License for more details.
+;
+;   You should have received a copy of the GNU General Public License
+;   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+  extern trace_regsset
+  extern raw_set1,raw_unset1
+  extern key_poll
+  extern trace_step
+  extern trace_continue
+  extern blk_del_bytes
+  extern trace_poke_bytes
+  extern byteto_hexascii
+  extern view_buffer
+  extern is_alpha
+  extern trace_peek
+  extern trace_poke
+  extern key_decode3
+  extern read_stdin
+  extern crt_write
+  extern dwordto_hexascii
+  extern trace_peek_bytes
+  extern dis_one
+  extern symbol_process
+  extern mov_color
+  extern read_window_size,term_type
+  extern crt_rows,crt_columns
+  extern env_stack
+  extern env_shell
+  extern delay
+  extern crt_str
+  extern read_termios_0
+  extern output_termios_0
+  extern lib_buf
+  extern sys_wrap
+  extern save_cursor_at
+  extern restore_cursor_from
+  extern str_move
+  extern byte_to_ascii
+  extern move_cursor
+  extern crt_horizontal
+  extern crt_set_color
+  extern install_signals
+  extern dir_current
+  extern file_access
+  extern enviro_ptrs
+  extern env_exec
+  extern str_end
+  extern m_allocate
+  extern m_setup
+  extern m_close
+  extern m_release
+  extern process_search
+  extern ascii_to_dword
+  extern trace_pid
+  extern trace_wait
+  extern trace_regsget
+  extern trace_attach
+  extern traceme
+  extern sys_run_die
+
+struc bstruc
+.badr	resd 1	;break address
+.bsav	resb 1	;break code replaced
+endstruc
+
+%include "sbug_struc.inc"
+
+[section .text]
+  global _start
+  global main
+
+; The program begins execution here...... 
+;
+main:
+_start:
+  cld
+  call	env_stack		;setup env ptr
+  call	setup_display
+;save our termios
+  mov	edx,our_termios
+  call	read_termios_0		;save our termios
+;The following is a kludge to solve a problem in the console.
+;If our terminal is /dev/ttyx then shrinking the window also
+;stops output to part of display.  If our terminal is
+;a /dev/pts/x then the console display works ok.
+;We could check /proc/self/fd/0 to see if we are a pts
+;and then allow shrink.  When we run in asmfile or asmmgr
+;the terminal is a pts and everything works ok.
+; /proc/self/fd/0 = /dev/tty1   or  /dev/pts/1
+;                   /dev/tty2   or  /dev/pts/2
+  mov	eax,85		;read link
+  mov	ebx,proc_tty
+  mov	ecx,proc_buf
+  mov	edx,1000h
+  int	byte 80h
+
+  cmp	[proc_buf+5],byte 'p'
+  je	do_shrink	;jmp if pts
+  cmp	[term_type],byte 2 ;is this the console
+  je	no_shrink  	;jmp if console
+do_shrink:
+  call	shrink_window
+no_shrink:
+  call	parse			;get parameters
+  jns	parse_ok
+  call	cmd_help		;show help message
+  jmp	sbug_exit		;exit if parse error
+parse_ok:
+;  call	signal_install		;install WINCH and
+  call	m_setup
+  call	load_program
+  jns	dl_cont
+sbug_exitj:
+  jmp	sbug_exit
+dl_cont:
+  mov	eax,LastTarget
+  call	elfdecode
+  call	adjust_starting_eip
+  call	map_setup
+  call	mem_window_setup
+  call	dis_window_setup
+  or	[app_mode],byte 10h	;force display
+
+%ifdef LOG
+  call	log_eol
+  mov	eax,'top '
+  call	log_regtxt
+%endif
+
+display_loop:
+  test	[app_mode],byte 10h	;display update needed?
+  jz	dl_tail			;jmp if no display needed
+  call	show_menu_line
+
+%ifdef LOG
+  call	log_eol
+  mov	eax,'dwin'
+  call	log_regtxt
+%endif
+
+  call	check_map
+  jc	skip_tracking		;jmp if outside map
+  call	eip_tracking
+skip_tracking:
+  call	dis_window
+  call	append_to_dis
+
+  cmp	[win_select],byte 0	;reg window?
+  jne	dl_10
+  call	reg_window
+  jmp	short dl_tail
+dl_10:
+  cmp	[win_select],byte 1	;memory window?
+  jne	dl_20
+  call	mem_window
+  jmp	short dl_tail
+dl_20:
+  cmp	[win_select],byte 2	;break window?
+  jne	dl_30
+  call	break_window
+  jmp	short dl_tail
+dl_30:
+  cmp	[win_select],byte 3	;stack window?
+  jne	dl_40
+  call	stack_window
+  jmp	short dl_tail
+dl_40:
+dl_tail:
+  test	byte [app_mode],2	;dead ?
+  jz	dl_alive
+  call	dead_msg
+dl_alive:
+  test	[app_mode],byte 1	;app stopped
+  jnz	dl_app_ck		;jmp  if app running
+
+;  call	optional_stub_msg
+;app is stopped, we can check for key
+
+  call	raw_set1
+  call	key_poll
+  pushf
+  call	raw_unset1
+  popf
+  jz	dl_app_ck		;jmp if no key available
+  call	read_stdin
+  call	decode_key
+  or	eax,eax
+  jz	display_loopj
+  call	eax
+  test	[app_mode],byte 4	;exit request?
+  jnz	sbug_exit
+dl_app_ck:
+;  mov	eax,1000
+;  call	delay
+  call	check_app		;check app status
+  jnc	dl_tail			;loop if app running
+;kludge - the following delay is needed to insure the
+;display is updated in the display_loop.  Otherwise the
+;display remains blank?  Probably, a problem with shell
+;code?     
+display_loopj:
+;  mov	eax,1000000
+;  call	delay
+  jmp	display_loop  
+
+sbug_exit:
+;kill the target program
+  mov	eax,37
+  mov	ebx,[trace_pid]
+  or	ebx,ebx
+  jz	ka_skip			;jmp if child not forked yet
+  mov	ecx,9			;kill signal
+  int	byte 80h
+;;  call	set_bottom		;restore display state
+ka_skip:
+;;  mov	edx,our_termios
+;;  call	output_termios_0
+  call	restore_window
+  mov	ecx,reset_msg
+  call	crt_str
+
+  xor	ebx,ebx			;set return code
+  mov	eax,1
+  int	byte 80h
+;----------------------------------------------------------
+;output:  carry = app stopped  no-carry=app running
+check_app:
+  test	[app_mode],byte 1 ;running
+  jz	ca_idle_exit	;exit if stopped
+;get status of app -;check if app stopped yet
+  xor	eax,eax
+  mov	[app_status],eax
+
+  mov	eax,114
+  mov	ebx,[trace_pid]
+;  mov	ebx,-1		;wait for any child
+  mov	ecx,app_status
+  mov	edx,1				;WNOHANG
+  xor	esi,esi
+  int	byte 80h
+  or	eax,eax
+  jz	ca_running_exit	;exit if app still running
+  push	eax
+
+%ifdef LOG
+  call	log_stop
+%endif
+;returns eax=err if app dead
+;returns eax=0 if no change in status
+;returns eax=pid if stop and status filled in
+
+;app has stopped, check status
+  call	set_bottom_win
+  call	remove_breaks
+;get registers
+  mov	esi,app_regs
+  call	trace_regsget
+  and	[app_mode],byte ~1	;clear running flag
+
+  pop	eax
+  or	eax,eax
+  js	ca_dead
+;check if app killed by signal
+  mov	eax,[app_status]	;al=0 process exit, 1-7e killed by -ah- signal
+  or	eax,eax
+  jz	ca_dead			;jmp if app dead
+  cmp	ax,057fh		;check if break
+  je	ca_break		;jmp if normal break stop
+  cmp	al,7fh			;check if stopped
+  jne	ca_dead			;assume app dead due to signal or normal exit
+;we have stopped due to signal (ah=signal number)
+  call	dis_window		;update window
+  call	report_signal
+  jmp	short ca_idle_exit
+ca_break:
+  dec	dword [app_eip]		;adjust for normal stop (fix)
+  jmp	short ca_stopped
+ca_dead:
+  or	[app_mode],byte 2	;set dead bit
+ca_stopped:
+  or	[app_mode],byte 10h	;force display
+ca_idle_exit:
+  stc
+  jmp	short ca_exit
+ca_running_exit:
+  and	[app_mode],byte ~10h	;clear display flag
+  clc
+ca_exit:
+  ret
+;---------------------------------------
+;----------------------------------------------------------
+%include "sbug_key_cmds.inc"
+%include "sbug_windows.inc"
+%include "sbug_setup.inc"
+%include "sbug_map.inc"
+%include "sbug_help.inc"
+%include "elfdecode.inc"
+%include "sbug_signal.inc"
+%ifdef LOG
+%include "LOG.inc"
+%endif
+;----------------------------------------------------------
+  [section .data]
+
+win_select: 	db 0 ;0=reg 1=mem 2=break 3=stack
+app_mode:	db 0 ;1=running 2=dead 4=exit req 8=stop req
+                     ;10=do dwin  20=             40=            80=               
+
+top_screen:
+ts_top_row      db 1	;starting row
+ts_top_rowa     db '01' ;ascii top row
+ts_bottom_row   db 0	;ending row
+ts_bottom_rowa  db '00' ;ascii end row
+ts_cursor:
+  times 20 db 0	;cursor
+
+bottom_screen:
+bs_top_row      db 0	;top row
+bs_top_rowa     db '00' ;ascii top row
+bs_bottom_row   db 0	;ending row
+bs_bottom_rowa  db '00' ;ascii end row
+bs_cursor:
+  times 20 db 0 ;cursor
+
+menu_line:
+  db 0		;row for menu line
+
+dis_win_end_col: dd 0
+reg_win_start_col: dd 0
+
+; color format  attribute - foreground - background
+;    30-blk 31-red 32-grn 33-brwn 34-blu 35-purple 36-cyan 37-gry
+;    attributes 30-normal 31-bold 34-underscore 37-inverse
+
+app_win_color:		 dd 30003037h
+menu_color:		 dd 30003730h
+dis_win_color:		 dd 30003036h        
+dis_win_eip_color:	 dd 30003033h  
+dis_win_select_color:	 dd 31003736h
+dis_win_break_color:	 dd 31003736h
+dis_win_alert_color:	 dd 30003033h
+aux_win_color:		 dd 31003735h
+aux_win_menu_color:	 dd 30003234h
+
+app_termios:
+c_iflag	dd	0
+c_oflag dd	0
+c_cflag dd	0
+c_lflag dd	0
+c_line	dd	0
+cc_c	times 19 db 0
+
+our_termios:
+x_iflag	dd	0
+x_oflag dd	0
+x_cflag dd	0
+x_lflag dd	0
+x_line	dd	0
+xc_c	times 19 db 0
+
+app_regs:
+app_ebx	dd 0
+app_ecx	dd 0
+app_edx	dd 0
+app_esi	dd 0
+app_edi	dd 0
+app_ebp	dd 0
+app_eax	dd 0
+app_ds 	dd 0
+app_es 	dd 0
+app_fs 	dd 0
+app_gs 	dd 0
+app_old_eax dd 0
+app_eip	dd 0
+app_cs 	dd 0
+app_flags dd 0
+app_esp	dd 0
+app_ss 	dd 0
+
+stack_stub_code	dd 0	;address on stack of stub code
+
+load_header_ptr	dd 0	;load top
+load_code_ptr	dd 0	;end of header, or text section
+load_end_ptr	dd 0	;end of load
+
+;map format 00h = data      00=shadow data
+;           01h = body      10=shadow body
+;           02h = start     20=shadow start
+map_header_ptr	dd 0	;top of map (header)
+map_code_ptr	dd 0	;start of code map
+map_end_ptr	dd 0	;end of map
+
+breaks:	times (11*5) db 0	;array of break addresses
+
+proc_tty	db '/proc/self/fd/0',0
+proc_buf	times 20 db 0
+

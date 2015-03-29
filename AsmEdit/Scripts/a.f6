@@ -1,0 +1,24 @@
+#! /bin/bash
+# compare two files and optionally make changes
+xxdiff $1 $2
+
+#
+# NAME
+#>1 script
+#  a.f6 - example file compare script
+# INPUTS
+#  The two files are expected as $1 and $2
+#  The AsmEdit and AsmMgr programs use this
+#  script to compare files.
+# OUTPUT
+#  The two temp files are read back into asmedit
+#  and any changes are included.  If the xxdiff
+#  program is used to compare it has a edit option
+#  so we need to update the origional files.
+# NOTES
+#   file: a.f6  <- tied to function key f6 in AsmEdit
+#   
+#   several good compare programs exist and can be called
+#   here.
+#<
+# * ----------------------------------------------

@@ -1,0 +1,138 @@
+  [section .text]
+  nop
+
+; NAME
+;  dword_to_lpadded_ascii - convert binary dword to left justified ascii string
+; INPUTS
+;  *  eax = binary value
+;  *  edi = start of storage area
+;  *  cl  = number of bytes to store
+;  *  ch  = pad character
+; OUTPUT
+;  * edi = ptr to end of stored string
+;  * eax,ebx,ecx,ebp destroyed
+; NOTES
+;  * source file: dword_to_lpadded_ascii.asm
+;  * ----------------------------------------------
+  global dword_to_lpadded_ascii
+dword_to_lpadded_ascii:
+  mov	ebp,10
+  xchg eax,ebx
+dta_entry:
+  xchg eax,ebx
+  cdq
+  div ebp
+  xchg eax,ebx
+  mov al,dl
+  and al,0fh
+  add al,'0'
+  push	eax
+  dec	cl
+  jz	dta_end	;jmp if correct number of digits stored
+  call	dta_entry
+dta_end:
+  pop	eax
+  cmp	cl,0		;check if past leading zeros
+  je	dta_cont
+  cmp	al,'0'
+  jne	dta_cont	;jmp if not leading zero
+  mov	al,ch		;get pad char
+  inc	cl
+dta_cont:
+  stosb  
+  ret
+;****f* file/mmap_open_ro *
+; NAME
+;  mmap_open_ro - returns a read only pointer to file data
+; INPUTS
+;    ebx = poiter to asciiz filename
+;    ecx = optional buffer size
+;          set to zero to read complete file
+;    lib_buf - temporary library buffer utilized        
+; OUTPUT
+;    eax - read length (file length if fits in buffer)
+;          if error eax will have negative error code.
+;    ebx - fd (file descriptor)
+;    ecx - pointer to file contents
+; NOTES
+;   source file: mmap_open_ro.asm
+;    
+;   notes: the lib_buf buffer is used to hold fstat status
+;   of file.  see man fstat for format.
+;    
+;   It is best to use this function for small files that
+;   are needed for brief period.  See mmap kernel call
+;   for information on how long data file data is kept.
+;<
+; * ----------------------------------------------
+;*******
+
+  [section .text]
+;
+
+  global  mmap_open_ro
+  extern lib_buf
+
+mmap_open_ro:
+  mov	[mmap_len],ecx	;save buffer size
+  xor	ecx, ecx
+  mov	eax,5
+  int	80h		;open file
+  or	eax, eax
+  js	mapfile_exit
+  mov	ebx,eax		;get fd
+  mov	ecx,lib_buf	;get buffer
+  mov	eax,108		;fstat
+  int	80h
+; An mmap structure is filled out and handed off to the system call,
+; and the function returns.
+;sys_mmap 0,dword [ecx + 20],PROT_READ,MAP_SHARED,ebx,0
+
+  mov	[mmap_fd],ebx		;save fd (handle)
+  mov	ecx,[ecx + 20]		;get length
+  push	ecx
+  cmp	dword [mmap_len],0
+  jne	mmap_10			;jmp if user supplied buffer size
+  mov	[mmap_len],ecx
+mmap_10:
+  mov	ebx,mmap_parm
+  mov	eax,5ah
+  int	80h
+  mov	ebx,[mmap_fd]		;get file handle (fd)
+  pop	ecx			;restore file length
+  cmp	ecx,[mmap_len]
+  jb	mapfile_exit		;jmp if buffer smaller than file
+  mov	ecx,[mmap_len]		;get read length
+mapfile_exit:
+  xchg	eax,ecx		;swap data ptr and file length
+;
+; eax = garbage or file length
+; ecx = return code from kernel or data ptr
+;
+  cmp	ecx,-200
+  jb	mapfile_exit2	;jmp if good data, eax=len ecx=data ptr
+  mov	eax,ecx		;restore error code to eax
+mapfile_exit2:
+  or	eax,eax
+  ret
+
+
+;-----------
+  [section .data]
+mmap_parm:
+  dd	0	;start
+mmap_len:
+  dd	0	;length, from stat
+  dd	1	;prot (PROT_READ)
+  dd	1	;flags (MAP_SHARED)
+mmap_fd:
+  dd	0	;fd (handle)
+  dd	0	;offset
+  [section .text]
+
+
+
+;---------------------------------------------------------- 
+ [section .bss]
+
+lib_buf:	resb 600

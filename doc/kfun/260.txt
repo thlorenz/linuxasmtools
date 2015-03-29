@@ -1,0 +1,119 @@
+
+-------------------------------------------------------------------
+260 timer_settime  - Set a POSIX.1b interval timer
+-------------------------------------------------------------------
+
+  mov  eax,260
+  mov  ebx,timer_id
+  mov  ecx,flags
+  mov  edx,new_setting   ;pointer to new timerspec
+  mov  esi,old_setting   ;poiner to old timerspec save
+  int  80h
+
+timer_id
+--------
+
+  timer_id is obtained from timer_create function
+
+flags
+-----
+
+  two flag states are currently defined:
+  TIMER_REL     = 00 ;values relative to current time
+  TIMER_ABSTIME = 01 ;values are absolute times
+
+new_setting
+-----------
+   struct timespec it_interval;	/* timer period */
+	resd 1 	tv_sec;		/* seconds */
+	resd 1	tv_nsec;	/* nanoseconds */
+   struct timespec it_value;	/* timer expiration */
+	resd 1	tv_sec;		/* seconds */
+	resd 1	tv_nsec;	/* nanoseconds */
+
+   For a one shot timer, the period field can be zero.
+   To generate multiple signals, set the period to
+   the lenght of time you want signals.  The expire
+   field is always count down value or time.
+
+old_setting
+-----------
+   struct timespec it_interval;	/* timer period */
+	resd 1 	tv_sec;		/* seconds */
+	resd 1	tv_nsec;	/* nanoseconds */
+   struct timespec it_value;	/* timer expiration */
+	resd 1	tv_sec;		/* seconds */
+	resd 1	tv_nsec;	/* nanoseconds */
+
+   The old_setting is old setting of timer.  The new_setting
+   will overwrite the old_setting.
+
+SYNOPSIS
+   #include <time.h>
+
+int timer_settime(timer_t timer_id, int flags, const struct
+itimerspec *new_setting, const struct itimerspec *old_setting);
+
+DESCRIPTION
+
+timer_settime sets the expiration time for the timer specified
+by timer_id, thus marking it active. The it_value field of
+new_value specifies the expiration time in nanoseconds. If the
+timer is already set then it is reset to the new value specified
+by it_value. If it_value is zero, the timer is disabled.
+
+The default behavior is to interpret the specified expiration
+time as relative to the current time as of the call. The
+TIMER_ABSTIME flag specified in flags will modify this behavior 
+to make the value specified by it_value absolute with respect to
+the clock associated with timer_id. Thus, the timer will expire 
+when the clock reaches the value specified by it_value. If
+TIMER_ABSTIME specifies a value which has already elapsed, the
+call will succeed and the timer will immediately expire.
+
+The interval at which the timer will subsequently expire is
+specified by it_interval. If it_interval is set to zero, the
+timer will expire only once, as specified by it_value. In order 
+to prevent timer intervals from overloading the system, the
+system prevents setting it_interval below a minimum value.
+This minimum value is determined by an overload test, the
+results of which are printed on boot.
+
+If old_value is non-NULL, the previous time remaining before
+expiration is stored in the itimerspec structure pointed to by
+old_value.
+
+Changes to the clock value (e.g. via clock_settime(3)) will not 
+affect any timers.
+
+RETURN VALUE
+
+On success, timer_settime returns the value 0 and the timer
+specified by timer_id is set as specified by new_value. If
+old_value is non- NULL, it contains the previous time remaining 
+before expiration.
+
+On failure, timer_settime returns the value -1 and errno is set 
+appro‐ priately.
+
+ERRORS
+
+EFAULT A specified memory address is outside the address range
+of the calling process.
+
+EINVAL timer_id is not a valid, owned (by the process) timer or 
+new_value has a negative second or nano second value or the
+nano second value is greater than or equal to 1,000 million or
+the resulting expire time is too large for the system. Values
+"too large" are those that can not be converted to "jiffies"
+from "now" with a resulting value less than MAX_LONG.
+
+CONFORMING TO
+   POSIX 1003.1b (formerly POSIX.4) as ammended by POSIX 1003.1j-2000.
+
+SEE ALSO
+   clock_getres,    clock_gettime,          clock_settime,
+   clock_nanosleep, timer_create, timer_delete, timer_gettime,
+   timer_getoverrun
+
+

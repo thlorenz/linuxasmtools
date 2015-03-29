@@ -1,0 +1,169 @@
+
+ NAME
+
+   AsmPlan - todo and note taker
+
+ INPUTS
+
+   usage: asmplan <project name>
+   The projects are stored at $HOME/.asmplan/plan.
+   If AsmPlan is not passed a project name
+   it opens the first project found. If no
+   projects are found it opens a dummy project.
+
+   Program operations are optimized for mouse
+   usage and a short help file is available
+   from within AsmPlan.
+
+ OUTPUT
+
+   Entries are stored in files that match the name of
+   each project. Files are in ascii and can be edited
+   with any text editor if the format is preserved.
+
+ NOTES
+
+   source file: asmplan.asm
+   This file is a standalone ELF binary.
+
+
+INTRODUCTION
+
+ The "asmplan" program is a unique todo program
+ that is optimized for cyclic events and
+ to quickly handle a daily review of history.
+
+ It can act as a simple diary or log file which
+ is played back at specified times in the future.
+ This provides persistent reminders if needed.
+ 
+ Features:
+
+           Quick daily review of history and todos
+           Easy scheduling and composing
+           Search command
+           Project switching with single mouse click
+
+OBTAINING asmplan
+
+ The author can be found on the DesktopLinuxAsm
+ discussion group at yahoogroups. To join send
+ a blank email to:
+
+   DesktopLinuxAsm-subscribe@yahoogroups.com
+
+ Additional information may be available on the
+ home page at:
+
+ http://linuxasmtools.net/
+
+
+STARTING asmplan
+
+  asmplan <project name>
+
+  If asmplan is started with a project name, it will be
+  used. If no name is provided the first project found
+  will be used. If no project is found, asmplan will  create
+  a dummy project at ~/.asmplan/plan/
+
+  All projects are kept at ~/.asmplan/plan/ which is setup
+  by "make install" The "make uninstall" command will
+  remove these directories and their contents.
+
+MOUSE COMMANDS
+
+ The following mouse commands are available:
+
+ Completion
+
+   A left click on the date field of each
+   todo entry will cause it to reschedule or die. This
+   is controlled by checkoff boxes on the edit screen
+
+   A right click on the date field will set the
+   delete flag and todo will not be discarded.
+
+ Edit
+
+  A left click on the body of any todo entry will
+  call up the edit screen. Edits are done by
+  filling in a form. Most actions can be done
+  with simple mouse clicks.
+
+ Buttons and highlights
+
+  In all windows the buttons or highlighted
+  entries can be clicked.
+
+KEYBOARD COMMANDS
+
+ n    - New Project
+ d    - Delete Project
+ a    - Add Todo
+ f    - Page Forward
+ b    - Page Back
+ s    - Search
+ o    - open existing project
+ h    - Help
+ e,x  - Exit
+
+ <pgup>   - pages display up
+ <pgdn>   - pages display down
+ <up>     - moves select bar up
+ <down>   - moves select bar down
+ <enter>  - edits current todo
+ <space>  - completes selected todo
+ <del>    - sets delete flag for selected todo
+
+
+USAGE
+
+Each todo has a schedule-flag that describes the action
+taken by a complete function. The complete function is
+triggered by the <space> bar or clicking on date field
+of todo. The schedule-flag is set when todos are created
+or edited. Possible flag states include: remind once and
+die, or reschedule the todo at future date.
+
+A rescheduling todo can be removed by left-clicking the
+date field or pressing the <del> key.
+
+Todo items will be highlighted if they are overdue and
+appear at the start of list. They will remain at the
+top of the list until completed or deleted.
+
+The design of AsmPlan is based on the idea that our
+lives are dominated by cyclic events. Each day follow
+a routine with variations weekly or monthly. Also,
+every year we tend to the the same things and it is
+often helpful to know what we did the previous year.
+
+For some reason most planning/todo programs are
+optimized for one time events which require constant
+work to maintain. With AsmPlan it is possible to
+create a base file that describes cyclic events and
+use it for years. The one-time events can be
+added to this base.
+
+Currently, AsmPlan is used as a software development
+tool but it works even better for the following:
+
+ garden planner -reminds of planting times and how
+                 plants did on this date for previous
+                 year,month
+
+ finance planner - reminds of research periods, dividends,
+                   tax reports, bills, etc.
+
+ daily planer - reminds of birthdays, holidays, weather in
+                previous years, frost dates, etc.
+
+Each day these projects can be selected with a single
+click and highlighted items reviewed. Events listed
+can be completed/deleted with single click.
+
+The keyboard operations are a little slower but most
+actions can be accomplished by 2 keypresses.
+
+ 

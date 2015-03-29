@@ -1,0 +1,1254 @@
+
+-------------------------------------------------------------------
+288 keyctl  kernel key management
+-------------------------------------------------------------------
+
+  mov  eax,288
+  mov  ebx,op     ;operation code
+  mov  ecx,p1     ;see
+  mov  edx,p2     ; operation
+  mov  esi,p3     ;  descriptions
+  mov  edi,p4     ;   for arguements
+  int  80h
+
+
+   A key is a secure token or data block that can be accessed by
+   various ways.
+
+args
+----
+
+ ebx Operation to perform. It may be one of the following:
+ 
+  KEYCTL_GET_KEYRING_ID		0  ask for a keyring's ID  
+  KEYCTL_JOIN_SESSION_KEYRING	1  join or start named session keyring  
+  KEYCTL_UPDATE			2  update a key  
+  KEYCTL_REVOKE			3  revoke a key  
+  KEYCTL_CHOWN			4  set ownership of a key  
+  KEYCTL_SETPERM		5  set perms on a key  
+  KEYCTL_DESCRIBE		6  describe a key  
+  KEYCTL_CLEAR			7  clear contents of a keyring  
+  KEYCTL_LINK			8  link a key into a keyring  
+  KEYCTL_UNLINK			9  unlink a key from a keyring  
+  KEYCTL_SEARCH			10  search for a key in a keyring  
+  KEYCTL_READ			11  read a key or keyring's contents  
+  KEYCTL_INSTANTIATE		12  instantiate a partially constructed key  
+  KEYCTL_NEGATE			13  negate a partially constructed key  
+  KEYCTL_SET_REQKEY_KEYRING	14  set default request-key keyring  
+  KEYCTL_SET_TIMEOUT		15  set key timeout  
+  KEYCTL_ASSUME_AUTHORITY	16  assume request_key() authorisation 
+
+ ecx First parameter for operation
+
+ edx Second parameter for operation
+
+ esi Third parameter for operation
+
+ edi Fourth parameter for operation
+
+OVERVIEW
+--------
+
+ A key consists of the following:
+
+   * Serial number: 32-bit non-zero positive number.
+ 
+   * Type: The Linux key retention service defines two standard key
+       types: user and keyring. To add a new key type, it must be
+       registered by a kernel service. User-space programs are not
+       allowed to create new key types. Key types are represented in
+       the kernel by struct key_type, which is:
+
+    struct key_type
+      dd name ->  asciiz name string
+      dd def_datalen ;default payload length for quota precalculation
+                ;(optional) this can be used instead of calling
+                ; key_payload_reserve(), that function only needs
+                ; to be called if the real datalen is different
+      dd instatiate -> ;instantiate a key of this type
+	        ;this method should call key_payload_reserve() to
+                ; determine if the user's quota will hold the payload
+	        ;(*instantiate)(struct key *key,
+                                const void *data,
+                                size_t datalen)
+      dd update -> ; update a key of this type (optional)
+	        ; this method should call key_payload_reserve()
+                ; to recalculate the quota consumption
+	        ; the key must be locked against read when modifying
+	        ;(*update)(struct key *key,
+                           const void *data,
+                           size_t datalen);
+      dd match -> ; match a key against a description
+	        ;(*match)(const struct key *key,
+                          const void *desc);
+      dd revoke -> ;clear some of the data from a key on revokation
+                ; (optional) the key's semaphore will be write-locked
+                ; by the caller
+                ;(*revoke)(struct key *key);
+      dd destroy -> ;clear the data from a key (optional)
+	        ;(*destroy)(struct key *key);
+      dd describe -> ; describe a key 
+	        ;(*describe)(const struct key *key,
+                             struct seq_file *p);
+      dd read -> ;read a key's data (optional)
+	        ;permission checks will be done by the caller
+	        ;the key's semaphore will be readlocked by the caller
+	        ;should return the amount of data that could be read,
+                ;no matter how much is copied into the buffer
+	        ;shouldn't do the copy if the buffer is NULL
+                ;(*read)(const struct key *key, char __user *buffer, size_t buflen);
+      dd request_key_actor ;handle request_key() for this type instead of invoking
+	        ; /sbin/request-key (optional)
+	        ; key is the key to instantiate
+	        ; authkey is the authority to assume when instantiating this key
+	        ; op is the operation to be done, usually "create"
+	        ; the call must not return until the instantiation process has run
+	        ; its course
+      dd list_head ; internal fields
+	        ;struct list_head link; /* link in types list */
+
+
+   Description: A printable string that describes the key. This
+       attribute can also be used to perform search operations.
+
+   Access control information: Each key has an owner UID, a GID, and
+       a permissions mask that dictates how it will respond to user-level
+       or kernel-level programs. The permissions mask allocates 8 bits
+       each to the four possible types of key accessor: possessor, user,
+       group, and other. Out of the 8 bits, only 6 bits are defined. The
+       possible permissions are as follows:
+
+          View allows the possessor to view key attributes.
+          
+          Read allows the possessor to read the key and lists the key
+          for a keyring.
+          
+          Write allows the possessor to modify the payload for a key or
+          keyring and to modify linked keys.
+          
+          Search allows the possessor to search keyrings and find keys.
+          
+          Link allows the possessor to link a particular key or keyring
+          to a keyring.
+          
+          Set Attribute allows the possessor to set the key's UID, GID,
+          and permissions mask.
+
+     * Expiry Time: Lifetime of a key. Keys can also be permanent.
+
+     * Payload: The actual security data. Operations defined with struct
+       key_type are used to instantiate the payload with data and also to
+       read back or modify the data. To the kernel, the payload is just a
+       blob of data.
+
+     * State: A key can be in any of the following states:
+          + UNINSTANTIATED: The key has been created but is not yet
+            attached to any data.
+          + INSTANTIATED: The key is instantiated and attached to data;
+            this is a complete state.
+          + NEGATIVE: A temporary state that denotes that the previous
+            call to user-space failed.
+          + EXPIRED: Indicates the key has outgrown its pre-defined
+            lifetime.
+          + REVOKED: The key is moved to this state by a user-space
+            action.
+          + DEAD: The key_type is unregistered.
+
+
+   A keyring is a key that contain a set of links to other keys or
+   keyrings. There are six standard keyrings:
+    1. Thread-specific
+    2. Process-specific
+    3. Session-specific
+    4. User-specific session
+    5. User-default session
+    6. Group-specific (not yet implemented)
+
+   Quotas
+   There is a limit on the number of keys and keyrings a user can own
+   (the key count quota) and also on the space used in the key
+   description and payload (the key size quota). Process-specific and
+   thread-specific keyrings are not considered part of the user's quota.
+
+   Only the first three keyrings are automatically searched, in which
+   case they are searched in order. The fourth type, a user-specific
+   session keyring, is not searched directly but it is normally linked to
+   from a session-specific keyring. Login processes such as PAM will bind
+   to the user-default session keyring until another session is created.
+
+   User keys are defined to be manipulated by user-space programs.
+
+
+---------------------------------------------------------------------
+Operations on keys
+---------------------------------------------------------------------
+
+   KEYCTL_ASSUME_AUTHORITY
+
+   Assumes the authority for the calling thread to deal with and
+   instantiate the specified uninstantiated key.
+   Authority can only be assumed if the thread has the authorization key
+   associated with the specified key in its keyrings somewhere.
+   Once authority is assumed, searches for keys will also search the
+   requester's keyrings using the requester's security label, UID, GID
+   and groups.
+
+   ecx Key serial number. If the specified key is 0, then any assumed
+   authority will be divested.
+
+   If the system call succeeds the return value is key or keyring ID.
+   If the system call fails the return value is -EPERM denoting that the
+   requested authority is unavailable.
+
+   The assumed authoritative key is inherited across fork and exec.
+
+---------------------------------------------------------------------
+   KEYCTL_CHOWN
+
+   Changes the user and group ownership details of a key.
+
+   ecx Key serial number. It may be one of the following special values:
+
+   KEY_SPEC_THREAD_KEYRING Caller's thread-specific keyring.
+   KEY_SPEC_PROCESS_KEYRING Caller's process-specific keyring.
+   KEY_SPEC_SESSION_KEYRING Caller's session-specific keyring.
+   KEY_SPEC_USER_KEYRING Caller's UID-specific keyring.
+   KEY_SPEC_USER_SESSION_KEYRING Caller's UID-session keyring.
+   KEY_SPEC_GROUP_KEYRING Caller's GID-specific keyring.
+   KEY_SPEC_REQKEY_AUTH_KEY This specifies the authorization key created
+   by request_key() and passed to the process it spawns to generate a
+   key. If a valid keyring ID is passed in, then this will simply be
+   returned if the key exists; an error will be issued if it doesn't
+   exist.
+
+   edx Key's UID. A value of -1 causes this setting to be ignored.
+
+   esi Key's GID. A value of -1 causes this setting to be ignored.
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ENOKEY No matching key was found.
+   -EKEYEXPIRED The specified key has expired.
+   -EKEYREVOKED The specified key has been revoked.
+   -EDQUOT Changing the UID to the one specified would run that UID out
+     of quota.
+   -EACCES The key exists, but does not grant SETATTR permission to the
+     calling process.
+
+   A process that does not have the SysAdmin capability may not change a
+   key's UID or set the key's GID to a value that does not match the
+   process's GID or one of its group list. The caller must have SETATTR
+   permission on a key to be able change its ownership.
+
+---------------------------------------------------------------------
+   KEYCTL_CLEAR
+
+   Clears the list of keys attached to a keyring.
+
+   Arguments
+   ecx Key serial number. It may be one of the following special values:
+   KEY_SPEC_THREAD_KEYRING Caller's thread-specific keyring.
+   KEY_SPEC_PROCESS_KEYRING Caller's process-specific keyring.
+   KEY_SPEC_SESSION_KEYRING Caller's session-specific keyring.
+   KEY_SPEC_USER_KEYRING Caller's UID-specific keyring.
+   KEY_SPEC_USER_SESSION_KEYRING Caller's UID-session keyring.
+   KEY_SPEC_GROUP_KEYRING Caller's GID-specific keyring.
+   KEY_SPEC_REQKEY_AUTH_KEY This specifies the authorization key created
+   by request_key() and passed to the process it spawns to generate a
+   key. If a valid keyring ID is passed in, then this will simply be
+   returned if the key exists; an error will be issued if it doesn't
+   exist.
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ENOKEY No matching key was found.
+   -EKEYEXPIRED The keyring specified has expired.
+   -EKEYREVOKED The keyring specified had been revoked.
+   -ENOTDIR ecx is not a valid keyring.
+   -EACCES The keyring exists, but is not writable by the calling
+     process.
+
+   The calling process must have write permission on the keyring, and it
+   must be a keyring.
+
+---------------------------------------------------------------------
+   KEYCTL_DESCRIBE
+
+   Returns a summary of the key's attributes (but not its payload data)
+   as a string.
+
+   Arguments
+   ecx Key serial number. It may be one of the following special values:
+   KEY_SPEC_THREAD_KEYRING Caller's thread-specific keyring.
+   KEY_SPEC_PROCESS_KEYRING Caller's process-specific keyring.
+   KEY_SPEC_SESSION_KEYRING Caller's session-specific keyring.
+   KEY_SPEC_USER_KEYRING Caller's UID-specific keyring.
+   KEY_SPEC_USER_SESSION_KEYRING Caller's UID-session keyring.
+   KEY_SPEC_GROUP_KEYRING Caller's GID-specific keyring.
+   KEY_SPEC_REQKEY_AUTH_KEY This specifies the authorization key created
+   by request_key() and passed to the process it spawns to generate a
+   key. If a valid keyring ID is passed in, then this will simply be
+   returned if the key exists; an error will be issued if it doesn't
+   exist.
+
+   edx Pointer to a buffer which will receive the return information. The
+   return string has the following format:
+   <type>;<uid>;<gid>;<perm>;<description>
+   Where type and description are strings, uid and gid are decimal, and
+   perm is hexadecimal. A NULL character is included at the end of the
+   string if the buffer is sufficiently big.
+
+   esi Size of the buffer specified by edx. If the buffer is too small,
+   the full size of the description will be returned, and no copy will
+   take place.
+
+   If the system call succeeds the return value is the amount of data
+   placed into the buffer. If the buffer was too small, then the size of
+   buffer required will be returned, but no data will be transferred.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ENOKEY      No matching key was found.
+   -EKEYEXPIRED The key specified has expired.
+   -EKEYREVOKED The key specified had been revoked.
+   -EACCES      The key exists, but is not viewable by the calling process.
+
+   A process must have view permission on the key for this function to be
+   successful.
+
+---------------------------------------------------------------------
+   KEYCTL_GET_KEYRING_ID
+
+   Map a special key ID to a real key ID for current process. The special
+   key specified by "id" is looked up (with the key being created if
+   necessary) and the ID of the key or keyring thus found is returned if
+   it exists.
+
+   Arguments
+   ecx Key serial number. It may be one of the following special values:
+   KEY_SPEC_THREAD_KEYRING Caller's thread-specific keyring.
+   KEY_SPEC_PROCESS_KEYRING Caller's process-specific keyring.
+   KEY_SPEC_SESSION_KEYRING Caller's session-specific keyring.
+   KEY_SPEC_USER_KEYRING Caller's UID-specific keyring.
+   KEY_SPEC_USER_SESSION_KEYRING Caller's UID-session keyring.
+   KEY_SPEC_GROUP_KEYRING Caller's GID-specific keyring.
+   KEY_SPEC_REQKEY_AUTH_KEY This specifies the authorization key created
+   by request_key() and passed to the process it spawns to generate a
+   key. If a valid keyring ID is passed in, then this will simply be
+   returned if the key exists; an error will be issued if it doesn't
+   exist.
+
+   edx Specifies whether a new key should be created if it does not yet
+   exist. A non-zero value denotes that the key should be created.
+
+   If the system call succeeds the return value is key or keyring ID.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ENOKEY No matching key was found.
+   -ENOMEM Insufficient memory to create a key.
+   -EDQUOT The key quota for this user would be exceeded by creating this
+   key or linking it to the keyring.
+
+---------------------------------------------------------------------
+   KEYCTL_INSTANTIATE
+
+   Instantiates the payload of an uninstantiated key from the data
+   specified.
+   If the kernel calls back to userspace to complete the instantiation of
+   a key, userspace should use this call to supply data for the key
+   before the invoked process returns, or else the key will be marked
+   negative automatically.
+
+   Arguments
+   ecx Key serial number.
+
+   edx Pointer to a buffer containing the data for new payload. It may be
+   zero if the key type permits it. The key type may reject the data if
+   it's in the wrong format or in some other way invalid.
+
+   esi Size of the data pointed by edx. It may be zero if the key type
+   permits it.
+
+   edi Keyring serial number. If it's specified (non-zero), the key will
+   also be linked into this keyring, however all the constraints applying
+   in KEYCTL_LINK apply in this case too.
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ENOKEY No matching key was found.
+   -EKEYEXPIRED The keyring specified has expired.
+   -EKEYREVOKED The keyring specified had been revoked.
+   -EACCES The key exists, but is not writable by the requester.
+   -ENOMEM Insufficient memory to store the new payload or to expand the
+     destination keyring.
+   -EDQUOT The key quota for the key's user would be exceeded by
+     increasing the size of the key to accommodate the new payload or the
+     key quota for the keyring's user would be exceeded by expanding the
+     destination keyring.
+   -EINVAL The payload data was invalid.
+
+   The process must have write access on the key to be able to
+   instantiate it, and the key must be uninstantiated.
+
+
+---------------------------------------------------------------------
+   KEYCTL_JOIN_SESSION_KEYRING
+
+   Changes the session keyring to which a process is subscribed.
+
+   Arguments
+   ecx A pointer to a null-terminated string specifying a keyring name.
+   If a keyring of that name is available, the process will attempt to
+   subscribe to that keyring. Otherwise a new keyring of that name is
+   created and attached as the session keyring.
+   If ecx is null then a new anonymous keyring will be created, and the
+   process will be subscribed to that.
+
+   Return values
+
+   If the system call succeeds the return value is serial number of the
+   key it found or created.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EACCES The named keyring exists, but is not searchable by the calling
+     process.
+   -ENOMEM Insufficient memory to create a key.
+   -EDQUOT The key quota for this user would be exceeded by creating this
+     key or linking it to the keyring.
+
+   To attach to an extant named keyring, the keyring must have search
+   permission available to the calling process.
+
+---------------------------------------------------------------------
+   KEYCTL_LINK
+
+   Creates a link from the keyring to the key.
+
+   Arguments
+   ecx Key serial number.
+
+   edx Keyring serial number. It may be one of the following special
+   values:
+   KEY_SPEC_THREAD_KEYRING Caller's thread-specific keyring.
+   KEY_SPEC_PROCESS_KEYRING Caller's process-specific keyring.
+   KEY_SPEC_SESSION_KEYRING Caller's session-specific keyring.
+   KEY_SPEC_USER_KEYRING Caller's UID-specific keyring.
+   KEY_SPEC_USER_SESSION_KEYRING Caller's UID-session keyring.
+   KEY_SPEC_GROUP_KEYRING Caller's GID-specific keyring.
+   KEY_SPEC_REQKEY_AUTH_KEY This specifies the authorization key created
+   by request_key() and passed to the process it spawns to generate a
+   key. If a valid keyring ID is passed in, then this will simply be
+   returned if the key exists; an error will be issued if it doesn't
+   exist.
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ENOKEY No matching key or keyring was found.
+   -EKEYEXPIRED The keyring specified has expired.
+   -EKEYREVOKED The keyring specified had been revoked.
+   -EACCES The keyring exists, but is not writable or linkable by the
+     calling process.
+   -ENOMEM Insufficient memory to create a key.
+   -EDQUOT Expanding the keyring would exceed the keyring owner's quota.
+   -ENOTDIR edx is not a valid keyring.
+   -ENFILE Keyring is full.
+   -ELOOP Nesting of the keyrings is too deep.
+   -EDEADLK The link would introduce a cycle in the current nesting of
+     the keyrings.
+
+   The process must have write permission on the keyring and must have
+   link permission on the key.
+
+---------------------------------------------------------------------
+   KEYCTL_NEGATE
+
+   Marks a key as negatively instantiated and sets the expiration timer
+   on it.
+   If the kernel calls back to userspace to complete the instantiation of
+   a key, userspace should use this call mark the key as negative before
+   the invoked process returns if it is unable to fulfil the request.
+
+   Arguments
+   ecx Key serial number.
+
+   edx 32bit value that specifies the lifetime of the key in seconds.
+
+   edi Keyring serial number. If it's specified (non-zero), the key will also
+   be linked into this keyring, however all the constraints applying in
+   [1]KEYCTL_LINK apply in this case too.
+   The destination keyring, if given, is assumed to belong to the initial
+   requester, and not the instantiating process. Therefore, the special
+   keyring IDs refer to the requesting process's keyrings, not the
+   caller's, and the requester's UID, etc. will be used to access them.
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ENOKEY No matching key was found.
+   -EKEYEXPIRED The keyring specified has expired.
+   -EKEYREVOKED The keyring specified had been revoked.
+   -EACCES The key exists, but is not writable by the requester.
+   -ENOMEM Insufficient memory to store the new payload or to expand the
+     destination keyring.
+   -EDQUOT The key quota for the key's user would be exceeded by
+     increasing the size of the key to accommodate the new payload or the
+     key quota for the keyring's user would be exceeded by expanding the
+     destination keyring.
+   -EINVAL The payload data was invalid.
+
+   Only a key for which authority has been assumed may be instantiated or
+   negatively instantiated, and once instantiated, the authorisation key
+   will be revoked and the requesting process will be able to resume.
+
+---------------------------------------------------------------------
+   KEYCTL_READ
+
+   Reads the payload data from the specified key into the buffer.
+
+   Arguments
+   ecx Key serial number.
+
+   edx Pointer to a buffer which will receive the payload data. The data
+   is presented to the user as an array of key_serial_t values, each of
+   which corresponds to a key to which the keyring holds a link. The size
+   of the keyring will be sizeof.key_serial_t multiplied by the number of
+   keys.
+
+   esi Size of the buffer pointed by edx. If the buffer is too small, the
+   full size of the payload will be returned, and no copy will take
+   place.
+
+   If the system call succeeds the return value is the amount of data
+   placed into the buffer. If the buffer was too small, then the size of
+   buffer required will be returned, but no data will be transferred.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ENOKEY      No matching key was found.
+   -EKEYEXPIRED The keyring specified has expired.
+   -EKEYREVOKED The keyring specified had been revoked.
+   -EACCES      The key exists, but is not readable by the calling process.
+   -EOPNOTSUPP  The key type does not support reading of the payload data.
+
+   The caller must have read permission on a key to be able to read it.
+
+---------------------------------------------------------------------
+   KEYCTL_REVOKE
+
+   Marks a key as being revoked. After this operation has been performed
+   on a key, attempts to access it will meet with error -EKEYREVOKED.
+
+   Arguments
+   ecx Key serial number. It may be one of the following special values:
+   KEY_SPEC_THREAD_KEYRING Caller's thread-specific keyring.
+   KEY_SPEC_PROCESS_KEYRING Caller's process-specific keyring.
+   KEY_SPEC_SESSION_KEYRING Caller's session-specific keyring.
+   KEY_SPEC_USER_KEYRING Caller's UID-specific keyring.
+   KEY_SPEC_USER_SESSION_KEYRING Caller's UID-session keyring.
+   KEY_SPEC_GROUP_KEYRING Caller's GID-specific keyring.
+   KEY_SPEC_REQKEY_AUTH_KEY This specifies the authorization key created
+   by request_key() and passed to the process it spawns to generate a
+   key. If a valid keyring ID is passed in, then this will simply be
+   returned if the key exists; an error will be issued if it doesn't
+   exist.
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ENOKEY No matching key was found.
+   -EKEYREVOKED The key has already been revoked.
+   -EACCES The named key exists, but is not writable by the calling
+     process.
+
+   The caller must have write permission on a key to be able revoke it.
+
+---------------------------------------------------------------------
+   KEYCTL_SEARCH
+
+   Recursively searches the keyring for a key of the specified type and
+   description. If found, the key will be attached to the destination
+   keyring (if given), and its serial number will be returned.
+
+   Arguments
+   ecx Keyring serial number. It may be one of the following special
+   values:
+   KEY_SPEC_THREAD_KEYRING Caller's thread-specific keyring.
+   KEY_SPEC_PROCESS_KEYRING Caller's process-specific keyring.
+   KEY_SPEC_SESSION_KEYRING Caller's session-specific keyring.
+   KEY_SPEC_USER_KEYRING Caller's UID-specific keyring.
+   KEY_SPEC_USER_SESSION_KEYRING Caller's UID-session keyring.
+   KEY_SPEC_GROUP_KEYRING Caller's GID-specific keyring.
+   KEY_SPEC_REQKEY_AUTH_KEY This specifies the authorization key created
+   by request_key() and passed to the process it spawns to generate a
+   key. If a valid keyring ID is passed in, then this will simply be
+   returned if the key exists; an error will be issued if it doesn't
+   exist.
+   The source keyring must grant search permission to the caller. Child
+   keyrings will be only be recursively searched if they grant search
+   permission to the caller as well.
+
+   edx Pointer to a null terminated string containing the type.
+
+   esi Pointer to a null terminated string containing the description.
+
+   edi Destination keyring serial. It may be 0, then no attempt will be
+   made to forge a link to the key, and just the serial number will be
+   returned.
+   If the destination keyring is given, then the link may only be formed
+   if the found key grants the caller link permission and the destination
+   keyring grants the caller write permission.
+   If the search is successful, and if the destination keyring already
+   contains a link to a key that matches the specified type and
+   description, then that link will be replaced by a link to the found
+   key.
+
+   If the system call succeeds the return value is key ID.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ENOKEY No matching key was found.
+   -EKEYEXPIRED The keyring specified has expired.
+   -EKEYREVOKED The keyring specified had been revoked.
+   -ENOTDIR One of the keyrings is a valid key that isn't a keyring.
+   -EACCES The source keyring didn't grant search permission, the
+     destination keyring didn't grant write permission or the found key
+     didn't grant link permission to the caller.
+   -ENOMEM Insufficient memory to expand the destination keyring.
+   -EDQUOT The key quota for this user would be exceeded by creating a
+     link to the found key in the destination keyring.
+
+
+---------------------------------------------------------------------
+   KEYCTL_SETPERM
+
+   Changes the permissions mask on a key.
+
+   Arguments
+   ecx Key serial number. It may be one of the following special values:
+   KEY_SPEC_THREAD_KEYRING Caller's thread-specific keyring.
+   KEY_SPEC_PROCESS_KEYRING Caller's process-specific keyring.
+   KEY_SPEC_SESSION_KEYRING Caller's session-specific keyring.
+   KEY_SPEC_USER_KEYRING Caller's UID-specific keyring.
+   KEY_SPEC_USER_SESSION_KEYRING Caller's UID-session keyring.
+   KEY_SPEC_GROUP_KEYRING Caller's GID-specific keyring.
+   KEY_SPEC_REQKEY_AUTH_KEY This specifies the authorization key created
+   by request_key() and passed to the process it spawns to generate a
+   key. If a valid keyring ID is passed in, then this will simply be
+   returned if the key exists; an error will be issued if it doesn't
+   exist.
+
+   edx Permission mask. It is a result of a bitwise-or operation of the
+   following flags:
+   KEY_xxx_VIEW Grant permission to view the attributes of a key.
+   KEY_xxx_READ Grant permission to read the payload of a key or to list
+   a keyring.
+   KEY_xxx_WRITE Grant permission to modify the payload of a key or to
+   add or remove links to/from a keyring.
+   KEY_xxx_SEARCH Grant permission to find a key or to search a keyring.
+   KEY_xxx_LINK Grant permission to make links to a key.
+   KEY_xxx_SETATTR Grant permission to change the ownership and
+   permissions attributes of a key.
+   KEY_xxx_ALL Grant all the above.
+   'xxx' should be replace by one of the following specifying to whom the
+   permission should be granted:
+   POS Grant the permission to a process that possesses the key (has it
+   attached searchably to one of the process's keyrings).
+   USR Grant the permission to a process with the same UID as the key.
+
+   GRP
+
+   Grant the permission to a process with the same GID as the key, or
+   with a match for the key's GID amongst that process's Groups list.
+
+   OTH
+
+   Grant the permission to any other process. Examples include:
+   KEY_POS_VIEW, KEY_USR_READ, KEY_GRP_SEARCH and KEY_OTH_ALL. User,
+   group and other grants are exclusive: if a process qualifies in the
+   'user' category, it will not qualify in the 'groups' category; and if
+   a process qualifies in either 'user' or 'groups' then it will not
+   qualify in the 'other' category. Possessor grants are cumulative with
+   the grants from the 'user', 'groups' and 'other' categories.
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ENOKEY No matching key was found.
+   -EKEYEXPIRED The specified key has expired.
+   -EKEYREVOKED The specified key has been revoked.
+   -EACCES The named key exists, but does not grant SETATTR permission to
+     the calling process.
+
+   A process that does not have the SysAdmin capability may not change
+   the permissions mask on a key that doesn't have the same UID as the
+   caller. The caller must have SETATTR permission on a key to be able
+   change its permissions mask.
+
+---------------------------------------------------------------------
+   KEYCTL_SET_REQKEY_KEYRING
+
+   Sets the default destination for implicit key requests for the current
+   thread and returns the old setting.
+   After this operation has been issued, keys acquired by implicit key
+   requests, such as might be performed by [1]sys_open on an AFS or NFS
+   filesystem, will be linked by default to the specified keyring by this
+   function.
+
+   Arguments
+   ecx Destination. I t may be one of the following values:
+   KEY_REQKEY_DEFL_NO_CHANGE This makes no change to the current setting.
+   KEY_REQKEY_DEFL_DEFAULT This selects the default behaviour which is to
+   use the thread-specific keyring if there is one, otherwise the
+   process-specific keyring if there is one, otherwise the session
+   keyring if there is one, otherwise the UID-specific session keyring.
+   This setting is inherited across fork() and execve().
+   KEY_REQKEY_DEFL_THREAD_KEYRING This makes the thread-specific keyring
+   the default destination.
+   KEY_REQKEY_DEFL_PROCESS_KEYRING This makes the process-specific
+   keyring the default destination.
+   KEY_REQKEY_DEFL_SESSION_KEYRING This makes the session keyring the
+   default destination.
+   KEY_REQKEY_DEFL_USER_KEYRING This makes the UID-specific keyring the
+   default destination.
+   KEY_REQKEY_DEFL_USER_SESSION_KEYRING This makes the UID-specific
+   session keyring the default destination.
+   KEY_REQKEY_DEFL_GROUP_KEYRING This makes the GID-specific keyring the
+   default destination.
+
+   If the system call succeeds the return value is the old setting.
+   If the system call fails the return value is -EINVAL denoting that he
+   value of ecx is invalid.
+
+
+---------------------------------------------------------------------
+   KEYCTL_SET_TIMEOUT
+
+   Sets or clears the expiration timer on a key.
+
+   Arguments
+   ecx Key serial number.
+
+   edx Timeout (in seconds) to set. If this values is null the the
+   timeout is cleared. When the key expires, further attempts to access
+   it will be met with error EKEYEXPIRED.
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ENOKEY No matching key was found.
+   -EKEYEXPIRED The keyring specified has expired.
+   -EKEYREVOKED The keyring specified had been revoked.
+   -EACCES The named key exists, but does not grant setattr permission to
+     the calling process.
+
+   The process must have attribute modification access on a key to set
+   its timeout. Timeouts may not be set with this function on negative,
+   revoked or expired keys.
+
+----------------------------------------------------------------------
+   KEYCTL_UNLINK
+
+   Looks through the keyring for the first link to the specified key, and
+   removes it if found. Subsequent links to that key are ignored.
+
+   Arguments
+   ecx Key serial number.
+
+   edx Keyring serial number. It may be one of the following special
+   values:
+   KEY_SPEC_THREAD_KEYRING Caller's thread-specific keyring.
+   KEY_SPEC_PROCESS_KEYRING Caller's process-specific keyring.
+   KEY_SPEC_SESSION_KEYRING Caller's session-specific keyring.
+   KEY_SPEC_USER_KEYRING Caller's UID-specific keyring.
+   KEY_SPEC_USER_SESSION_KEYRING Caller's UID-session keyring.
+   KEY_SPEC_GROUP_KEYRING Caller's GID-specific keyring.
+   KEY_SPEC_REQKEY_AUTH_KEY This specifies the authorization key created
+   by request_key() and passed to the process it spawns to generate a
+   key. If a valid keyring ID is passed in, then this will simply be
+   returned if the key exists; an error will be issued if it doesn't
+   exist.
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EKEYEXPIRED The keyring specified has expired.
+   -EKEYREVOKED The keyring specified had been revoked.
+   -ENOENT      The key is not present.
+   -ENOTDIR     edx is not a valid keyring.
+
+   The process must have write permission on the keyring.
+
+---------------------------------------------------------------------
+   KEYCTL_UPDATE
+
+   Updates the payload of a key if the key type permits it.
+
+   Arguments
+   ecx Key serial number. It may be one of the following special values:
+   KEY_SPEC_THREAD_KEYRING Caller's thread-specific keyring.
+   KEY_SPEC_PROCESS_KEYRING Caller's process-specific keyring.
+   KEY_SPEC_SESSION_KEYRING Caller's session-specific keyring.
+   KEY_SPEC_USER_KEYRING Caller's UID-specific keyring.
+   KEY_SPEC_USER_SESSION_KEYRING Caller's UID-session keyring.
+   KEY_SPEC_GROUP_KEYRING Caller's GID-specific keyring.
+   KEY_SPEC_REQKEY_AUTH_KEY This specifies the authorization key created
+   by request_key() and passed to the process it spawns to generate a
+   key. If a valid keyring ID is passed in, then this will simply be
+   returned if the key exists; an error will be issued if it doesn't
+   exist.
+   edx A pointer to payload data. The key type may reject the data if
+   it's in the wrong format or in some other way invalid.
+
+   edx and ecx may be zero if the key type permits that.
+
+   esi Size of the payload data.
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ENOKEY The key specified is invalid.
+   -ENOMEM Insufficient memory to store the new payload.
+   -EDQUOT The key quota for this user would be exceeded by increasing
+     the size of the key to accommodate the new payload.
+   -EKEYEXPIRED The key specified has expired.
+   -EKEYREVOKED The key specified had been revoked.
+   -EINVAL The payload data size was invalid.
+   -EACCES The key exists, but is not writable by the calling process.
+   -EFAULT The payload data was invalid.
+   -EOPNOTSUPP The key type does not support the update operation on its
+     keys.
+
+   The caller must have write permission on a key to be able update it.
+
+   The return values depend on the particular function used (See above).
+   This system call will fail with -EOPNOTSUPP if an invalid command was
+   specified in ebx.
+
+---------------------------------------------------------------------
+
+   Available since 2.6.10
+
+**********************************************************************
+kernel include files related to keys
+**********************************************************************
+
+/* key.h: authentication token and access key management
+
+/* key handle serial number */
+typedef int32_t key_serial_t;
+
+/* key handle permissions mask */
+typedef uint32_t key_perm_t;
+
+struct key;
+
+#define KEY_POS_VIEW	0x01000000	/* possessor can view a key's attributes */
+#define KEY_POS_READ	0x02000000	/* possessor can read key payload / view keyring */
+#define KEY_POS_WRITE	0x04000000	/* possessor can update key payload / add link to keyring */
+#define KEY_POS_SEARCH	0x08000000	/* possessor can find a key in search / search a keyring */
+#define KEY_POS_LINK	0x10000000	/* possessor can create a link to a key/keyring */
+#define KEY_POS_SETATTR	0x20000000	/* possessor can set key attributes */
+#define KEY_POS_ALL	0x3f000000
+
+#define KEY_USR_VIEW	0x00010000	/* user permissions... */
+#define KEY_USR_READ	0x00020000
+#define KEY_USR_WRITE	0x00040000
+#define KEY_USR_SEARCH	0x00080000
+#define KEY_USR_LINK	0x00100000
+#define KEY_USR_SETATTR	0x00200000
+#define KEY_USR_ALL	0x003f0000
+
+#define KEY_GRP_VIEW	0x00000100	/* group permissions... */
+#define KEY_GRP_READ	0x00000200
+#define KEY_GRP_WRITE	0x00000400
+#define KEY_GRP_SEARCH	0x00000800
+#define KEY_GRP_LINK	0x00001000
+#define KEY_GRP_SETATTR	0x00002000
+#define KEY_GRP_ALL	0x00003f00
+
+#define KEY_OTH_VIEW	0x00000001	/* third party permissions... */
+#define KEY_OTH_READ	0x00000002
+#define KEY_OTH_WRITE	0x00000004
+#define KEY_OTH_SEARCH	0x00000008
+#define KEY_OTH_LINK	0x00000010
+#define KEY_OTH_SETATTR	0x00000020
+#define KEY_OTH_ALL	0x0000003f
+
+struct seq_file;
+struct user_struct;
+struct signal_struct;
+
+struct key_type;
+struct key_owner;
+struct keyring_list;
+struct keyring_name;
+
+/*****************************************************************************/
+/*
+ * key reference with possession attribute handling
+ *
+ * NOTE! key_ref_t is a typedef'd pointer to a type that is not actually
+ * defined. This is because we abuse the bottom bit of the reference to carry a
+ * flag to indicate whether the calling process possesses that key in one of
+ * its keyrings.
+ *
+ * the key_ref_t has been made a separate type so that the compiler can reject
+ * attempts to dereference it without proper conversion.
+ *
+ * the three functions are used to assemble and disassemble references
+ */
+typedef struct __key_reference_with_attributes *key_ref_t;
+
+static inline key_ref_t make_key_ref(const struct key *key,
+				     unsigned long possession)
+{
+	return (key_ref_t) ((unsigned long) key | possession);
+}
+
+static inline struct key *key_ref_to_ptr(const key_ref_t key_ref)
+{
+	return (struct key *) ((unsigned long) key_ref & ~1UL);
+}
+
+static inline unsigned long is_key_possessed(const key_ref_t key_ref)
+{
+	return (unsigned long) key_ref & 1UL;
+}
+
+/*****************************************************************************/
+/*
+ * authentication token / access credential / keyring
+ * - types of key include:
+ *   - keyrings
+ *   - disk encryption IDs
+ *   - Kerberos TGTs and tickets
+ */
+struct key {
+	atomic_t		usage;		/* number of references */
+	key_serial_t		serial;		/* key serial number */
+	struct rb_node		serial_node;
+	struct key_type		*type;		/* type of key */
+	struct rw_semaphore	sem;		/* change vs change sem */
+	struct key_user		*user;		/* owner of this key */
+	void			*security;	/* security data for this key */
+	time_t			expiry;		/* time at which key expires (or 0) */
+	uid_t			uid;
+	gid_t			gid;
+	key_perm_t		perm;		/* access permissions */
+	unsigned short		quotalen;	/* length added to quota */
+	unsigned short		datalen;	/* payload data length
+						 * - may not match RCU dereferenced payload
+						 * - payload should contain own length
+						 */
+
+#define KEY_DEBUG_MAGIC		0x18273645u
+#define KEY_DEBUG_MAGIC_X	0xf8e9dacbu
+
+	unsigned long		flags;		/* status flags (change with bitops) */
+#define KEY_FLAG_INSTANTIATED	0	/* set if key has been instantiated */
+#define KEY_FLAG_DEAD		1	/* set if key type has been deleted */
+#define KEY_FLAG_REVOKED	2	/* set if key had been revoked */
+#define KEY_FLAG_IN_QUOTA	3	/* set if key consumes quota */
+#define KEY_FLAG_USER_CONSTRUCT	4	/* set if key is being constructed in userspace */
+#define KEY_FLAG_NEGATIVE	5	/* set if key is negative */
+
+	/* the description string
+	 * - this is used to match a key against search criteria
+	 * - this should be a printable string
+	 * - eg: for krb5 AFS, this might be "afs@REDHAT.COM"
+	 */
+	char			*description;
+
+	/* type specific data
+	 * - this is used by the keyring type to index the name
+	 */
+	union {
+		struct list_head	link;
+	} type_data;
+
+	/* key data
+	 * - this is used to hold the data actually used in cryptography or
+	 *   whatever
+	 */
+	union {
+		unsigned long		value;
+		void			*data;
+		struct keyring_list	*subscriptions;
+	} payload;
+};
+
+/*****************************************************************************/
+/*
+ * kernel managed key type definition
+ */
+typedef int (*request_key_actor_t)(struct key *key, struct key *authkey,
+				   const char *op, void *aux);
+
+struct key_type {
+	/* name of the type */
+	const char *name;
+
+	/* default payload length for quota precalculation (optional)
+	 * - this can be used instead of calling key_payload_reserve(), that
+	 *   function only needs to be called if the real datalen is different
+	 */
+	size_t def_datalen;
+
+	/* instantiate a key of this type
+	 * - this method should call key_payload_reserve() to determine if the
+	 *   user's quota will hold the payload
+	 */
+	int (*instantiate)(struct key *key, const void *data, size_t datalen);
+
+	/* update a key of this type (optional)
+	 * - this method should call key_payload_reserve() to recalculate the
+	 *   quota consumption
+	 * - the key must be locked against read when modifying
+	 */
+	int (*update)(struct key *key, const void *data, size_t datalen);
+
+	/* match a key against a description */
+	int (*match)(const struct key *key, const void *desc);
+
+	/* clear some of the data from a key on revokation (optional)
+	 * - the key's semaphore will be write-locked by the caller
+	 */
+	void (*revoke)(struct key *key);
+
+	/* clear the data from a key (optional) */
+	void (*destroy)(struct key *key);
+
+	/* describe a key */
+	void (*describe)(const struct key *key, struct seq_file *p);
+
+	/* read a key's data (optional)
+	 * - permission checks will be done by the caller
+	 * - the key's semaphore will be readlocked by the caller
+	 * - should return the amount of data that could be read, no matter how
+	 *   much is copied into the buffer
+	 * - shouldn't do the copy if the buffer is NULL
+	 */
+	long (*read)(const struct key *key, char __user *buffer, size_t buflen);
+
+	/* handle request_key() for this type instead of invoking
+	 * /sbin/request-key (optional)
+	 * - key is the key to instantiate
+	 * - authkey is the authority to assume when instantiating this key
+	 * - op is the operation to be done, usually "create"
+	 * - the call must not return until the instantiation process has run
+	 *   its course
+	 */
+	request_key_actor_t request_key;
+
+	/* internal fields */
+	struct list_head	link;		/* link in types list */
+};
+
+extern struct key_type key_type_keyring;
+
+extern int register_key_type(struct key_type *ktype);
+extern void unregister_key_type(struct key_type *ktype);
+
+extern struct key *key_alloc(struct key_type *type,
+			     const char *desc,
+			     uid_t uid, gid_t gid,
+			     struct task_struct *ctx,
+			     key_perm_t perm,
+			     unsigned long flags);
+
+
+#define KEY_ALLOC_IN_QUOTA	0x0000	/* add to quota, reject if would overrun */
+#define KEY_ALLOC_QUOTA_OVERRUN	0x0001	/* add to quota, permit even if overrun */
+#define KEY_ALLOC_NOT_IN_QUOTA	0x0002	/* not in quota */
+
+extern int key_payload_reserve(struct key *key, size_t datalen);
+extern int key_instantiate_and_link(struct key *key,
+				    const void *data,
+				    size_t datalen,
+				    struct key *keyring,
+				    struct key *instkey);
+extern int key_negate_and_link(struct key *key,
+			       unsigned timeout,
+			       struct key *keyring,
+			       struct key *instkey);
+extern void key_revoke(struct key *key);
+extern void key_put(struct key *key);
+
+static inline struct key *key_get(struct key *key)
+{
+	if (key)
+		atomic_inc(&key->usage);
+	return key;
+}
+
+static inline void key_ref_put(key_ref_t key_ref)
+{
+	key_put(key_ref_to_ptr(key_ref));
+}
+
+extern struct key *request_key(struct key_type *type,
+			       const char *description,
+			       const char *callout_info);
+
+extern struct key *request_key_with_auxdata(struct key_type *type,
+					    const char *description,
+					    const char *callout_info,
+					    void *aux);
+
+extern int key_validate(struct key *key);
+
+extern key_ref_t key_create_or_update(key_ref_t keyring,
+				      const char *type,
+				      const char *description,
+				      const void *payload,
+				      size_t plen,
+				      unsigned long flags);
+
+extern int key_update(key_ref_t key,
+		      const void *payload,
+		      size_t plen);
+
+extern int key_link(struct key *keyring,
+		    struct key *key);
+
+extern int key_unlink(struct key *keyring,
+		      struct key *key);
+
+extern struct key *keyring_alloc(const char *description, uid_t uid, gid_t gid,
+				 struct task_struct *ctx,
+				 unsigned long flags,
+				 struct key *dest);
+
+extern int keyring_clear(struct key *keyring);
+
+extern key_ref_t keyring_search(key_ref_t keyring,
+				struct key_type *type,
+				const char *description);
+
+extern int keyring_add_key(struct key *keyring,
+			   struct key *key);
+
+extern struct key *key_lookup(key_serial_t id);
+
+extern void keyring_replace_payload(struct key *key, void *replacement);
+
+#define key_serial(key) ((key) ? (key)->serial : 0)
+
+
+#define key_validate(k)			0
+#define key_serial(k)			0
+#define key_get(k) 			({ NULL; })
+#define key_put(k)			do { } while(0)
+#define key_ref_put(k)			do { } while(0)
+#define make_key_ref(k)			({ NULL; })
+#define key_ref_to_ptr(k)		({ NULL; })
+#define is_key_possessed(k)		0
+#define alloc_uid_keyring(u,c)		0
+#define switch_uid_keyring(u)		do { } while(0)
+#define __install_session_keyring(t, k)	({ NULL; })
+#define copy_keys(f,t)			0
+#define copy_thread_group_keys(t)	0
+#define exit_keys(t)			do { } while(0)
+#define exit_thread_group_keys(tg)	do { } while(0)
+#define suid_keys(t)			do { } while(0)
+#define exec_keys(t)			do { } while(0)
+#define key_fsuid_changed(t)		do { } while(0)
+#define key_fsgid_changed(t)		do { } while(0)
+#define key_init()			do { } while(0)
+
+/* Initial keyrings */
+extern struct key root_user_keyring;
+extern struct key root_session_keyring;
+
+
+
+/* user-type.h: User-defined key type
+/*****************************************************************************/
+/*
+ * the payload for a key of type "user"
+ * - once filled in and attached to a key:
+ *   - the payload struct is invariant may not be changed, only replaced
+ *   - the payload must be read with RCU procedures or with the key semaphore
+ *     held
+ *   - the payload may only be replaced with the key semaphore write-locked
+ * - the key's data length is the size of the actual data, not including the
+ *   payload wrapper
+ */
+struct user_key_payload {
+	struct rcu_head	rcu;		/* RCU destructor */
+	unsigned short	datalen;	/* length of this data */
+	char		data[0];	/* actual data */
+};
+
+extern struct key_type key_type_user;
+
+
+/* key-ui.h: key userspace interface stuff
+******************************************************************************
+/* the key tree */
+extern struct rb_root key_serial_tree;
+extern spinlock_t key_serial_lock;
+
+/* required permissions */
+#define	KEY_VIEW	0x01	/* require permission to view attributes */
+#define	KEY_READ	0x02	/* require permission to read content */
+#define	KEY_WRITE	0x04	/* require permission to update / modify */
+#define	KEY_SEARCH	0x08	/* require permission to search (keyring) or find (key) */
+#define	KEY_LINK	0x10	/* require permission to link */
+#define	KEY_SETATTR	0x20	/* require permission to change attributes */
+#define	KEY_ALL		0x3f	/* all the above permissions */
+
+/*
+ * the keyring payload contains a list of the keys to which the keyring is
+ * subscribed
+ */
+struct keyring_list {
+	struct rcu_head	rcu;		/* RCU deletion hook */
+	unsigned short	maxkeys;	/* max keys this list can hold */
+	unsigned short	nkeys;		/* number of keys currently held */
+	unsigned short	delkey;		/* key to be unlinked by RCU */
+	struct key	*keys[0];
+};
+
+/*
+ * check to see whether permission is granted to use a key in the desired way
+ */
+extern int key_task_permission(const key_ref_t key_ref,
+			       struct task_struct *context,
+			       key_perm_t perm);
+
+static inline int key_permission(const key_ref_t key_ref, key_perm_t perm)
+{
+	return key_task_permission(key_ref, current, perm);
+}
+
+extern key_ref_t lookup_user_key(struct task_struct *context,
+				 key_serial_t id, int create, int partial,
+				 key_perm_t perm);
+
+extern long join_session_keyring(const char *name);
+
+extern struct key_type *key_type_lookup(const char *type);
+extern void key_type_put(struct key_type *ktype);
+
+#define key_negative_timeout	60	/* default timeout on a negative key's existence */
+
+
+#endif /* _LINUX_KEY_UI_H */
+

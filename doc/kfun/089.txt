@@ -1,0 +1,54 @@
+
+----------------------------------------------------------------------------
+ 89 readdir        - read directory entry
+----------------------------------------------------------------------------
+
+   mov eax,89
+   mov ebx,fd   ;open file descriptor
+   mov ecx,dirp ;ptr to structure   
+
+       This is not the function you are interested in.  it is superseeded by
+       getdents.
+
+       readdir reads one dirent structure from the directory pointed at by  fd
+       into  the  memory  area  pointed  to  by  dirp.  The parameter count is
+       ignored; at most one dirent structure is read.
+
+       The dirent structure is declared as follows:
+
+              struct dirent
+              {
+                  long d_ino;                 /* inode number */
+                  off_t d_off;                /* offset to this dirent */
+                  unsigned short d_reclen;    /* length of this d_name */
+                  char d_name [NAME_MAX+1];   /* file name (null-terminated) */
+              }
+
+       d_ino is an inode number.  d_off is the distance from the start of  the
+       directory to this dirent.  d_reclen is the size of d_name, not counting
+       the null terminator.  d_name is a null-terminated file name.
+
+
+RETURN VALUE
+       On success, 1 is returned.  On end of directory,  0  is  returned.   On
+       error, a negative code is returned
+
+ERRORS
+       EBADF  Invalid file descriptor fd.
+
+       EFAULT Argument points outside the calling process's address space.
+
+       EINVAL Result buffer is too small.
+
+       ENOENT No such directory.
+
+       ENOTDIR
+              File descriptor does not refer to a directory.
+
+CONFORMING TO
+       This system call is Linux specific.
+
+SEE ALSO
+       getdents, readdir
+
+

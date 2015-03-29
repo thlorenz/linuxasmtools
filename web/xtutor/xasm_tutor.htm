@@ -1,0 +1,1462 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<!--head-->
+</head>
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!--menu-->
+<!-- ######################--><!-- ### content cell #####--><!-- ######################--><td
+ width="100%">
+      <div style="text-align: center; font-weight: bold;"> <span>&nbsp;X
+Server
+(Desktop) Programming in Assembler</span><br>
+      <span>&nbsp;jeff owens</span><br>
+      <span>&nbsp;@2008 GNU General Public License</span><br>
+      <span></span></div>
+      <span><br>
+      </span><br>
+      <span>CONTENTS</span> <span><br>
+1. &nbsp;&nbsp;Introduction - what this document covers<br>
+2. &nbsp;&nbsp;Linux Programming Environments<br>
+3. &nbsp;&nbsp;Overview of X programming<br>
+4. &nbsp;&nbsp;Connecting to the X server<br>
+5. &nbsp;&nbsp;Sending X commands<br>
+6. &nbsp;&nbsp;Receiving X data<br>
+7. &nbsp;&nbsp;Speed Considerations<br>
+8. &nbsp;&nbsp;X protocol extensions<br>
+9. &nbsp;&nbsp;Compiling<br>
+10 &nbsp;&nbsp;Example program using asmlibx<br>
+11. &nbsp;Example program without asmlibx<br>
+12. &nbsp;Debugging<br>
+13. &nbsp;X tools<br>
+14. &nbsp;Useful Links<br>
+15. &nbsp;Example 1 source<br>
+16. &nbsp;Example 2 source<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;<br>
+1.0 Introduction<br>
+----------------<br>
+      <br>
+&nbsp;&nbsp;This document explores assembler programming<br>
+&nbsp;&nbsp;for the Linux x server. It describes building<br>
+&nbsp;&nbsp;a sample program and debugging x programs.<br>
+      <br>
+      <br>
+2.0 Linux Programming Environments<br>
+----------------------------------<br>
+      <br>
+&nbsp;&nbsp;Linux programs can run in the console, on a<br>
+&nbsp;&nbsp;terminal, or utilize the X server. &nbsp;Each<br>
+&nbsp;&nbsp;environment is unique and has different features<br>
+&nbsp;&nbsp;available. &nbsp;A short summary follows:<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;Console programs talk directly to the Linux<br>
+&nbsp;&nbsp;kernel and most are command line (text) programs.<br>
+&nbsp;&nbsp;The kernel does not supply graphics functions,<br>
+&nbsp;&nbsp;mouse drivers, or audio handlers. &nbsp;This environment<br>
+&nbsp;&nbsp;is home to a large number of classical unix<br>
+&nbsp;&nbsp;utilities. &nbsp;It can host very fast and efficient<br>
+&nbsp;&nbsp;programming, has lots of documentation, and can<br>
+&nbsp;&nbsp;be confusing to new programmers.<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;Terminal programs run in a "terminal" talking<br>
+&nbsp;&nbsp;to the X server. The terminal environment is<br>
+&nbsp;&nbsp;very close the the console environment and most<br>
+&nbsp;&nbsp;console programs can also run on a terminal.<br>
+&nbsp;&nbsp;There are a large number of different terminals<br>
+&nbsp;&nbsp;and each provides different features. &nbsp;The more<br>
+&nbsp;&nbsp;popular terminals add mouse handling and menus<br>
+&nbsp;&nbsp;to control fonts and other features.<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;X servers are starting to dominate Linux computing<br>
+&nbsp;&nbsp;and provide a more robust and simpler interface<br>
+&nbsp;&nbsp;for most programming jobs. &nbsp;The X server provides<br>
+&nbsp;&nbsp;very good handling for keyboards, mice, graphics,<br>
+&nbsp;&nbsp;and adds window control for working with multiple<br>
+&nbsp;&nbsp;programs at the same time.<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;Which environment is best for portable programs?<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;Assembler isn't considered portable and very few<br>
+&nbsp;&nbsp;tools assist with portability. &nbsp;Currently there<br>
+&nbsp;&nbsp;is an library (HLA) that provides some basic<br>
+&nbsp;&nbsp;functions. It supports terminal programming and<br>
+&nbsp;&nbsp;may be useful for simple text programs. There<br>
+&nbsp;&nbsp;are many non-assembler libraries that supply<br>
+&nbsp;&nbsp;portability for X server/Microsoft &nbsp;and they<br>
+&nbsp;&nbsp;can be called from most assemblers. &nbsp;Portable<br>
+&nbsp;&nbsp;assemblers include nasm and fasm. &nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;Unix to Unix portability has been attempted<br>
+&nbsp;&nbsp;on the LinuxAssembly web site, but has not<br>
+&nbsp;&nbsp;got a lot of support.<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;If portability is a goal the best path is<br>
+&nbsp;&nbsp;probably to work in a HLL such as "C" and use<br>
+&nbsp;&nbsp;one of the portable libraries.<br>
+      <br>
+&nbsp;&nbsp;If the choice is between console/terminal/<br>
+&nbsp;&nbsp;x server programming, the x server interface<br>
+&nbsp;&nbsp;is well standardized and available on other<br>
+&nbsp;&nbsp;operating systems.<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;Why choose console/terminal programming?<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;Unix administration and setup is still done<br>
+&nbsp;&nbsp;in the console and on terminals. &nbsp;Servers and<br>
+&nbsp;&nbsp;other demanding tasks, do not need a X server<br>
+&nbsp;&nbsp;and run from the console. Also, many embedded<br>
+&nbsp;&nbsp;systems or standalone work stations have<br>
+&nbsp;&nbsp;chosen efficient console programming. All these<br>
+&nbsp;&nbsp;programs are textual and work on minimal hardware.<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;For textual programs needing efficiency, choose<br>
+&nbsp;&nbsp;the console.<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;Why choose X server programming?<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;Today most games, applications, browsers, and general<br>
+&nbsp;&nbsp;use software runs under the X server. &nbsp;This environment<br>
+&nbsp;&nbsp;provides a fast growing tool set and very robust<br>
+&nbsp;&nbsp;programming arena. &nbsp;It also, is home to many<br>
+&nbsp;&nbsp;bloated and inefficient programs. &nbsp;Assembler can<br>
+&nbsp;&nbsp;fit into this environment easily, but few tools<br>
+&nbsp;&nbsp;exist today. &nbsp;It is probably a good choice for<br>
+&nbsp;&nbsp;casual programming.<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;The largest audience is also on the x desktop<br>
+&nbsp;&nbsp;and the desktop interacts with web and remote<br>
+&nbsp;&nbsp;computers. &nbsp;Overall it provides the best future<br>
+&nbsp;&nbsp;growth path.<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;Other considerations for console/terminals<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;Most Linux assembler information is about terminals<br>
+&nbsp;&nbsp;or the console. There are lots of example programs<br>
+&nbsp;&nbsp;and a few libraries. This area is popular with novice<br>
+&nbsp;&nbsp;programmers, but they tend to move on to other areas.<br>
+&nbsp;&nbsp;The HLL libraries for the console are still maintained,<br>
+&nbsp;&nbsp;but activity is minimal. <br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;Other considerations for X server programming<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;The X server is mostly the domain of HLL languages<br>
+&nbsp;&nbsp;and libraries. A few programs call the low level<br>
+&nbsp;&nbsp;xlib and 2 or 3 other low level libraries.<br>
+&nbsp;&nbsp;Low level X programming fits assembler but<br>
+&nbsp;&nbsp;design and coding requires a server mind set.<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;All communication with the X server is via a<br>
+&nbsp;&nbsp;socket and responses to requests or unsolicited<br>
+&nbsp;&nbsp;input can appear at any time. &nbsp;This makes<br>
+&nbsp;&nbsp;simple one-step-at-a-time programming unworkable.<br>
+&nbsp;&nbsp;Instead, programs are usually event driven.<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;For speed all X server requests are collected in<br>
+&nbsp;&nbsp;a buffer and send in one large transfer. Responses<br>
+&nbsp;&nbsp;have a sequence number to indicate which request<br>
+&nbsp;&nbsp;they are for, and not all requests have a<br>
+&nbsp;&nbsp;response. &nbsp;Most programmers will let the various<br>
+&nbsp;&nbsp;libraries handle X server communication, but<br>
+&nbsp;&nbsp;it helps to understand what is happening.<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;<br>
+3.0 Overview of X programming<br>
+-----------------------------<br>
+      <br>
+&nbsp;&nbsp;One of the largest problems facing programmers, is<br>
+&nbsp;&nbsp;supporting all the different displays, keyboards,<br>
+&nbsp;&nbsp;and other input devices. &nbsp;The manufactures may<br>
+&nbsp;&nbsp;provide device drivers and often the operating system<br>
+&nbsp;&nbsp;will try to standardize the interface. &nbsp;Libraries,<br>
+&nbsp;&nbsp;also try to solve this problem by providing standard<br>
+&nbsp;&nbsp;routines.<br>
+      <br>
+&nbsp;&nbsp;A group at MIT decided the best solution was to<br>
+&nbsp;&nbsp;leap frog the needs of programmers and provide<br>
+&nbsp;&nbsp;a standard tool with additional features for<br>
+&nbsp;&nbsp;abstraction and multiprocessing. &nbsp;This would<br>
+&nbsp;&nbsp;allow displays to be on a remote computer or<br>
+&nbsp;&nbsp;even multiple displays on one computer.<br>
+      <br>
+&nbsp;&nbsp;They also addressed problems with multiple users<br>
+&nbsp;&nbsp;and programs sharing the same display. Next, they<br>
+&nbsp;&nbsp;wrote a low level library to further isolate<br>
+&nbsp;&nbsp;programmers from the details. &nbsp;Today, most programs<br>
+&nbsp;&nbsp;have gone further and add another library level.<br>
+      <br>
+&nbsp;&nbsp;The picture looks something like this:<br>
+      <br>
+&nbsp;&nbsp;computer hardware<br>
+&nbsp;&nbsp;&nbsp;&nbsp;operating system<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x server<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x library<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HLL library<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;applications<br>
+      <br>
+&nbsp;&nbsp;This stack of handlers has produced fairly fast<br>
+&nbsp;&nbsp;programs, but often they end up bloated in size and<br>
+&nbsp;&nbsp;slow to load.<br>
+      <br>
+&nbsp;&nbsp;Assembler programmers can work with the x library<br>
+&nbsp;&nbsp;or with the HLL library, and may prefer doing<br>
+&nbsp;&nbsp;graphic applications using these libraries. For<br>
+&nbsp;&nbsp;non-graphical applications, the assembly programmer<br>
+&nbsp;&nbsp;can easily bypass the standard libraries and<br>
+&nbsp;&nbsp;gain some speed and size advantages.<br>
+      <br>
+&nbsp;&nbsp;This document introduces the tools and information<br>
+&nbsp;&nbsp;needed for talking directly to a x server.<br>
+      <br>
+&nbsp;&nbsp;Another concept to be aware of is abstraction.<br>
+&nbsp;&nbsp;With x servers we have levels of usage:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;display<br>
+&nbsp;&nbsp;&nbsp;&nbsp;desktop<br>
+&nbsp;&nbsp;&nbsp;&nbsp;window<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sub-window<br>
+      <br>
+&nbsp;&nbsp;The display can be a device or file and a computer<br>
+&nbsp;&nbsp;can have multiple displays defined. &nbsp;Within a display<br>
+&nbsp;&nbsp;we can have multiple desktops. &nbsp;Each desktop can have<br>
+&nbsp;&nbsp;a set of windows, and windows can have sub-windows.<br>
+      <br>
+&nbsp;&nbsp;Any program can talk to these abstract items and<br>
+&nbsp;&nbsp;request control of resources. &nbsp;Creating them and
+finding<br>
+&nbsp;&nbsp;out about them is where things get difficult.<br>
+      <br>
+      <br>
+4.0 Connecting to the X server<br>
+------------------------------<br>
+      <br>
+&nbsp;&nbsp;In a multiprocessing environment you want<br>
+&nbsp;&nbsp;the display to be available for everyone<br>
+&nbsp;&nbsp;and still resolve conflicts. Also, you want<br>
+&nbsp;&nbsp;to avoid having any process hog the<br>
+&nbsp;&nbsp;communication channels.<br>
+      <br>
+&nbsp;&nbsp;This is accomplished by using a socket that<br>
+&nbsp;&nbsp;any process can connect to. &nbsp;To keep this<br>
+&nbsp;&nbsp;socket secure a simple handshake process was<br>
+&nbsp;&nbsp;defined.<br>
+      <br>
+&nbsp;&nbsp;Once we have a socket connected, the data<br>
+&nbsp;&nbsp;flows to and from the x server as demand<br>
+&nbsp;&nbsp;requires. We don't have to worry about<br>
+&nbsp;&nbsp;other programs.<br>
+      <br>
+&nbsp;&nbsp;The connection process goes like this:<br>
+      <br>
+&nbsp;&nbsp;&nbsp;1. Select the display. &nbsp;Usually, we look<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in a programs environment for the
+variable:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DISPLAY=0:0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The 0:0 specifies our target
+display.<br>
+&nbsp;&nbsp;&nbsp;2. Look for the authorization string. &nbsp;This key<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;will open x server communication
+and is<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;often placed in a local file.<br>
+&nbsp;&nbsp;&nbsp;3. Create a socket and send our key<br>
+&nbsp;&nbsp;&nbsp;4. Read reply with connection information.<br>
+      <br>
+      <br>
+5.0 Sending X commands<br>
+----------------------<br>
+      <br>
+&nbsp;&nbsp;Commands are sent as packets of information. These<br>
+&nbsp;&nbsp;packets share a standard format and set of rules.<br>
+&nbsp;&nbsp;For portability all packets have lengths in multiples<br>
+&nbsp;&nbsp;of dwords. &nbsp;The initial packet always contains:<br>
+      <br>
+&nbsp;&nbsp;&nbsp;1 byte - op code<br>
+&nbsp;&nbsp;&nbsp;1 byte - value depends upon op code<br>
+&nbsp;&nbsp;&nbsp;2 bytes- length of this request in dwords<br>
+      <br>
+&nbsp;&nbsp;The rest of the packet depends upon the op code.<br>
+&nbsp;&nbsp;The format of the various op codes is called the<br>
+&nbsp;&nbsp;protocol. &nbsp;<br>
+      <br>
+&nbsp;&nbsp;Each request has a sequence number associated with it.<br>
+&nbsp;&nbsp;The first request will be "1" and the next "2", etc.<br>
+&nbsp;&nbsp;This number must be kept by the sending function and<br>
+&nbsp;&nbsp;another counter is kept by the x server. This sequence<br>
+&nbsp;&nbsp;number is needed to identify replies. &nbsp;The next section<br>
+&nbsp;&nbsp;will discuss this further.<br>
+      <br>
+&nbsp;&nbsp;The protocol op codes (request codes) are:<br>
+      <br>
+&nbsp;&nbsp; </span>
+      <table border="1" cellpadding="2" cellspacing="2" width="100%">
+        <tbody>
+          <tr>
+            <td>AllocColor </td>
+            <td>84 </td>
+            <td>CreateWindow </td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td>AllocColorCells </td>
+            <td>86 </td>
+            <td>ChangeWindowAttributes </td>
+            <td>2</td>
+          </tr>
+          <tr>
+            <td>AllocColorPlanes </td>
+            <td>87 </td>
+            <td>GetWindowAttributes </td>
+            <td>3</td>
+          </tr>
+          <tr>
+            <td>AllocNamedColor </td>
+            <td>85 </td>
+            <td>DestroyWindow </td>
+            <td>4</td>
+          </tr>
+          <tr>
+            <td>AllowEvents </td>
+            <td>35 </td>
+            <td>DestroySubwindows </td>
+            <td>5</td>
+          </tr>
+          <tr>
+            <td>Bell </td>
+            <td>104 </td>
+            <td>ChangeSaveSet </td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>ChangeActivePointerGrab </td>
+            <td>30 </td>
+            <td>ReparentWindow </td>
+            <td>7</td>
+          </tr>
+          <tr>
+            <td>ChangeGC </td>
+            <td>56 </td>
+            <td>MapWindow </td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>ChangeHosts </td>
+            <td>109 </td>
+            <td>MapSubwindows </td>
+            <td>9</td>
+          </tr>
+          <tr>
+            <td>ChangeKeyboardControl </td>
+            <td>102 </td>
+            <td>UnmapWindow </td>
+            <td>10</td>
+          </tr>
+          <tr>
+            <td>ChangeKeyboardMapping </td>
+            <td>100 </td>
+            <td>UnmapSubwindows </td>
+            <td>11</td>
+          </tr>
+          <tr>
+            <td>ChangePointerControl </td>
+            <td>105 </td>
+            <td>ConfigureWindow </td>
+            <td>12</td>
+          </tr>
+          <tr>
+            <td>ChangeProperty </td>
+            <td>18 </td>
+            <td>CirculateWindow </td>
+            <td>13</td>
+          </tr>
+          <tr>
+            <td>ChangeSaveSet </td>
+            <td>6 </td>
+            <td>GetGeometry </td>
+            <td>14</td>
+          </tr>
+          <tr>
+            <td>ChangeWindowAttributes </td>
+            <td>2 </td>
+            <td>QueryTree </td>
+            <td>15</td>
+          </tr>
+          <tr>
+            <td>CirculateWindow </td>
+            <td>13 </td>
+            <td>InternAtom </td>
+            <td>16</td>
+          </tr>
+          <tr>
+            <td>ClearArea </td>
+            <td>61 </td>
+            <td>GetAtomName </td>
+            <td>17</td>
+          </tr>
+          <tr>
+            <td>CloseFont </td>
+            <td>46 </td>
+            <td>ChangeProperty </td>
+            <td>18</td>
+          </tr>
+          <tr>
+            <td>ConfigureWindow </td>
+            <td>12 </td>
+            <td>DeleteProperty </td>
+            <td>19</td>
+          </tr>
+          <tr>
+            <td>ConvertSelection </td>
+            <td>24 </td>
+            <td>GetProperty </td>
+            <td>20</td>
+          </tr>
+          <tr>
+            <td>CopyArea </td>
+            <td>62 </td>
+            <td>ListProperties </td>
+            <td>21</td>
+          </tr>
+          <tr>
+            <td>CopyColormapAndFree </td>
+            <td>80 </td>
+            <td>SetSelectionOwner </td>
+            <td>22</td>
+          </tr>
+          <tr>
+            <td>CopyGC </td>
+            <td>57 </td>
+            <td>GetSelectionOwner </td>
+            <td>23</td>
+          </tr>
+          <tr>
+            <td>CopyPlane </td>
+            <td>63 </td>
+            <td>ConvertSelection </td>
+            <td>24</td>
+          </tr>
+          <tr>
+            <td>CreateColormap </td>
+            <td>78 </td>
+            <td>SendEvent </td>
+            <td>25</td>
+          </tr>
+          <tr>
+            <td>CreateCursor </td>
+            <td>93 </td>
+            <td>GrabPointer </td>
+            <td>26</td>
+          </tr>
+          <tr>
+            <td>CreateGC </td>
+            <td>55 </td>
+            <td>UngrabPointer </td>
+            <td>27</td>
+          </tr>
+          <tr>
+            <td>CreateGlyphCursor </td>
+            <td>94 </td>
+            <td>GrabButton </td>
+            <td>28</td>
+          </tr>
+          <tr>
+            <td>CreatePixmap </td>
+            <td>53 </td>
+            <td>UngrabButton </td>
+            <td>29</td>
+          </tr>
+          <tr>
+            <td>CreateWindow </td>
+            <td>1 </td>
+            <td>ChangeActivePointerGrab </td>
+            <td>30</td>
+          </tr>
+          <tr>
+            <td>DeleteProperty </td>
+            <td>19 </td>
+            <td>GrabKeyboard </td>
+            <td>31</td>
+          </tr>
+          <tr>
+            <td>DestroySubwindows </td>
+            <td>5 </td>
+            <td>UngrabKeyboard </td>
+            <td>32</td>
+          </tr>
+          <tr>
+            <td>DestroyWindow </td>
+            <td>4 </td>
+            <td>GrabKey </td>
+            <td>33</td>
+          </tr>
+          <tr>
+            <td>FillPoly </td>
+            <td>69 </td>
+            <td>UngrabKey </td>
+            <td>34</td>
+          </tr>
+          <tr>
+            <td>ForceScreenSaver </td>
+            <td>115 </td>
+            <td>AllowEvents </td>
+            <td>35</td>
+          </tr>
+          <tr>
+            <td>FreeColormap </td>
+            <td>79 </td>
+            <td>GrabServer </td>
+            <td>36</td>
+          </tr>
+          <tr>
+            <td>FreeColors </td>
+            <td>88 </td>
+            <td>UngrabServer </td>
+            <td>37</td>
+          </tr>
+          <tr>
+            <td>FreeCursor </td>
+            <td>95 </td>
+            <td>QueryPointer </td>
+            <td>38</td>
+          </tr>
+          <tr>
+            <td>FreeGC </td>
+            <td>60 </td>
+            <td>GetMotionEvents </td>
+            <td>39</td>
+          </tr>
+          <tr>
+            <td>FreePixmap </td>
+            <td>54 </td>
+            <td>TranslateCoords </td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>GetAtomName </td>
+            <td>17 </td>
+            <td>WarpPointer </td>
+            <td>41</td>
+          </tr>
+          <tr>
+            <td>GetFontPath </td>
+            <td>52 </td>
+            <td>SetInputFocus </td>
+            <td>42</td>
+          </tr>
+          <tr>
+            <td>GetGeometry </td>
+            <td>14 </td>
+            <td>GetInputFocus </td>
+            <td>43</td>
+          </tr>
+          <tr>
+            <td>GetImage </td>
+            <td>73 </td>
+            <td>QueryKeymap </td>
+            <td>44</td>
+          </tr>
+          <tr>
+            <td>GetInputFocus </td>
+            <td>43 </td>
+            <td>OpenFont </td>
+            <td>45</td>
+          </tr>
+          <tr>
+            <td>GetKeyboardControl </td>
+            <td>103 </td>
+            <td>CloseFont </td>
+            <td>46</td>
+          </tr>
+          <tr>
+            <td>GetKeyboardMapping </td>
+            <td>101 </td>
+            <td>QueryFont </td>
+            <td>47</td>
+          </tr>
+          <tr>
+            <td>GetModifierMapping </td>
+            <td>119 </td>
+            <td>QueryTextExtents </td>
+            <td>48</td>
+          </tr>
+          <tr>
+            <td>GetMotionEvents </td>
+            <td>39 </td>
+            <td>ListFonts </td>
+            <td>49</td>
+          </tr>
+          <tr>
+            <td>GetPointerControl </td>
+            <td>106 </td>
+            <td>ListFontsWithInfo </td>
+            <td>50</td>
+          </tr>
+          <tr>
+            <td>GetPointerMapping </td>
+            <td>117 </td>
+            <td>SetFontPath </td>
+            <td>51</td>
+          </tr>
+          <tr>
+            <td>GetProperty </td>
+            <td>20 </td>
+            <td>GetFontPath </td>
+            <td>52</td>
+          </tr>
+          <tr>
+            <td>GetScreenSaver </td>
+            <td>108 </td>
+            <td>CreatePixmap </td>
+            <td>53</td>
+          </tr>
+          <tr>
+            <td>GetSelectionOwner </td>
+            <td>23 </td>
+            <td>FreePixmap </td>
+            <td>54</td>
+          </tr>
+          <tr>
+            <td>GetWindowAttributes </td>
+            <td>3 </td>
+            <td>CreateGC </td>
+            <td>55</td>
+          </tr>
+          <tr>
+            <td>GrabButton </td>
+            <td>28 </td>
+            <td>ChangeGC </td>
+            <td>56</td>
+          </tr>
+          <tr>
+            <td>GrabKey </td>
+            <td>33 </td>
+            <td>CopyGC </td>
+            <td>57</td>
+          </tr>
+          <tr>
+            <td>GrabKeyboard </td>
+            <td>31 </td>
+            <td>SetDashes </td>
+            <td>58</td>
+          </tr>
+          <tr>
+            <td>GrabPointer </td>
+            <td>26 </td>
+            <td>SetClipRectangles </td>
+            <td>59</td>
+          </tr>
+          <tr>
+            <td>GrabServer </td>
+            <td>36 </td>
+            <td>FreeGC </td>
+            <td>60</td>
+          </tr>
+          <tr>
+            <td>ImageText16 </td>
+            <td>77 </td>
+            <td>ClearArea </td>
+            <td>61</td>
+          </tr>
+          <tr>
+            <td>ImageText8 </td>
+            <td>76 </td>
+            <td>CopyArea </td>
+            <td>62</td>
+          </tr>
+          <tr>
+            <td>InstallColormap </td>
+            <td>81 </td>
+            <td>CopyPlane </td>
+            <td>63</td>
+          </tr>
+          <tr>
+            <td>InternAtom </td>
+            <td>16 </td>
+            <td>PolyPoint </td>
+            <td>64</td>
+          </tr>
+          <tr>
+            <td>KillClient </td>
+            <td>113 </td>
+            <td>PolyLine </td>
+            <td>65</td>
+          </tr>
+          <tr>
+            <td>ListExtensions </td>
+            <td>99 </td>
+            <td>PolySegment </td>
+            <td>66</td>
+          </tr>
+          <tr>
+            <td>ListFonts </td>
+            <td>49 </td>
+            <td>PolyRectangle </td>
+            <td>67</td>
+          </tr>
+          <tr>
+            <td>ListFontsWithInfo </td>
+            <td>50 </td>
+            <td>PolyArc </td>
+            <td>68</td>
+          </tr>
+          <tr>
+            <td>ListHosts </td>
+            <td>110 </td>
+            <td>FillPoly </td>
+            <td>69</td>
+          </tr>
+          <tr>
+            <td>ListInstalledColormaps </td>
+            <td>83 </td>
+            <td>PolyFillRectangle </td>
+            <td>70</td>
+          </tr>
+          <tr>
+            <td>ListProperties </td>
+            <td>21 </td>
+            <td>PolyFillArc </td>
+            <td>71</td>
+          </tr>
+          <tr>
+            <td>LookupColor </td>
+            <td>92 </td>
+            <td>PutImage </td>
+            <td>72</td>
+          </tr>
+          <tr>
+            <td>MapSubwindows </td>
+            <td>9 </td>
+            <td>GetImage </td>
+            <td>73</td>
+          </tr>
+          <tr>
+            <td>MapWindow </td>
+            <td>8 </td>
+            <td>PolyText8 </td>
+            <td>74</td>
+          </tr>
+          <tr>
+            <td>NoOperation </td>
+            <td>127 </td>
+            <td>PolyText16 </td>
+            <td>75</td>
+          </tr>
+          <tr>
+            <td>OpenFont </td>
+            <td>45 </td>
+            <td>ImageText8 </td>
+            <td>76</td>
+          </tr>
+          <tr>
+            <td>PolyArc </td>
+            <td>68 </td>
+            <td>ImageText16 </td>
+            <td>77</td>
+          </tr>
+          <tr>
+            <td>PolyFillArc </td>
+            <td>71 </td>
+            <td>CreateColormap </td>
+            <td>78</td>
+          </tr>
+          <tr>
+            <td>PolyFillRectangle </td>
+            <td>70 </td>
+            <td>FreeColormap </td>
+            <td>79</td>
+          </tr>
+          <tr>
+            <td>PolyLine </td>
+            <td>65 </td>
+            <td>CopyColormapAndFree </td>
+            <td>80</td>
+          </tr>
+          <tr>
+            <td>PolyPoint </td>
+            <td>64 </td>
+            <td>InstallColormap </td>
+            <td>81</td>
+          </tr>
+          <tr>
+            <td>PolyRectangle </td>
+            <td>67 </td>
+            <td>UninstallColormap </td>
+            <td>82</td>
+          </tr>
+          <tr>
+            <td>PolySegment </td>
+            <td>66 </td>
+            <td>ListInstalledColormaps </td>
+            <td>83</td>
+          </tr>
+          <tr>
+            <td>PolyText16 </td>
+            <td>75 </td>
+            <td>AllocColor </td>
+            <td>84</td>
+          </tr>
+          <tr>
+            <td>PolyText8 </td>
+            <td>74 </td>
+            <td>AllocNamedColor </td>
+            <td>85</td>
+          </tr>
+          <tr>
+            <td>PutImage </td>
+            <td>72 </td>
+            <td>AllocColorCells </td>
+            <td>86</td>
+          </tr>
+          <tr>
+            <td>QueryBestSize </td>
+            <td>97 </td>
+            <td>AllocColorPlanes </td>
+            <td>87</td>
+          </tr>
+          <tr>
+            <td>QueryColors </td>
+            <td>91 </td>
+            <td>FreeColors </td>
+            <td>88</td>
+          </tr>
+          <tr>
+            <td>QueryExtension </td>
+            <td>98 </td>
+            <td>StoreColors </td>
+            <td>89</td>
+          </tr>
+          <tr>
+            <td>QueryFont </td>
+            <td>47 </td>
+            <td>StoreNamedColor </td>
+            <td>90</td>
+          </tr>
+          <tr>
+            <td>QueryKeymap </td>
+            <td>44 </td>
+            <td>QueryColors </td>
+            <td>91</td>
+          </tr>
+          <tr>
+            <td>QueryPointer </td>
+            <td>38 </td>
+            <td>LookupColor </td>
+            <td>92</td>
+          </tr>
+          <tr>
+            <td>QueryTextExtents </td>
+            <td>48 </td>
+            <td>CreateCursor </td>
+            <td>93</td>
+          </tr>
+          <tr>
+            <td>QueryTree </td>
+            <td>15 </td>
+            <td>CreateGlyphCursor </td>
+            <td>94</td>
+          </tr>
+          <tr>
+            <td>RecolorCursor </td>
+            <td>96 </td>
+            <td>FreeCursor </td>
+            <td>95</td>
+          </tr>
+          <tr>
+            <td>ReparentWindow </td>
+            <td>7 </td>
+            <td>RecolorCursor </td>
+            <td>96</td>
+          </tr>
+          <tr>
+            <td>RotateProperties </td>
+            <td>114 </td>
+            <td>QueryBestSize </td>
+            <td>97</td>
+          </tr>
+          <tr>
+            <td>SendEvent </td>
+            <td>25 </td>
+            <td>QueryExtension </td>
+            <td>98</td>
+          </tr>
+          <tr>
+            <td>SetAccessControl </td>
+            <td>111 </td>
+            <td>ListExtensions </td>
+            <td>99</td>
+          </tr>
+          <tr>
+            <td>SetClipRectangles </td>
+            <td>59 </td>
+            <td>ChangeKeyboardMapping </td>
+            <td>100</td>
+          </tr>
+          <tr>
+            <td>SetCloseDownMode </td>
+            <td>112 </td>
+            <td>GetKeyboardMapping </td>
+            <td>101</td>
+          </tr>
+          <tr>
+            <td>SetDashes </td>
+            <td>58 </td>
+            <td>ChangeKeyboardControl </td>
+            <td>102</td>
+          </tr>
+          <tr>
+            <td>SetFontPath </td>
+            <td>51 </td>
+            <td>GetKeyboardControl </td>
+            <td>103</td>
+          </tr>
+          <tr>
+            <td>SetInputFocus </td>
+            <td>42 </td>
+            <td>Bell </td>
+            <td>104</td>
+          </tr>
+          <tr>
+            <td>SetModifierMapping </td>
+            <td>118 </td>
+            <td>ChangePointerControl </td>
+            <td>105</td>
+          </tr>
+          <tr>
+            <td>SetPointerMapping </td>
+            <td>116 </td>
+            <td>GetPointerControl </td>
+            <td>106</td>
+          </tr>
+          <tr>
+            <td>SetScreenSaver </td>
+            <td>107 </td>
+            <td>SetScreenSaver </td>
+            <td>107</td>
+          </tr>
+          <tr>
+            <td>SetSelectionOwner </td>
+            <td>22 </td>
+            <td>GetScreenSaver </td>
+            <td>108</td>
+          </tr>
+          <tr>
+            <td>StoreColors </td>
+            <td>89 </td>
+            <td>ChangeHosts </td>
+            <td>109</td>
+          </tr>
+          <tr>
+            <td>StoreNamedColor </td>
+            <td>90 </td>
+            <td>ListHosts </td>
+            <td>110</td>
+          </tr>
+          <tr>
+            <td>TranslateCoords </td>
+            <td>40 </td>
+            <td>SetAccessControl </td>
+            <td>111</td>
+          </tr>
+          <tr>
+            <td>UngrabButton </td>
+            <td>29 </td>
+            <td>SetCloseDownMode </td>
+            <td>112</td>
+          </tr>
+          <tr>
+            <td>UngrabKey </td>
+            <td>34 </td>
+            <td>KillClient </td>
+            <td>113</td>
+          </tr>
+          <tr>
+            <td>UngrabKeyboard </td>
+            <td>32 </td>
+            <td>RotateProperties </td>
+            <td>114</td>
+          </tr>
+          <tr>
+            <td>UngrabPointer </td>
+            <td>27 </td>
+            <td>ForceScreenSaver </td>
+            <td>115</td>
+          </tr>
+          <tr>
+            <td>UngrabServer </td>
+            <td>37 </td>
+            <td>SetPointerMapping </td>
+            <td>116</td>
+          </tr>
+          <tr>
+            <td>UninstallColormap </td>
+            <td>82 </td>
+            <td>GetPointerMapping </td>
+            <td>117</td>
+          </tr>
+          <tr>
+            <td>UnmapSubwindows </td>
+            <td>11 </td>
+            <td>SetModifierMapping </td>
+            <td>118</td>
+          </tr>
+          <tr>
+            <td>UnmapWindow </td>
+            <td>10 </td>
+            <td>GetModifierMapping </td>
+            <td>119</td>
+          </tr>
+          <tr>
+            <td>WarpPointer </td>
+            <td>41 </td>
+            <td>NoOperation </td>
+            <td>127</td>
+          </tr>
+        </tbody>
+      </table>
+      <span><br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;The fields for each request code are documented at MIT<br>
+&nbsp;&nbsp;(see links). A good description of these requests is<br>
+&nbsp;&nbsp;contained in the book: X protocol Reference Manual, by<br>
+&nbsp;&nbsp;O'Reilly &amp; Associates<br>
+      <br>
+      <br>
+6.0 Receiving X data<br>
+--------------------<br>
+      <br>
+&nbsp;&nbsp;Some protocol commands have replies and most<br>
+&nbsp;&nbsp;can generate errors. If we have windows, then<br>
+&nbsp;&nbsp;they we can enable various event notifications.<br>
+      <br>
+&nbsp;&nbsp;All received data follows these rules:<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;1. The initial packet is 32 bytes long and<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;has a standard header. &nbsp;Normal
+replies<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;have a op code of "1" and errors have a<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;opcode of "0". Other opcodes are defined<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for events.<br>
+&nbsp;&nbsp;2. If additional information is coming, it's<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;size is given.<br>
+&nbsp;&nbsp;3. All replies to requests must provide a<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sequence number <br>
+      <br>
+&nbsp;&nbsp;The initial packet looks like this:<br>
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 byte - code<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 byte - (depends upon code)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2 bytes- sequence number (if reply or
+error)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4 bytes- length of additional data to be
+sent<br>
+      <br>
+&nbsp;&nbsp;The remaining fields depend on the code byte value.<br>
+&nbsp;&nbsp;<br>
+7.0 Speed Considerations<br>
+------------------------<br>
+      <br>
+&nbsp;&nbsp;Commands can be sent at any time and it is possible<br>
+&nbsp;&nbsp;events can occur at any time. If we collect requests<br>
+&nbsp;&nbsp;and send a large block at one time, a big speed<br>
+&nbsp;&nbsp;increase occurs. The same is true of some event<br>
+&nbsp;&nbsp;processing.<br>
+      <br>
+&nbsp;&nbsp;All x libraries have request batching and they<br>
+&nbsp;&nbsp;provide a "flush" function to force sending the<br>
+&nbsp;&nbsp;current buffer contents. &nbsp;Normally, requests<br>
+&nbsp;&nbsp;are sent when the buffer is full of requests.<br>
+      <br>
+      <br>
+8.0 X protocol extensions<br>
+--------------------------<br>
+      <br>
+      <br>
+&nbsp;&nbsp;Extensions to protocol (requests) can be added<br>
+&nbsp;&nbsp;by compiling them into x servers. &nbsp;The programmer<br>
+&nbsp;&nbsp;can use these extensions as follows:<br>
+      <br>
+&nbsp;&nbsp;1. Use QueryExtension request to check if<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extension is available.<br>
+&nbsp;&nbsp;2. Get extension opcode from reply to<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;QueryExtension.<br>
+      <br>
+&nbsp;&nbsp;The example program in section 10.0 will list<br>
+&nbsp;&nbsp;available extensions.<br>
+      <br>
+&nbsp;&nbsp;<br>
+9.0 Compiling<br>
+-------------<br>
+      <br>
+&nbsp;&nbsp;Our example code is written for the nasm assembler<br>
+&nbsp;&nbsp;and can be compiled with:<br>
+      <br>
+&nbsp;&nbsp;nasm -f elf -O999 -g -o example.o example.asm<br>
+      <br>
+&nbsp;&nbsp;where: -f elf &nbsp;&lt;-- output in elf format<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-O999
+&nbsp;&nbsp;&lt;-- optimization passes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-g
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- include debug information<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-o example.o
+&lt;-- create object file<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;example.asm
+&nbsp;&lt;-- assembler source file<br>
+      <br>
+&nbsp;&nbsp;The example.o output file must be linked with<br>
+&nbsp;&nbsp;two libraries to create an executable.<br>
+      <br>
+&nbsp;&nbsp;ld -o example example.o asmlibx.a asmlib.a<br>
+      <br>
+&nbsp;&nbsp;where: -0 example &nbsp;&nbsp;&lt;-- output executable<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;example.o
+&nbsp;&nbsp;&nbsp;&lt;-- input file to link<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;asmlibx.a
+&nbsp;&nbsp;&nbsp;&lt;-- library to link with<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;asmlib.a
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;-- library to link with<br>
+      <br>
+&nbsp;&nbsp;The linker "ld" is on almost all Linux distributions<br>
+&nbsp;&nbsp;and is part of the bin utilities. Nasm is available<br>
+&nbsp;&nbsp;at sourceforge (see links).<br>
+&nbsp;&nbsp;<br>
+10.0 Example program - using asmlibx<br>
+-------------------------------------<br>
+      <br>
+&nbsp;&nbsp;The full source for example is included<br>
+&nbsp;&nbsp;in section 15. &nbsp;A discussion of the code<br>
+&nbsp;&nbsp;follows:<br>
+      <br>
+&nbsp;&nbsp;Once we are connected, extensive information<br>
+&nbsp;&nbsp;can be requested from the server.<br>
+&nbsp;&nbsp;For a starter, we might want to know which<br>
+&nbsp;&nbsp;extensions this server supports. &nbsp;For this<br>
+&nbsp;&nbsp;we need to send a protocol request:<br>
+      <br>
+&nbsp;&nbsp;ListExtensions - protocol #99<br>
+      <br>
+&nbsp;&nbsp;If we utilize the library "asmlibx" our program<br>
+&nbsp;&nbsp;would appear as follows:<br>
+      <br>
+&nbsp;---- program start -----<br>
+_start:<br>
+&nbsp;&nbsp;call &nbsp;env_stack
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;save ptr to environment<br>
+&nbsp;&nbsp;call &nbsp;x_list_extension;get x server extensions<br>
+&nbsp;&nbsp;call &nbsp;show_extensions ;display extensions<br>
+&nbsp;<br>
+&nbsp;&nbsp;mov &nbsp;&nbsp;eax,01
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;exit function<br>
+&nbsp;&nbsp;int &nbsp;&nbsp;byte 80h
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;exit program<br>
+&nbsp;---- program end ----<br>
+      <br>
+&nbsp;&nbsp;The call to env_stack creates a global variable<br>
+&nbsp;&nbsp;that points to the program environment strings.<br>
+&nbsp;&nbsp;This is used by a server connection routine to<br>
+&nbsp;&nbsp;find our display number.<br>
+      <br>
+&nbsp;&nbsp;The x_list_extension call first checks to see if<br>
+&nbsp;&nbsp;we are connected, and if not, attempts a connection.<br>
+&nbsp;&nbsp;Next, it sends a request to server and collects<br>
+&nbsp;&nbsp;the replies.<br>
+      <br>
+&nbsp;&nbsp;Finally, the show_extensions is a small subroutine<br>
+&nbsp;&nbsp;we must write to display the extension names.<br>
+      <br>
+&nbsp;&nbsp;The complete listing of this program can be<br>
+&nbsp;&nbsp;found in section 14.0.<br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;That was easy, but what happened? &nbsp;Most of the<br>
+&nbsp;&nbsp;details were handled by asmlibx and we are<br>
+&nbsp;&nbsp;left with the results. &nbsp;What if we wanted to<br>
+&nbsp;&nbsp;go down another level?<br>
+      <br>
+&nbsp;&nbsp;The next example goes into the gory details.<br>
+&nbsp;&nbsp;If you want to enter example 1 and test it,<br>
+&nbsp;&nbsp;skip to section 12 Debugging. <br>
+      <br>
+11.0 Example program - without asmlibx<br>
+--------------------------------------<br>
+&nbsp;<br>
+&nbsp;&nbsp;This example (example2) does not use any libraries and is<br>
+&nbsp;&nbsp;identical to example 1. It is interesting to note that the<br>
+&nbsp;&nbsp;source file for example 1 is about 600 bytes and this
+example<br>
+&nbsp;&nbsp;has a source file of over 32,000 bytes. Libraries save a
+lot of <br>
+&nbsp;&nbsp;coding time and effort!<br>
+      <br>
+&nbsp;&nbsp;The easiest way to approach x programming is to use<br>
+&nbsp;&nbsp;a common x connect routine for all programs. &nbsp;Then<br>
+&nbsp;&nbsp;use the common send/receive handlers to talk to<br>
+&nbsp;&nbsp;the x server. The server protocol functions may<br>
+&nbsp;&nbsp;be available in &nbsp;asmlibx, but often they must be<br>
+&nbsp;&nbsp;coded. <br>
+      <br>
+&nbsp;&nbsp;In example 2 we will talk about how to code a<br>
+&nbsp;&nbsp;protocol function and use asmlibx to send<br>
+&nbsp;&nbsp;and receive data.<br>
+      <br>
+&nbsp;&nbsp;The library function that connects to a x server<br>
+&nbsp;&nbsp;is called x_connect. We can call x_connect at<br>
+&nbsp;&nbsp;the start of a program or let the send function<br>
+&nbsp;&nbsp;do it for us. Our only requirement is to call<br>
+&nbsp;&nbsp;env_stack at the start of our program.<br>
+      <br>
+&nbsp;&nbsp;The two library functions for sending and receiving<br>
+&nbsp;&nbsp;are:<br>
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp;x_send_request<br>
+&nbsp;&nbsp;&nbsp;&nbsp;x_wait_reply<br>
+      <br>
+&nbsp;&nbsp;We provide x_send_request with a protocol packet<br>
+&nbsp;&nbsp;then call x_wait_reply to get the response. &nbsp;The<br>
+&nbsp;&nbsp;code to get a list of x server extensions would<br>
+&nbsp;&nbsp;look like this:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;list_extension_request:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 99
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;opcode<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;unused<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw 1
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;request length in dwords<br>
+&nbsp;&nbsp;&nbsp;&nbsp;qer_end:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;x_list_extension:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,list_extension_request<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,(qer_end -
+list_extension_request)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;neg
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;indicate
+reply expected<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_send_request<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ger_exit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_wait_reply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ger_exit:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+      <br>
+&nbsp;&nbsp;If a reply is expected we must negate the size of<br>
+&nbsp;&nbsp;the send packet. The tells the send function that<br>
+&nbsp;&nbsp;a flush is needed after sending the packet. &nbsp;If we<br>
+&nbsp;&nbsp;didn't flush, the packet would sit in a buffer and<br>
+&nbsp;&nbsp;the reply would return a timeout error.<br>
+      <br>
+&nbsp;&nbsp;If all goes well, the reply pointer will be returned<br>
+&nbsp;&nbsp;in register ecx. <br>
+      <br>
+&nbsp;&nbsp;&nbsp;resb 1 &nbsp;;1 Reply<br>
+&nbsp;&nbsp;&nbsp;resb 1 &nbsp;;number of names returned<br>
+&nbsp;&nbsp;&nbsp;resb 2 &nbsp;;sequence number<br>
+&nbsp;&nbsp;&nbsp;resb 4 &nbsp;;reply length<br>
+&nbsp;&nbsp;&nbsp;resb 24 ;unused<br>
+&nbsp;&nbsp;&nbsp;resb 1 &nbsp;;length of extension n<br>
+&nbsp;&nbsp;&nbsp;resb x &nbsp;;extension n string<br>
+      <br>
+&nbsp;&nbsp;&nbsp;resb 1 &nbsp;;length of extension n+1<br>
+&nbsp;&nbsp;&nbsp;resb x &nbsp;;extension n+1 string<br>
+      <br>
+&nbsp;&nbsp;The length of the reply packet is variable<br>
+&nbsp;&nbsp;and we must check the name count and<br>
+&nbsp;&nbsp;use it for processing. &nbsp;Also, this reply<br>
+&nbsp;&nbsp;is held in a temporary buffer and the<br>
+&nbsp;&nbsp;data must be used before other library<br>
+&nbsp;&nbsp;functions are called. <br>
+      <br>
+&nbsp; We now have the tools to code complex programs<br>
+&nbsp; by adding our own protocol functions.&nbsp;&nbsp; All we&nbsp;
+need<br>
+&nbsp; is to connect and then use x_send_request and<br>
+&nbsp; x_wait_reply .&nbsp;&nbsp; If a library function exists&nbsp; we
+could<br>
+&nbsp; use it, but mixing libraries may not&nbsp; work.&nbsp; Each<br>
+&nbsp; library would try to set up&nbsp; its own x server connection.<br>
+      <br>
+      <br>
+12.0 Debugging<br>
+--------------<br>
+      <br>
+&nbsp;&nbsp;To quickly check if the x server communication<br>
+&nbsp;&nbsp;is occurring, we can use "tracex". &nbsp;Tracex creates<br>
+&nbsp;&nbsp;a log file containing all server communication<br>
+&nbsp;&nbsp;packets. &nbsp;Run tracex as follows:<br>
+      <br>
+&nbsp;&nbsp;tracex example1<br>
+      <br>
+&nbsp;&nbsp;The output trace is stored at example1.tra.<br>
+&nbsp;&nbsp;Entries contain the name of protocol functions,<br>
+&nbsp;&nbsp;sequence numbers, and a dump of packet contents.<br>
+&nbsp;&nbsp;We should see the following:<br>
+      <br>
+&nbsp;&nbsp;--- start of file example1.tra --- &nbsp;<br>
+&nbsp;&nbsp;&nbsp;Authorization packet written<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;ListExtensions request#=0001<br>
+&nbsp;&nbsp;&nbsp;63 00 01 00
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c...<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;-Event-reply-to#0001<br>
+&nbsp;&nbsp;&nbsp;01 1D 01 00 50 00 00 00 04 00 00 00 01 00 00 00
+&nbsp;&nbsp;....P...........<br>
+&nbsp;&nbsp;&nbsp;00 00 00 00 04 00 00 00 90 01 00 00 04 00 00 00
+&nbsp;&nbsp;................<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;-continuation of reply#0001<br>
+&nbsp;&nbsp;&nbsp;05 53 48 41 50 45 16 4D 49 54 2D 53 55 4E 44 52
+&nbsp;&nbsp;.SHAPE.MIT-SUNDR<br>
+&nbsp;&nbsp;&nbsp;59 2D 4E 4F 4E 53 54 41 4E 44 41 52 44 0C 42 49
+&nbsp;&nbsp;Y-NONSTANDARD.BI<br>
+&nbsp;&nbsp;&nbsp;47 2D 52 45 51 55 45 53 54 53 04 53 59 4E 43 10
+&nbsp;&nbsp;G-REQUESTS.SYNC.<br>
+&nbsp;&nbsp;&nbsp;4D 49 54 2D 53 43 52 45 45 4E 2D 53 41 56 45 52
+&nbsp;&nbsp;MIT-SCREEN-SAVER<br>
+&nbsp;&nbsp;&nbsp;07 58 43 2D 4D 49 53 43 18 58 46 72 65 65 38 36
+&nbsp;&nbsp;.XC-MISC.XFree86<br>
+&nbsp;&nbsp;&nbsp;2D 56 69 64 4D 6F 64 65 45 78 74 65 6E 73 69 6F
+&nbsp;&nbsp;-VidModeExtensio<br>
+&nbsp;&nbsp;&nbsp;6E 0C 58 46 72 65 65 38 36 2D 4D 69 73 63 0B 58
+&nbsp;&nbsp;n.XFree86-Misc.X<br>
+&nbsp;&nbsp;&nbsp;46 72 65 65 38 36 2D 44 47 41 04 44 50 4D 53 07
+&nbsp;&nbsp;Free86-DGA.DPMS.<br>
+&nbsp;&nbsp;&nbsp;54 4F 47 2D 43 55 50 1B 45 78 74 65 6E 64 65 64
+&nbsp;&nbsp;TOG-CUP.Extended<br>
+&nbsp;&nbsp;&nbsp;2D 56 69 73 75 61 6C 2D 49 6E 66 6F 72 6D 61 74
+&nbsp;&nbsp;-Visual-Informat<br>
+&nbsp;&nbsp;&nbsp;69 6F 6E 06 58 56 69 64 65 6F 0A 58 2D 52 65 73
+&nbsp;&nbsp;ion.XVideo.X-Res<br>
+&nbsp;&nbsp;&nbsp;6F 75 72 63 65 0D 44 4F 55 42 4C 45 2D 42 55 46
+&nbsp;&nbsp;ource.DOUBLE-BUF<br>
+&nbsp;&nbsp;&nbsp;46 45 52 03 47 4C 58 07 53 47 49 2D 47 4C 58 06
+&nbsp;&nbsp;FER.GLX.SGI-GLX.<br>
+&nbsp;&nbsp;&nbsp;52 45 43 4F 52 44 07 4D 49 54 2D 53 48 4D 0F 58
+&nbsp;&nbsp;RECORD.MIT-SHM.X<br>
+&nbsp;&nbsp;&nbsp;49 6E 70 75 74 45 78 74 65 6E 73 69 6F 6E 05 58
+&nbsp;&nbsp;InputExtension.X<br>
+&nbsp;&nbsp;&nbsp;54 45 53 54 09 58 4B 45 59 42 4F 41 52 44 0B 58
+&nbsp;&nbsp;TEST.XKEYBOARD.X<br>
+&nbsp;&nbsp;&nbsp;43 2D 41 50 50 47 52 4F 55 50 08 53 45 43 55 52
+&nbsp;&nbsp;C-APPGROUP.SECUR<br>
+&nbsp;&nbsp;&nbsp;49 54 59 06 58 46 49 58 45 53 0F 58 46 72 65 65
+&nbsp;&nbsp;ITY.XFIXES.XFree<br>
+&nbsp;&nbsp;&nbsp;38 36 2D 42 69 67 66 6F 6E 74 06 52 45 4E 44 45
+&nbsp;&nbsp;86-Bigfont.RENDE<br>
+&nbsp;&nbsp;&nbsp;52 05 52 41 4E 44 52 06 44 41 4D 41 47 45 00 00
+&nbsp;&nbsp;R.RANDR.DAMAGE..<br>
+&nbsp;&nbsp;--- end of file example1.tra ---<br>
+      <br>
+&nbsp;&nbsp;The second entry is our request. &nbsp;It has a op code<br>
+&nbsp;&nbsp;of 63 hex or 99 decimal. The length field says it<br>
+&nbsp;&nbsp;is one dword long.<br>
+      <br>
+&nbsp;&nbsp;Following the request is a reply. &nbsp;The reply code<br>
+&nbsp;&nbsp;of 01 says we were successful and the length field<br>
+&nbsp;&nbsp;of 50 says we need to read an additional packet of<br>
+&nbsp;&nbsp;80 decimal bytes.<br>
+&nbsp;<br>
+&nbsp;&nbsp;If we want to dig a little deeper, the asmbug program<br>
+&nbsp;&nbsp;will walk through the program as it executes. &nbsp;Type:<br>
+      <br>
+&nbsp;&nbsp;asmbug example1<br>
+      <br>
+&nbsp;&nbsp;AsmBug is easy to use if you just assume it knows what<br>
+&nbsp;&nbsp;you want. &nbsp;Click on a address to set a break and then<br>
+&nbsp;&nbsp;click run. &nbsp;Or click step and watch it execute.<br>
+      <br>
+&nbsp;&nbsp;If you want a complete trace of every instruction, the<br>
+&nbsp;&nbsp;asmtrace program can be used. &nbsp;It is interactive and<br>
+&nbsp;&nbsp;also creates the log file example1.tra. Beware, asmtrace<br>
+&nbsp;&nbsp;produces a lot of data and expect a large file.<br>
+      <br>
+&nbsp;&nbsp;The final debugging tool is inserting print statements<br>
+&nbsp;&nbsp;into our example program. &nbsp;Often this works well with<br>
+&nbsp;&nbsp;event driven programs. &nbsp;Our simple example program will<br>
+&nbsp;&nbsp;not need print statements, but it is good to be prepared.<br>
+&nbsp;&nbsp;The asmlib provides some functions to do logging which<br>
+&nbsp;&nbsp;save registers to avoid introducing additional bugs.<br>
+      <br>
+&nbsp;&nbsp;links to tracex, asmbug, and asmtrace are in section 14<br>
+&nbsp;&nbsp;<br>
+13.0 X tools<br>
+------------<br>
+      <br>
+&nbsp;&nbsp;For graphics, sound, and other needs, the HLL<br>
+&nbsp;&nbsp;libraries may be of interest. &nbsp;Libraries to<br>
+&nbsp;&nbsp;explore are: GTK, QT, and SDL.<br>
+      <br>
+&nbsp;&nbsp;xwininfo<br>
+      <br>
+&nbsp;&nbsp;To get information about displayed windows, run<br>
+&nbsp;&nbsp;the xwininfo program. It allows you to click on<br>
+&nbsp;&nbsp;window of interest and then sends a lot of data<br>
+&nbsp;&nbsp;to stdout.<br>
+      <br>
+&nbsp;&nbsp;xdpyinfo<br>
+      <br>
+&nbsp;&nbsp;A good display of x server information can be<br>
+&nbsp;&nbsp;obtained from xdpyinfo. &nbsp;Just type: xdpyinfo<br>
+&nbsp;&nbsp;and stand back. &nbsp;It will dump just about everything.<br>
+      <br>
+      <br>
+14.0 Useful Links<br>
+-----------------<br>
+      <br>
+link to home of this tutorial and asmlib, asmlibx,<br>
+asmbug, tracex, and other x related programs<br>
+&nbsp;&nbsp;http://linuxasmtools.net/x/<br>
+      <br>
+link to hundreds of X related web sites<br>
+&nbsp;&nbsp;http://www.rahul.net/kenton/xsites.html#FAQ<br>
+      <br>
+nasm assembler<br>
+&nbsp;&nbsp;http://sourceforge.net/projects/nasm<br>
+      <br>
+bin utilities, ld and others<br>
+&nbsp;&nbsp;http://www.gnu.org/software/<br>
+      <br>
+individual tools<br>
+&nbsp;&nbsp;http;//sourceforge.net/projects/tracex<br>
+&nbsp;&nbsp;http://sourceforge.net/projects/asmbug<br>
+&nbsp;&nbsp;http://sourceforge.net/projects/asmtrace<br>
+      <br>
+libraries<br>
+&nbsp;&nbsp;http://sourceforge.net/projects/asmlibx<br>
+&nbsp;&nbsp;http://sorceforge.net/projects/asmlib<br>
+      <br>
+X documentation, protocol, extensions<br>
+&nbsp;&nbsp;http://webcvs.freedesktop.org/xorg/xc/<br>
+      <br>
+15.0 example 1 source<br>
+---------------------<br>
+      <br>
+A source file for this example is in download page<br>
+of http://linuxasmtools.net/x/<br>
+      <br>
+;-code1-<br>
+<!--ex1-->
+;-code end-<br>
+&nbsp;&nbsp;&nbsp;<br>
+16.0 example 2 source<br>
+---------------------<br>
+      <br>
+A source file for this example is in download page<br>
+of http://linuxasmtools.net/x/<br>
+      <br>
+;-code2-<br>
+<!--ex2-->
+;-code end- &nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+<!-- END of the content cell --></td>
+    </tr>
+  </tbody>
+</table>
+<!--tail-->
+</body>
+</html>

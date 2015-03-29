@@ -1,0 +1,90 @@
+----------------------------------------------------------------------------
+system 167 query_module            - query the kernel for bits pertaining to modules
+----------------------------------------------------------------------------
+
+Note: This function was eliminated after kernel version 2.4
+
+  mov  eax,167
+  mov  ebx,Name    ;ptr to name of loaded module
+  mov  ecx,which
+  mov  edx,buf
+  mov  esi,bufsize
+  mov  edi,retval
+  int  80h
+
+       query_module requests information related to loadable modules from  the
+       kernel.   The  precise nature of the information and its format depends
+       on the which sub function.  Some functions require name to name a  cur-
+       rently  loaded module, some allow name to be NULL indicating the kernel
+       proper.
+
+
+   VALUES OF WHICH
+       0      Always returns success.  Used to probe for the system call.
+
+       QM_MODULES
+              Returns the names of all loaded modules.  The output buffer for-
+              mat  is adjacent null-terminated strings; ret is set to the num-
+              ber of modules.
+
+       QM_DEPS
+              Returns the names of all modules used by the  indicated  module.
+              The  output  buffer  format is adjacent null-terminated strings;
+              ret is set to the number of modules.
+
+       QM_REFS
+              Returns the names of all modules  using  the  indicated  module.
+              This  is  the  inverse  of QM_DEPS.  The output buffer format is
+              adjacent null-terminated strings; ret is set to  the  number  of
+              modules.
+
+       QM_SYMBOLS
+              Returns  the  symbols  and  values exported by the kernel or the
+              indicated module.  The buffer format is an array of:
+
+              struct module_symbol
+              {
+                unsigned long value;
+                unsigned long name;
+              };
+
+              followed by null-terminated strings.  The value of name  is  the
+              character offset of the string relative to the start of buf; ret
+              is set to the number of symbols.
+
+       QM_INFO
+              Returns miscellaneous information about  the  indicated  module.
+              The output buffer format is:
+
+              struct module_info
+              {
+                unsigned long address;
+                unsigned long size;
+                unsigned long flags;
+              };
+
+              where address is the kernel address at which the module resides,
+              size is the size of the module in bytes, and flags is a mask  of
+              MOD_RUNNING,  MOD_AUTOCLEAN,  et  al  that indicates the current
+              status of the module.  ret is set to the size of the module_info
+              struct.
+
+RETURN VALUE
+       On  success, zero is returned. On error a negative code is returned
+
+ERRORS
+       ENOENT No module by that name exists.
+
+       EINVAL Invalid which, or name indicates the kernel for an inappropriate
+              sub function.
+
+       ENOSPC The buffer size provided was too small.  ret is set to the mini-
+              mum size needed.
+
+       EFAULT At least one of name, buf, or  ret  was  outside  the  program's
+              accessible address space.
+
+SEE ALSO
+       create_module, init_module, delete_module
+
+

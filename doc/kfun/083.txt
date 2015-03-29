@@ -1,0 +1,85 @@
+
+----------------------------------------------------------------------------
+ 83 symlink        - create a symbolic link to file
+----------------------------------------------------------------------------
+  mov  eax,083
+  mov  ebx,oldpath  ;ptr to current file name
+  mov  ecx,newpath  ;ptr to linked name
+  int  80h
+
+       symlink creates a symbolic link named newpath which contains the string
+       oldpath.
+
+       Symbolic links are interpreted at run-time as if the  contents  of  the
+       link  had  been substituted into the path being followed to find a file
+       or directory.
+
+       Symbolic links may contain ..  path components, which (if used  at  the
+       start of the link) refer to the parent directories of that in which the
+       link resides.
+
+       A symbolic link (also known as a soft link) may point  to  an  existing
+       file  or  to  a nonexistent one; the latter case is known as a dangling
+       link.
+
+       The permissions of a symbolic link are  irrelevant;  the  ownership  is
+       ignored  when following the link, but is checked when removal or renam-
+       ing of the link is requested and the link is in a  directory  with  the
+       sticky bit set.
+
+       If newpath exists it will not be overwritten.
+
+RETURN VALUE
+       On  success,  zero is returned.  On error, a negative code is returned
+
+ERRORS
+       EPERM  The filesystem containing newpath does not support the  creation
+              of symbolic links.
+
+       EFAULT oldpath or newpath points outside your accessible address space.
+
+       EACCES Write access to the directory containing newpath is not  allowed
+              for  the  process's  effective uid, or one of the directories in
+              newpath did not allow search (execute) permission.
+
+       ENAMETOOLONG
+              oldpath or newpath was too long.
+
+       ENOENT A directory component in newpath does not exist or is a dangling
+              symbolic link, or oldpath is the empty string.
+
+       ENOTDIR
+              A  component  used  as a directory in newpath is not, in fact, a
+              directory.
+
+       ENOMEM Insufficient kernel memory was available.
+
+       EROFS  newpath is on a read-only filesystem.
+
+       EEXIST newpath already exists.
+
+       ELOOP  Too many symbolic links were encountered in resolving newpath.
+
+       ENOSPC The device containing the file has no room for the new directory
+              entry.
+
+       EIO    An I/O error occurred.
+
+NOTES
+       No checking of oldpath is done.
+
+       Deleting  the  name  referred  to by a symlink will actually delete the
+       file (unless it also has other hard links). If this  behaviour  is  not
+       desired, use link.
+
+CONFORMING TO
+       SVr4,  SVID,  POSIX,  BSD  4.3.   SVr4 documents additional error codes
+       SVr4, SVID, BSD 4.3, X/OPEN.  SVr4  documents  additional  error  codes
+       EDQUOT  and  ENOSYS.  See open(2) re multiple files with the same name,
+       and NFS.
+
+SEE ALSO
+       readlink, link, unlink, rename, open, lstat
+
+
+

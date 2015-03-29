@@ -1,0 +1,29 @@
+
+----------------------------------------------------------------------------
+system 121 setdomainname           - set domain name
+----------------------------------------------------------------------------
+  mov  eax,121
+  mov  ebx,domainName  ;ptr to domain name
+  mov  ecx,len         ;length of domain name
+  int  80h
+
+       This function is used to access the domain name of the
+       current processor.
+
+RETURN VALUE
+       On success, zero is returned.  On error a negative code is returned
+
+ERRORS
+       EINVAL For  getdomainname  under  libc:  name is NULL or name is longer
+              than len bytes.
+
+       EINVAL For setdomainname: len was negative or too large.
+
+       EPERM  For setdomainname: the caller was not the superuser.
+
+       EFAULT For setdomainname: name pointed outside of user address space.
+
+SEE ALSO
+       gethostname, sethostname, uname
+
+

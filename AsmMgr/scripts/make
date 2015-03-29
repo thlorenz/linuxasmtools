@@ -1,0 +1,13 @@
+#! /bin/bash
+# script to start make in current directory
+
+#----------------------------------------------------------
+# pause - wait for user to read message
+function pause () {
+ echo 'press <return> key to continue'
+ read REPLY
+}
+
+make
+pause
+exit 0

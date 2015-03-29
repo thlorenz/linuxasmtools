@@ -1,0 +1,57 @@
+
+----------------------------------------------------------------------------
+  51 acct          - switch process accounting on or off
+----------------------------------------------------------------------------
+  mov   eax,51
+  mov   ebx,filename_ptr
+  int   80h
+
+       When  called  with the name of an existing file as argument, accounting
+       is turned on, records for each terminating process are appended to
+       filename as process terminates.  An argument of NULL causes accounting to be
+       turned off.
+
+       Only root can utilize this function.
+
+RETURN VALUE
+       On success, zero is returned.  On error negative code
+
+ERRORS
+       EACCES Write permission is denied for the specified file.
+
+       EACCES The argument filename is not a regular file.
+
+       EFAULT filename points outside your accessible address space.
+
+       EIO    Error writing to the file filename.
+
+       EISDIR filename is a directory.
+
+       ELOOP  Too  many symbolic links were encountered in resolving filename.
+
+       ENAMETOOLONG
+              filename was too long.
+
+       ENOENT The specified filename does not exist.
+
+       ENOMEM Out of memory.
+
+       ENOSYS BSD process accounting has not been enabled when  the  operating
+              system  kernel was compiled.  The kernel configuration parameter
+              controlling this feature is CONFIG_BSD_PROCESS_ACCT.
+
+       ENOTDIR
+              A component used as a directory in filename is  not  in  fact  a
+              directory.
+
+       EPERM  The calling process has no permission to enable process account-
+              ing.
+
+       EROFS  filename refers to a file on a read-only file system.
+
+       EUSERS There are no more free file structures or we ran out of  memory.
+
+NOTES
+       No accounting is produced for programs running when a crash occurs.  In
+       particular, nonterminating processes are never accounted for.
+

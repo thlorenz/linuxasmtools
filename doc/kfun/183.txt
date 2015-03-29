@@ -1,0 +1,46 @@
+
+----------------------------------------------------------------------------
+183 getcwd         - get current working directory
+----------------------------------------------------------------------------
+  mov  eax,183
+  mov  ebx,buf   ;ptr to buffer for path string
+  mov  ecx,size  ;buffer size in bytes
+  int  80h
+
+       The  getcwd() function copies an absolute pathname of the current work-
+       ing directory to the array pointed to by buf, which is of length  size.
+
+       If  the  current  absolute path name would require a buffer longer than
+       size elements, the error ERANGE is returned in eax; an  appli-
+       cation  should  check  for  this error, and allocate a larger buffer if
+       necessary.
+
+       If buf is NULL, the behaviour of getcwd() is undefined.
+
+RETURN VALUE
+       Returns negative error in eax or size of path string.  If eax
+       positive then "buf" has path string.
+
+ERRORS
+       EACCES Permission  to  read  or search a component of the file name was
+              denied.
+
+       EFAULT buf points to a bad address.
+
+       EINVAL The size argument is zero and buf is not a null pointer.
+
+       ENOENT The current working directory has been unlinked.
+
+       ERANGE The size argument is less than the length of the working  direc-
+              tory name.  You need to allocate a bigger array and try again.
+
+       These functions are often used to save  the  location  of  the  current
+       working directory for the purpose of returning to it later. Opening the
+       current directory (".") and calling fchdir(2) to return  is  usually  a
+       faster  and  more  reliable  alternative  when  sufficiently  many file
+       descriptors are available, especially on platforms other than Linux.
+
+SEE ALSO
+       chdir, fchdir, open, unlink, free
+
+

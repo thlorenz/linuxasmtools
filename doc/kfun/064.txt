@@ -1,0 +1,12 @@
+----------------------------------------------------------------------------
+ 64 getppid        - get process identification
+----------------------------------------------------------------------------
+  mov  eax,064
+  int  80h
+
+      getppid returns the process ID of the parent of the current process.
+
+
+SEE ALSO
+       exec, fork,  kill
+

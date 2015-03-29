@@ -1,0 +1,965 @@
+termios is a structure describing the current terminal mode.
+It can be read/modified using ioctl kernel calls.
+
+struc termios_struc
+.c_iflag: resd 1   ;input control bit flags
+.c_oflag: resd 1   ;output control bit flags
+.c_cflag: resd 1   ;hardware control flags
+.c_lflag: resd 1   ;misc terminal flags
+.c_line: resb 1
+.c_cc: resb 19     ;special character array
+.c_ispeed: resd 1  ;used?
+.c_ospeed: resd 1  ;used?
+endstruc
+;termios_struc_size:
+
+--------------------------------------------------------------------
+Input Modes - c_iflag ----------------------------------------------
+--------------------------------------------------------------------
+
+   Values  of the c_iflag field describe the basic terminal input control
+   and are composed of the bitwise inclusive-OR of the masks shown.
+
+name    octal    hex   description
+----    -----    ----- -----------
+IGNBRK	0000001q 00000001h ignore break condition
+BRKINT	0000002q 00000002h signal interrupt on break
+IGNPAR	0000004q 00000004h ignore characters with parity errors
+PARMRK	0000010q 00000008h mark parity errors
+INPCK	0000020q 00000010h enable input parity check
+ISTRIP	0000040q 00000020h strip character
+INLCR	0000100q 00000040h map NL to CR on input  0ah > 0dh
+IGNCR	0000200q 00000080h ignore CR
+ICRNL	0000400q 00000100h map CR to NL on input  0dh > 0ah
+IUCLC	0001000q 00000200h map upper case to lower case
+IXON	0002000q 00000400h enable start/stop output control
+IXANY	0004000q 00000800h any char restarts  
+IXOFF	0010000q 00001000h enable start/stop input control
+IMAXBEL 0020000q 00002000h ring BEL if buffer overflow
+IUTF8	0040000q 00004000h
+
+detailed description of each c_iflag
+------------------------------------
+
+*IGNBRK*  Ignores the break condition. In the context of asynchronous
+serial data transmission, a /break condition/ is defined as a sequence
+of zero-valued bits that continues for more than the time required to
+send one byte. The entire sequence of zero-valued bits is interpreted as
+a single break condition, even if it continues for an amount of time
+equivalent to more than one byte. If the *IGNBRK* flag is set, a break
+condition detected on input is ignored, which means that it is not put
+on the input queue and therefore not read by any process.
+
+*BRKINT*  Signal interrupt on the break condition. If the *IGNBRK* flag
+is not set and the *BRKINT* flag is set, the break condition flushes the
+input and output queues. If the terminal is the controlling terminal of
+a foreground process group, the break condition generates a *SIGINT*
+-  nal to that foreground process group. If neither the *IGNBRK* nor the
+
+*BRKINT* flag is set, a break condition is read as a single \0, or if
+the *PARMRK* flag is set, as \377, \0, \0.
+
+*IGNPAR*  Ignores characters with parity errors. If this flag is set, a
+byte with a framing or parity error (other than break) is ignored.
+
+*PARMRK*  Marks parity errors. If the *PARMRK* flag is set, and the
+
+*IGNPAR* flag is not set, a byte with a framing or parity error (other
+than break) is given to the application as the three-character sequence
+\377, \0, /x/, where \377, \0 is a two-character flag preceding each
+sequence and /x/ is the data of the character received in error. To
+avoid ambiguity in this case, if the *ISTRIP* flag is not set, a valid
+character of \377 is given to the application as \377, \377. If neither
+the *IGNPAR* nor the *PARMRK* flag is set, a framing or parity error
+(other than break) is given to the application as a single character \0.
+
+*INPCK*  Enables input parity checking. If this flag is set, input
+parity checking is enabled. If not set, input parity checking is
+disabled. This allows for output parity generation without input parity
+errors.
+
+*ISTRIP*  Strips characters. If this flag is set, valid input characters
+are first stripped to 7 bits. Otherwise, all 8 bits are processed.
+
+*INLCR*  Maps a new-line character (NL) to a carriage return (CR) on
+input. If this flag is set, a received NL character is translated into a
+CR character.
+
+*IGNCR*  Ignores CR character. If this flag is set, a received CR
+character is ignored and not read.
+
+*ICRNL*  Maps a CR character to the NL character on input. If the
+
+*ICRNL* flag is set and the *IGNCR* flag is not set, a received CR
+character is translated into a NL character.
+
+*IUCLC*  Maps uppercase to lowercase on input. If this flag is set, a
+received uppercase, alphabetic character is translated into the
+corresponding lowercase character.
+
+*IXON*  Enables start and stop output control. If this flag is set, a
+received STOP character suspends output and a received START character
+restarts output. When the *IXON* flag is set, START and STOP characters
+are not read, but merely perform flow-control functions. When the *IXON*
+flag is not set, the START and STOP characters are read.
+
+*IXANY*  Enables any character to restart output. If this flag is set,
+any input character restarts output that was suspended.
+
+*IXOFF*  Enables start-and-stop input control. If this flag is set, the
+system transmits a STOP character when the input queue is nearly full
+and a START character when enough input has been read that the queue is
+nearly empty again.
+
+*IMAXBEL*  Echoes the ASCII BEL character if the input stream overflows.
+Further input is not stored, but input already present in the input
+stream is not lost. If this flag is not set, no BEL character is echoed;
+the input in the input queue is discarded if the input stream overflows.
+This function also requires the *IEXTEN* bit to be set.
+
+general discussion for c_iflag
+------------------------------
+   In  the  context  of  asynchronous  serial  data  transmission a break
+   condition  is defined as a sequence of zero-valued bits that continues
+   for  more  than  the  time  to  send  one byte. The entire sequence of
+   zero-valued bits is interpreted as a single break condition even if it
+   continues for a time equivalent to more than one byte.
+
+   If  IGNBRK  is set a break condition detected on input is ignored that
+   is  not  put on the input queue and therefore not read by any process.
+   If IGNBRK is not set and BRKINT is set the break condition shall flush
+   the  input  and  output  queues and if the terminal is the controlling
+   terminal  of  a  process  group the break condition generates a single
+   SIGINT  signal  to  that  process  group.  If  IGNBRK is not set it is
+   illegal  for  BRKINT  not  to be set; this is silently enforced by the
+   system. POSIX.1 specifies that this condition shall cause the break to
+   be  read  as  a  single  null character or a combination of characters
+   depending  on  the  PARMRK  setting;
+
+   If  IGNPAR  is  set  a byte with a framing or parity error (other than
+   break) is ignored.
+
+   PARMRK  and  ISTRIP  are  not  supported. The system silently enforces
+   settings  of  zero  for these two flags. POSIX.1 specifies that ISTRIP
+   causes valid input bytes to be first stripped to seven bits.
+
+   If  INPCK is set input parity checking is enabled. If INPCK is not set
+   input  parity  checking  is disabled allowing output parity generation
+   without  input  parity errors. Note that whether input parity checking
+   is  enabled  or disabled is independent of whether parity detection is
+   enabled  or  disabled. If parity detection is enabled but input parity
+   checking  is  disabled the hardware to which the terminal is connected
+   shall recognize the parity bit but the terminal driver shall not check
+   whether this bit is set correctly or not.
+
+   If  INLCR  is  set  a  received  NL  character  is  translated to a CR
+   character.  If  IGNCR  is  set a received CR character is ignored (not
+   read). If IGNCR is not set and ICRNL is set a received CR character is
+   translated into a NL character.
+
+   If  IXON  is set start/stop output control is enabled. A received STOP
+   character  shall  suspend  output and a received START character shall
+   restart  output.  When  IXON  is set START and STOP characters are not
+   read  but  merely perform flow-control functions. When IXON is not set
+   the START and STOP characters are read.
+
+   If  IXOFF is set start/stop input control is enabled. The system shall
+   transmit  one  or more STOP characters which are intended to cause the
+   terminal  device  to  stop  transmitting data as needed to prevent the
+   input  queue  from  overflowing  and  causing  loss  of data and shall
+   transmit  one  or more START characters which shall cause the terminal
+   device to resume transmitting data, as soon as the device can continue
+   transmitting data without risk of overflowing the input queue.
+
+----------------------------------------------------------------
+Output Modes - c_oflag -----------------------------------------
+----------------------------------------------------------------
+
+Values of the c_oflag field describe the basic terminal output control
+and  are  composed  of the bitwise inclusive-OR of the following masks
+which shall be bitwise distinct:
+
+ Name   Hex         Description
+ -----  ---------   ---------------------------------------
+ OPOST  00000001h   Perform output processing
+ OLCUC  00000002h   Map lower case to upper on output
+ ONLCR  00000004h   Map NL to CR-NL on output
+ OCRNL  00000008h   Map CR to NL on output
+ ONOCR  00000010h   No CR output at column 0
+ ONLRET 00000020h   NL performs CR function
+ OFILL  00000040h   Use fill characters for delay
+ OFDEL  00000080h   Fill is DEL else NUL.
+ NLDLY  00000100h   Select new-line delays: NL0 NL1
+ CRDLY  00000600h   Select carriage-return delays: CR0 CR1 CR2 CR3
+ TABDLY 00001800h   Select horizontal-tab delays: TAB0 TAB1 TAB2
+ XTABS  00001800h   Expand tabs to spaces
+ BSDLY  00002000h   Select backspace delays: BS0 BS1
+ VTDLY  00004000h   Select vertical tab delays: VT0 VT1
+ FFDLY  00008000h   Select form-feed delays: FF0 FF1
+
+
+detailed discussion of each c_oflag
+-----------------------------------
+
+*OPOST* 	Post-processes output. If this flag is set, output characters
+are post-processed as indicated by the remaining flags. Otherwise,
+characters are transmitted without change.
+
+*OLCUC* 	Maps lowercase to uppercase on output. If this flag is set, a
+lowercase alphabetic character is transmitted as the corresponding
+uppercase character. This flag is often used in conjunction with the
+*IUCLC* input mode.
+
+*ONLCR* 	Maps NL to CR-NL on output. If this flag is set, the NL
+character is transmitted as the CR-NL character pair.
+
+*OCRNL* 	Maps CR to NL on output. If this flag is set, the CR character
+is transmitted as the NL character.
+
+*ONOCR* 	Indicates no CR output at column 0. If this flag is set, no CR
+character is transmitted when at column 0 (first position).
+
+*ONLRET* 	NL performs CR function. If this flag is set, the NL character
+is assumed to do the carriage-return function. The column pointer is set
+to 0, and the delay specified for carriage return is used. If neither
+the *ONLCR*, *OCRNL*, *ONOCR*, nor *ONLRET* flag is set, the NL
+character is assumed to do the line-feed function only. The column
+pointer remains unchanged. The column pointer is set to 0 if the CR
+character is actually transmitted.
+
+The delay bits specify how long a transmission stops to allow for
+mechanical or other movement when certain characters are sent to the
+terminal. The actual delays depend on line speed and system load.
+
+*OFILL* 	Uses fill characters for delay. If this flag is set, fill
+characters are transmitted for a delay instead of a timed delay. This is
+useful for high baud rate terminals that need only a minimal delay.
+
+*OFDEL* 	If this flag is set, the fill character is DEL. If this flag is
+not set, the fill character is NULL.
+
+*NLDLY* 	Selects the new-line character delays. This is the mask to use
+before comparing to NL0 and NL1:
+*NL0* 	Specifies no delay.
+*NL1* 	Specifies a delay of approximately 0.10 seconds. If the *ONLRET*
+flag is set, the carriage-return delays are used instead of the new-line
+delays. If the *OFILL* flag is set, two fill characters are transmitted.
+
+*CRDLY* 	Selects the carriage-return delays. This is the mask to use
+before comparing to CR0, CR1, CR2, and CR3:
+*CR0* 	Specifies no delay.
+*CR1* 	Specifies that the delay is dependent on the current column
+position. If the *OFILL* flag is set, this delay transmits two fill
+characters.
+*CR2* 	Specifies a delay of approximately 0.10 seconds. If the *OFILL*
+flag is set, this delay transmits four fill characters.
+*CR3* 	Specifies a delay of approximately 0.15 seconds.
+
+*TABDLY* 	Selects the horizontal-tab delays. This is the mask to use
+before comparing to TAB0, TAB1, TAB2, and TAB3. If the *OFILL* flag is
+set, any of these delays (except TAB3) transmit two fill characters.
+*TAB0* 	Specifies no delay.
+*TAB1* 	Specifies that the delay is dependent on the current column
+position. If the *OFILL* flag is set, two fill characters are transmitted.
+*TAB2* 	Specifies a delay of approximately 0.10 seconds.
+*TAB3* 	Specifies that tabs are to be expanded into spaces.
+
+*BSDLY* 	Selects the backspace delays. This is the mask to use before
+comparing to BS0 and BS1:
+*BS0* 	Specifies no delay.
+*BS1* 	Specifies a delay of approximately 0.05 seconds. If the *OFILL*
+flag is set, this delay transmits one fill character.
+
+*VTDLY* 	Selects the vertical-tab delays. This is the mask to use before
+comparing to VT0 and VT1:
+*VT0* 	Specifies no delay.
+*VT1* 	Specifies a delay of approximately 2 seconds.
+
+*FFDLY* 	Selects the form-feed delays. This is the mask to use before
+comparing to FF0 and FF1:
+*FF0* 	Specifies no delay.
+*FF1* 	Specifies a delay of approximately 2 seconds.
+
+general discussion of c_oflag
+-----------------------------
+
+   If  OPOST  is set output characters are post-processed as indicated by
+   the  remaining  flags  otherwise  characters  are  transmitted without
+   change.
+
+   If  OLCUC  is  set a lower-case alphabetic character is transmitted as
+   the corresponding upper-case character. This function is often used in
+   conjunction  with  IUCLC  in  standard  UNIX  versions.  (IUCLC is not
+   supported by the NuTCRACKER Platform).
+
+   If ONLCR is set the NL character is transmitted as the CR-NL character
+   pair.  If  OCRNL  is  set  the  CR  character  is  transmitted  as the
+   character.  If  ONOCR  is  set  no CR character is transmitted when at
+   column  0  (first  position).  If  ONLRET  is  set the NL character is
+   assumed  to do the carriage-return function; the column pointer is set
+   to  0  and  thed  delays  specified  for CR are used. Otherwise the NL
+   character  is  assumed  to  do just the line-feed function; the column
+   pointer  remains unchanged. The column pointer is also set to 0 if the
+   CR character is actually transmitted.
+
+   The  NuTCRACKER  Platform  does  not  support  the  concept  of column
+   positions.  ONOCR  is  thus  not supported. The current implementation
+   does  not  support  delays  (discussed below). Thus ONLRET is also not
+   supported.
+
+   The  delay  bits  specify  how  long  transmission  stops to allow for
+   mechanical  or  other movement when certain characters are sent to the
+   terminal.  In  all  cases a value of 0 indicates no delay. If OFILL is
+   set  fill  characters  are  transmitted  for  delay instead of a timed
+   delay.  This  is  useful for high baud rate terminals that need only a
+   minimal  delay.  If  OFDEL is set the fill character is DEL, otherwise
+   NUL.
+
+   If a form-feed or vertical-tab delay is specified it lasts for about 2
+   seconds.
+
+   New-line  delay  lasts about 0.10 seconds. If ONLRET is set the RETURN
+   delays are used instead of the NEWLINE delays.
+
+   If OFILL is set two fill characters are transmitted.
+
+   Carriage-return  delay  type  1  is  dependent  on  the current column
+   position,  type  2  is  about  0.10  seconds  and type 3 is about 0.15
+   seconds.  If  OFILL  is set delay type 1 transmits two fill characters
+   and type 2 four fill characters.
+
+   Horizontal-tab  delay  type  1  is  dependent  on  the  current column
+   position.  Type  2  is about 0.10 seconds. Type 3 specified by TAB3 or
+   XTABS  specifies  that  TAB  characters  are to be expanded into SPACE
+   characters.  If  OFILL is set, two fill characters are transmitted for
+   any delay.
+
+   Backspace  delay  lasts  about  0.05 seconds. If OFILL is set one fill
+   character is transmitted.
+
+   The actual delays depend on line speed and system load.
+
+   As   mentioned  earlier  delays  are  not  supported  in  the  current
+   implementation.
+
+------------------------------------------------------------------
+Control Modes - c_cflag ------------------------------------------
+------------------------------------------------------------------
+
+Values  of the c_cflag field displayed in the following table describe
+the  basic  terminal  hardware control and are composed of the bitwise
+inclusive-OR of the masks shown.
+
+ flag    octal           description
+ -----   --------        -------------------------
+ CBAUD   0010017q
+  B0     0000000q	/* hang up */
+  B50    0000001q
+  B75    0000002q
+  B110   0000003q
+  B134   0000004q
+  B150   0000005q
+  B200   0000006q
+  B300   0000007q
+  B600   0000010q
+  B1200  0000011q
+  B1800  0000012q
+  B2400  0000013q
+  B4800  0000014q
+  B9600  0000015q
+  B19200 0000016q
+  B38400 0000017q
+ EXTA    0B19200q
+ EXTB    0B38400q
+ CSIZE   0000060q        Number of bits per byte CS5 CS6 CS7 CS8
+   CS5   0000000q        5 bits (both xmit and recv) excluding parity
+   CS6   0000020q        6 bits (both xmit and recv) excluding parity 
+   CS7   0000040q        7 bits (both xmit and recv) excluding parity
+   CS8   0000060q        8 bits (both xmit and recv) excluding parity
+ CSTOPB  0000100q      Send two stop bits if set else one
+ CREAD   0000200       enable reciever otherwise no char's are recieved
+ PARENB  0000400q      enable parity gen and detect, add parity to each char
+ PARODD  0001000q      Odd parity if set else even
+ HUPCL   0002000q      disconnect line when process terminates or closes line
+ CLOCAL  0004000       if set, local connect else model dial up is assumed
+ CBAUDEX 0010000       
+    B57600 0010001
+   B115200 0010002
+   B230400 0010003
+   B460800 0010004
+   B500000 0010005
+   B576000 0010006
+   B921600 0010007
+  B1000000 0010010
+  B1152000 0010011
+  B1500000 0010012
+  B2000000 0010013
+  B2500000 0010014
+  B3000000 0010015
+  B3500000 0010016
+  B4000000 0010017
+ CIBAUD	  002003600000	/* input baud rate (not used) */
+ CMSPAR	  010000000000		/* mark or space (stick) parity */
+ CRTSCTS  020000000000		/* flow control */
+
+   The  CSIZE  specify  the  byte  size in bits for both transmission and
+   reception. This size does not include the parity bit if any. Supported
+   byte sizes are 5 6 7 and 8.
+
+   If  CSTOPB  is  set  two stop bits are used; otherwise one stop bit is
+   used.
+
+   If CREAD is set the receiver is enabled; otherwise no characters shall
+   be received. This is always enabled by the NuTCRACKER Platform.
+
+   If  PARENB  is  set  parity  generation and detection is enabled and a
+   parity  bit  is  added  to each character. If parity is enabled PARODD
+   specifies odd parity if set; otherwise, even parity is used.
+
+   If  HUPCL is set the modem control lines for the port shall be lowered
+   when  the  last  process  with  the  port  open closes the port or the
+   process terminates. The modem connection shall be broken. HUPCL is not
+   supported by the NuTCRACKER Platform and silently forced to zero.
+
+   If  CLOCAL  is  set  a  connection does not depend on the state of the
+   modem  status  lines. If CLOCAL is clear, the modem status lines shall
+   be  monitored. The CLOCAL flag has meaning only if the terminal device
+   file  is  specified as modem-controlled (for example, /dev/com/nM) For
+   non-modem controlled devices CLOCAL setting has no effect.
+
+------------------------------------------------------------------
+Local Modes - c_lflag --------------------------------------------
+------------------------------------------------------------------
+
+Values  of the c_lflag field shown in the following table describe the
+control   of  various  functions  and  are  composed  of  the  bitwise
+inclusive-OR of the masks shown.
+
+name    octal   hex   descriptions
+----    ------  ---- ---------------------------------
+ISIG    0000001 0001 Enable signals for some c_cc special chars
+ICANON  0000002 0002 Canonical (raw/cooked) 0=raw 1=cooked
+XCASE   0000004 0004 show char's as /x or encoded 
+ECHO    0000010 0008 Enable echo
+ECHOE   0000020 0010 echo ERASE as a error-correcting backspace
+ECHOK   0000040 0020 echo KILL
+ECHONL  0000100 0040 echo \nl (new line)
+NOFLSH  0000200 0080 disable flush after interrupt, quit, or suspend (not imp)
+TOSTOP  0000400 0100 send SIGTTOU for background output (not implemted)
+ECHOCTL 0001000 0200 echo control char as encoded
+ECHOPRT 0002000 0400
+ECHOKE  0004000 0800
+FLUSHO	0010000 1000 enable flush by typing flush char
+PENDIN  0040000 4000 reshow input if ICANON switch
+IEXTEN  0100000 8000 enable extended functions (not implemted)
+
+ A detailed description of c_lflag follows ----------------------------
+
+*ISIG* Enables signals for the special control character INTR
+and QUIT. If an input character matches one of these control
+character signal associated with that character is performed.
+ 
+*ICANON* Enables canonical input. If this flag is set, it turns on
+canonical processing, which enables the erase and kill edit functions as
+well as the assembly of input characters into lines delimited by NL,
+EOF, and EOL characters. If the *ICANON* flag is not set, read requests
+are satisfied directly from the input queue. In this case, a read
+request is not satisfied until one of the following conditions is met:
+
+    * The minimum number of characters specified by *MIN* are received.
+    * The time-out value specified by *TIME* has expired since the last
+      character was received. This allows bursts of input to be read,
+      while still allowing single-character input.
+
+The *MIN* and *TIME* values are stored in the positions for the EOF and
+EOL characters, respectively. The character values of *MIN* and *TIME*
+are converted to their ascii equivalents to get the numeric value. The
+time value represents tenths of seconds.
+
+*XCASE* Enables canonical uppercase and lowercase presentation. If this
+flag is set along with the *ICANON* flag, an uppercase letter (or the
+uppercase letter translated to lowercase by the *IUCLC* input mode) is
+accepted on input by preceding it with a \ (backslash) character. The
+output is then also preceded by a backslash character. In this mode, the
+output generates and the input accepts the following escape sequences:
+
+   For        Use
+   --------   -----
+   ` (grave)  \ `
+   |          \ !
+   ~          \ ^
+   {          \ (
+   }          \ )
+   \          \ \
+
+For example, A is input as \a, \n as \\n, and \N as \\\n.
+
+*NOFLSH* Disables queue flushing. If this flag is set, the normal
+flushing of the input and output queues associated with the INTR, QUIT,
+and SUSP characters is not done. (not implemented)
+
+*FLUSHO* Flushes the output. When this bit is set by typing the FLUSH
+character, data written to the terminal is discarded. A terminal can
+cancel the effect of typing the FLUSH character by clearing this bit.
+
+*PENDIN* Reprints pending input. If this flag is set, any input that is
+pending after a switch from raw to canonical mode is re-input the next
+time a read operation becomes pending or the next time input arrives.
+The *PENDIN* flag is an internal-state bit.
+
+*IEXTEN* (not implemented) Enables extended functions to be
+recognized from the input data. If this flag is not set,
+implementation-defined functions are not recognized, and the
+corresponding input characters are processed as described for the
+*ICANON*, *ISIG*, *IXON*, and *IXOFF* flags. Recognition of the
+following special control characters requires the *IEXTEN* flag to be set:
+
+     VEOL2 
+     VDSUSP 
+     VREPRINT 
+     VDISCRD 
+     VWERSE 
+     VLNEXT
+
+  The functions associated with the following bits also require the
+  *IEXTEN* flag to be set:
+
+    IMAXBEL
+    ECHOKE
+    ECHOPRT
+    ECHOCTL
+
+*TOSTOP* Sends a *SIGTTOU* signal when a process in a background
+process group tries to write to its controlling terminal. The *SIGTTOU*
+signal stops the members of the process group. (not implemented)
+
+*ECHO* 	Enables echo. If this flag is set, characters are echoed as they
+are received.
+
+*ECHOE*	Echoes the erase character as Backspace-Space-Backspace. If the
+*ECHO* and *ECHOE *flags are both set and the *ECHOPRT* flag is not set,
+the ERASE and WERASE characters are echoed as one or more ASCII
+Backspace-Space-Backspace sequences, which clears the last characters
+from the screen.  ICANON must be set to enable ECHOE.
+
+*ECHOPRT* If the *ECHO* and *ECHOPRT* flags are both set, the first
+ERASE and WERASE character in a sequence are echoed as a \ (backslash),
+followed by the characters being erased. Subsequent ERASE and WERASE
+characters echo the characters being erased, in reverse order. The next
+non-erase character causes a / (slash) to be typed before the nonerase
+character is echoed. This function also requires the *IEXTEN* bit to be
+set. ICANON must be set to enable ECHOPRT
+
+*ECHOKE* Backspace-Space-Backspace entire line on line kill. If this
+flag is set, the kill character is echoed by erasing the entire line
+from the screen (using the mechanism selected by the *ECHOE* and
+*ECHOPRT* flags). This function also requires the *IEXTEN* and
+ICONON flags to be set.
+
+*ECHOK* Echoes the NL character after kill. If the *ECHOK* flag is set
+and the *ECHOKE* flag is not set, the NL character is echoed after the
+kill character is received. This emphasizes that the line is deleted.
+This function is only enabled if ICANON is set.
+
+*ECHONL* Echoes the NL character. If the *ECHONL* flag is set, the NL
+character is echoed even if the *ECHO* flag is not set. This is useful
+for terminals that are set to "local echo" (also referred to as
+"half-duplex"). This function is only enabled if ICANON is set?
+
+
+*ECHOCTL* Echoes control characters (with codes between 0 and 37 octal)
+as ^/X/, where /X/ is the character that results from adding 100 octal
+to the code of the control character. (For example, the character with
+octal code 1 is echoed as ^A). The ASCII DEL character (code 177 octal)
+is echoed as ^?. The ASCII TAB, NL, and START characters are not echoed.
+Unless escaped (preceded by a backslash), the EOF character is not
+echoed. As a result, because EOT is the default EOF character, terminals
+that respond to EOT are prevented from hanging up. This function also
+requires the *IEXTEN* flag to be set?
+
+general discussion of c_lflag
+-----------------------------
+
+   If  ECHOE  and  ICANON  are  set  the  ERASE character shall cause the
+   terminal  to  erase  the  last  character in the current line from the
+   display   if   possible.  If  there  is  no  character  to  erase  the
+   implementation does nothing.
+
+   If ECHOK and ICANON are set, the KILL character shall either cause the
+   terminal  to  erase  the  line from the display or shall echo the '\n'
+   character after the KILL character.
+
+   If  ECHONL  and ICANON are set the '\n' character shall be echoed even
+   if the ECHO is not set.
+
+   If  ICANON  is  set  canonical processing is enabled. This enables the
+   erase  and  kill  edit  functions and the assembly of input characters
+   into lines delimited by NL and EOF.
+
+   If  ICANON  is  not  set read requests are satisfied directly from the
+   input  queue.  A  read shall not be satisfied until at least MIN bytes
+   have  been  received  or  the  timeout  value TIME has expired between
+   bytes. The time value represents tenths of seconds.
+
+   IEXTEN NOFLSH and TOSTOP are not implemented.
+
+c_cc array ------------------------------------------------------------
+
+c_cc** 	Specifies an array that defines the special control characters.
+The relative positions for each function are:
+
+ name     loc  default    description
+ -------  ---  -------    -----------------------------
+ INTR     0    03h=^C     triggers SIGINT
+ QUIT     1    1Ch=^\     triggers SOGQUIT
+ ERASE    2    7fh=rubout
+ KILL     3    15h=^U     del line if ICANON
+ EOF      4    04h=^D     end of input if ICANON
+ TIME     5    00
+ MIN      6    01h        min value
+ SWTC     7    00
+ START    8    11h=^Q     start input
+ STOP     9    13h=^S     stop input
+ SUSP    10    1Ah=^Z     triggers SIGTSTP
+ EOL     11    00
+ REPRINT 12    12h=^R
+ DISCARD 13    0fh=^O
+ WERASE  14    17h=^W
+ LNEXT   15
+ EOL2    16
+
+*INTR* Indexes the INTR special character (Ctrl-c), which is
+recognized on input if the *ISIG* flag is set. The INTR character
+generates a *SIGINT* signal, which is sent to all processes in the
+foreground process group for which the terminal is the controlling
+terminal. If the *ISIG* flag is set, the INTR character is discarded
+when processed.
+
+*QUIT*  Indexes the QUIT special character (Ctrl-\), which is
+recognized on input if the *ISIG* flag is set. The QUIT character
+generates a *SIGQUIT* signal, which is sent to all processes in the
+foreground process group for which the terminal is the controlling
+terminal, and writes a *core* image file into the current working
+directory. If the *ISIG* flag is set, the QUIT character is discarded
+when processed.
+
+*ERASE*  Indexes the ERASE special character (Backspace), which is
+recognized on input if the *ICANON* flag is set. The ERASE character
+does not erase beyond the beginning of the line as delimited by a NL,
+EOL, EOF, or EOL2 character. If the *ICANON* flag is set, the ERASE
+character is discarded when processed.
+
+*KILL*  Indexes the KILL special character (Ctrl-u), which is
+recognized on input if the *ICANON* flag is set. The KILL character
+deletes the entire line, as delimited by a NL, EOL, EOF, or EOL2
+character. If the *ICANON* flag is set, the KILL character is discarded
+when processed.
+
+*EOF*  Indexes the EOF special character (Ctrl-d), which is recognized
+on input if the *ICANON* flag is set. When EOF is received, all the
+characters waiting to be read are immediately passed to the process,
+without waiting for a new line, and the EOF is discarded. If the EOF is
+received at the beginning of a line (no characters are waiting), a
+character count of zero is returned from the read, indicating an
+end-of-file. If the *ICANON* flag is set, the EOF character is discarded
+when processed.
+
+*EOL*  Indexes the EOL special character (Ctrl-@ or ASCII NULL), which
+is recognized on input if the *ICANON* flag is set. EOL is an additional
+line delimiter, like NL, and is not normally used.
+*VEOL2*  Indexes the EOL2 special character (Ctrl-@ or ASCII NULL),
+which is recognized on input if the *ICANON* and *IEXTEN* flags are set.
+EOL2 is an additional line delimiter, like NL, and is not normally used.
+
+*START*  Indexes the START special character (Ctrl-q), which is
+recognized on input if the *IXON* flag is set, and generated on output
+if the *IXOFF* flag is set. The START character can be used to resume
+output that has been suspended by a STOP character. If the *IXON* flag
+is set, the START character is discarded when processed. While output is
+not suspended, START characters are ignored and not read. *VSTRT* is an
+alias for *VSTART*.
+
+*STOP*  Indexes the STOP special character (Ctrl-s), which is
+recognized on input if the *IXON* flag is set, and generated on output
+if the *IXOFF* flag is set. The STOP character can be used to with
+terminals to prevent output from disappearing before it can be read. If
+the *IXON* flag is set, the STOP character is discarded when processed.
+While output is suspended, STOP characters are ignored and not read.
+
+*SUSP*  Indexes the SUSP special character (Ctrl-z), which is
+recognized on input if the *ISIG* flag is set. The SUSP character
+generates a *SIGTSTP* signal, which is sent to all processes in the
+foreground process group for which the terminal is the controlling
+terminal. If the *ISIG* flag is set, the SUSP character is discarded
+when processed.
+
+*DSUSP*  Indexes the DSUSP special character (Ctrl-y), which is
+recognized on input if the *ISIG* and *IEXTEN* flags are set. The DSUSP
+character generates a *SIGTSTP* signal as the SUSP character does, but
+the signal is sent when a process in the foreground process group
+attempts to read the DSUSP character, rather than when DSUSP is typed.
+If the *ISIG* and *IEXTEN* flags are set, the DSUSP character is
+discarded when processed.
+
+*REPRINT*  Indexes the REPRINT special character (Ctrl-r), which is
+recognized on input if the *ICANON* and *IEXTEN* flags are set. The
+REPRINT character reprints all characters, preceded by a new line, that
+have not been read. If the *ICANON* and *IEXTEN* flags are set, the
+REPRINT character is discarded when processed.
+
+*DISCRD*  Indexes the DISCARD special character (Ctrl-o), which is
+recognized on input if the *ICANON* and *IEXTEN* flags are set. The
+DISCARD character causes subsequent output to be discarded until another
+DISCARD character is typed, more input arrives, or the condition is
+cleared by a program. If the *ICANON* and *IEXTEN* flags are set, the
+DISCARD character is discarded when processed.
+
+*WERSE*  Indexes the WERASE special character (Ctrl-w), which is
+recognized on input if the *ICANON* and *IEXTEN* flags are set. The
+WERASE character causes the preceding word to be erased. The WERASE
+character does not erase beyond the beginning of the line as delimited
+by a NL, EOL, EOF, or EOL2 character. If the *ICANON* and *IEXTEN* flags
+are set, the WERASE character is discarded when processed.
+
+*LNEXT*  Indexes the LNEXT (literal next) special character (Ctrl-v),
+which is recognized on input if the *ICANON* and *IEXTEN *flags are set.
+The LNEXT character causes the special meaning of the next character to
+be ignored so that characters can be input without being interpreted by
+the system. If the *ICANON*, *ECHO*, and *IEXTEN* flags are set, the
+LNEXT character is replaced by a ^-Backspace sequence when processed.
+
+*MIN*  Indexes the *MIN* value, which is not a special character. The
+use of the *MIN* value is described in the discussion of noncanonical
+mode input processing in "ldterm Line Discipline" in/ AIX General
+Programming Concepts: Writing and Debugging Programs/.
+
+*TIME*  Indexes the *TIME* value, which is not a special character. The
+use of the *TIME* value is described in the discussion of noncanonical
+mode input processing in "ldterm Line Discipline" in/ AIX General
+Programming Concepts: Writing and Debugging Programs/.
+
+The character values for the following control characters can be changed:
+
+   INTR  EOF   STOP    DISCARD
+   QUIT  EOL   SUSP    WERASE
+   ERASE EOL2  DSUSP   LNEXT
+   KILL  START REPRINT
+
+The ERASE, KILL, and EOF characters can also be escaped (preceded by a
+backslash) so that no special processing is done.
+
+general discussion
+------------------
+
+   The  NL  and CR characters cannot be changed. It is device-specific if
+   the  START  and  STOP  characters  can be changed. The values for INTR
+   QUIT, ERASE KILL and EOF are changeable to suit user preferences.
+
+   If  two or more special characters have the same value the results are
+   unspecified.
+
+   The special control characters values are defined by the array c_cc in
+   the  termios  structure.  The  subscript name and description for each
+   element  in  both  canonical  and non-canonical modes are shown in the
+   following table.
+
+        Canonical Mode  Non-Canonical Mode  Description
+        --------------  ------------------  --------------
+        VEOF                                EOF character
+        VEOL                                EOL character
+        VERASE                              ERASE character
+        VINTR           VINTR               INTR character
+        VKILL                               KILL character
+                        VMIN                MIN value
+        VQUIT           VQUIT               QUIT character
+                        VTIME               TIME value
+        VSTART          VSTART              START character
+        VSTOP           VSTOP               STOP character
+
+
+   If  the  value  of one of the changeable special control characters is
+   _POSIX_VDISABLE  that  function  shall  be disabled, that is, no input
+   data is recognized as the disabled special character. If ICANON is not
+   set  the  value of _POSIX_VDISABLE has no special meaning for the VMIN
+   and VTIME entries of the c_cc array.
+
+
+;---------------------------------------------------------------------
+; general discussion
+;---------------------------------------------------------------------
+
+   The  termios  default state is Canonical (cooked) mode, most programs
+   prefer to use "raw" mode which access each keyboard character as it is
+   read.  The Canonical mode buffers keystrokes until end of line.
+
+ Canonical Mode Input Processing ---------------------------------------
+
+   In  canonical  mode  input  processing  input is processed in units of
+   lines.  A  line  is  delimited  by a '\n' character or and end-of-file
+   (EOF)  character.  A read request does not return until an entire line
+   is read from the port or a signal is received. Also no matter how many
+   bytes  have  been  requested  in  the  read  call  at most one line is
+   returned.  It  is not necessary, however to read a whole line at once;
+   any  number  of  bytes  even  one  may  be  requested  without  losing
+   information.
+
+   If  MAX_CANON is defined for the device it is a limit on the number of
+   bytes  in  a  line.  The  behavior  of  the  system when this limit is
+   exceeded  is  implementation-dependent.  If  MAX_CANON  is not defined
+   there  is  no  such  limit.
+
+   Erase   and   kill  processing  occurs  when  either  of  two  special
+   characters, the ERASE and KILL characters is received. This processing
+   affects  data  in  the  canonical  input  queue  that has not yet been
+   delimited  by a '\n' or EOF character. This un-delimited data makes up
+   the  current  line.  The ERASE character deletes the last character in
+   the  current  line  if any. The KILL character deletes all data in the
+   current line. The ERASE and KILL characters have no effect if there is
+   no  data  in  the  line  and  are themselves never placed in the input
+   queue.
+
+ Non-canonical Mode Input Processing --------------------------------
+
+   In non-canonical (raw) mode input processing input data is not assembled
+   into  lines  and ERASE and KILL processing do not occur. The values of
+   the  MIN  and  TIME members of the c_cc array of the termios structure
+   are used to determine how to process the bytes received.
+
+   MIN  represents  the  minimum  number of bytes that should be received
+   when  the  [2]read() function returns successfully. TIME is a timer of
+   0.1  second  granularity  (or  as  close  to  that  value  as  can  be
+   accommodated)  that  is  used  to  time out bursty and short-term data
+   transmissions.  If  MIN  is greater than MAX_INPUT the response to the
+   request  is  undefined.  The four possible values for MIN and TIME and
+   their interactions are as follows:
+
+   Case A: MIN>0 TIME>0
+          In  this  case  TIME  serves  as  an  inter-byte  timer  and is
+          activated  after  the  first  byte  is received. As soon as the
+          first byte is received the inter-byte timer is started. As long
+          as  bytes  keep  coming  before the timer expires and the total
+          number  of  bytes  does  not exceed the amount requested by the
+          read call the read blocks. Since TIME is an inter-byte timer it
+          is reset upon receipt of each byte. If the timer expires or the
+          number  of  bytes  requested  is  read  the read returns. It is
+          possible  to  block  indefinitely  here  since the timer is not
+          started until the first byte is received.
+   Case B: MIN>0 TIME=0
+          In this case there is no timer. A pending read is not satisfied
+          until  MIN  bytes are received or a signal occurs. If some data
+          has  been  read  before the signal it is returned. If not -1 is
+          returned with errno set to EINTR.
+   Case C: MIN=0 TIME>0
+          In  this case TIME is a total read timeout. The read returns if
+          either  MIN  bytes  are received before the timer expires or if
+          the  timer  expires.  In  the  latter  case the number of bytes
+          received  is  returned  even  if  that  number  is  zero. If an
+          interrupt occurs before the timer expires and no bytes are read
+          the read returns -1 with errno set to EINTR.
+   Case D: MIN=0 TIME=0
+          This implements a poll read. The minimum of the number of bytes
+          requested  and  the  number  of  bytes  currently  available is
+          returned,  without  waiting  for  more bytes to be input. If no
+          characters  are available zero is returned. This is not exactly
+          equivalent  to  the  non-blocking  case. In the latter the read
+          waits  for  a  brief  time  for  data  to  be  input if none is
+          currently  available and sets errno to EAGAIN and returns -1 if
+          no data is available.
+
+
+ Input and Output Baud Rates ------------------------------------------
+
+   The  baud  rates  for  a  com  port  should  be set using
+   c_ispeed and c_ospeed fields of the  termios  structure.
+
+   The  input  and output baud rates are stored in the termios structure.
+   The values shown in the following table are supported.
+
+                   Name   Description Name    Description
+                   B50    50 baud     B75     75 baud
+                   B110   110 baud    B134    134 baud
+                   B150   150 baud    B200    200 baud
+                   B300   300 baud    B600    600 baud
+                   B1200  1200 baud   B1800   1800 baud
+                   B2400  2400 baud   B4800   4800 baud
+                   B7200  7200 baud   B9600   9600 baud
+                   B14400 14400 baud  B19200  19200 baud
+                   B38400 38400 baud  B56K    56000 baud
+                   B57600 57600 baud  B115200 115200 baud
+                   B128K  128000 baud B256000 256000 baud
+
+   Windows does not support different baud rates for input and output. If
+   the  input  speed  is not zero its value is used to set the underlying
+   device  baud  rate. If not the value of output speed is used. Also the
+   fact  that  the above values mentioned in the table are available does
+   not mean that all of them can be used in any situation or environment.
+   This also depends on certain other device settings apart from the type
+   of hardware.
+
+
+ Supported ioctls -------------------------------------------------------
+
+   TCGETS
+          The  argument  is a pointer to a termios structure. The current
+          terminal parameters are fetches and stored in that structure.
+   TCSETS
+          The  argument  is a pointer to a termios structure. The current
+          terminal  parameters  are  set  from  the values stored in that
+          structure. The change is immediate.
+   TCSETSW
+          The  argument  is a pointer to a termios structure. The current
+          terminal  parameters  are  set  from  the values stored in that
+          structure.  The  change  occurs after all characters queued for
+          output  have  been  transmitted.  This form should be used when
+          changing parameters that affect output.
+   TCSETSF
+          The  argument  is a pointer to a termios structure. The current
+          terminal  parameters  are  set  from  the values stored in that
+          structure.  The  change  occurs after all characters queued for
+          output  have  been transmitted; all characters queued for input
+          are discarded and then the change occurs.
+   TCSBRK
+          The  argument is an int value. Wait for the output to drain. If
+          the  value  is  0, then send a break (zero-valued bits for 0.25
+          seconds).
+   TCXONC
+          The argument is an int value. If the argument is TCOOFF suspend
+          output;  if  TCOON  restart suspended output; if TCIOFF suspend
+          input; if TCION restart suspended input.
+   TCFLSH
+          The argument is an int value. If the argument is TCIFLUSH flush
+          the  input  queue;  if  TCOFLUSH,  flush  the  output queue; if
+          TCIOFLUSH flush both the input and output queues.
+
+
+/* tcflow() and TCXONC use these */
+ TCOOFF  0
+ TCOON  1
+ TCIOFF  2
+ TCION  3
+
+/* tcflush() and TCFLSH use these */
+ TCIFLUSH 0
+ TCOFLUSH 1
+ TCIOFLUSH 2
+
+/* tcsetattr uses these */
+ TCSANOW  0
+ TCSADRAIN 1
+ TCSAFLUSH 2
+
+/* modem lines */
+ TIOCM_LE 0x001
+ TIOCM_DTR 0x002
+ TIOCM_RTS 0x004
+ TIOCM_ST 0x008
+ TIOCM_SR 0x010
+ TIOCM_CTS 0x020
+ TIOCM_CAR 0x040
+ TIOCM_RNG 0x080
+ TIOCM_DSR 0x100
+ TIOCM_CD TIOCM_CAR
+ TIOCM_RI TIOCM_RNG
+ TIOCM_OUT1 0x2000
+ TIOCM_OUT2 0x4000
+ TIOCM_LOOP 0x8000

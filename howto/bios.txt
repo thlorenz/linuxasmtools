@@ -1,0 +1,140 @@
+  Reading BIOS memory with assembler mini-HOWTO
+  jeff owens, jeff@linuxasmtools.net
+  v1.01, 06 April 2009
+
+  How to read BIOS area with example program.
+  ______________________________________________________________________
+
+  Table of Contents
+
+
+  1. Disclaimer
+
+  2. Introduction
+
+  3. Where is physical memory
+
+  4. How do we find the BIOS
+
+  5. Running the Example program
+  
+  6. Compiling the example program
+
+  7. Finding more information
+  ______________________________________________________________________
+
+  1.  Disclaimer
+
+  The following document is offered in good faith as comprising only
+  safe programming and procedures. No responsibility is accepted by the
+  author for any loss or damage caused in any way to any person or
+  equipment, as a direct or indirect consequence of following these
+  instructions.
+
+
+  2.  Introduction
+
+  The most recent version of this document can always be found at
+  http://linuxasmtools.net
+
+  The BIOS (boot code) is contained in ROM (Read Only Memory)
+  and includes startup code plus configuration menus.  After
+  a system boots programs are provided virtual memory and
+  ignores the BIOS memory area.  This program finds the BIOS
+  in physical memory and displays information stored by
+  manufacturer.
+
+  The sample program is built from two files: bios.asm and
+  bios.inc.
+
+  3. Where is physical memory
+
+  To get at physical memory we need to read the device
+  /dev/mem.  This device also can use the seek function
+  or it can be mapped with mmap.  We will use the open,
+  seek, read functions to search for the BIOS area.
+
+  Before starting it is a good idea to check our status
+  as follows:
+
+  call	sys_getuid	;asmlib call to get our UID
+  or	eax,eax		;check if root
+  jz	we_root		;jmp if root
+
+
+  Next, we open the physical memory device with:
+
+  mov	ebx,mem_dev
+  call	block_open_read
+
+  The opened device handle is returned in eax, we
+  use it to seek to address 0e0000h.  At this point
+  we will begin our search.
+
+  mov	[mem_handle],eax
+  mov	ebx,eax		;handle to ebx
+  mov	ecx,0e0000h	;seek offset
+  mov	[current_seek],ecx
+  call	block_seek
+
+  4. How do we find the BIOS
+
+  We are now at address 0e0000h in physical memory.
+  Now, we want to search for the string "_DMI_" which
+  indicates the top of BIOS tables.
+
+dmi_search:
+  mov	ecx,buffer
+  mov	edx,16		;size of read
+  call	block_read	;read 16 bytes
+  cmp	[ecx],dword '_DMI'
+  je	got_dmi
+  add	[current_seek],dword 16
+  dec	ebp		;timeout
+  jnz	dmi_search
+
+
+  If we have a standard plug-and-play BIOS, it
+  will have a standard format.  We can scan the
+  tables and extract the manufacturer and BIOS
+  author.
+
+
+  5. Running the example program.
+
+  If we currently have root status, the example program
+  can be started with:
+
+  ./bios
+
+  It will show date values read from bios. Normally
+  we will not be root, so we might us sudo as follows:
+
+  sudo ./bios
+
+  6. Compiling the example program.
+
+  The example program can be compiled with the
+  following tools:
+
+  nasm - assembler
+  asmlib - library of assembler functions
+
+  The easy way to do this is to install, asmide
+  and start it as follows:
+
+  asmide bios.asm
+
+  asmide will provide a menu, with compile and
+  debug options.
+
+  To manually compile the source use the following:
+
+  nasm -g -f elf bios.asm
+  ld bios.o -static -o bios /usr/lib/asmlib.a
+
+  7. Finding more information
+
+     Standards are at:
+     http://www.dmtf.org/standards/smbios    
+

@@ -1,0 +1,6 @@
+#! /bin/bash
+#insight_ /home/jeff/rpm_src/asm/Proj/do/do
+#/home/jeff/bin/kdbg /home/jeff/rpm_src/asm/Proj/do/do
+kdbg $1
+#insight_ $1
+#insight_ do

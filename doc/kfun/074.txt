@@ -1,0 +1,32 @@
+
+----------------------------------------------------------------------------
+system  74 sethostname             - set host name 
+----------------------------------------------------------------------------
+  mov  eax,074
+  mov  ebx,theName  ;ptr to name string
+  mov  ecx,len      ;length of name string
+  int  80h
+
+       This  function changes the domain name of the
+       current processor.
+
+RETURN VALUE
+       On success, zero is returned.  On error a negative code is returned
+
+ERRORS
+       EINVAL For  getdomainname  under  libc:  name is NULL or name is longer
+              than len bytes.
+
+       EINVAL For setdomainname: len was negative or too large.
+
+       EPERM  For setdomainname: the caller was not the superuser.
+
+       EFAULT For setdomainname: name pointed outside of user address space.
+
+CONFORMING TO
+       POSIX does not specify these calls.
+
+SEE ALSO
+       gethostname, sethostname, uname
+
+

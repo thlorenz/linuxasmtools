@@ -1,0 +1,121 @@
+
+------------------------------------------------------------------
+274 mbind   - set NUMA memory  policy
+------------------------------------------------------------------
+
+  mov  eax,274
+  mov  ebx,start
+  mov  ecx,length
+  mov  edx,policy
+  mov  esi,mask     ;pointer to bit mask
+  mov  edi,mask_len ;lenght of mask in bits
+  mov  ebp,flags
+  int  80h
+
+   Sets NUMA memory policy for a memory range.
+   The memory of a NUMA machine is divided into multiple nodes. The
+   memory policy defines in which node memory is allocated. sys_mbind
+   only has an effect for new allocations; if the pages inside the range
+   have been already touched before setting the policy, then the policy
+   has no effect.
+
+args
+----
+
+ ebx A pointer to a integer specifying memory range starting address.
+
+ ecx Memory range length in bytes.
+
+ edx Policy. It maybe one of the following values:
+
+        MPOL_DEFAULT	0
+        MPOL_PREFERRED	1
+        MPOL_BIND	2
+        MPOL_INTERLEAVE	3
+
+  MPOL_DEFAULT This is default and means to use the underlying process
+   policy (which can be modified with [1]set_mempolicy). Unless the
+   process policy has been changed this means to allocate memory on the
+   node of the CPU that triggered the allocation. esi should be specified
+   as NULL.
+
+  MPOL_PREFERRED Sets the preferred node for allocation. The kernel will
+   try to allocate in this node first and fall back to other nodes if the
+   preferred nodes is low on free memory. Only the first node pointed by
+   esi is used. If no node is set in the mask, then the memory is
+   allocated on the node of the CPU that triggered the allocation
+   allocation).
+
+  MPOL_BIND Restricts memory allocation to the nodes specified in the
+   node value pointed by esi. There won't be allocations on other nodes.
+
+  MPOL_INTERLEAVE Interleaves allocations to the nodes specified by the
+   node value pointed by esi. This optimizes for bandwidth instead of
+   latency. To be effective the memory area should be fairly large, at
+   least 1MB or bigger.
+
+ esi A pointer to an integer value which represents a bitmask of nodes.
+
+ edi Maximum number of bits in the value pointed by esi.
+
+ ebp Flags. It maybe one of the following values:
+
+       MPOL_MF_STRICT	(1<<0)	Verify existing pages in the mapping */ 
+       MPOL_MF_MOVE	(1<<1)	Move pages owned by this process to conform to mapping */
+       MPOL_MF_MOVE_ALL (1<<2)	Move every page to conform to mapping */
+       MPOL_MF_INTERNAL (1<<3)	Internal flags start here */
+
+   MPOL_MF_STRICT If this flag is specified and policy is not
+
+   MPOL_DEFAULT, then the call will fail with -EIO if the existing pages
+   in the mapping don't follow the policy. In 2.6.16 or later the kernel
+   will also try to move pages to the requested node with this flag.
+
+   MPOL_MF_MOVE If this flag is specified then an attempt will be made to
+   move all the pages in the mapping so that they follow the policy.
+   Pages that are shared with other processes are not moved. If
+   MPOL_MF_STRICT is also specified, then the call will fail with -EIO if
+   some pages could not be moved.
+
+   MPOL_MF_MOVE_ALL If this flag is specified then all pages in the
+   mapping will be moved regardless of whether other processes use the
+   pages. The calling process must be privileged (CAP_SYS_NICE) to use
+   this flag. If MPOL_MF_STRICT is also specified, then the call will
+   fail with -EIO if some pages could not be moved.
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EFAULT There was a unmapped hole in the specified memory range or a
+     passed pointer was not valid.
+   -EINVAL An invalid value was specified for ebp; or policy was
+     MPOL_DEFAULT and the node mask pointed by esi pointed to a non-empty
+     set; or policy was MPOL_BIND or MPOL_INTERLEAVE and node mask pointed
+     by esipointed to an empty set.
+   -ENOMEM System out of memory.
+   -EIO MPOL_MF_STRICT was specified and an existing page was already on
+     a node that does not follow the policy.
+
+   Remarks
+
+   NUMA policy is not supported on file mappings.
+   MPOL_MF_STRICT is ignored on huge page mappings right now.
+   Support for huge page policy was added with 2.6.16. For interleave
+   policy to be effective on huge page mappings the policied memory needs
+   to be tens of megabytes or larger.
+   It is unfortunate that the same flag, MPOL_DEFAULT, has different
+   effects for sys_mbind and [2]set_mempolicy. To select "allocation on
+   the node of the CPU that triggered the allocation" (like set_mempolicy
+   MPOL_DEFAULT) when calling sys_mbind, specify a policy of
+   MPOL_PREFERRED with an empty node mask.
+   MPOL_MF_MOVE and MPOL_MF_MOVE_ALL are only available on Linux 2.6.16
+   and later.
+
+   Compatibility
+
+   Available since 2.6.7. This system call is only available on kernels
+   compiled with CONFIG_NUMA.
+

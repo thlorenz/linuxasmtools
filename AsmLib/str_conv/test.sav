@@ -1,0 +1,183 @@
+
+  extern dword_to_l_ascii,dword_to_r_ascii
+  extern ascii_to_dword,byte_to_hexascii
+  extern dword_to_hexascii,hexascii_to_dword
+  extern dword2hexascii,hexascii2dword
+  extern dword_to_ascii
+  extern byte2hexascii
+  extern octalascii2dword
+  extern byte2octalascii
+  extern word2octalascii
+  extern dword2octalascii
+  extern nibble2octalascii
+  extern byte2hexstr
+  extern word2hexstr
+  extern dword2hexstr
+
+ [section .text]
+
+
+  global _start
+  global main
+
+_start:
+main:
+  call	hex2str_test
+  call	octal_test
+  call	hex2ascii_test
+  call	ascii2hex_test
+  call	dword_to_ascii_test
+  call	hex_to_bin_test
+  call	dword_to_hexstr_test
+  call	byte_to_hex_test
+  call	l_ascii_test
+  call	r_ascii_test
+  call	ascii_to_dword_test
+  mov	eax,1		;exit
+  int	80h
+;-------------------------------------------------------------
+hex2str_test:
+  mov	ebx,12h
+  mov	edi,x_buf
+  call	byte2hexstr
+  mov	byte [edi],0
+  mov	esi,x_buf
+  call	hexascii2dword
+
+  mov	ebx,1234h
+  mov	edi,x_buf
+  call	word2hexstr
+  mov	byte [edi],0
+  mov	esi,x_buf
+  call	hexascii2dword
+
+  mov	ebx,1234567h
+  mov	edi,x_buf
+  call	dword2hexstr
+  mov	byte [edi],0
+  mov	esi,x_buf
+  call	hexascii2dword
+
+  ret
+
+  [section .data]
+x_buf:  times 20 db 0
+  [section .text]
+
+;-------------------------------------------------------------
+octal_test:
+  mov	ebx,123q
+  mov	edi,a_buf
+  call	byte2octalascii
+  mov	byte [edi],0
+  mov	esi,a_buf
+  call	octalascii2dword
+
+  mov	ebx,12345q
+  mov	edi,a_buf
+  call	word2octalascii
+  mov	byte [edi],0
+  mov	esi,a_buf
+  call	octalascii2dword
+
+  mov	ebx,1234567q
+  mov	edi,a_buf
+  call	dword2octalascii
+  mov	byte [edi],0
+  mov	esi,a_buf
+  call	octalascii2dword
+
+  ret
+
+  [section .data]
+a_buf:  times 20 db 0
+  [section .text]
+;-------------------------------------------------------------
+dword_to_ascii_test
+  mov	eax,123
+  mov	edi,dta_buf
+  call	dword_to_ascii
+  ret
+
+  [section .data]
+dta_buf:  db "     "
+  [section .text]
+
+;-------------------------------------------------------------
+ascii2hex_test:
+  mov	esi,string
+  mov	ebx,0
+  call	hexascii2dword
+  ret
+;----------
+string db '12345678'
+
+;-------------------------------------------------------------
+hex2ascii_test:
+  mov	bl,12h
+  mov	edi,buf+1
+  call	byte2hexascii
+  mov	ebx,12345678h
+  mov	edi,buf+7
+  call	dword2hexascii
+  ret
+;------
+  [section .bss]
+buf resb 10
+  [section .text]
+
+;-------------------------------------------------------------
+hex_to_bin_test:
+  mov	esi,hex_str
+  call	hexascii_to_dword
+  ret
+
+hex_str: db 'bca98',0
+
+;-------------------------------------------------------------
+dword_to_hexstr_test:
+  mov	ecx,1234h
+  mov	edi,outp
+  call	dword_to_hexascii
+  ret
+
+  [section .data]
+outp: db 0,0,0,0,0
+  [section .text]
+
+;-------------------------------------------------------------
+byte_to_hex_test:
+  mov	al,12h
+  call	byte_to_hexascii
+  ret
+;-------------------------------------------------------------
+l_ascii_test:
+  mov	eax,123456
+  mov	edi,buffer
+  mov	esi,6
+  call	dword_to_l_ascii
+  mov	edi,buffer
+  ret	
+
+;-------------------------------------------------------------
+r_ascii_test:
+  mov	eax,123456
+  mov	edi,buffer +7
+  mov	dword [buffer],"    "
+  call	dword_to_r_ascii
+  ret
+;------------------------------------------------------
+ascii_to_dword_test:
+  mov	esi,buffer +2	;start of ascii string
+  call	ascii_to_dword
+  cmp	ecx,123456
+  je	ad_ok
+  nop
+ad_ok:
+  ret
+;------------------------------------------------------
+
+ [section .data]
+buffer:
+  times 200 db 0
+  [section .text]

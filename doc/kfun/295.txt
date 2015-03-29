@@ -1,0 +1,234 @@
+
+----------------------------------------------------------------------
+295 openat  - open at descriptor
+----------------------------------------------------------------------
+
+  mov  eax,295
+  mov  ebx,fd   ;fd of directory
+  mov  ecx,name ;name of file in directory fd
+  mov  edx,flags
+  mov  esi,permissions
+  int  80h
+
+   Opens and possibly creates a file or device relative to a directory
+   file descriptor.
+   This system call operates in exactly the same way as sys_open,
+   except for the differences described below.
+   sys_openat and other similar system calls suffixed "at" are supported
+   for two reasons:
+
+   First, sys_openat allows an application to avoid race conditions that
+   could occur when using sys_open to open files in directories other
+   than the current working directory. These race conditions result from
+   the fact that some component of the directory prefix given to
+   sys_open could be changed in parallel with the call to sys_open.
+   Such races can be avoided by opening a file descriptor for the target
+   directory, and then specifying that file descriptor as the ebx
+   argument of sys_openat.
+
+   Second, sys_openat allows the implementation of a per-thread "current
+   working directory", via file descriptor(s) maintained by the
+   application. (This functionality can also be obtained by tricks based
+   on the use of /proc/self/fd/dirfd, but less efficiently.)
+
+args
+----
+
+ ebx Directory file descriptor.
+
+ ecx A pointer to a null-terminated string specifying the file or
+   device to open.
+   If the pathname is relative, then it is interpreted relative to the
+   directory referred to by the file descriptor ebx (rather than relative
+   to the current working directory of the calling process, as is done by
+   sys_open for a relative pathname).
+   If the pathname is relative and ebx is the special value AT_FDCWD,
+   then pathname is interpreted relative to the current working directory
+   of the calling process.
+   If the pathname is absolute, then ebx is ignored.
+
+ edx Flags. This argument must include one of the available access mode
+   flags:
+
+   O_RDONLY Open the file in read-only mode.
+   O_WRONLY Open the file in write-only mode.
+   O_RDWR   Open the file in read-write mode.
+
+   And it may also contain additional creation and status flags
+   (bitwise-or'ed):
+
+   O_CREAT If the file does not exist it will be created. The owner (user
+    ID) of the file is set to the effective user ID of the process. The
+    group ownership (group ID) is set either to the effective group ID of
+    the process or to the group ID of the parent directory (depending on
+    filesystem type and mount options, and the mode of the parent
+    directory, see, e.g., the mount options bsdgroups and sysvgroups of
+    the ext2 filesystem, as described in man 8 mount.
+   O_EXCL When used with O_CREAT, if the file already exists it is an
+    error and the sys_open will fail. In this context, a symbolic link
+    exists, regardless of where it points to. O_EXCL is broken on NFS file
+    systems; programs which rely on it for performing locking tasks will
+    contain a race condition. The solution for performing atomic file
+    locking using a lockfile is to create a unique file on the same file
+    system (e.g., incorporating hostname and pid), use sys_link to make
+    a link to the lockfile. If sys_link returns 0, the lock is
+    successful. Otherwise, use sys_stat on the unique file to check if
+    its link count has increased to 2, in which case the lock is also
+    successful.
+   O_NOCTTY If path pointed by ebx refers to a terminal device it will
+    not become the process's controlling terminal even if the process does
+    not have one.
+   O_TRUNC If the file already exists and is a regular file and the open
+    mode allows writing (i.e., is O_RDWR or O_WRONLY) it will be truncated
+    to length 0. If the file is a FIFO or terminal device file, the
+   O_TRUNC flag is ignored. Otherwise the effect of O_TRUNC is
+    unspecified.
+   O_APPEND The file is opened in append mode. Before each sys_write,
+    the file offset is positioned at the end of the file, as if with
+    sys_lseek(). O_APPEND may lead to corrupted files on NFS file
+    systems if more than one process appends data to a file at once. This
+    is because NFS does not support appending to a file, so the client
+    kernel has to simulate it, which can't be done without a race
+    condition.
+
+   O_NONBLOCK,
+   O_NDELAY
+    When possible, the file is opened in non-blocking mode. Neither the
+    sys_open nor any subsequent operations on the file descriptor
+    which is returned will cause the calling process to wait. For a
+    discussion of the effect of O_NONBLOCK in conjunction with mandatory
+    file locks and with file leases, see sys_fcntl.
+   O_SYNC The file is opened for synchronous I/O. Any sys_write on
+    the resulting file descriptor will block the calling process until the
+    data has been physically written to the underlying hardware.
+    There are many infelicities in the protocol underlying NFS, affecting
+    amongst others O_SYNC and O_NDELAY.
+   FASYNC Enable signal-driven I/O: generate a signal (SIGIO by default,
+    but this can be changed via sys_fcntl) when input or output
+    becomes possible on this file descriptor. This feature is only
+    available for terminals, pseudo-terminals, sockets, and (since Linux
+    2.6) pipes and FIFOs. See sys_fcntl for further details.
+   O_DIRECT (Since Linux 2.4.10)
+    Try to minimize cache effects of the I/O to and from this file. In
+    general this will degrade performance, but it is useful in special
+    situations, such as when applications do their own caching. File I/O
+    is done directly to/from user space buffers. The I/O is synchronous,
+    i.e., at the completion of a sys_read or sys_write, data is
+    guaranteed to have been transferred. Under Linux 2.4 transfer sizes,
+    and the alignment of user buffer and file offset must all be multiples
+    of the logical block size of the file system. Under Linux 2.6
+    alignment to 512-byte boundaries suffices.
+   O_LARGEFILE (LFS) Allow files whose sizes cannot be represented in an
+    32bit (but can be represented in an 64bit) to be opened.
+   O_DIRECTORY If path specified by the string pointed by ebx is not a
+    directory, cause the open to fail. This flag was added in kernel
+    version 2.1.126, to avoid denial-of-service problems if opendir (See
+    man 3 opendir) is called on a FIFO or tape device, but should not be
+    used outside of the implementation of opendir.
+   O_NOFOLLOW If path pointed by ebx is a symbolic link, then the open
+    fails. This is a FreeBSD extension, which was added to Linux in
+    version 2.1.126. Symbolic links in earlier components of the pathname
+    will still be followed.
+   O_NOATIME (Since Linux 2.6.8) Do not update the file last access time
+    (st_atime in the inode) when the file is sys_read. This flag is
+    intended for use by indexing or backup programs, where its use can
+    significantly reduce the amount of disk activity. This flag may not be
+    effective on all filesystems. One example is NFS, where the server
+    maintains the access time.
+
+ esi Permissions to use in case a new file is created. It must be
+   specified when O_CREAT is in the ecx and is ignored otherwise. It is
+   modified by the process's umask in the usual way: the permissions of
+   the created file are (edx & ~umask). Note that this mode only applies
+   to future accesses of the newly created file; the sys_open call that
+   creates a read-only file may well return a read/write file descriptor.
+   The following symbolic constants are provided for mode:
+
+   S_IRWXU  - owner has read, write and execute permission
+   S_IRUSR  - owner has read permission
+   S_IWUSR  - owner has write permission
+   S_IXUSR  - owner has execute permission
+   S_IRWXG  - group has read, write and execute permission
+   S_IRGRP  - group has read permission
+   S_IWGRP  - group has write permission
+   S_IXGRP  - group has execute permission
+   S_IRWXO  - others have read, write and execute permission
+   S_IROTH  - others have read permission
+   S_IWOTH  - others have write permission
+   S_IXOTH  - others have execute permission
+
+   Return values
+
+   If the system call succeeds the return value is the new file
+   descriptor.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EACCES The requested access to the file is not allowed, or search
+     permission is denied for one of the directories in the path prefix of
+     pathname, or the file did not exist yet and write access to the parent
+     directory is not allowed.
+   -EEXIST Pathname pointed by ecx already exists and O_CREAT and O_EXCL
+     were used.
+   -EFAULT Pathname pointed by ecx points outside your accessible address
+     space.
+   -EISDIR Pathname pointed by ecx refers to a directory and the access
+     requested involved writing (that is, O_WRONLY or O_RDWR is set).
+   -ELOOP Too many symbolic links were encountered in resolving pathname,
+     or O_NOFOLLOW was specified but pathname was a symbolic link.
+   -EMFILE The process already has the maximum number of files open.
+   -ENAMETOOLONG Pathname pointed by ecx was too long.
+   -ENFILE The system limit on the total number of open files has been
+     reached.
+   -ENODEV Pathname pointed by ecx refers to a device special file and no
+     corresponding device exists. (This is a Linux kernel bug; in this
+     situation ENXIO must be returned.)
+   -ENOENT O_CREAT is not set and the named file does not exist. Or, a
+     directory component in pathname does not exist or is a dangling
+     symbolic link.
+   -ENOMEM Insufficient kernel memory was available.
+   -ENOSPC Pathname pointed by ecx was to be created but the device
+     containing pathname has no room for the new file.
+   -ENOTDIR A component used as a directory in pathname is not, in fact,
+     a directory, or O_DIRECTORY was specified and pathname was not a
+     directory.
+     -or-
+     Pathname is a relative path and ebx is a file descriptor referring to
+     a file other than a directory.
+   -ENXIO O_NONBLOCK | O_WRONLY is set, the named file is a FIFO and no
+     process has the file open for reading. Or, the file is a device
+     special file and no corresponding device exists.
+   -EOVERFLOW Pathname pointed by ecx refers to a regular file, too large
+     to be opened; see O_LARGEFILE above.
+   -EPERM The O_NOATIME flag was specified, but the effective user ID of
+     the caller did not match the owner of the file and the caller was not
+     privileged (CAP_FOWNER).
+   -EROFS Pathname pointed by ecx refers to a file on a read-only
+     filesystem and write access was requested.
+   -ETXTBSY Pathname pointed by ecx refers to an executable image which
+     is currently being executed and write access was requested.
+   -EWOULDBLOCK The O_NONBLOCK flag was specified, and an incompatible
+     lease was held on the file (see sys_fcntl).
+   -EBADF ebx is not a valid file descriptor.
+
+   Remarks
+
+   On NFS file systems with UID mapping enabled, sys_open may return a
+   file descriptor but e.g. sys_read requests are denied with EACCES.
+   This is because the client performs sys_open by checking the
+   permissions, but UID mapping is performed by the server upon read and
+   write requests.
+   If the file is newly created, its st_atime, st_ctime, st_mtime fields
+   (respectively, time of last access, time of last status change, and
+   time of last modification; see sys_stat) are set to the current
+   time, and so are the st_ctime and st_mtime fields of the parent
+   directory. Otherwise, if the file is modified because of the O_TRUNC
+   flag, its st_ctime and st_mtime fields are set to the current time.
+   The O_NONBLOCK flag indicates that one wants to open but does not
+   necessarily have the intention to read or write. This is typically
+   used to open devices in order to get a file descriptor for use with
+   sys_ioctl.
+
+
+   Available since 2.6.16
+

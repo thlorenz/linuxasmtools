@@ -1,0 +1,870 @@
+
+BITS 32
+fiadd	word [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fimul	word [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+ficom	word [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+ficomp	word [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fisub	word [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fisubr	word [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fidiv	word [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fidivr	word [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+faddp	st2 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fsubrp	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fdivrp	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fmulp	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fsubp	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fdivp	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcompp ;err=00 warn=00 typ=00 act=00 adr=00000000
+fld	qword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fst	qword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fstp	qword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+frstor	[ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fnsave	[ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fnstsw	[ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+ffree	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fst	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fucom	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fstp	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fucomp	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	st0,st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	st1,st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	st7,st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	qword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	qword [esi] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	qword [0012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	qword [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	qword [ebx+ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	qword [ecx+ebx*8+01234H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fmul	qword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcom	qword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcomp	qword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fsub	qword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fsubr	qword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fdiv	qword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fdivr	qword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fsubr	st1,st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fsub	st1,st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fdivr	st1,st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fmul	st1,st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fdiv	st1,st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fild	dword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fist	dword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fistp	dword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fld	tword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fstp	tword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fnclex	 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fninit	 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcmovnb	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcmovne	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcmovnbe	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcmovnu	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcomi	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fucomi	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fiadd	dword [eax] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fimul	dword [eax] ;err=00 warn=00 typ=00 act=00 adr=00000000
+ficom	dword [eax] ;err=00 warn=00 typ=00 act=00 adr=00000000
+ficomp	dword [eax] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fisub	dword [eax] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fisubr	dword [eax] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fidiv	dword [eax] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fidivr	dword [eax] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcmovb	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcmove	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcmovbe	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcmovu	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fucompp	 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fld	st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fld	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fld	dword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fld	dword [ebx+01234H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fld	dword [00BC614EH] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fld	dword [ebx+esi] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fst	dword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fstp	dword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fldenv	[ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fldcw	[ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fnstenv	[ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fnstcw	[ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fnop ;err=00 warn=00 typ=00 act=00 adr=00000000
+fchs ;err=00 warn=00 typ=00 act=00 adr=00000000
+fabs ;err=00 warn=00 typ=00 act=00 adr=00000000
+ftst ;err=00 warn=00 typ=00 act=00 adr=00000000
+fxam ;err=00 warn=00 typ=00 act=00 adr=00000000
+f2xm1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fyl2x ;err=00 warn=00 typ=00 act=00 adr=00000000
+fptan ;err=00 warn=00 typ=00 act=00 adr=00000000
+fxtract ;err=00 warn=00 typ=00 act=00 adr=00000000
+fprem1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fdecstp ;err=00 warn=00 typ=00 act=00 adr=00000000
+fincstp ;err=00 warn=00 typ=00 act=00 adr=00000000
+fld1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fldl2t ;err=00 warn=00 typ=00 act=00 adr=00000000
+fldl2e ;err=00 warn=00 typ=00 act=00 adr=00000000
+fldpi ;err=00 warn=00 typ=00 act=00 adr=00000000
+fldlg2 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fldln2 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fldz ;err=00 warn=00 typ=00 act=00 adr=00000000
+fprem ;err=00 warn=00 typ=00 act=00 adr=00000000
+fyl2xp1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fsqrt ;err=00 warn=00 typ=00 act=00 adr=00000000
+fsincos ;err=00 warn=00 typ=00 act=00 adr=00000000
+frndint ;err=00 warn=00 typ=00 act=00 adr=00000000
+fscale ;err=00 warn=00 typ=00 act=00 adr=00000000
+fsin ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcos ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	st1 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	st7 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	dword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	dword [esi] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	dword [0012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	dword [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	dword [ebx+ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fadd	dword [ecx+ebx*8+01234H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+fmul	st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcom	st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fcomp	st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fsub	st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fsubr	st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fdiv	st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+fdivr	st0 ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	 al,[00BC614EH] ;err=00 warn=00 typ=00 act=04 adr=00BC614E
+mov	eax,[00BC614EH] ;err=00 warn=00 typ=00 act=10 adr=00BC614E
+mov	[00BC614EH],al  ;err=00 warn=00 typ=00 act=04 adr=00BC614E
+mov	[00BC614EH],eax ;err=00 warn=00 typ=00 act=10 adr=00BC614E
+mov	[00BC614EH],ax  ;err=00 warn=00 typ=00 act=08 adr=00BC614E
+bswap	eax ;err=00 warn=00 typ=00 act=00 adr=00000000
+bswap	ebx ;err=00 warn=00 typ=00 act=00 adr=00000000
+bswap	edx ;err=00 warn=00 typ=00 act=00 adr=00000000
+enter	01234H,012H ;err=00 warn=00 typ=00 act=00 adr=00000000
+aad	byte 0AH ;err=00 warn=00 typ=00 act=00 adr=00000000
+aam	byte 0AH ;err=00 warn=00 typ=00 act=00 adr=00000000
+aam	byte 0AH ;err=00 warn=00 typ=00 act=00 adr=00000000
+int	byte 012H ;err=00 warn=08 typ=00 act=00 adr=00000000
+push	byte 012H ;err=00 warn=08 typ=00 act=00 adr=00000000
+sbb	al,0012H ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	al,0012H ;err=00 warn=00 typ=00 act=00 adr=00000000
+test	al,0012H ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	al,0012H ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	eax,012345678H ;err=00 warn=00 typ=00 act=00 adr=12345678
+sbb	 ax,word 01234H ;err=00 warn=00 typ=00 act=00 adr=00000000
+push	012345678H ;err=00 warn=00 typ=00 act=00 adr=12345678
+push	word 01234H ;err=00 warn=08 typ=00 act=00 adr=00000000
+sub	eax,012345678H ;err=00 warn=00 typ=00 act=00 adr=12345678
+test	eax,012345678H ;err=00 warn=00 typ=00 act=00 adr=12345678
+xor	eax,012345678H ;err=00 warn=00 typ=00 act=00 adr=12345678
+ret	01234H ;err=00 warn=00 typ=08 act=00 adr=00000000
+retf	01234H ;err=00 warn=00 typ=08 act=00 adr=00000000
+jmp	0123H:0456789H ;err=00 warn=08 typ=08 act=01 adr=00456789
+call	0123H:0456789H ;err=00 warn=08 typ=00 act=02 adr=00456789
+xchg	eax,eax ;err=00 warn=00 typ=00 act=00 adr=00000000
+jo	short $-01H ;err=00 warn=00 typ=02 act=01 adr=00000198
+jmp	near $+039H ;err=00 warn=00 typ=08 act=01 adr=000001D4
+jmp	near $+034H ;err=00 warn=00 typ=08 act=01 adr=000001D4
+jmp	short $-0AH ;err=00 warn=00 typ=08 act=01 adr=0000019B
+call	near $+02DH ;err=00 warn=00 typ=00 act=02 adr=000001D4
+call	near $+028H ;err=00 warn=00 typ=00 act=02 adr=000001D4
+loop	 $+023H ;err=00 warn=00 typ=02 act=01 adr=000001D4
+loop	 $-018H ;err=00 warn=00 typ=02 act=01 adr=0000019B
+loope	 $+01FH ;err=00 warn=00 typ=02 act=01 adr=000001D4
+loopne	 $+01DH ;err=00 warn=00 typ=02 act=01 adr=000001D4
+jcxz 	 $+01BH ;err=00 warn=00 typ=02 act=01 adr=000001D4
+jecxz	 $-03H ;err=00 warn=00 typ=02 act=01 adr=000001B9
+loop	 $-05H ;err=00 warn=00 typ=02 act=01 adr=000001B9
+jmp	short $+014H ;err=00 warn=00 typ=08 act=01 adr=000001D4
+jo	short $+030H ;err=00 warn=00 typ=02 act=01 adr=000001F2
+jo	near  $+01000H ;err=00 warn=00 typ=02 act=01 adr=000011C4
+jo	near  $+0100AH ;err=00 warn=00 typ=02 act=01 adr=000011D4
+jo	short $+02H ;err=00 warn=00 typ=02 act=01 adr=000001D2
+jo	short $+02H ;err=00 warn=00 typ=02 act=01 adr=000001D4
+jno	short $-00H ;err=00 warn=00 typ=02 act=01 adr=000001D4
+jc	short $-02H ;err=00 warn=00 typ=02 act=01 adr=000001D4
+jnc	short $-04H ;err=00 warn=00 typ=02 act=01 adr=000001D4
+je	short $-06H ;err=00 warn=00 typ=02 act=01 adr=000001D4
+jne	short $-08H ;err=00 warn=00 typ=02 act=01 adr=000001D4
+jna	short $-0AH ;err=00 warn=00 typ=02 act=01 adr=000001D4
+ja	short $-0CH ;err=00 warn=00 typ=02 act=01 adr=000001D4
+js	short $-0EH ;err=00 warn=00 typ=02 act=01 adr=000001D4
+jns	short $-010H ;err=00 warn=00 typ=02 act=01 adr=000001D4
+jp	short $-012H ;err=00 warn=00 typ=02 act=01 adr=000001D4
+jnp	short $-014H ;err=00 warn=00 typ=02 act=01 adr=000001D4
+jl	short $+08H ;err=00 warn=00 typ=02 act=01 adr=000001F2
+jnl	short $+06H ;err=00 warn=00 typ=02 act=01 adr=000001F2
+jle	short $+04H ;err=00 warn=00 typ=02 act=01 adr=000001F2
+jg	short $+02H ;err=00 warn=00 typ=02 act=01 adr=000001F2
+in	al, 05H ;err=00 warn=00 typ=04 act=00 adr=00000000
+in	ax, 05H ;err=00 warn=00 typ=04 act=00 adr=00000000
+in	eax,05H ;err=00 warn=00 typ=04 act=00 adr=00000000
+in	al, dx ;err=00 warn=00 typ=04 act=00 adr=00000000
+in	ax, dx ;err=00 warn=00 typ=04 act=00 adr=00000000
+in	eax,dx ;err=00 warn=00 typ=04 act=00 adr=00000000
+out	05H,al  ;err=00 warn=00 typ=04 act=00 adr=00000000
+out	05H,ax  ;err=00 warn=00 typ=04 act=00 adr=00000000
+out	05H,eax ;err=00 warn=00 typ=04 act=00 adr=00000000
+out	dx,al  ;err=00 warn=00 typ=04 act=00 adr=00000000
+out	dx,ax  ;err=00 warn=00 typ=04 act=00 adr=00000000
+out	dx,eax ;err=00 warn=00 typ=04 act=00 adr=00000000
+adc	al, 08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	ax, 08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	eax,08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	al, 08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	al, 08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	al, 08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	al, 08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	eax,ebx,08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	eax,dword [ebx+012345678H],08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	eax,dword [ebx+05H],08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	eax,dword [ebx],08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	eax,ebx,byte 08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	ax,bx,byte 08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	eax,dword [ebx+012345678H],byte 08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	eax,dword [ebx+05H],byte 08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	eax,dword [ebx],byte 08H ;err=00 warn=00 typ=00 act=00 adr=00000000
+movsx	eax,bx ;err=00 warn=00 typ=00 act=00 adr=00000000
+movzx	eax,word [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+movzx	eax,word [ebx+03H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+movzx	eax,word [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+movsx	eax,bl ;err=00 warn=00 typ=00 act=00 adr=00000000
+movzx	ax,bl ;err=00 warn=00 typ=00 act=00 adr=00000000
+movzx	eax,byte [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+movzx	eax,byte [ebx+05H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+movsx	eax,byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+movsx	ax,byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+shld	eax,ebx,02H ;err=00 warn=00 typ=00 act=00 adr=00000000
+shld	eax,ebx,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+shrd	eax,ebx,02H ;err=00 warn=00 typ=00 act=00 adr=00000000
+shrd	eax,ebx,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+shld	ax,bx,02H ;err=00 warn=00 typ=00 act=00 adr=00000000
+shld	dword [eax+012345678H],ebx,02H ;err=00 warn=00 typ=00 act=00 adr=00000000
+shld	word [eax+012345678H],bx,02H ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcl	eax,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcl	ebx,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcl	bx,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcr	ebx,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+rol	ebx,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+ror	ebx,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+sar	ebx,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+shl	ebx,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+shr	ebx,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcl	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcl	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcr	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+rol	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+ror	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+sar	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+shl	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+shr	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcl	byte [eax+012345678H],cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	ebx,dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bx,word 01234H ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	ebx,dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 0081H,00C0H,0078H,0056H,0034H,0012H ;add	eax,dword 012345678H ;err=00 warn=01 typ=00 act=00 adr=00000000
+add	bx,word 01234H ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	ebx,dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	bx,word 01234H ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	ebx,dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	eax,012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	ebx,0012345678H ;err=00 warn=00 typ=00 act=00 adr=12345678
+mov	eax,0012345678H ;err=00 warn=00 typ=00 act=00 adr=12345678
+db 00C7H,00C0H,0078H,0056H,0034H,0012H ;mov	eax,dword 012345678H ;err=00 warn=01 typ=00 act=00 adr=00000000
+or	ebx,dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	ebx,dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	ebx,dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+test	ebx,dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	ebx,dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	dword [eax+012345678H],dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	dword [eax+012345678H],dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	dword [eax+012345678H],dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	dword [eax+05H],dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	dword [ecx+05H],dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+test	dword [eax+05H],dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+test	dword [ebx+05H],dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	dword [eax+05H],dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	dword [ebx+05H],dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	dword [eax],dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	dword [eax],dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+test	dword [eax],dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	dword [eax],dword 012345678H ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 0013H,00C0H ;adc	eax,eax ;err=00 warn=01 typ=00 act=00 adr=00000000
+adc	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bx,cx ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 003H,00C0H ;add	eax,eax ;err=00 warn=01 typ=00 act=00 adr=00000000
+add	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	eax,eax ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	eax,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	bx,cx ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 0023H,00C0H ;and	eax,eax ;err=00 warn=01 typ=00 act=00 adr=00000000
+and	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	bx,cx ;err=00 warn=00 typ=00 act=00 adr=00000000
+bsf	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+bsr	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmova	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovc	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmove	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovg	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovl	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovle	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovna	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovnc	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovne	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovnl	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovno	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovnp	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovns	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovo	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovp	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovs	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+lar	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 008BH,00C0H ;mov	eax,eax ;err=00 warn=01 typ=00 act=00 adr=00000000
+mov	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	eax,eax ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	eax,dword [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	ebx,dword [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lds	ebx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+les	ebx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lfs	ebx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lgs	ebx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lsl	ebx,dword [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lss	ebx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lds	bx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+les	bx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lfs	bx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lgs	bx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lsl	bx,word [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lss	bx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	eax, [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	ax, [ebx+01234H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bound	eax, [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bound	ax, [ebx+01234H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	eax, [ebx+05H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	ax, [ebx+05H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bound	ax, [ebx+05H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bound	eax, [ebx+05H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	eax,dword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	ebx,dword [eax] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bx,word [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bsf	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bsr	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmova	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovc	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmove	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovg	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovl	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovle	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lar	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lds	ebx, [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	eax, [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	esi, [esi] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	ax, [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bound	eax, [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bound	ax, [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 0012H,00C0H ;adc	al,al ;err=00 warn=01 typ=00 act=00 adr=00000000
+adc	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	al,al ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 002H,00C0H ;add	al,al ;err=00 warn=01 typ=00 act=00 adr=00000000
+add	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	al,al ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bl,byte [0012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	bl,byte [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	bl,byte [ebx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	bl,byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	ebx,ebx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bx,bx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bx,cx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	eax,eax ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	eax,eax ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+bt	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+btc	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+btc	bx,cx ;err=00 warn=00 typ=00 act=00 adr=00000000
+btr	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+bts	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmpxchg	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+test	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+xadd	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	dword [0012345678H],ebx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	dword [edx+012345678H],ebx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	word [0012345678H],bx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	dword [0012H],ebx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	dword [edx+012H],ebx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	dword [ebx],edx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	word [ebx],dx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	al,al ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	al,al ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmpxchg	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+test	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+xadd	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	byte [ebx+012345678H],cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	byte [0012345678H],cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	byte [ebx+05H],cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	byte [ebx],cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 003AH,00C0H ;cmp	al,al ;err=00 warn=01 typ=00 act=00 adr=00000000
+db 0012H,00C0H ;adc	al,al ;err=00 warn=01 typ=00 act=00 adr=00000000
+db 002H,00C0H ;add	al,al ;err=00 warn=01 typ=00 act=00 adr=00000000
+db 0022H,00C0H ;and	al,al ;err=00 warn=01 typ=00 act=00 adr=00000000
+db 00AH,00C0H ;or	al,al ;err=00 warn=01 typ=00 act=00 adr=00000000
+db 001AH,00C0H ;sbb	al,al ;err=00 warn=01 typ=00 act=00 adr=00000000
+db 002AH,00C0H ;sub	al,al ;err=00 warn=01 typ=00 act=00 adr=00000000
+xchg	al,al ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 0032H,00C0H ;xor	al,al ;err=00 warn=01 typ=00 act=00 adr=00000000
+add	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	al,al ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	al,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bl,byte [0012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	bl,byte [edx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	bl,byte [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	bl,byte [edx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	bl,byte [ebx+012H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	bl,byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	bl,byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 0013H,00C0H ;adc	eax,eax ;err=00 warn=01 typ=00 act=00 adr=00000000
+adc	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bx,cx ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 003H,00C0H ;add	eax,eax ;err=00 warn=01 typ=00 act=00 adr=00000000
+add	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	eax,eax ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	eax,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	bx,cx ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 0023H,00C0H ;and	eax,eax ;err=00 warn=01 typ=00 act=00 adr=00000000
+and	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	bx,cx ;err=00 warn=00 typ=00 act=00 adr=00000000
+bsf	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+bsr	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmova	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovc	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmove	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovg	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovl	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovle	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovna	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovnc	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovne	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovnl	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovno	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovnp	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovns	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovo	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovp	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovs	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+lar	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 008BH,00C0H ;mov	eax,eax ;err=00 warn=01 typ=00 act=00 adr=00000000
+mov	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	eax,eax ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	ebx,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	eax,dword [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	ebx,dword [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lds	ebx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+les	ebx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lfs	ebx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lgs	ebx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lsl	ebx,dword [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lss	ebx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lds	bx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+les	bx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lfs	bx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lgs	bx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lsl	bx,word [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lss	bx, [ecx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	eax, [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	ax, [ebx+01234H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bound	eax, [ebx+012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bound	ax, [ebx+01234H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	eax, [ebx+05H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	ax, [ebx+05H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bound	ax, [ebx+05H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bound	eax, [ebx+05H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	eax,dword [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	ebx,dword [eax] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bx,word [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bsf	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bsr	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmova	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovc	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmove	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovg	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovl	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmovle	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lar	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lds	ebx, [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	ebx,dword [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	eax, [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	esi, [esi] ;err=00 warn=00 typ=00 act=00 adr=00000000
+lea	ax, [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bound	eax, [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+bound	ax, [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	al,al ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+add	al,al ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmpxchg	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+test	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+xadd	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	bl,cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	byte [ebx+012345678H],cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	byte [0012345678H],cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	byte [ebx+05H],cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	byte [ebx],cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcl	bl,01H ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcr	bl,01H ;err=00 warn=00 typ=00 act=00 adr=00000000
+rol	bl,01H ;err=00 warn=00 typ=00 act=00 adr=00000000
+ror	bl,01H ;err=00 warn=00 typ=00 act=00 adr=00000000
+sar	bl,01H ;err=00 warn=00 typ=00 act=00 adr=00000000
+shl	bl,01H ;err=00 warn=00 typ=00 act=00 adr=00000000
+shr	bl,01H ;err=00 warn=00 typ=00 act=00 adr=00000000
+adc	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+db 0080H,00D0H,005H ;adc	al,byte 05H ;err=00 warn=01 typ=00 act=00 adr=00000000
+add	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+and	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmp	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+or	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bl,005H ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcl	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+rol	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcr	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+sar	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+sbb	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+shl	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+shr	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+sub	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+test	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	bl,byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	byte [0012345678H],byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	byte [ebx+012345678H],byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcl	byte [0012345678H],01H ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcl	byte [ebx+012345678H],01H ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	byte [ebx+05H],byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcl	byte [ebx+05H],01H ;err=00 warn=00 typ=00 act=00 adr=00000000
+xor	byte [ebx],byte 05H ;err=00 warn=00 typ=00 act=00 adr=00000000
+rcl	byte [ebx],01H ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [ds:ebx] ;err=00 warn=02 typ=00 act=00 adr=00000000
+inc	bl ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	bh ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	al ;err=00 warn=00 typ=00 act=00 adr=00000000
+dec	al ;err=00 warn=00 typ=00 act=00 adr=00000000
+dec	cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+dec	dl ;err=00 warn=00 typ=00 act=00 adr=00000000
+neg	al ;err=00 warn=00 typ=00 act=00 adr=00000000
+neg	cl ;err=00 warn=00 typ=00 act=00 adr=00000000
+neg	dl ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [ebx+01F4H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [0012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [ebx+03H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [eax+02H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [eax+ecx*8+03H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [ebp+03H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [eax] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [edx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [esi] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [edi] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [ds:ebx] ;err=00 warn=02 typ=00 act=00 adr=00000000
+inc	byte [es:ebx] ;err=00 warn=02 typ=00 act=00 adr=00000000
+inc	byte [cs:ebx] ;err=00 warn=02 typ=00 act=00 adr=00000000
+inc	byte [ss:ebx] ;err=00 warn=02 typ=00 act=00 adr=00000000
+inc	byte [gs:ebx] ;err=00 warn=02 typ=00 act=00 adr=00000000
+inc	byte [fs:ebx] ;err=00 warn=02 typ=00 act=00 adr=00000000
+seta	byte [es:ebx] ;err=00 warn=02 typ=00 act=00 adr=00000000
+sete	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sets	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+setg	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+setl	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+setna	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+setnc	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+setne	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+setng	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+setnl	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+setns	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+setnp	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+seto	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+setp	byte [ecx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+sets	byte [edi] ;err=00 warn=00 typ=00 act=00 adr=00000000
+setno	byte [esi] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [00H+ebx*4] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [ebx+ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [ebx+ecx*8] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	byte [0012345678H] ;err=00 warn=00 typ=00 act=00 adr=00000000
+dec	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+div	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+idiv	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+mul	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+imul	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+neg	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+not	byte [ebx] ;err=00 warn=00 typ=00 act=00 adr=00000000
+insw ;err=00 warn=00 typ=04 act=00 adr=00000000
+lock ;err=00 warn=00 typ=00 act=00 adr=00000000
+rep	insb	 ;err=00 warn=00 typ=04 act=00 adr=00000000
+rep	insb	 ;err=00 warn=00 typ=04 act=00 adr=00000000
+insb	 ;err=00 warn=00 typ=04 act=00 adr=00000000
+rep	insw ;err=00 warn=00 typ=04 act=00 adr=00000000
+rep	insd ;err=00 warn=00 typ=04 act=00 adr=00000000
+movsb	 ;err=00 warn=00 typ=00 act=00 adr=00000000
+rep	movsb	 ;err=00 warn=00 typ=00 act=00 adr=00000000
+movsw ;err=00 warn=00 typ=00 act=00 adr=00000000
+rep	movsw ;err=00 warn=00 typ=00 act=00 adr=00000000
+movsd ;err=00 warn=00 typ=00 act=00 adr=00000000
+lodsb	 ;err=00 warn=00 typ=00 act=00 adr=00000000
+lodsw ;err=00 warn=00 typ=00 act=00 adr=00000000
+lodsd ;err=00 warn=00 typ=00 act=00 adr=00000000
+stosb	 ;err=00 warn=00 typ=00 act=00 adr=00000000
+stosw ;err=00 warn=00 typ=00 act=00 adr=00000000
+stosd ;err=00 warn=00 typ=00 act=00 adr=00000000
+outsb	 ;err=00 warn=00 typ=04 act=00 adr=00000000
+outsw ;err=00 warn=00 typ=04 act=00 adr=00000000
+outsd ;err=00 warn=00 typ=04 act=00 adr=00000000
+stosb	 ;err=00 warn=00 typ=00 act=00 adr=00000000
+stosw ;err=00 warn=00 typ=00 act=00 adr=00000000
+stosd ;err=00 warn=00 typ=00 act=00 adr=00000000
+rep	stosd ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmpsb	 ;err=00 warn=00 typ=00 act=00 adr=00000000
+repne	cmpsw ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmpsw ;err=00 warn=00 typ=00 act=00 adr=00000000
+cmpsd ;err=00 warn=00 typ=00 act=00 adr=00000000
+rep	cmpsw ;err=00 warn=00 typ=00 act=00 adr=00000000
+scasb	 ;err=00 warn=00 typ=00 act=00 adr=00000000
+scasw ;err=00 warn=00 typ=00 act=00 adr=00000000
+scasd ;err=00 warn=00 typ=00 act=00 adr=00000000
+lock ;err=00 warn=00 typ=00 act=00 adr=00000000
+rep	scasd ;err=00 warn=00 typ=00 act=00 adr=00000000
+cwde	 ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	eax,eax ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	eax,ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	eax,edx ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	eax,ebx ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	eax,ebp ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	eax,esp ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	eax,esi ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	eax,edi ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	ax,ax ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	ax,cx ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	ax,dx ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	ax,bx ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	ax,bp ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	ax,sp ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	ax,si ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	ax,di ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	eax,001234H ;err=00 warn=00 typ=00 act=00 adr=00001234
+mov	ecx,001234H ;err=00 warn=00 typ=00 act=00 adr=00001234
+mov	edx,001234H ;err=00 warn=00 typ=00 act=00 adr=00001234
+mov	ebx,001234H ;err=00 warn=00 typ=00 act=00 adr=00001234
+mov	ebp,001234H ;err=00 warn=00 typ=00 act=00 adr=00001234
+mov	esp,001234H ;err=00 warn=00 typ=00 act=00 adr=00001234
+mov	esi,001234H ;err=00 warn=00 typ=00 act=00 adr=00001234
+mov	edi,001234H ;err=00 warn=00 typ=00 act=00 adr=00001234
+mov	ax,001234H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	cx,001234H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	dx,001234H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bx,001234H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bp,001234H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	sp,001234H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	si,001234H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	di,001234H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	al,0055H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	cl,0056H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	dl,0057H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bl,0058H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	ah,0059H ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	ch,005AH ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	dh,005BH ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	bh,005CH ;err=00 warn=00 typ=00 act=00 adr=00000000
+cwde	 ;err=00 warn=00 typ=00 act=00 adr=00000000
+cbw ;err=00 warn=00 typ=00 act=00 adr=00000000
+cdq	 ;err=00 warn=00 typ=00 act=00 adr=00000000
+cwd ;err=00 warn=00 typ=00 act=00 adr=00000000
+lock ;err=00 warn=00 typ=00 act=00 adr=00000000
+cbw ;err=00 warn=00 typ=00 act=00 adr=00000000
+lock ;err=00 warn=00 typ=00 act=00 adr=00000000
+mov	al,0055H ;err=00 warn=00 typ=00 act=00 adr=00000000
+lock ;err=00 warn=00 typ=00 act=00 adr=00000000
+xchg	eax,ebx ;err=00 warn=00 typ=00 act=00 adr=00000000
+lock ;err=00 warn=00 typ=00 act=00 adr=00000000
+cwd ;err=00 warn=00 typ=00 act=00 adr=00000000
+push	gs ;err=00 warn=04 typ=00 act=00 adr=00000000
+push	cs ;err=00 warn=04 typ=00 act=00 adr=00000000
+push	ss ;err=00 warn=04 typ=00 act=00 adr=00000000
+pop	ss ;err=00 warn=04 typ=00 act=00 adr=00000000
+push	ds ;err=00 warn=04 typ=00 act=00 adr=00000000
+pop	ds ;err=00 warn=04 typ=00 act=00 adr=00000000
+pop	es ;err=00 warn=04 typ=00 act=00 adr=00000000
+lock ;err=00 warn=00 typ=00 act=00 adr=00000000
+pop	es ;err=00 warn=04 typ=00 act=00 adr=00000000
+push	es ;err=00 warn=04 typ=00 act=00 adr=00000000
+daa ;err=00 warn=00 typ=00 act=00 adr=00000000
+das ;err=00 warn=00 typ=00 act=00 adr=00000000
+aaa ;err=00 warn=00 typ=00 act=00 adr=00000000
+aas ;err=00 warn=00 typ=00 act=00 adr=00000000
+pusha ;err=00 warn=00 typ=00 act=00 adr=00000000
+popa ;err=00 warn=00 typ=00 act=00 adr=00000000
+sahf ;err=00 warn=00 typ=00 act=00 adr=00000000
+lahf ;err=00 warn=00 typ=00 act=00 adr=00000000
+ret ;err=00 warn=00 typ=08 act=00 adr=00000000
+leave ;err=00 warn=00 typ=08 act=00 adr=00000000
+int3 ;err=00 warn=08 typ=08 act=00 adr=00000000
+retf ;err=00 warn=00 typ=08 act=00 adr=00000000
+into ;err=00 warn=08 typ=04 act=00 adr=00000000
+iret ;err=00 warn=08 typ=04 act=00 adr=00000000
+xlatb ;err=00 warn=00 typ=00 act=00 adr=00000000
+hlt ;err=00 warn=08 typ=08 act=00 adr=00000000
+cmc ;err=00 warn=00 typ=00 act=00 adr=00000000
+clc ;err=00 warn=00 typ=00 act=00 adr=00000000
+stc ;err=00 warn=00 typ=00 act=00 adr=00000000
+cli ;err=00 warn=00 typ=00 act=00 adr=00000000
+sti ;err=00 warn=00 typ=00 act=00 adr=00000000
+cld ;err=00 warn=00 typ=00 act=00 adr=00000000
+std ;err=00 warn=00 typ=00 act=00 adr=00000000
+pushf ;err=00 warn=00 typ=00 act=00 adr=00000000
+popf ;err=00 warn=00 typ=00 act=00 adr=00000000
+wait ;err=00 warn=08 typ=04 act=00 adr=00000000
+clts ;err=00 warn=08 typ=04 act=00 adr=00000000
+cpuid ;err=00 warn=00 typ=00 act=00 adr=00000000
+pop	fs ;err=00 warn=04 typ=00 act=00 adr=00000000
+push	fs ;err=00 warn=04 typ=00 act=00 adr=00000000
+pop	gs ;err=00 warn=04 typ=00 act=00 adr=00000000
+lock ;err=00 warn=00 typ=00 act=00 adr=00000000
+push	ax ;err=00 warn=08 typ=00 act=00 adr=00000000
+lock ;err=00 warn=00 typ=00 act=00 adr=00000000
+push	ax ;err=00 warn=08 typ=00 act=00 adr=00000000
+lock ;err=00 warn=00 typ=00 act=00 adr=00000000
+push	ecx ;err=00 warn=00 typ=00 act=00 adr=00000000
+push	cx ;err=00 warn=08 typ=00 act=00 adr=00000000
+push	edx ;err=00 warn=00 typ=00 act=00 adr=00000000
+push	dx ;err=00 warn=08 typ=00 act=00 adr=00000000
+push	ebx ;err=00 warn=00 typ=00 act=00 adr=00000000
+push	bx ;err=00 warn=08 typ=00 act=00 adr=00000000
+push	esp ;err=00 warn=00 typ=00 act=00 adr=00000000
+push	sp ;err=00 warn=08 typ=00 act=00 adr=00000000
+push	ebp ;err=00 warn=00 typ=00 act=00 adr=00000000
+push	bp ;err=00 warn=08 typ=00 act=00 adr=00000000
+push	esi ;err=00 warn=00 typ=00 act=00 adr=00000000
+push	si ;err=00 warn=08 typ=00 act=00 adr=00000000
+push	edi ;err=00 warn=00 typ=00 act=00 adr=00000000
+push	di ;err=00 warn=08 typ=00 act=00 adr=00000000
+pop	eax ;err=00 warn=00 typ=00 act=00 adr=00000000
+inc	eax ;err=00 warn=00 typ=00 act=00 adr=00000000
+dec	eax ;err=00 warn=00 typ=00 act=00 adr=00000000

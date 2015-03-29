@@ -1,0 +1,10 @@
+6-18-2005 Modified Makefile to add "debug" option.
+          This will compile files called "test"
+
+6-18-2005 Modified Makefile to install library at
+          /lib/asmlib.a
+
+9-5-2005  Replaced sys_ex,sys_ex_home,sys_ex_path,
+          sys_launch, sys_launch_path with two new
+          functions: sys_run_wait, sys_run_die
+

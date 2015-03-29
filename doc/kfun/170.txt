@@ -1,0 +1,39 @@
+
+----------------------------------------------------------------------------
+170 setresgid      - set real,effective,saved group ID
+----------------------------------------------------------------------------
+  mov  eax,170
+  mov  ebx,rgid  ;real group id
+  mov  ecx,egid  ;effective group id
+  mov  edx,sgid  ;saved effective group id
+  int  80h
+
+       setresgid  sets  the real group ID, the effective group ID, and the saved
+       (effective) group ID of the current process.
+
+       Unprivileged group processes (i.e., processes with each of real, effec-
+       tive  and  saved  group  ID  nonzero) may change the real, effective and
+       saved group ID, each to one of: the current uid, the  current  effective
+       uid or the current saved uid.
+
+       The  super-user  may set real, effective and saved group ID to arbitrary
+       values.
+
+       If one of the parameters equals -1,  the  corresponding  value  is  not
+       changed.
+
+RETURN VALUE
+       On  success, zero is returned. On error a negative code is returned
+
+ERRORS
+       EPERM  The current  process  was  not  privileged  (did  not  have  the
+              CAP_SETUID  capability)  and  tried  to  change the IDs is a not
+              allowed way.
+
+       EAGAIN uid does not match the current uid and  this  call  would  bring
+              that userID over its NPROC rlimit.
+
+SEE ALSO
+       getuid, setuid, setreuid, getresuid
+
+

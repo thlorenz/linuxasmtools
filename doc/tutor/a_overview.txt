@@ -1,0 +1,55 @@
+AsmTools is a collection of programs for
+assembler development on Linux X86 cpu's.
+
+Features include:
+ 
+ * kernel reference
+ * Library for asm programs
+ * x86 reference 
+ * examples, tutorial, and other documentation.
+ * Small size to feature ratio
+ * editor with hooks for helper routines
+ * works in console and xterm.
+ * utilizes mouse in xterm.
+ * other programs include: debugger, source generator,
+   disassembler, develpment manager, and many more.
+
+All the programs are designed to work as standalone
+utilities.  They can also be coordinated by using
+AsmFile and to some extent AsmEdit.  Two libraries
+are provided.  A general library supporting either
+the console or terminal.  Another library supporting
+the x server.
+
+Since each program is separate, they can be compiled
+and installed without the others.  The only dependency
+is usually AsmLib.  At run time some programs
+make use of unix utilities and most of these are
+already present.  If the utility is missing, the
+feature doesn't funtion.
+
+----------------------------------------------------
+
+ The author can be found on the DesktopLinuxAsm
+ discussion group at yahoogroups.  To join send
+ a blank email to:
+
+   DesktopLinuxAsm-subscribe@yahoogroups.com
+
+ or visit the web page at:
+  
+   http://groups.yahoo.com/group/DesktopLinuxAsm
+
+ There are not many Linux assembler programmers
+ doing anything on the desktop so this is a very
+ small group and all questions or discusson is
+ welcome.
+
+ Additional information may be available on the
+ home page at:
+
+ http://linuxasmtools.net/
+
+ http://sourceforge.net/projects/asmedit
+
+ 

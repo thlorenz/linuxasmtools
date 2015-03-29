@@ -1,0 +1,94 @@
+
+---------------------------------------------------------------------------
+271 utimes       - 
+---------------------------------------------------------------------------
+
+  mov  eax,271
+  mov  ebx,filename  ;ptr to asciiz path
+  mov  ecx,utimes    ;ptr to timeval struc
+
+
+SYNOPSIS
+       #include <sys/types.h>
+       #include <utime.h>
+       #include <sys/time.h>
+
+       int utimes(const char *filename, const struct timeval times[2]);
+
+DESCRIPTION
+
+       utime()  changes  the access and modification times of the inode speci‐
+       fied by filename to the actime and modtime fields of buf  respectively.
+
+       If  buf is NULL, then the access and modification times of the file are
+       set to the current time.
+
+       Changing time stamps is permitted when: either the process  has  appro‐
+       priate privileges (Linux: has the CAP_FOWNER capability), or the effec‐
+       tive user ID equals the user ID of the file, or buf  is  NULL  and  the
+       process has write permission to the file.
+
+       The utimbuf structure is:
+
+              struct utimbuf {
+                  time_t actime;       /* access time */
+                  time_t modtime;      /* modification time */
+              };
+
+       The function utime() allows specification of time stamps with a resolu‐
+       tion of 1 second.
+
+   utimes()
+       The function utimes() is similar, but the times argument allows a reso‐
+       lution of 1 microsecond for the timestamps.  The timeval structure is:
+
+              struct timeval {
+                  long tv_sec;        /* seconds */
+                  long tv_usec;       /* microseconds */
+              };
+
+       times[0]  specifies the new access time, and times[1] specifies the new
+       modification time.  If times is NULL, then analogously to utime(),  the
+       access  and modification times of the file are set to the current time.
+
+RETURN VALUE
+       On success, zero is returned.  On error, a negative code is returned
+
+ERRORS
+       EACCES Search  permission  is  denied for one of the directories in the
+              path prefix of path (see also  path_resolution(7)),  or  buf  is
+              NULL and the process does not have permission to change the time
+              stamps (see above).
+
+       ENOENT filename does not exist.
+
+       EPERM  buf is not NULL and the process  does  not  have  permission  to
+              change the time stamps.
+
+       EROFS  path resides on a read-only file system.
+
+CONFORMING TO
+       utime(): SVr4, POSIX.1-2001.
+       utimes(): 4.3BSD
+
+NOTES
+       Linux  does not allow changing the time stamps on an immutable file, or
+       setting the time stamps to something other than the current time on  an
+       append-only file.
+
+       In  libc4  and  libc5, utimes() is just a wrapper for utime() and hence
+       does not allow a subsecond resolution.
+
+       POSIX.1-2001 marks utimes() legacy, which is strange since it  provides
+       more functionality than utime().
+
+BUGS
+       Linux  is not careful to distinguish between the EACCES and EPERM error
+       returns.  On the  other  hand,  POSIX.1-2001  is  buggy  in  its  error
+       description for utimes().
+
+SEE ALSO
+       utimesat, stat
+
+
+

@@ -1,0 +1,84 @@
+
+NAME
+
+ asmview - text file viewer
+
+SYNOPSIS
+
+    usage: asmview file
+           asmview < file
+           cat file | asmview
+           asmview
+
+    if no file name is provided or if a bad filename is
+    provided the program displays a file selection window.
+
+DESCRIPTION
+
+AsmView reads a file into memory and converts all non-text
+(binary) data to "." (period) characters. The data is then
+displayed in a window. The data can be scrolled in any direction.
+Long lines will extend beyond the right edge of the screen and
+can be viewed with the right-arrow key.
+
+USAGE
+
+        keyboard ACTIONS
+        ----------------
+
+          up key - scroll up
+          down key - scroll down
+          pgup key - page up
+          pgdn key - page down
+          right,left - scroll
+          esc   - exit
+          f10   = exit
+          f3    = exit
+          enter key - begin/repeat  search
+          f1 - help
+          home - goto top of file
+          end = goto end of file
+
+SEARCHING
+
+search strings can be entered by typing a normal text character.
+the search string will appear on the status line (bottom of the
+display). The search string keys are:
+
+  text key - appended to current search string
+  rubout   - removes the last text character entered
+  Enter    - begins search
+
+searching always begins from the second line of currently displayed
+page and all matches are positioned on the top line of the display.
+to continue searching, just keep pressing <Enter>. To start a search
+from the top of file, type <home> and then either <Enter> or a new
+search string followed by <Enter>
+
+all non-control keys are assumed to be part of a search string and
+will be shown at the bottom of the screen.
+
+SEE ALSO
+ asmmgr(1) asmref(1) asmedit(1)
+ 
+AUTHOR
+ Jeff Owens
+
+COPYRIGHT
+ copyright (C) 2007 Jeff Owens
+ this program comes with absolutely NO WARRANTY
+
+ -----------------------------------------------
+ the author can be found on the DesktopLinuxAsm
+ discussion group at yahoogroups. To join send
+ a blank email to:
+
+   DesktopLinuxAsm-subscribe@yahoogroups.com
+
+ additional information may be available on the
+ home page at:
+
+ http://linuxasmtools.net/
+
+ http://sourceforge.net/projects/asmedit
+

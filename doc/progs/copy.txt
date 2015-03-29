@@ -1,0 +1,192 @@
+
+NAME
+
+ copy - copy files and mirror directories
+
+SYNOPSIS
+
+ copy <switches> from-path to-path
+
+  switches -a = default attributes for destination
+           -c = copy if file contents different
+           -d = delete "to" files if "from" not found
+           -h = help display
+           -n xxx  = no overwrite of files with tail xxx
+           -s = copy if file sizes different
+           -t = copy if destination (to) file older
+
+  from-path = path to copy
+
+  to_path = destination for "from-path" files
+
+
+DESCRIPTION
+
+copy has a simple interface that can perform some
+complex operations. It was designed to support rsync
+and mirroring of directories. It can detect copying
+identicial files and avoids updating destination. This
+leaves the file date unchanged.
+
+Also, copy allows wild card (asterick) present in
+both the "from" and "to" file paths. This allows
+files to be renamed or selective files copied.
+
+The default state is to copy files, but if
+the -t,-s, or -c switches are used, the
+state changes to non-forced.
+
+     parameters are:
+
+ a = set default attributes for destination
+
+    Normally the "from-path" attributies are
+    copied to the destination file. the -a switch
+    forces the default system attributes instead.
+
+ c = copy if destination file contents different
+
+    This switch disables copying identical files
+    when a copy of the file is present at
+    destination (to) directory.
+
+ d = delete destination files if no couresponding "from" file
+
+    This switch deletes files in the destination
+    directory that do not have a couresponding
+    file in the "from" directory. It is useful
+    in mirroring a directory.
+
+ h = help display
+
+ n xxx = no overwrite of files with tail of xxx
+
+    This switch overrides all other switches.
+    If any file ending with tail xxx tries
+    to overwritee a file it is blocked.
+
+ s = copy if destination file size different
+
+    This switch disables copying files of same
+    size, when a copy of the file is present at
+    destination (to) directory.
+
+ t = copy if destination file older
+
+    This switch disables copying older files
+    when a copy of the file is present at
+    destination (to) directory.
+
+
+ from-path = path to copy
+
+    Specifies file or files to copy. If -d switch
+    is present, this is base directory that
+    controls deleting of files at to-path
+
+    Symbolic link files are ignored. Hard link files
+    are copied and treated as normal files.
+
+    See path rules and transfer matrix
+
+ to-path = destination for "from-path" files
+
+    Specifies file or files to create. If -d switch
+    is present, this directory can have files deleted
+    if they are not present in from-path
+
+    See path rules and transfer matrix
+
+PATH RULES
+
+Paths can contain the following:
+
+    ./           current directory
+    ../          previous directory
+    name         any name in current directory
+    name/        directory
+    name/*       all files in a directory
+    *name        all files ending with "name"
+    name*        all files starting with "name"
+    /home/xxx..  full path specification
+
+When a name ends with / it is assumed to
+a directory and is equivalent to name/*
+
+The (asterick) only refers to files and can not be
+used for directories.
+
+When a path ends with name that matches a
+existing directory, this is illegal and
+produces error message.
+
+     PATHS CONTAINING ASTERISK OR DOT CHARACTERS MUST
+     BE QUOTED TO AVOID CONFUSING THE SHELL
+
+     -
+
+PATH COMBINATIONS
+
+This is simplified list of all possible path combinations.
+If both paths are the same, some options will
+produce an error. For example:
+
+  copy name1 "*"
+  copy "*" "*"
+  copy "./*" "./*"
+
+
+  from path         to path   description 
+  ---------         --------  ---------------------------------------
+  name1             name2     simple copy of file1 to file2
+  name1             *name2    copy and append names
+  name1             name2*    copy and append names
+  name1             *         copy name1 to name1
+  *name1            name2     copy all matching files to name2 (append)
+  *name1            *name2    copy and rename
+  *name1            name2*    copy and rename
+  *name1            *         copy files ending with name1
+  name1*            name2     copy all matching files to name2 (append)
+  name1*            *name2    copy and rename
+  name1*            name2*    copy and rename
+  name1*            *         copy files starting with name1
+  *                 name2     append all files to name2
+  *                 *name2    copy and rename
+  *                 name2*    copy and rename
+  *                 *         copy all files, retain name
+
+EXAMPLES
+
+To copy all files from current directory to directory dog
+
+  copy "*" dog/
+
+To mirror the current directory to directory dog. Files
+are copied even if they already exist in destination dir.
+Any extra files are deleted from destination.
+
+  copy -d "*" dog/
+
+To mirror the current directory to directory dog. Only
+files that are different are copied. Any extra files at
+"dog" are ignored.
+
+  copy -c "*" dog/
+
+To append all files ending with .txt into a file called
+summary.
+
+  copy "*.txt" summary
+
+Copy all files ending with ".txt" to a new set of files
+ending with ".bak"
+
+  copy "*.txt" "*.bak"
+
+  
+AUTHOR
+ Jeff Owens 
+
+COPYRIGHT
+ Copyright (C) 2008 Jeff Owens
+ This program comes with absolutely NO WARRANTY

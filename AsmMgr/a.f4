@@ -1,0 +1,21 @@
+#! /bin/bash
+#insight_ /home/jeff/rpm_src/asm/Proj/do/do
+#/home/jeff/bin/kdbg /home/jeff/rpm_src/asm/Proj/do/do
+#kdbg $1
+konsole -e insight_ $1
+#insight_ do
+
+#****f* a_config/a.f4 *
+#
+# NAME
+#  a.f4 - example debugger interface
+# INPUTS
+#  $1 is base name of program being edited.  It
+#  can be used to envoke a debugger or the debug
+#  target can be coded into the a.f4 script.
+# OUTPUT
+#  nothing is output.
+# NOTES
+# * file: a.f4  <- tied to function key f4
+# * ----------------------------------------------
+#*******

@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>Format_doc simple text replacer</title>
+ <meta name="keywords" content="search, replace, text">
+ <meta name="description" content="simple search and replace text in file">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+
+<br>
+NAME<br>
+   format_doc - process text file<br>
+<br>
+ INPUTS<br>
+    usage format_doc &lt;in-file&gt; &lt;out-file&gt;<br>
+     <br>
+    a format_doc.ini file must also exist in<br>
+    the local directory, see file format_doc.ini<br>
+<br>
+ OUTPUT<br>
+    the out-file will written with all match-strings<br>
+    replaced with replace-strings<br>
+<br>
+ NOTES<br>
+   file:  format_doc.asm<br>
+    <br>
+   format_doc first finds the match string and then<br>
+   begins executing the actions at end of each entry<br>
+   in format_doc.ini<br>
+   If repeat code is placed at end of actions, they<br>
+   are repeated till the match string is not found.<br>
+   It is important to keep the match string beyond<br>
+   its last match to avoid infinite loops when using<br>
+   the repeat action.<br>
+<br>
+ ----------------------------------------------<br>
+  format_doc.ini - control table for format_doc<br>
+<br>
+INPUTS<br>
+  * table entries are repetitiions of the following<br>
+  * three fields:<br>
+  * "match-string" "replacement-string" "actions"<br>
+<br>
+  * the code \n in strings can be used for new-line (0ah)<br>
+<br>
+  * The actions available are:<br>
+  * 1 replace the match string with replace-string<br>
+  * 2 move up one line<br>
+  * 3 move down one line<br>
+  * 4 replace whole llne rather than just the match-string<br>
+  *    (line needs 0ah at end)<br>
+  * 5 insert line above current line<br>
+  *    (line needs 0ah at end)<br>
+  * 6 insert line below current line<br>
+  *    (line needs 0ah at end)<br>
+  * 7 insert replace-string at front of current line<br>
+  * 8 delete right to end of line<br>
+  *   (place at start of actions to remove match -&gt;)<br>
+  * 9 do actions till end of file reached<br>
+<br>
+OUTPUT<br>
+  * if program hangs or aborts this is almost always due<br>
+  * to infinite loops caused by impossible actions.  Most<br>
+  * problems can be avoided by keeping the match string<br>
+  * pointer beyond last action.  This avoids finding the<br>
+  * same string over and over when repeating actions.<br>
+  * Use the code 3 to move match pointer down.<br>
+<br>
+NOTES<br>
+ * file:  format_doc.ini<br>
+ * The format_doc.ini file needs to be in current directory<br>
+      <br>
+      </big><br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

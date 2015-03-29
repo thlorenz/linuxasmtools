@@ -1,0 +1,655 @@
+#! /bin/sh
+
+# This script uses file extensions to select a viewer.
+# the first section handles x-terminal viewers
+# the second section handles console viewers.
+
+#-----------------------------------------------------
+# function pause and wait for key press
+function pause () {
+  echo "press <Enter> key to continue" ;
+  read key;
+}
+#-----------------------------------------------------
+# function to check if list of executables are available
+# set $prog before calling
+function check () {                                
+                      IFS=:;
+                      for dir in $PATH; do
+                        if [ -e "$dir/$prog" ]; then
+                          FILE_VIEWER="$prog";
+                          break;              
+                        fi;                   
+                      done;                   
+}
+
+#------------------------------------------------------
+#--- execution starts here ----------------------------
+#------------------------------------------------------
+PAGER="asmview"
+BROWSER="mozilla-firefox"
+
+# establish default pager for this computer
+file="$1"
+yy=`basename "$1"`
+
+
+if test "$DISPLAY"; then
+
+#----------------------------------------------------------
+# the following case statement assumes we are in xterm
+#   entries are alphabetical by extension
+#----------------------------------------------------------
+ 
+case "$yy" in
+
+
+*.[1-9nN] |\
+*.[1-9nN][xXmM])
+		nroff -man "$file" | "$PAGER";;
+
+*.[1-9nN][xXmM].[gG][zZ] |\
+*.[1-9nN][xXmM].[zZ]     |\
+*.[1-9nN].[gG][zZ]       |\
+*.[1-9nN].[zZ])
+	gunzip -c -- "$file" | nroff -man | "$PAGER";;
+
+*.[1-9nN][xXmM].[bB][zZ] |\
+*.[1-9nN].[bB][zZ])
+	bunzip -c "$file" | nroff -man | "$PAGER";;
+
+*.[1-9nN][xXmM].[bB][zZ]2 |\
+*.[1-9nN].[bB][zZ]2)
+	bunzip2 -c "$file" | nroff -man | "$PAGER";;
+
+*.[aA][bB][wW] |\
+*.[aA][wW][tT])
+	for prog in abiword kword $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	$FILE_VIEWER $file;;
+
+*.[aA][uU])
+	(cat "$file" > /dev/audio 2> /dev/null &);;
+
+
+*.[aA][vV][iI].[bB][zZ])
+	for prog in xanim xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+        (bunzip -c "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[aA][vV][iI].[bB][zZ]2)
+	for prog in xanim xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+        (bunzip2 -c "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[aA][vV][iI].[gG][zZ] |\
+*.[aA][vV][iI].[zZ])
+	for prog in xanim xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+        (gunzip -c "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[aA][vV][iI])
+	for prog in xanim xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	("$FILE_VIEWER" "$file" > /dev/null 2>&1 &);;
+
+*.[aA] |\
+*.[sS][aA])
+	ar -tv "$file" | "$PAGER";;
+
+*.[bB][mM][pP] |\
+*.[bB][mM])
+	for prog in xv kview ee display gqview gimp $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[bB][zZ])
+	bunzip -c "$file" | "$PAGER";;
+
+*.[bB][zZ]2)
+	bunzip2 -c "$file" | "$PAGER";;
+
+*.[cC][lL][aA][sS][sS])
+	javap -c -s -l -verbose `echo "$file"|sed 's/.class//'` | "$PAGER";;
+
+*.[dD][eE][bB])
+	for prog in dpkg $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(echo "$file"; dpkg --info "$file");;
+
+*.[dD][vV][iI])
+    for prog in kdvi xdvi $PAGER; do check;
+	if test $FILE_VIEWER; then break; fi; done;
+	("$FILE_VIEWER" "$file" > /dev/null 2>&1 &);;
+
+*.[dD][oO][cC])
+	for prog in abiword kword soffice $PAGER; do check;
+	if test $FILE_VIEWER; then break; fi; done;
+	   ("$FILE_VIEWER" "$file" > /dev/null 2>&1 &);;
+
+*.[dD][oO][tT])
+	for prog in abiword $PAGER; do check;
+	if test $FILE_VIEWER; then break; fi; done;
+	    ("$FILE_VIEWER" "$file" > /dev/null 2>&1 &);;
+
+*.[gG][iI][fF])
+	for prog in xv kview ee display gqview gimp $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[gG][zZ])
+	gunzip -c -- "$file" | "$PAGER";;
+
+*.[hH][tT][mM][lL] |\
+*.[hH][tT][mM])
+	for prog in nvu composer $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[iI][nN][fF][oO])
+	for prog in ainfo pinfo info $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[jJ][pP][gG]     |\
+*.[jJ][pP][eE][gG])
+	for prog in xv kview ee display gqview gimp $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[jJ][aA][rR])
+	jar tvf "$file" 2>&1 | "$PAGER";;
+
+*.[mM][aA][nN])
+	nroff -man "$file" | "$FILE_VIEWER";;
+
+*.[mM][iI][dD][iI] |\
+*.[mM][iI][dD])
+	for prog in timidity playmidi $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[mM][pP]3)
+	for prog in audacity xanim mpg321 xmms xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[mM][pP]3.[gG][zZ] |\
+*.[mM][pP]3.[zZ])
+	for prog in mpg321 xmms amp xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	    (gunzip -c -- "$file" | $FILE_VIEWER > /dev/null 2>&1 &);;
+
+
+*.[mM][pP]3.[bB][zZ]2)
+	for prog in mpg321 xmms amp xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(bunzip2 -c "$file"| $FILE_VIEWER > /dev/null 2>&1 &);;
+
+*.[mM][pP]3.[bB][zZ])
+	for prog in mpg321 xmms amp xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(bunzip -c "$file"| $FILE_VIEWER > /dev/null 2>&1 &);;
+
+*.[mM][pP][eE][gG] |\
+*.[mM][pP][gG])
+	for prog in xmms xanim aktion xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[mM][oO][dD])
+	for prog in xmms xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[mM][oO][vV])
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[mM][oO][vV].[gG][zZ] |\
+*.[mM][oO][vV].[zZ])
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(gunzip -c -- "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[mM][oO][vV].[bB][zZ]2)
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(gunzip -c -- "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[mM][oO][vV].[bB][zZ])
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(bunzip2 -c "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[mM][pP][eE][gG].[gG][zZ] |\
+*.[mM][pP][eE][gG].[zZ]     |\
+*.[mM][pP][gG].[gG][zZ]     |\
+*.[mM][pP][gG].[zZ])
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(gunzip -c -- "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[mM][pP][eE][gG].[bB][zZ]2 |\
+*.[mM][pP][gG].[bB][zZ]2)
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(bunzip2 -c "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[mM][pP][eE][gG].[bB][zZ] |\
+*.[mM][pP][gG].[bB][zZ])
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(bunzip -c "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[oO])
+	objdump --syms --all-headers -- "$file" | "$PAGER";;
+
+*.[oO][gG][gG])
+	for prog in audacity xmms xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+	
+*.[pP][pP][mM]     |\
+*.[pP][nN][mM]     |\
+*.[pP][gG][mM]	   |\
+*.[pP][bB][mM]     |\
+*.[pP][nN][gG])
+	for prog in xv kview ee display gqview gimp $PAGER ; do check ; \
+	if test "$FILE_VIEWER"; then break; fi; done; \
+	"$FILE_VIEWER" "$file";;
+
+*.[pP][dD][fF])
+	for prog in kwrite acroread xpdf kpdf kghostview gv $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[pP][sS])
+	for prog in display kview kghostview ggv gv ghostview $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+#   add parameter following someday
+	"$FILE_VIEWER" "$file";;
+
+
+*.[rR][aA][rR])
+	unrar l "$file" | "$PAGER";;				\
+
+*.[rR][pP][mM])
+	rpm -qilRsp -- "$file" | "$PAGER";;
+
+*.[rR][tT][fF])
+	for prog in abiword Ted kword soffice $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[sS][oO] |\
+*.[sS][oO].[0-9]*)
+	objdump --syms --all-headers -- "$file" | "$PAGER";;
+
+*.[tT][aA][rR])
+	tar tvf "$file" | "$PAGER";;
+
+*.[tT][aA][rR].[bB][zZ])
+	(echo "Tar archive:";					\
+	 bunzip -c "$file" | tar tvf -) | "$PAGER";;
+
+*.[tT][aA][rR].[bB][zZ]2)
+	(echo "Tar archive:";					\
+	 bunzip2 -c "$file" | tar tvf -) | "$PAGER";;
+
+*.[tT][aA][rR].[gG][zZ]  |\
+*.[tT][aA][rR].[zZ]      |\
+*.[tT][aArRgG][zZ])
+		(echo "Compressed archive:";				\
+		 gunzip -l -- "$file";					\
+		 echo;							\
+		 echo "Tar archive:";					\
+		 gunzip -c -- "$file" | tar tvf -) | "$PAGER";;
+
+*.[tT][iI][fF] |\
+*.[tT][iI][fF][fF])
+	for prog in gqview $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;					
+
+*.[tT][xX][tT])
+	for prog in asmview asmedit $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;					
+
+*.[wW][aA][vV])
+	for prog in play audacity kmedia amarok wavplay xmms $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;					
+
+*.[xX][bB][mM] |\
+*.[xX][pP][mM])
+	for prog in xv kview ee display gqview gimp $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[zZ])
+		gunzip -c -- "$file" | "$PAGER";;
+
+*.[zZ][iI][pP])
+		unzip -v "$file" | "$PAGER";;
+
+		
+*)
+#  echo "no match" ; pause ;
+  $PAGER $file;;
+
+esac
+
+#---------------------------------------------------
+# end of first big if, above programs run in X terminal
+else
+# the following prorams run in console
+#---------------------------------------------------
+case "$yy" in
+
+*.[1-9nN] |\
+*.[1-9nN][xXmM])
+		nroff -man "$file" | "$PAGER";;
+
+*.[1-9nN][xXmM].[gG][zZ] |\
+*.[1-9nN][xXmM].[zZ]     |\
+*.[1-9nN].[gG][zZ]       |\
+*.[1-9nN].[zZ])
+	gunzip -c -- "$file" | nroff -man | "$PAGER";;
+
+*.[1-9nN][xXmM].[bB][zZ] |\
+*.[1-9nN].[bB][zZ])
+	bunzip -c "$file" | nroff -man | "$PAGER";;
+
+*.[1-9nN][xXmM].[bB][zZ]2 |\
+*.[1-9nN].[bB][zZ]2)
+	bunzip2 -c "$file" | nroff -man | "$PAGER";;
+
+*.[aA][bB][wW] |\
+*.[aA][wW][tT])
+	for prog in abiword kword $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	$FILE_VIEWER $file;;
+
+*.[aA][uU])
+	(cat "$file" > /dev/audio 2> /dev/null &);;
+
+
+*.[aA][vV][iI].[bB][zZ])
+	for prog in xanim xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+        (bunzip -c "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[aA][vV][iI].[bB][zZ]2)
+	for prog in xanim xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+        (bunzip2 -c "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[aA][vV][iI].[gG][zZ] |\
+*.[aA][vV][iI].[zZ])
+	for prog in xanim xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+        (gunzip -c "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[aA][vV][iI])
+	for prog in xanim xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	("$FILE_VIEWER" "$file" > /dev/null 2>&1 &);;
+
+*.[aA] |\
+*.[sS][aA])
+	ar -tv "$file" | "$PAGER";;
+
+*.[bB][mM][pP] |\
+*.[bB][mM])
+	for prog in xv kview ee display gqview gimp $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[bB][zZ])
+	bunzip -c "$file" | "$PAGER";;
+
+*.[bB][zZ]2)
+	bunzip2 -c "$file" | "$PAGER";;
+
+*.[cC][lL][aA][sS][sS])
+	javap -c -s -l -verbose `echo "$file"|sed 's/.class//'` | "$PAGER";;
+
+*.[dD][eE][bB])
+	for prog in dpkg $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(echo "$file"; dpkg --info "$file");;
+
+*.[dD][vV][iI])
+    for prog in kdvi xdvi $PAGER; do check;
+	if test $FILE_VIEWER; then break; fi; done;
+	("$FILE_VIEWER" "$file" > /dev/null 2>&1 &);;
+
+*.[dD][oO][cC])
+	for prog in abiword kword soffice $PAGER; do check;
+	if test $FILE_VIEWER; then break; fi; done;
+	   ("$FILE_VIEWER" "$file" > /dev/null 2>&1 &);;
+
+*.[dD][oO][tT])
+	for prog in abiword $PAGER; do check;
+	if test $FILE_VIEWER; then break; fi; done;
+	    ("$FILE_VIEWER" "$file" > /dev/null 2>&1 &);;
+
+*.[gG][iI][fF])
+	for prog in xv kview ee display gqview gimp $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[gG][zZ])
+	gunzip -c -- "$file" | "$PAGER";;
+
+*.[hH][tT][mM][lL] |\
+*.[hH][tT][mM])
+	for prog in nvu composer $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[iI][nN][fF][oO])
+	for prog in ainfo pinfo info $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[jJ][pP][gG]     |\
+*.[jJ][pP][eE][gG])
+	for prog in xv kview ee display gqview gimp $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[jJ][aA][rR])
+	jar tvf "$file" 2>&1 | "$PAGER";;
+
+*.[mM][aA][nN])
+	nroff -man "$file" | "$FILE_VIEWER";;
+
+*.[mM][iI][dD][iI] |\
+*.[mM][iI][dD])
+	for prog in timidity playmidi $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[mM][pP]3)
+	for prog in audacity xanim mpg321 xmms xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[mM][pP]3.[gG][zZ] |\
+*.[mM][pP]3.[zZ])
+	for prog in mpg321 xmms amp xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	    (gunzip -c -- "$file" | $FILE_VIEWER > /dev/null 2>&1 &);;
+
+
+*.[mM][pP]3.[bB][zZ]2)
+	for prog in mpg321 xmms amp xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(bunzip2 -c "$file"| $FILE_VIEWER > /dev/null 2>&1 &);;
+
+*.[mM][pP]3.[bB][zZ])
+	for prog in mpg321 xmms amp xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(bunzip -c "$file"| $FILE_VIEWER > /dev/null 2>&1 &);;
+
+*.[mM][pP][eE][gG] |\
+*.[mM][pP][gG])
+	for prog in xmms xanim aktion xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[mM][oO][dD])
+	for prog in xmms xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[mM][oO][vV])
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[mM][oO][vV].[gG][zZ] |\
+*.[mM][oO][vV].[zZ])
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(gunzip -c -- "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[mM][oO][vV].[bB][zZ]2)
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(gunzip -c -- "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[mM][oO][vV].[bB][zZ])
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(bunzip2 -c "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[mM][pP][eE][gG].[gG][zZ] |\
+*.[mM][pP][eE][gG].[zZ]     |\
+*.[mM][pP][gG].[gG][zZ]     |\
+*.[mM][pP][gG].[zZ])
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(gunzip -c -- "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[mM][pP][eE][gG].[bB][zZ]2 |\
+*.[mM][pP][gG].[bB][zZ]2)
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(bunzip2 -c "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[mM][pP][eE][gG].[bB][zZ] |\
+*.[mM][pP][gG].[bB][zZ])
+	for prog in xine xanim $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	(bunzip -c "$file" | "$FILE_VIEWER" - > /dev/null 2>&1 &);;
+
+*.[oO])
+	objdump --syms --all-headers -- "$file" | "$PAGER";;
+
+*.[oO][gG][gG])
+	for prog in audacity xmms xine $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+	
+*.[pP][pP][mM]     |\
+*.[pP][nN][mM]     |\
+*.[pP][gG][mM]	   |\
+*.[pP][bB][mM]     |\
+*.[pP][nN][gG])
+	for prog in xv kview ee display gqview gimp $PAGER ; do check ; \
+	if test "$FILE_VIEWER"; then break; fi; done; \
+	"$FILE_VIEWER" "$file";;
+
+*.[pP][dD][fF])
+	for prog in kwrite acroread xpdf kpdf kghostview gv $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[pP][sS])
+	for prog in display kview kghostview ggv gv ghostview $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+#   add parameter following someday
+	"$FILE_VIEWER" "$file";;
+
+
+*.[rR][aA][rR])
+	unrar l "$file" | "$PAGER";;				\
+
+*.[rR][pP][mM])
+	rpm -qilRsp -- "$file" | "$PAGER";;
+
+*.[rR][tT][fF])
+	for prog in abiword Ted kword soffice $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[sS][oO] |\
+*.[sS][oO].[0-9]*)
+	objdump --syms --all-headers -- "$file" | "$PAGER";;
+
+*.[tT][aA][rR])
+	tar tvf "$file" | "$PAGER";;
+
+*.[tT][aA][rR].[bB][zZ])
+	(echo "Tar archive:";					\
+	 bunzip -c "$file" | tar tvf -) | "$PAGER";;
+
+*.[tT][aA][rR].[bB][zZ]2)
+	(echo "Tar archive:";					\
+	 bunzip2 -c "$file" | tar tvf -) | "$PAGER";;
+
+*.[tT][aA][rR].[gG][zZ]  |\
+*.[tT][aA][rR].[zZ]      |\
+*.[tT][aArRgG][zZ])
+		(echo "Compressed archive:";				\
+		 gunzip -l -- "$file";					\
+		 echo;							\
+		 echo "Tar archive:";					\
+		 gunzip -c -- "$file" | tar tvf -) | "$PAGER";;
+
+*.[tT][iI][fF] |\
+*.[tT][iI][fF][fF])
+	for prog in gqview $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;					
+
+*.[tT][xX][tT])
+	for prog in asmview asmedit $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;					
+
+*.[wW][aA][vV])
+	for prog in play audacity kmedia amarok wavplay xmms $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;					
+
+*.[xX][bB][mM] |\
+*.[xX][pP][mM])
+	for prog in xv kview ee display gqview gimp $PAGER ; do check ;
+	if test $FILE_VIEWER; then break; fi; done;
+	"$FILE_VIEWER" "$file";;
+
+*.[zZ])
+		gunzip -c -- "$file" | "$PAGER";;
+
+*.[zZ][iI][pP])
+		unzip -v "$file" | "$PAGER";;
+
+		
+*)
+#  echo "no match" ; pause ;
+  $PAGER $file;;
+
+esac
+
+fi;
+
+exit 0
+

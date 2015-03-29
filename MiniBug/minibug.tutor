@@ -1,0 +1,106 @@
+
+Minibug tutorial
+----------------
+
+Install minibug (see INSTALL file with source) and
+type:
+
+  minibug minibug
+
+This will start minibug and then use itself
+as the target to debug. We will only debug
+the first few instructions, because letting
+the program run will cause problems.
+
+The screen should show a dissasembly in the
+lower half of display. If the dissassembly has
+alpha labels, you are in the minibug
+source directory and it has been compiled with
+debug information.  If only numbers are
+displayed, you are working on a stripped
+executable file.
+
+Move the select bar down two positions by
+pressing the down arrow key twice.
+
+Notice that the execution point is colored
+white and doesn't move. The select bar allows
+us to select areas to set breakpoints.
+
+Press the 'b' key to set a breakpoint.
+
+Notice the address of breakpoint changes to
+red.
+
+We can now run up to the breakpoint by pressing
+the 'g' go key or do a single step with the 's'
+key.
+
+Press the 'g' key to run program.
+
+The program should run to breakpoint and the
+eip register will be updated. Also the instruction
+at eip address will be colored white.
+
+At this point we may want to look around and
+see what happened. Some information is shown
+on the small right side mini window. We can
+view other mini windows by pressing shift-w.
+
+Cycle through the mini-windows by pressing
+shift-w a few times.
+
+For more information we need to view the main
+status windows.  These can be viewed by pressing
+the 'w' key.
+
+Press the 'w' key six times to view each window.
+
+Notice that each window has a menu at the bottom
+and a help key "?".  These windows can also be
+selected by pressing 'alt' and first letter of
+name.
+
+Press alt-b
+      alt-m
+      alt-r
+      d
+
+We now know how to run a program and view all
+the status windows. If we need more information
+their is a small help file "alt-h" and the local
+help for each window "?".
+
+Next, single step the program by using the 's'
+key or space-bar.
+
+That's it, you are now an expert.  press "q" to
+quit.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

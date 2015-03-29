@@ -1,0 +1,317 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ 
+ <title>reading cmos mini howto</title><meta name="keywords" content="howto, assembler, linux, cmos, x86, assembly, tools, programming">
+ <meta name="description" content="Howto read CMOS memory with example program">
+ <meta name="robots" content="NOINDEX NOFOLLOW"><!-- ==================== -->
+
+
+
+  <link rel="stylesheet" href="stylej.css" type="text/css"><!-- ==================== --><!-- main layout table --></head>
+<body>
+<br>
+    <br>
+  <table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td class="menuleft" style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools" src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td nowrap="nowrap" width="100%">
+
+<!-- header here -->
+
+
+      <h2><big>LinuxAsmTools - HowTo read CMOS memory</big>
+      </h2>
+      <hr style="width: 100%; height: 2px;">
+<!-- begin content here --> 
+      <br>
+  Reading CMOS memory with assembler mini-HOWTO<br>
+  jeff owens, jeff@linuxasmtools.net<br>
+  v1.01, 06 April 2009<br>
+<br>
+  How to read CMOS memory with example program.<br>
+  ______________________________________________________________________<br>
+<br>
+  Table of Contents<br>
+<br>
+<br>
+  1. Disclaimer<br>
+<br>
+  2. Introduction<br>
+<br>
+  3. Using Ports<br>
+<br>
+  4. Talking to the Hardware<br>
+<br>
+  5. Running the Example program<br>
+  <br>
+  6. Compiling the example program<br>
+<br>
+  7. Where can I find more information?<br>
+<br>
+  ______________________________________________________________________<br>
+<br>
+  1.  Disclaimer<br>
+<br>
+  The following document is offered in good faith as comprising only<br>
+  safe programming and procedures. No responsibility is accepted by the<br>
+  author for any loss or damage caused in any way to any person or<br>
+  equipment, as a direct or indirect consequence of following these<br>
+  instructions.<br>
+<br>
+<br>
+  2.  Introduction<br>
+<br>
+  The most recent version of this document can always be found at<br>
+  http://linuxasmtools.net<br>
+<br>
+  Most kernels are not configured to access CMOS memory, this<br>
+  make reading CMOS a little work.  This howto will discuss<br>
+  the process of reading CMOS and introduce a sample program<br>
+  to show CMOS time.  The sample program can be downloaded<br>in two files <a href="cmos.asm">cmos.asm</a> and <a href="cmos.inc">cmos.inc</a>.<br>
+<br>
+  3. Using Ports<br>
+<br>
+  To get at CMOS we need to read IO ports 70h and 71h.  We<br>
+  can't do this from user space, so programs must run with<br>
+  root status.<br>
+<br>
+  Before starting it is a good idea to check our status<br>
+  as follows:<br>
+<br>
+  call	sys_getuid	;asmlib call to get our UID<br>
+  or	eax,eax		;check if root<br>
+  jz	we_root		;jmp if root<br>
+<br>
+<br>
+  Next, we ask the kernel for access to the CMOS ports:<br>
+<br>
+  mov	ebx,70h	;starting port<br>
+  mov	ecx,2	;number of ports<br>
+  mov	edx,1	;enable<br>
+  call	sys_ioperm ;asmlib call to ioperm<br>
+  js	cmos_exit  ;jmp if no access<br>
+<br>
+  4. Talking to the hardware<br>
+<br>
+  To access a byte in CMOS memory we output its address<br>
+  to port 70h and read the data on port 71h.  The<br>
+  following subroutine will read one byte from CMOS.<br>
+<br>
+  ;input: al=address<br>
+  ;output: al=data<br>
+  read_cmos:<br>
+    mov	dx,70h	;adr select port<br>
+    out	dx,al	;select adr<br>
+    call waitx	;add delay<br>
+    mov	dx,71h	;data port<br>
+    in	al,dx	;read data<br>
+    ret<br>
+<br>
+  5. A complete program to show CMOS date<br>
+<br>
+  [section .text]<br>
+  extern sys_exit<br>
+  global _start,main<br>
+<br>
+extern sys_getuid<br>
+  extern stdout_str<br>
+  extern crt_write<br>
+  <br>
+  extern byte_to_ascii<br>
+  extern sys_ioperm<br>
+  <br>
+  main:<br>
+  _start:<br>
+    call	sys_getuid<br>
+    or	eax,eax		;check if root<br>
+    jz	we_root<br>
+  ;;  mov	ecx,warning<br>
+    call	stdout_str<br>
+    jmp	cmos_exit<br>
+  <br>
+  we_root:  <br>
+    mov	ecx,cmos_msg<br>
+    mov	edx,cmos_msg_size<br>
+    call	crt_write<br>
+  <br>
+    mov	ebx,70h	;starting port<br>
+    mov	ecx,2	;number of ports<br>
+    mov	edx,1	;enable<br>
+    call	sys_ioperm<br>
+    js	cmos_exit<br>
+  <br>
+    mov	esi,[cmos_table_ptr]<br>
+  cmos_read_loop:<br>
+    mov	al,[esi]	;get address<br>
+    cmp	al,-1<br>
+    je	cmos_exit	;exit if end of table<br>
+    call	read_cmos	;read byte<br>
+    mov	edi,cmos_value<br>
+    call	byte_to_ascii<br>
+    mov	[edi],byte 0ah	;terminate value string<br>
+    inc	edi<br>
+    mov	[edi],byte 0<br>
+  <br>
+    inc	esi		;move past address<br>
+    mov	ecx,esi		;get ptr to text<br>
+    call	stdout_str<br>
+    mov	ecx,cmos_value<br>
+    call	stdout_str<br>
+  <br>
+  cmos_next_table:<br>
+    lodsb<br>
+    or	al,al<br>
+    jnz	cmos_next_table<br>
+    jmp	short cmos_read_loop<br>
+  <br>
+  cmos_exit:<br>
+    call	sys_exit	;library call example<br>
+  ;----------------------------------------------<br>
+  ;input: al=address<br>
+  ;output: al=data<br>
+  read_cmos:<br>
+    mov	dx,70h	;adr select port<br>
+    out	dx,al	;select adr<br>
+    call	waitx<br>
+    mov	dx,71h	;data port<br>
+    in	al,dx	;read data<br>
+    ret<br>
+  ;---------------------------------------------<br>
+  waitx:<br>
+    movzx	ecx,dl<br>
+  wx: loop wx<br>
+    ret<br>
+  ;---------------------------------------------<br>
+    <br>
+   [section .data]<br>
+  <br>
+  cmos_table:<br>
+   db  06h        ;Day of the Week
+<br>
+   db  'address 06 (day of week) = ',0<br>
+  <br>
+   db  07h        ;Day of the Month
+<br>
+   db  'address 07 (day of month) = ',0<br>
+  <br>
+   db  08h        ;Month
+<br>
+   db  'address 08 (month) = ',0<br>
+  <br>
+   db  09h        ;Year
+<br>
+   db  'address 9 (year) = ',0<br>
+  <br>
+   db  -1		;end of table<br>
+  <br>
+  cmos_table_ptr	dd cmos_table<br>
+  cmos_value	times 5 db 0<br>
+  <br>
+  cmos_msg:<br>
+  incbin "cmos.inc"<br>
+  cmos_msg_size equ $ - cmos_msg<br>
+  <br>
+  <br>
+--- end of cmos.asm --------------------------------<br>
+incude file cmos.inc follows<br>
+---- start of cmos.inc -----------------------------<br>
+<br>
+  CMOS or NVRAM memory used to hold computer settings<br>
+  and provide a clock.  Since we want the clock and CMOS<br>
+  to stay active when the computer is off, a battery is<br>
+  needed.  CMOS memory is separate from other address<br>
+  spaces and requires two ports for access.  If we have<br>
+  root access these ports (70h &amp; 71h) can be read and<br>
+  show the following:<br>
+      <br>
+  5. Running the example program.<br>
+<br>
+  If we currently have root status, the example program<br>
+  can be started with:<br>
+<br>
+  ./cmos<br>
+<br>
+  It will show date values read from cmos. Normally<br>
+  we will not be root, so we might us sudo as follows:<br>
+<br>
+  sudo ./cmos<br>
+<br>
+  6. Compiling the example program.<br>
+<br>
+  The example program can be compiled with the<br>
+  following tools:<br>
+<br>
+  nasm - assembler<br>
+  asmlib - library of assembler functions<br>
+<br>
+  The easy way to do this is to install, asmide<br>
+  and start it as follows:<br>
+<br>
+  asmide cmos.asm<br>
+<br>
+  asmide will provide a menu, with compile and<br>
+  debug options.<br>
+<br>
+  To manually compile the source use the following:<br>
+<br>
+  nasm -g -f elf cmos.asm<br>
+  ld cmos.o -static -o cmos /usr/lib/asmlib.a<br>
+<br>
+  7. Where can I find more information?<br>
+<br>
+     google for "Phil Storrs PC Hardware book"<br>
+<br>
+     http://moon.inf.uji.es/docs/interr/CMOS/CMOS.HTM<br>
+<br>
+
+
+<!-- END of the content cell --></td></tr></tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: April 06, 2009</em></div>
+
+</body></html>

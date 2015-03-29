@@ -1,0 +1,5 @@
+
+2006-19-9  Search function was not calculating line number
+           correctly.  Fixed in line number lookup loop
+
+2008-20-5  Search of big files was failing.  Fixed.

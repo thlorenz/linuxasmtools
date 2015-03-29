@@ -1,0 +1,26 @@
+
+PURPOSE
+-------
+
+mouse_watch shows shows the location of left
+mouse clicks.  It is intended to assist xhelper
+by giving x/y positions for the ^click_left
+command.
+
+USAGE
+-----
+
+mouse_click sends its output to stdout and
+should be run from a terminal.  To capture
+click information in a file use:
+
+  mouse_click > log
+
+To watch the click activity, move terminal
+to a unused area or screen and type:
+
+  mouse_click
+
+To exit mouse_click, press the right mouse
+button.
+

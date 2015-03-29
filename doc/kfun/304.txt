@@ -1,0 +1,85 @@
+
+------------------------------------------------------------------
+304 symlinkat  - create symbolic link relative
+------------------------------------------------------------------
+
+  mov  eax,304
+  mov  ebx,pathname  ;pointer to path
+  mov  ecx,fd
+  mov  edx,linkname  ;ponter to asciiz path
+  int  80h
+
+   Creates a symbolic link relative to a directory file descriptor.
+   This system call operates in exactly the same way as sys_symlink,
+   except for the differences described below.
+   Symbolic links are interpreted at run-time as if the contents of the
+   link had been substituted into the path being followed to find a file
+   or directory.
+
+args
+----
+
+ ebx A pointer to a null-terminated string specifying the pathname to
+   whom the link will refer.
+
+ ecx Directory descriptor.
+
+ edx A pointer to a null-terminated string specifying the pathname of
+   the link. If pathname exists it will not be overwritten.
+   If the pathname is relative, then it is interpreted relative to the
+   directory referred to by the file descriptor ecx (rather than relative
+   to the current working directory of the calling process, as is done by
+   sys_symlink for a relative pathname).
+   If the pathname is relative and ecx is the special value AT_FDCWD,
+   then pathname is interpreted relative to the current working directory
+   of the calling process.
+   If the pathname is absolute, then ecx is ignored.
+   Symbolic links may contain .. path components, which (if used at the
+   start of the link) refer to the parent directories of that in which
+   the link resides.
+   A symbolic link (also known as a soft link) may point to an existing
+   file or to a nonexistent one; the latter case is known as a dangling
+   link.
+
+Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EPERM The filesystem containing newpath does not support the creation
+     of symbolic links.
+   -EFAULT Old path or new path points outside your accessible address
+     space.
+   -EACCES Write access to the directory containing the new path is not
+     allowed for the process's effective uid, or one of the directories in
+     new path did not allow search (execute) permission.
+   -ENAMETOOLONG Old path or new path was too long.
+   -ENOENT A directory component in new path does not exist or is a
+     dangling symbolic link, or old path is the empty string.
+   -ENOTDIR A component used as a directory in new path is not, in fact,
+     a directory.
+     -or-
+     New path is a relative path and ecx is a file descriptor referring to
+     a file other than a directory.
+   -ENOMEM Insufficient kernel memory was available.
+   -EROFS New path is on a read-only filesystem.
+   -EEXIST New path already exists.
+   -ELOOP Too many symbolic links were encountered in resolving the new
+     path.
+   -ENOSPC The device containing the file has no room for the new
+     directory entry.
+   -EIO An I/O error occurred.
+   -EBADF ecx is not a valid file descriptor.
+
+   The permissions of a symbolic link are irrelevant; the ownership is
+   ignored when following the link, but is checked when removal or
+   renaming of the link is requested and the link is in a directory with
+   the sticky bit (S_ISVTX) set.
+   Deleting the name referred to by a symlink will actually delete the
+   file (unless it also has other hard links). If this behavior is not
+   desired, use sys_link.
+
+
+   Available since 2.6.16
+

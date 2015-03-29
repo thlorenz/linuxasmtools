@@ -1,0 +1,40 @@
+
+----------------------------------------------------------------------------
+219 madvise         - advise kernel on memory handling
+----------------------------------------------------------------------------
+
+  mov  eax,219
+  mov  ebx,start  ;start address for region
+  mov  ecx,length ;length of region
+  mov  edx,behaviour
+
+
+  where behaviour can be:
+
+        MADV_NORMAL	0  no further special treatment */
+                           read by clusters, results in some read-ahead/-behind.
+        MADV_RANDOM	1  expect random page references */
+                           read the minimum amount of data on any access.
+        MADV_SEQUENTIAL	2  expect sequential page references */
+                           aggressively read ahead.
+        MADV_WILLNEED	3  will need these pages */
+                           notifying the system to read some pages ahead.
+        MADV_DONTNEED	4  don't need these pages */
+                           kernel can free resources associated with the given range.
+ 
+ Applications can advise how the kernel how should handle paging I/O in given VM area,
+ to help the kernel useing appropriate read-ahead and caching techniques. The information
+ provided is advisory and, can be safely disregarded by the kernel without affecting the
+ correct operation of the application.
+
+ERRORS
+
+   INVAL   start+len < 0, start not page-aligned, "behavior" not valid or,
+           application attempting to release locked or shared pages.
+   NOMEM   specified addr range not currently mapped or,
+           outside address range of the process.
+   IO      I/O error while paging in data.
+   EBADF   map exists, but area maps not a file.
+   EAGAIN  a kernel resource was temporarily unavailable.
+
+

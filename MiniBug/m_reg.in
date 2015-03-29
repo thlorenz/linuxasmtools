@@ -1,0 +1,768 @@
+  extern trace_fxregsget
+  extern wordto_hexascii
+  extern trace_fxregsset
+  extern dword_to_hexascii
+  extern ftword_to_ascii
+  extern buffer_hex_line
+
+;-------------  m_reg.in -------------------------------
+
+show_reg_win:
+  mov	eax,reg_menu_txt	;get text for main menu
+  call	show_menu_line
+  mov	esi,reg_read_buf
+  call	trace_fxregsget
+  mov	eax,[aux_win_color]
+  call	crt_set_color
+  call	show_registers
+  cmp	[pop_help_flag],byte 0
+  je	srw_exit
+  mov	ecx,mini_reg_msg
+  call	show_mini_help
+srw_exit:
+  ret
+;-------------------------------------------------------
+;edit
+; 1 request reg name
+; 2 get modification
+; 3 modify in memory copy
+; 4 write out edited registers
+edit_reg:
+  mov	eax,pre_reg_msg ;prompt
+  mov	ebx,work_buf	;result location
+  mov	cl,[crt_columns]
+  sub	cl,11			;adjust window size for pre_reg_msg
+  call	get_user_string
+;lookup register to determine type etc.
+  mov	esi,reg_lookup
+er_lp1:
+  lodsd		;get ptr to reg text xxx=
+  or	eax,eax
+  jz	er_not_in_table
+  mov	edi,work_buf ;get ptr to match string
+er_lp2:	;match loop
+  cmp	byte [eax],'='
+  je	er_found_match
+  mov	bl,[eax]	;get next match char
+  cmp	bl,[edi]	;compare two char's
+  jne	er_next
+  inc	eax
+  inc	edi
+  jmp	short er_lp2
+er_next:
+  add	esi,5
+  jmp	short er_lp1
+;esi points at value ptr in table
+er_found_match:
+  cmp	[esi+4],byte 4	;dword value
+  je	er_dword
+  cmp	[esi+4],byte 2
+  je	er_word
+;assume 16 byte value
+  mov	eax,[esi]	;get ptr to value
+
+  push	esi		;save reg value ptr
+  mov	esi,eax		;get ptr to reg value
+  mov	edi,string_buf	;get destination
+  mov	ecx,16		;set number of bytes
+  mov	dl,0		;skip ascii append
+  call	buffer_hex_line
+;clean up string_buf
+  mov	esi,string_buf
+  mov	ecx,50		;max string size
+er_clean:
+  lodsb
+  cmp	al,0ah
+  je	er_fix
+  loop	er_clean
+er_fix:
+  mov	[esi-1],byte ' '
+   
+  mov	eax,pre_reg_msg2
+  mov	ebx,work_buf
+  mov	cl,32		;window size
+  call	edit_user_string
+  mov	esi,work_buf
+  pop	edi		;restore ptr to ptr
+  mov	edi,[edi]	;get ptr to value
+  call	hexascii_to_ftword
+;  mov	[edi],ecx	;store hex value
+  jmp	short er_tail
+
+er_word:
+  mov	eax,[esi]	;get ptr to value
+  push	eax
+  mov	ax,[eax]	;get value
+  mov	edi,string_buf
+  call	wordto_hexascii  
+  mov	eax,pre_reg_msg2
+  mov	ebx,work_buf
+  mov	cl,4		;window size
+  call	edit_user_string
+  mov	esi,work_buf
+  call	hexascii_to_dword
+  pop	edi		;restore ptr to reg value
+  mov	[edi],cx	;store hex value
+  jmp	short er_tail
+
+er_dword:
+  mov	eax,[esi]	;get ptr to value
+  push	eax
+  mov	eax,[eax]	;get value
+  mov	edi,string_buf
+  call	dwordto_hexascii  
+  mov	eax,pre_reg_msg2
+  mov	ebx,work_buf
+  mov	cl,8		;window size
+  call	edit_user_string
+  mov	esi,work_buf
+  call	hexascii_to_dword
+  pop	edi		;restore ptr to reg value
+  mov	[edi],ecx	;store hex value
+er_tail:
+  mov	esi,reg_read_buf
+  call	trace_fxregsset
+  mov	esi,app_regs
+  call	trace_regsset
+  
+er_not_in_table:
+  ret
+;----------
+  [section .data]
+pre_reg_msg:  db 'reg name: = ',0
+pre_reg_msg2: db 'edit value: ',0
+  [section .text]
+;-------------------------------------------------------
+;input: esi=ptr to ascii
+;       edi=ouput ptr
+
+hexascii_to_ftword:
+  mov	ecx,16	;loop count
+hexascii_lp:
+  call	hexascii2
+  mov	al,bl
+  stosb
+  loop	hexascii_lp
+  ret
+
+hexascii2:
+  call	hexascii2nibble
+hexascii2nibble:
+  shl	ebx,4		;adjust any previous result
+  lodsb
+  sub	al,'0'
+  cmp	al,9
+  jle	h_ok
+  sub	al,7
+h_ok:
+  or	bl,al
+  ret
+;-------------------------------------------------------
+reg_win_quit:
+;restore registers to origional state
+  mov	esi,reg_read_buf
+  call	trace_fxregsset
+win_quit:
+  mov	[win_select],byte 0	;select main win
+  ret
+;-------------------------------------------------------
+reg_next_win:	;exit and select next
+;restore registers to origional state
+  mov	esi,reg_read_buf
+  call	trace_fxregsset
+  call	next_window
+  ret
+;-------------------------------------------------------
+show_registers:
+  mov	eax,reg_header
+  call	show_header_line
+  mov	eax,[aux_win_color]
+  call	crt_set_color
+
+  mov	al,[mini_win_top_line2]
+  mov	[sr_line],al	;init line#
+  mov	esi,reg_display_tbl
+sr_loop1:
+  mov	edi,work_buf	;line build area
+sr_loop2:
+  xor	eax,eax
+  lodsb			;get table control byte
+  shl	eax,2		;make dword index
+  add	eax,sr_lookup
+  call	[eax]
+  mov	ah,[sr_line]
+  or	ah,ah
+  jnz	sr_loop2	;jmp if more in table
+  
+  ret
+;---------
+  [section .data]
+sr_line:	db 0
+sr_lookup:
+ dd do_rdone	;equ	0 ;end of table
+ dd do_spaces	;equ	1 ;insert spaces
+ dd do_rword	;equ	2 ;build hex word
+ dd do_rdword	;equ	3 ;build hex dword
+ dd do_rftword ;equ	4 ;8 float bytes
+ dd do_rhex	;equ	5 ;16 hex bytes
+ dd do_rtext	;equ	6 ;move string
+ dd do_rflag	;equ	7 ;build flags
+ dd do_rshow	;equ	8 ;show line
+
+  [section .text]
+
+
+;-------------------------------------
+do_spaces:	;equ	1 ;insert spaces
+  lodsb		;get space count
+ds_lp:
+  mov	[edi],byte ' '
+  inc	edi
+  dec	al
+  jnz	ds_lp
+  ret
+;-------------------------------------
+do_rword:	;equ	2 ;build hex word
+  lodsd		;get data ptr
+  mov	ax,[eax]	;get data
+  call	wordto_hexascii
+  ret
+;-------------------------------------
+do_rdword:	;equ	3 ;build hex dword
+  lodsd		;get data ptr
+  mov	ecx,[eax] ;get data
+  call	dword_to_hexascii
+  ret
+;-------------------------------------
+do_rftword: ;equ	4 ;8 float bytes
+  mov	ebp,edi		;get stuff
+  add	ebp,byte 9	;compute end of pad
+  lodsd			;get data ptr
+  xor	ecx,ecx
+  cmp	[eax+8],ecx	;reg present?
+  jz	sr_pad		;jmp if no register
+  mov	ebx,7		;precision
+  call	ftword_to_ascii
+sr_pad:
+  mov	al,' '		;space char
+sr_loop:
+  stosb			;blank this char
+  cmp	edi,ebp
+  jb	sr_loop		;add pad
+  ret
+
+;-------------------------------------
+do_rhex:	;equ	5 ;16 hex bytes
+  lodsd		;get data ptr
+  push	esi
+  mov	esi,eax ;setup to convert
+  mov	ecx,16
+  mov	dl,0		;skip ascii append
+  call	buffer_hex_line
+  dec	edi
+  mov	al,' '
+  stosb
+  pop	esi
+  ret
+
+;-------------------------------------
+do_rtext:	;equ	6 ;move string
+  lodsd		;get string ptr
+  push	esi
+  mov	esi,eax
+  call	str_move
+  pop	esi
+  ret
+;-------------------------------------
+do_rflag:	;equ	7 ;build flags
+  lodsd		;get flag address
+  ret
+;-------------------------------------
+;show line, bump line#, restart edi
+do_rshow:	;equ	8 ;show line
+  push	esi	;save table ptr
+  mov	ebp,work_buf
+  add	ebp,[crt_columns] ;compute max line length
+rshow_pad_lp:
+  cmp	edi,ebp	;check if padding needed
+  jb	add_pad
+  je	rshow_msg_ok
+  mov	edi,ebp
+  jmp	short rshow_msg_ok
+
+add_pad:
+  mov	al,' '
+  stosb
+  jmp	short rshow_pad_lp
+rshow_msg_ok:
+  mov	ah,[sr_line]
+  mov	al,1
+  call	move_cursor
+  mov	ecx,work_buf
+  mov	edx,edi
+  sub	edx,ecx		;compute msg length
+  call	crt_write
+  inc	byte [sr_line]
+
+  mov	edi,work_buf	;restart buffer
+  pop	esi		;restore table ptr
+  ret
+;-------------------------------------
+do_rdone:	;equ	0 ;end of table
+  mov	[sr_line],byte 0 ;set done state
+  ret
+;-------------------------------------------------------
+
+
+;-------------------------------------------------------
+;-------------------------------------------------------
+  [section .data]
+mini_reg_msg:
+ db '?-local help            '
+ db 'w-next operational win  '
+ db 'q-quit this window      '
+ db 'edit (enter name of reg '
+ db '      to edit)          '
+ db '                        '
+ db 'alt-(win first letter)  '
+ db '    select another win  '
+ db '                        '
+ db '                        '
+ db '                        ',0
+
+reg_menu_txt: db ' ? win quit edit_reg',0
+reg_header:   db ' -- REGISTERS --',0
+
+;display string for building screen
+r_eax  db 'eax=',0
+r_ebx  db 'ebx=',0
+r_ecx  db 'ecx=',0
+r_edx  db 'edx=',0
+r_esi  db 'esi=',0
+r_edi  db 'edi=',0
+r_ebp  db 'ebp=',0
+r_esp  db 'esp=',0
+r_eip  db 'eip=',0
+r_flg  db 'flg=',0
+r_fctrl db 'fctrl=',0
+r_fstat db 'fstat=',0
+r_tags db 'tags=',0
+r_st0 db 'st0=',0
+r_st1 db 'st1=',0
+r_st2 db 'st2=',0
+r_st3 db 'st3=',0
+r_st4 db 'st4=',0
+r_st5 db 'st5=',0
+r_st6 db 'st6=',0
+r_st7 db 'st7=',0
+r_xmm0 db 'xmm0=',0
+r_xmm1 db 'xmm1=',0
+r_xmm2 db 'xmm2=',0
+r_xmm3 db 'xmm3=',0
+r_xmm4 db 'xmm4=',0
+r_xmm5 db 'xmm5=',0
+r_xmm6 db 'xmm6=',0
+r_xmm7 db 'xmm7=',0
+
+;buffer to read data into
+
+reg_read_buf:
+_cwd	dw 0;
+_swd	dw 0;
+_twd	dw 0;
+_fop	dw 0;
+_fip	dd 0;
+_fcs	dd 0;
+_foo	dd 0;
+_fos	dd 0;
+_mxcsr	dd 0;
+_reserved dw 0,0 ;
+_st0	times 16 db 0
+_st1	times 16 db 0
+_st2	times 16 db 0
+_st3	times 16 db 0
+_st4	times 16 db 0
+_st5	times 16 db 0
+_st6	times 16 db 0
+_st7	times 16 db 0
+_xmm0	times 16 db 0
+_xmm1	times 16 db 0
+_xmm2	times 16 db 0
+_xmm3	times 16 db 0
+_xmm4	times 16 db 0
+_xmm5	times 16 db 0
+_xmm6	times 16 db 0
+_xmm7	times 16 db 0
+_padding times 56 dd 0
+
+
+;display table codes:
+rdone	equ	0 ;end of table
+spaces	equ	1 ;insert spaces
+rword	equ	2 ;build hex word
+rdword	equ	3 ;build hex dword
+rftword equ	4 ;8 float bytes
+rhex	equ	5 ;16 hex bytes
+rtext	equ	6 ;move string
+rflag	equ	7 ;build flags
+rshow	equ	8 ;show line
+
+reg_display_tbl:
+;line# 1 -----------
+ db rtext	;text
+ dd r_eax	;reg name
+ db rdword	;show dword
+ dd app_eax	;data ptr
+ db spaces,1
+
+ db rtext   	;text
+ dd r_st0	;reg name
+ db rftword	;reg type
+ dd _st0	;data ptr
+ db spaces,1
+
+ db rtext	;text
+ dd r_xmm0	;reg name
+ db rhex	;data type
+ dd _xmm0	;data ptr
+
+ db rshow	;end of line
+
+;line# 2 -----------
+ db rtext	;text
+ dd r_ebx	;reg name
+ db rdword	;show dword
+ dd app_ebx	;data ptr
+ db spaces,1
+
+ db rtext   	;text
+ dd r_st1	;reg name
+ db rftword	;reg type
+ dd _st1	;data ptr
+ db spaces,1
+
+ db rtext	;text
+ dd r_xmm1	;reg name
+ db rhex	;data type
+ dd _xmm1	;data ptr
+
+ db rshow	;end of line
+
+;line# 3 -----------
+ db rtext	;text
+ dd r_ecx	;reg name
+ db rdword	;show dword
+ dd app_ecx	;data ptr
+ db spaces,1
+
+ db rtext   	;text
+ dd r_st2	;reg name
+ db rftword	;reg type
+ dd _st2	;data ptr
+ db spaces,1
+
+ db rtext	;text
+ dd r_xmm2	;reg name
+ db rhex	;data type
+ dd _xmm2	;data ptr
+
+ db rshow	;end of line
+
+;line# 4 -----------
+ db rtext	;text
+ dd r_edx	;reg name
+ db rdword	;show dword
+ dd app_edx	;data ptr
+ db spaces,1
+
+ db rtext   	;text
+ dd r_st3	;reg name
+ db rftword	;reg type
+ dd _st3	;data ptr
+ db spaces,1
+
+ db rtext	;text
+ dd r_xmm3	;reg name
+ db rhex	;data type
+ dd _xmm3	;data ptr
+
+ db rshow	;end of line
+
+;line# 5 -----------
+ db rtext	;text
+ dd r_esi	;reg name
+ db rdword	;show dword
+ dd app_esi	;data ptr
+ db spaces,1
+
+ db rtext   	;text
+ dd r_st4	;reg name
+ db rftword	;reg type
+ dd _st4	;data ptr
+ db spaces,1
+
+ db rtext	;text
+ dd r_xmm4	;reg name
+ db rhex	;data type
+ dd _xmm4	;data ptr
+
+ db rshow	;end of line
+
+;line# 6 -----------
+ db rtext	;text
+ dd r_edi	;reg name
+ db rdword	;show dword
+ dd app_edi	;data ptr
+ db spaces,1
+
+ db rtext   	;text
+ dd r_st5	;reg name
+ db rftword	;reg type
+ dd _st5	;data ptr
+ db spaces,1
+
+ db rtext	;text
+ dd r_xmm5	;reg name
+ db rhex	;data type
+ dd _xmm5	;data ptr
+
+ db rshow	;end of line
+
+;line# 7 -----------
+ db rtext	;text
+ dd r_ebp	;reg name
+ db rdword	;show dword
+ dd app_ebp	;data ptr
+ db spaces,1
+
+ db rtext   	;text
+ dd r_st6	;reg name
+ db rftword	;reg type
+ dd _st6	;data ptr
+ db spaces,1
+
+ db rtext	;text
+ dd r_xmm6	;reg name
+ db rhex	;data type
+ dd _xmm6	;data ptr
+
+ db rshow	;end of line
+
+;line# 8 -----------
+ db rtext	;text
+ dd r_esp	;reg name
+ db rdword	;show dword
+ dd app_esp	;data ptr
+ db spaces,1
+
+ db rtext   	;text
+ dd r_st7	;reg name
+ db rftword	;reg type
+ dd _st7	;data ptr
+ db spaces,1
+
+ db rtext	;text
+ dd r_xmm7	;reg name
+ db rhex	;data type
+ dd _xmm7	;data ptr
+
+ db rshow	;end of line
+
+;line# 9 ------------
+
+ db rtext	;text
+ dd r_eip	;reg name
+ db rdword	;show dword
+ dd app_eip	;data ptr
+ db spaces,1
+
+ db rtext	;text
+ dd r_fctrl	;reg name
+ db rword	;reg type
+ dd _cwd
+ db spaces,1
+
+ db rtext	;text
+ dd r_fstat	;reg name
+ db rword	;reg type
+ dd _swd
+ db spaces,1
+ 
+ db rtext	;text
+ dd r_tags	;reg name
+ db rword
+ dd _twd
+
+ db rshow
+
+;line# 10 -----------
+
+ db rdone	;end of table
+
+;edit register table, used to match name to location
+;and type of register
+reg_lookup:
+ dd r_eax	;ptr to register name db 'eax=',0
+ dd app_eax	;ptr to register value
+ db 4		;dword
+
+ dd r_ebx	;ptr to register name db 'eax=',0
+ dd app_ebx	;ptr to register value
+ db 4		;dword
+
+ dd r_ecx	;ptr to register name db 'eax=',0
+ dd app_ecx	;ptr to register value
+ db 4		;dword
+
+ dd r_edx	;ptr to register name db 'eax=',0
+ dd app_edx	;ptr to register value
+ db 4		;dword
+
+ dd r_esi	;ptr to register name db 'eax=',0
+ dd app_esi	;ptr to register value
+ db 4		;dword
+
+ dd r_edi	;ptr to register name db 'eax=',0
+ dd app_edi	;ptr to register value
+ db 4		;dword
+
+ dd r_ebp	;ptr to register name db 'eax=',0
+ dd app_ebp	;ptr to register value
+ db 4		;dword
+
+ dd r_esp	;ptr to register name db 'eax=',0
+ dd app_esp	;ptr to register value
+ db 4		;dword
+
+ dd r_eip	;ptr to register name db 'eax=',0
+ dd app_eip	;ptr to register value
+ db 4		;dword
+
+ dd r_fctrl	;ptr to register name 'fctrl=',0
+ dd _cwd  	;ptr to register value
+ db 2		;word value
+
+ dd r_fstat	;ptr to register name 'fstat=',0
+ dd _swd	;ptr to register value
+ db 2		;word value
+
+ dd r_tags	;ptr to register name 'tags=',0
+ dd _twd	;ptr to register value
+ db 2		;word value
+
+ dd r_st0 	;ptr to register name  'st0=',0
+ dd _st0	;ptr to   register value
+ db 16		;16 bytes
+
+ dd r_st1 	;ptr to register name  'st1=',0
+ dd _st1	;ptr to   register value
+ db 16		;16 bytes
+
+ dd r_st2 	;ptr to register name  'st2=',0
+ dd _st2	;ptr to   register value
+ db 16		;16 bytes
+
+ dd r_st3 	;ptr to register name  'st3=',0
+ dd _st3	;ptr to   register value
+ db 16		;16 bytes
+
+ dd r_st4 	;ptr to register name  'st4=',0
+ dd _st4	;ptr to   register value
+ db 16		;16 bytes
+
+ dd r_st5 	;ptr to register name  'st5=',0
+ dd _st5	;ptr to   register value
+ db 16		;16 bytes
+
+ dd r_st6 	;ptr to register name  'st6=',0
+ dd _st6	;ptr to   register value
+ db 16		;16 bytes
+
+ dd r_st7 	;ptr to register name  'st7=',0
+ dd _st7	;ptr to   register value
+ db 16		;16 bytes
+
+ dd r_xmm0 	;ptr to register name 'xmm0=',0
+ dd _xmm0	;ptr to register value
+ db 16		;16 bytes
+
+ dd r_xmm1 	;ptr to register name 'xmm1=',0
+ dd _xmm1	;ptr to register value
+ db 16		;16 bytes
+
+ dd r_xmm2 	;ptr to register name 'xmm2=',0
+ dd _xmm2	;ptr to register value
+ db 16		;16 bytes
+
+ dd r_xmm3 	;ptr to register name 'xmm3=',0
+ dd _xmm3	;ptr to register value
+ db 16		;16 bytes
+
+ dd r_xmm4 	;ptr to register name 'xmm4=',0
+ dd _xmm4	;ptr to register value
+ db 16		;16 bytes
+
+ dd r_xmm5 	;ptr to register name 'xmm5=',0
+ dd _xmm5	;ptr to register value
+ db 16		;16 bytes
+
+ dd r_xmm6 	;ptr to register name 'xmm6=',0
+ dd _xmm6	;ptr to register value
+ db 16		;16 bytes
+
+ dd r_xmm7 	;ptr to register name 'xmm7=',0
+ dd _xmm7	;ptr to register value
+ db 16		;16 bytes
+
+ dd	0	;end of table
+
+  
+;keyboard decode table ------------------------
+ 
+reg_win_decode_tbl:
+  db 0	;pad
+  db 2	;flag
+
+  db 'w',0
+  dd reg_next_win
+
+  db '?',0
+  dd enable_mini_help
+
+  db 'q',0
+  dd reg_win_quit
+
+  db 'e',0
+  dd edit_reg
+
+  db 1bh,'r',0
+  dd select_reg_win
+  db 0c3h,0b2h,0
+  dd select_reg_win
+
+  db 1bh,'m',0
+  dd select_mem_win
+  db 0c3h,0adh,0
+  dd select_mem_win
+
+  db 1bh,'b',0
+  dd select_break_win
+  db 0c3h,0a2h,0
+  dd select_break_win
+
+  db 1bh,'s',0
+  dd select_stack_win
+  db 0c3h,0b3h,0
+  dd select_stack_win
+
+  db 1bh,'h',0
+  dd select_help_win
+  db 0c3h,0a8h,0
+  dd select_help_win
+
+
+;add alt-win keys here
+ 
+  db 0	;end of table
+
+  [section .text]

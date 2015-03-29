@@ -1,0 +1,57 @@
+
+----------------------------------------------------------------------------
+ 190 vfork         - create a child process and block parent
+----------------------------------------------------------------------------
+    mov  eax,190
+    int  80h
+
+       The vfork() function has the same
+       effect as fork(), except that the behaviour is undefined if the process
+       created  by  vfork()  either modifies any data other than a variable of
+       type pid_t used to store the return value from vfork(), or returns from
+       the  function  in which vfork() was called, or calls any other function
+       before successfully calling _exit() or one of the exec family of  func-
+       tions.
+
+ERRORS
+       EAGAIN Too many processes - try again.
+
+       ENOMEM There is insufficient swap space for the new process.
+
+LINUX DESCRIPTION
+       vfork,  just  like  fork(2),  creates  a  child  process of the calling
+       process.  For details and return value and errors, see fork(2).
+
+       vfork() is a special case of clone(2).  It is used to create  new  pro-
+       cesses  without  copying the page tables of the parent process.  It may
+       be useful in performance sensitive applications where a child  will  be
+       created which then immediately issues an execve().
+
+       vfork()  differs  from  fork  in that the parent is suspended until the
+       child makes a call to execve(2) or _exit(2).  The child shares all mem-
+       ory  with  its parent, including the stack, until execve() is issued by
+       the child.  The child must not return from the current function or call
+       exit(), but may call _exit().
+
+       Signal  handlers  are inherited, but not shared.  Signals to the parent
+       arrive after the child releases the parent.
+
+BUGS
+       It is rather unfortunate that Linux revived this spectre from the past.
+       The  BSD  manpage  states:  "This  system  call will be eliminated when
+       proper system sharing mechanisms  are  implemented.  Users  should  not
+       depend  on  the  memory  sharing semantics of vfork as it will, in that
+       case, be made synonymous to fork."
+
+CONFORMING TO
+       The vfork call may be a bit similar to calls  with  the  same  name  in
+       other operating systems. The requirements put on vfork by the standards
+       are weaker than those put on fork, so an implementation where  the  two
+       are  synonymous is compliant. In particular, the programmer cannot rely
+       on the parent remaining blocked until a call of execve() or _exit() and
+       cannot rely on any specific behaviour w.r.t. shared memory.
+
+SEE ALSO
+       clone, execve, fork, wait
+
+

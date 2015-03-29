@@ -1,0 +1,50 @@
+
+----------------------------------------------------------------------------
+ 85 readlink       - read value of a symbolic link
+----------------------------------------------------------------------------
+  mov  eax,085
+  mov  ebx,path     ;ptr to asciiz path
+  mov  ecx,buf      ;buffer to hold link path
+  mov  edx,bufsize  ;size of buf
+  int  80h
+
+       readlink  places  the  contents of the symbolic link path in the buffer
+       buf, which has size bufsiz.  readlink does not append a  NUL  character
+       to  buf.   It will truncate the contents (to a length of bufsiz charac-
+       ters), in case the buffer is too small to hold all of the contents.
+
+RETURN VALUE
+       The call returns the count of characters placed in  the  buffer  if  it
+       succeeds,  or a negative error code
+
+ERRORS
+       ENOTDIR
+              A component of the path prefix is not a directory.
+
+       EINVAL bufsiz is not positive.
+
+       ENAMETOOLONG
+              A pathname, or a component of a pathname, was too long.
+
+       ENOENT The named file does not exist.
+
+       EACCES Search permission is denied for a component of the path  prefix.
+
+       ELOOP  Too  many  symbolic  links  were  encountered in translating the
+              pathname.
+
+       EINVAL The named file is not a symbolic link.
+
+       EIO    An I/O error occurred while reading from the file system.
+
+       EFAULT buf extends outside the process's allocated address space.
+
+       ENOMEM Insufficient kernel memory was available.
+
+CONFORMING TO
+       X/OPEN, 4.4BSD (the readlink function call appeared in 4.2BSD).
+
+SEE ALSO
+       stat, lstat, symlink
+
+

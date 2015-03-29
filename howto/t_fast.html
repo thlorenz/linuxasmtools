@@ -1,0 +1,260 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ 
+ <title>bios access mini howto</title><meta name="keywords" content="bios, assembler, linux, howto, x86, assembly, programming">
+ <meta name="description" content="Howto access bios with x86 assembler">
+ <meta name="robots" content="NOINDEX NOFOLLOW"><!-- ==================== -->
+
+
+
+  <link rel="stylesheet" href="stylej.css" type="text/css"><!-- ==================== --><!-- main layout table --></head>
+<body>
+<br>
+    <br>
+  <table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td class="menuleft" style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools" src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td nowrap="nowrap" width="100%">
+
+<!-- header here -->
+
+
+      <h2><big>LinuxAsmTools - HowTo speed up displays</big>
+      </h2>
+      <hr style="width: 100%; height: 2px;">
+<!-- begin content here --> 
+      <br>
+  Fast text displays mini-HOWTO<br>
+  jeff owens, jeff@linuxasmtools.net<br>
+  v1.01, 19 April 2009<br>
+<br>
+  How to speed up text displays<br>
+  ______________________________________________________________________<br>
+<br>
+  Table of Contents<br>
+<br>
+<br>
+  1. Disclaimer<br>
+<br>
+  2. Introduction<br>
+<br>
+  3. What is the problem?<br>
+<br>
+  4. How do text displays work?<br>
+<br>
+  5. What can we do?<br>
+  <br>
+  6. What solutions are available?<br>
+<br>
+  7. Finding more information<br>
+  ______________________________________________________________________<br>
+<br>
+1.  Disclaimer<br>
+<br>
+  The following document is offered in good faith as comprising only<br>
+  safe programming and procedures. No responsibility is accepted by the<br>
+  author for any loss or damage caused in any way to any person or<br>
+  equipment, as a direct or indirect consequence of following these<br>
+  instructions.<br>
+<br>
+<br>
+2.  Introduction<br>
+<br>
+  The most recent version of this document can always be found at<br>
+  http://linuxasmtools.net<br>
+<br>
+  There has been a lot of interest in speeding up graphical<br>
+  displays, but little discussion of text displays.  Generally,<br>
+  text display speeds have been sufficient or a few design<br>
+  changes can fix the problems.   Also, graphical applications<br>
+  dominate much of the Linux world and their slow speed has<br>
+  grabbed programmer attention.  Should we spend time speeding<br>
+  up text displays?  This howto looks for some answers.<br>
+<br>
+3. What is the problem?<br>
+<br>
+  Is there a problem?  For most people the answer is: no!<br>
+  The few that are having problems assume it is due to slow<br>
+  hardware or something else. <br>
+<br>
+  The symptoms of text speed problems are:<br>
+    * flickering displays<br>
+    * flashing areas of screen that are too fast<br>
+      to see.<br>
+    * parts of display updating slowly<br>
+    * And, the worst case, slow program execution.<br>
+<br>
+  These problems occur normally when a computer is under<br>
+  heavy load, using older hardware, or running non-optimized<br>
+  display handling.<br>
+<br>
+  It is difficult to know how may users have these<br>
+  problems, it may be quite high.<br>
+<br>
+4. How do text displays work?<br>
+<br>
+  There are three main areas of text usage on Linux,<br>
+  they are:<br>
+<br>
+   * X window text<br>
+   * X terminal<br>
+   * console<br>
+<br>
+  All text handling converts ASCII codes to a graphic<br>
+  using font tables.  The resulting pixels are written<br>
+  into display memory and a character appears.<br>
+<br>
+4.1 X window text displays<br>
+<br>
+  The X server talks directly to display memory and<br>
+  all text handling is internal to the server.  It<br>
+  is usually fast and of little interest to this howto.<br>
+<br>
+  Additionally, xlib includes some features<br>
+  mentioned in this howto<br>
+<br>
+4.2 X terminal displays and console displays<br>
+<br>
+  Both X terminals and console displays use control<br>
+  codes embedded with the text.  They must scan<br>
+  the text for control codes such as line-feed,<br>
+  cursor movement, color selection, and many others.<br>
+  Once the control codes are processed, the remaining<br>
+  ascii is converted to a graphic using font tables.<br>
+<br>
+  All this uses several layers of processing and may<br>
+  be fertile ground for optimization.<br>
+  <br>
+5. What can we do?<br>
+<br>
+  If you look at the typical program, it builds a<br>
+  line of data, sets the display color, moves the<br>
+  cursor to start of line, and finally writes the<br>
+  line.<br>
+<br>
+  We can save a little time by collecting all these<br>
+  operations into one text string and writing<br>
+  everything with one kernel call.<br>
+<br>
+  We could speed things up a little more by collecting<br>
+  multiple lines and writing them all at once.<br>
+<br>
+  We could put the display in wrap mode, and eliminate<br>
+  all the line-feed characters.<br>
+<br>
+  We could track display location and color and only<br>
+  output control strings if a change occurs.<br>
+<br>
+  We could keep track of what is already on the display<br>
+  and only send data if a area is changed.<br>
+<br>
+  We could sort the data by display location and<br>
+  output data in sequence.<br>
+<br>
+  We could collect all writes and only send the<br>
+  latest data for a area of the screen.<br>
+<br>
+  Would all these changes make a big difference?<br>
+  For most programs that display a lot of text, they<br>
+  will make a huge difference.  Generally, programmers<br>
+  focus on their application and not on display<br>
+  optimization.  This means, the typical program<br>
+  has slow display logic.<br>
+<br>
+  Isn't this too complicated for programmers to<br>
+  worry about?  It is complicated, but programmers<br>
+  don't need to worry about it.  Instead, all we<br>
+  need is a display handler to do it for us.<br>
+<br>
+  The design we need is a cache (image of display)<br>
+  that can be read or written like a disk drive.<br>
+  This provides a series of additional advantages:<br>
+<br>
+   * reading of data and colors from display<br>
+   * functions better matched to most applications.<br>
+   * ability to detect data that has not changed<br>
+     and does not need display update.<br>
+<br>
+  The cache works by keeping a copy of each display<br>
+  character and its color.  Each character and<br>
+  color also has a flag which is set when the<br>
+  they are not in sync with display contents.<br>
+<br>
+  When a write request comes in the data is<br>
+  compared to image contents and flags are<br>
+  set only if the data will change the display.<br>
+  The color is also tracked and if it changes,<br>
+  the flags are set to force a display update.  <br>
+  <br>
+6. What solutions are available?<br>
+<br>
+   The library asmliba provides all the features<br>
+   discussed in this howto and also includes a<br>
+   keyboard cache.  See section 7<br>
+<br>
+   The AsmLiba_tutor has some example code and<br>
+   introduces the cache functions.<br>
+   <br>
+   The X server is usually called from xlib and it<br>
+   has a function cache.<br>
+<br>
+<br>
+7. Finding more information<br>
+<br>
+    AsmLiba  - fast display and keyboard cache.<br>
+               http://linuxasmtools.net/asmliba.html<br>
+<br>
+    AsmLiba_tutor - tutorial<br>
+               http://linuxasmtools.net/asmliba_tutorial.html<br>
+<br>
+
+<!-- END of the content cell --></td></tr></tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: April 06, 2009</em></div>
+
+</body></html>

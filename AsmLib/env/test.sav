@@ -1,0 +1,58 @@
+
+  extern env_home,env_exec
+  extern env_home2
+
+ [section .text]
+
+
+  global _start
+  global main
+
+_start:
+main:
+  call	env_home2_test
+
+  pop	ecx
+  jecxz found
+  jmp	main
+found:
+  mov	ebx,esp		;save ptr to env.
+
+  push	ebx
+  call	env_home_test
+
+  pop	ebx
+  call	env_exec_test
+
+  mov	eax,1		;exit
+  int	80h
+;-------------------------------------------------------------
+env_home2_test:
+  mov	edi,buf
+  call	env_home2
+  ret
+
+  [section .data]
+buf:  times 100 db 0
+  [section .text]
+;-------------------------------------------------------------
+env_exec_test:
+  mov	ebp,search_name
+  call	env_exec
+  jnc	gotit
+  nop
+gotit:
+  ret			;lib_buf has path
+
+;-------------------------------------------------------------
+env_home_test:
+  mov	edi,buffer
+  call	env_home
+  ret			;buffer holds $HOME
+;------------------------------------------------------
+
+ [section .data]
+search_name: db "mc",0
+buffer:
+  times 200 db 0
+  [section .text]

@@ -1,0 +1,73 @@
+AsmEdit quick help
+------------------
+
+ f1 - help
+ f10 - exit
+
+ ESC - command mode
+ ^C  - abort current operation
+ 
+ i - enter insert edit
+ x - enter overtype edit
+
+mouse controls
+--------------
+
+ <left click> - moves cursor if
+                in edit space.
+              - pops menu if on
+                status bar.
+ <right click>- launches programs
+                depending upon data
+                under cursor.
+
+command mode keys
+-----------------
+  a - again	
+  b - block	
+  c - calc	
+  d - del block	
+  e - execute	
+  f - find	
+  g - get	
+  h - help	
+  i - insert mode
+  j - jump menu	
+  k -           
+  l -           
+  m - macro     
+  n -           
+  o - other     
+  p - paragraph 
+  q - quit menu	
+  r - replace	
+  s - setup     
+  t - tag       
+  u -           
+  v -           
+  w - window split  
+  x - overtype mode 
+  y -               
+  z -              
+  space - main menu
+
+   F1 - help
+   F2 - project planner
+   F3 - compile (a.f3 user defined)
+   F4 - debug (a.f4 user defined)
+   F5 - spell (a.f5 user defined)
+   F6 - compare (a.f6 user defined)
+   F7 - print (a.f7 user defined)
+   F8 - calls user file a.f8
+   F9 - calls user file a.f9
+   F10 - calls user file a.f10
+   F11 - calls user file a.f11
+
+  -   find reverse     F6 - compare (a.f6 user defined)
+  ^a  delete right     F7 - print (a.f7 user defined)
+  ^x  delete left      F8 - calls user file a.f8
+  ^z  delete line      F9 - calls user file a.f9
+  ^u  restore line     F10 - calls user file a.f10
+  ^r  enter hex char   F11 - calls user file a.f11
+
+      

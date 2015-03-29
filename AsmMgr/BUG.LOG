@@ -1,0 +1,18 @@
+Current bugs:
+
+* Running "kate" from command line, results in screwed
+  up display?  It appears to be a timing problem.
+  See comments in listing.
+
+* Trying to enter protected directory (/tmp/kde-root) causes
+  asmmgr to abort.
+
+* symbolic links for directores/files are not shown on
+  status line as destination.
+
+* Long file names with embedded spaces are not processed
+  by the F3 and F4 commands.  For example, mp3 files are
+  not always played if filename is incorrect.
+
+
+  

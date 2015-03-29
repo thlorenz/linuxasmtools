@@ -1,0 +1,38 @@
+
+----------------------------------------------------------------------------
+126 sigprocmask     - Sets up signal masks
+----------------------------------------------------------------------------
+  mov  eax,126
+  mov  ebx,how  <- 0=block (or)  1=unblock (and)  2=set (store)
+  mov  ecx,set  <- pointer to dword with bit mask  (dd 10000h) = signal 17 CHLD
+  mov  edx,oldset <- if non-zero, it is pointer to save dword for old bit mask
+  int  80h
+
+  The "how" field is:
+
+    0  SIG_BLOCK - The "set" bits are added (or) with current mask
+
+    1  SIG_UNBLOCK - The "set" bits are removed from current mask
+
+    2  SIG_SETMASK - The "set" bits are store into current blocked signals
+                     and replaces previous contents.
+
+  If  oldset is non-null, the previous value of the signal mask is stored
+  in oldset.
+
+RETURN VALUE
+       The functions sigaction, sigprocmask, and sigpending return 0  on  suc-
+       cess  and -1 on error.  The function sigsuspend always returns -1, nor-
+       mally with the error EINTR.
+
+
+ERRORS
+       EINVAL An invalid signal was specified.  This will also be generated if
+       (22)   an  attempt is made to change the action for SIGKILL or SIGSTOP,
+              which cannot be caught.
+
+       EFAULT act, oldact, set, oldset or mask point to memory which is not  a
+       (14)      valid part of the process address space.
+
+       EINTR (4)  System call was interrupted.
+

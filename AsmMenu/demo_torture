@@ -1,0 +1,24 @@
+#!/bin/bash
+./asmmenu $0
+echo "button returned code "$?
+exit
+#menu definition follows
+buttonsize: 1,1
+header: "buttons can be any"
+header: "size."
+header: "buttons can be"
+header: "anywhere in grid"
+header: ""
+	h		h
+
+	h		h			i
+
+	h		h
+
+	h	h	h			i
+
+	h		h			i
+
+	h		h			i
+
+	h		h			i

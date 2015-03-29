@@ -1,0 +1,159 @@
+AsmEdit tutorial
+  Press ESC then the "w" key twice to
+  begin.  From now on keys needed
+  will be shown as:
+
+     ESC w w
+
+  The screen should now be split
+  vertically with a help screen
+  on the right.
+
+  This tutorial screen can be
+  scrolled up or down with the
+  arrow keys.
+
+Menu's and Mice
+
+  Asmedit controls can work in
+  three different styles: keyboard
+  commands, mouse clicks, or a
+  hybrid menu using upper case
+  keys.  Next we will explore the
+  three styles.
+
+  The bottom line has edit status.
+  Press the space bar a few times a
+  watch this line.
+
+    <space>  <space>
+
+  The menu line now shows key hints
+  and provides mouse buttons.  Now
+  press ESC to go back to the status
+  line, then shift-i
+
+    ESC  shift-i
+
+  ESC restores the status line and
+  shift says to display menu mode
+  after executing the "i" command.
+  The "i" command enters edit mode
+  for inserting data.
+
+  Warning.. this is an active edit
+  session and anything typed will
+  be entered into this tutorial.
+
+  Press the spacebar to insert a
+  space at the cursor and then press
+  backspace to erase this space.
+
+    <space>  <backspace>
+
+  The status bar now shows the following
+  information:
+  INS - we are in insert mode
+  xxline - cursor line number
+  xxcol - cursor column
+  xxhex - character under cursor
+  filex - file 1 or file 2
+  *     - file has been modified
+  xxxx  - file name
+  f1 - help 
+
+  press ESC to leave edit mode and
+  restore command mode.  Notice the
+  CMD indicator on status line.
+
+    ESC
+
+  The rest of this tutorial will
+  use the default keyboard style
+  of command entry.
+
+Windows and files
+
+  AsmEdit has three window styles and
+  can work on two files at the same
+  time.  The "w" key toggles window
+  styles and the other "o" key toggles
+  focus to the other file.
+
+  press "w" a few times and watch window
+  styles.
+
+      w w w
+
+  press "o" to switch to other file in
+  the other window.  Then press "o" again
+  to return here.
+
+     o  o
+
+  summary - with the keys covered it is
+  possible to switch windows, scroll around
+  and enter the edit mode.  This is enough
+  for simple editing jobs.
+
+  next we will explore using AsmEdit
+  IDE functions.
+
+Function Keys
+
+  The function keys work in all modes
+  and can be pressed at any time.  For
+  example, you can exit now by pressing
+  f10.  
+
+  Display the function key menu by
+  pressing the space bar until it
+  appears.
+
+     <space>  <space>
+
+  The function keys f1 - f9 can be
+  redefined and the menu shows a
+  default state.  The default state
+  is to setup a simple IDE for assembler
+  programs.  f3 calls a "make" file
+  and f4 kicks off a debugger.  The
+  defaults can be changed by editing
+  control scripts or by where scripts
+  are placed.  Scripts found in the
+  current directory are executed before
+  scripts found elsewhere.
+
+  Most of the function keys call
+  external programs and only work if
+  the needed program is installed.
+  The planning program comes
+  with AsmEdit and should be here,
+  so press f2 to see a simple project
+  planner.
+
+    f2
+
+Summary
+
+  The commands covered allows simple
+  programs to be edited and then
+  compiled.  Errors will be placed in
+  a window on the right and the cursor
+  restored after compile or debug.
+
+  In other words, a simple IDE for
+  assembler.
+
+  AsmEdit is an old editor and has
+  many additional commands.  The
+  manual describes most of the
+  features and might be a good place
+  to visit next.
+
+  The mouse can be used to move the
+  cursor or traverse menu's.  click
+  on the status bar to pop up the
+  menu's.
+
+  end of tutorial - f10 to exit  

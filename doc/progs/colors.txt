@@ -1,0 +1,20 @@
+
+ NAME
+
+    colors - display default AsmLibx colors
+
+ INPUTS
+
+    none
+
+ OUTPUT:
+
+    colors are display in tabular form
+              
+ NOTES
+   AsmLibx has 18 built in colors that can be
+   specified by number.  The colors and their
+   number are displayed here.
+
+   source file: /demo/colors.asm
+

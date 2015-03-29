@@ -1,0 +1,31 @@
+These are generic install instructions for the
+AsmIDE family of programs.
+
+AsmIDE programs only run on x86 Linux systems
+and do not need to be compiled first.  Install
+by typing:
+
+   make install
+
+The AsmMgr and AsmEdit include an additional
+archive called AsmFunc.  This archive will also
+need to be entered and a "make install" typed.
+
+Install will try to put all programs into the
+current users home directory.  If a /bin directory
+is found, it will be used for executable which
+need to be reached by $PATH.
+
+Data files and support files will be placed at
+/.asmide in users home directory.
+
+If a compile is desired, simply type make.  All
+this should work without problems if the following
+programs are available:
+
+  bash - or possibly sh needed by makefile
+  sed - stream editor (almost always available)
+  make - GNU make needed for install,compile
+  install - needed to copy programs
+  nasm - (optional), needed by compile
+  asmpub - (optional) used by AsmLib "make doc" option

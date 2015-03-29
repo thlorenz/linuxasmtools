@@ -1,0 +1,24 @@
+
+----------------------------------------------------------------------------
+119 sigreturn       - return from signal handler and cleanup stack frame
+----------------------------------------------------------------------------
+  mov  eax,119
+  int  80h
+
+  When the Linux kernel creates the stack frame for a signal handler, a
+  call to sigreturn is inserted into the stack frame so that the the
+  signal handler will call sigreturn upon return. This inserted call to
+  sigreturn cleans up the stack so that the process can restart from where
+  it was interrupted by the signal.
+
+ return value --
+  sigreturn never returns.
+
+  WARNING
+  The sigreturn call is used by the kernel to implement signal handlers.
+  It should never be called directly. Better yet, the specific use of the
+  __unused argument varies depending on the architecture.
+
+ see also --
+  kill, signal
+

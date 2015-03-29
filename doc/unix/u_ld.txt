@@ -1,0 +1,22 @@
+
+ ld - GNU linker
+
+The linker converts objects to executables.  It has
+a large number of options, but the general format is:
+
+  ld <input-obj> flags -o <output-file> <libraries/objects>
+
+To link a program called "foo"
+
+  ld foo.o -o foo 
+
+Libraries can be appended with full path or additional
+object files in the current directory.  Another useful
+control is "-e".  This sets the entry address if the
+standard "_start" isn't used.  For example:
+
+  ld foo.o -e _start -o foo /usr/lib/asmlib.a
+
+
+
+  

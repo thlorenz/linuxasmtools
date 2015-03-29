@@ -1,0 +1,3 @@
+#! /bin/bash
+cp -f x.base x
+insight_ test

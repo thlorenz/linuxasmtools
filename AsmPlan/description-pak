@@ -1,0 +1,6 @@
+simple todo and cyclic event planner
+asmplan is a console/X terminal utility
+that keeps a database of events or todo's.
+It is designed for quick recycling of
+reminders and ease of use.
+http://linuxasmtools.net

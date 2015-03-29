@@ -1,0 +1,22 @@
+#!/bin/bash
+./asmmenu $0
+echo "button returned code "$?
+exit
+#menu definition follows
+buttonsize: 3,8
+color1:
+header: "      demo button lists"
+header: "     3 lines per button"
+header: ""
+header: "  list1     list2     list3"
+	button	button	button
+	  1	  2	  3
+	retn 11	retn 12	rtn 13
+
+	button	button	button
+	  4	  5	  6
+	retn 21	retn 22	rtn 23
+
+	button	button	button
+	  7	  8	  9
+	retn 31	retn 32	rtn 33

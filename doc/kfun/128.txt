@@ -1,0 +1,67 @@
+
+
+----------------------------------------------------------------------------
+ 128 init_module   - initialize a loadable module entry
+----------------------------------------------------------------------------
+  mov  eax,128
+  mov  ebx,Name   ;ptr to name
+  mov  ecx,image  ;ptr to module image
+  int  80h
+
+       Note: this description needs updating.
+
+       init_module loads the relocated module image into kernel space and runs
+       the module's init function.
+
+       The module image begins with a module structure and is followed by code
+       and data as appropriate.  The module structure is defined as follows:
+
+              struct module
+                unsigned long size_of_struct;
+                struct module *next;
+                const char *name;
+                unsigned long size;
+                long usecount;
+                unsigned long flags;
+                unsigned int nsyms;
+                unsigned int ndeps;
+                struct module_symbol *syms;
+                struct module_ref *deps;
+                struct module_ref *refs;
+                int (*init)(void);
+                void (*cleanup)(void);
+                const struct exception_table_entry *ex_table_start;
+                const struct exception_table_entry *ex_table_end;
+              #ifdef __alpha__
+                unsigned long gp;
+              #endif
+              };
+
+       See /linux/module.h for structure expansion
+
+       All  of  the  pointer  fields, with the exception of next and refs, are
+       expected to point within the module body and be initialized  as  appro-
+       priate for kernel space, i.e. relocated with the rest of the module.
+
+       This system call is only open to the superuser.
+
+RETURN VALUE
+       On  success,  zero  is returned.  On error a negative code is returned
+
+ERRORS
+       EPERM  The user is not the superuser.
+
+       ENOENT No module by that name exists.
+
+       EINVAL Some image slot filled in incorrectly, image->name does not cor-
+              respond to the original module name, some image->deps entry does
+              not correspond to a loaded module, or some other similar  incon-
+              sistency.
+
+       EBUSY  The module's initialization routine failed.
+
+       EFAULT name or image is outside the program's accessible address space.
+
+SEE ALSO
+       create_module, delete_module, query_module.
+

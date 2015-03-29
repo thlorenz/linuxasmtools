@@ -1,0 +1,28 @@
+
+----------------------------------------------------------------------------
+ 60 umask          - set file creation mask
+----------------------------------------------------------------------------
+  mov  eax,060
+  mov  ebx,mask
+  int  80h
+
+       umask sets the umask to mask & 0777q.
+
+       The  umask  is  used  by  "open"  to set initial file permissions on a
+       newly-created file.  Specifically, permissions in the umask are  turned
+       off  from  the  mode  argument  to "open" (so, for example, the common
+       umask default value of 022 results in new files being created with per-
+       missions  0666  &  ~022  = 0644 = rw-r--r-- in the usual case where the
+       mode is specified as 0666).
+
+RETURN VALUE
+       This system call always succeeds and the previous value of the mask  is
+       returned.
+
+CONFORMING TO
+       SVr4, SVID, POSIX, X/OPEN, BSD 4.3
+
+SEE ALSO
+       creat, open
+
+

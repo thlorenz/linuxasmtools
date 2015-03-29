@@ -1,0 +1,79 @@
+Important Note
+--------------
+
+It is not necessary to compile AsmTool programs, but
+if you want to:
+
+Nasm version 2.0 will not compile AsmTools because
+the "-f elf"  parameter defaults to 64 bit mode.
+We want "-f elf32" or 32 bit mode.  This will be
+changed in Nasm's next version.  The easy solution
+is to use another version of nasm.
+
+------------------------------------------------
+
+These are generic install instructions for the
+AsmTool family of programs.
+
+AsmTool programs only run on x86 Linux systems
+and do not need to be compiled first.  If you
+have a rpm or deb file, use the rpm program
+or dpkg program to Install.
+
+from within a tar.gz directory type:
+
+   make install
+
+If a compile is desired, simply type make.  All
+this should work without problems if the following
+programs are available:
+
+  asmlib - library included in AsmTools
+  asmlibx - x library, only used by AsmBug
+
+  bash - or possibly sh needed by makefile
+  sed - stream editor (almost always available)
+  make - GNU make needed for install,compile
+  install - needed to copy programs
+  strip - needed by install to remove debug info.
+  nasm -  needed by compile
+  asmpub - (optional) used by AsmLib "make doc" option
+
+The Makefile also has options for uninstall, documentation,
+and cleanup.  
+
+Details
+-------
+
+AsmTool programs each have a separate makefile and can
+be installed individually.  It is also possilbe to
+obtain the complete source tree and compile everything.
+
+The easiest way to work with AsmTools is to obtain the
+complete package because this includes the library
+that is needed for compiles, and all the documentation
+that is make available by AsmRef.
+
+The common makefile options are:
+
+  make clean - clean up the source tree
+  make       - make executables
+  make doc   - make documentation
+  make release - create a tar.gz file
+  make install - run as "root" to install
+  make uninstall - run as "root" to uninstall
+
+Limitations
+-----------
+
+The bookmarks in AsmFile and AsmMgr are lost with a new install.
+
+The file and directory structure is assumed to use short file names
+without spaces inside the name.  For example a directory name could b:
+  
+  "This is a very long directory name"
+
+The above name would work with some AsmTool programs but not others.
+Also, long names would soon overflow the internal buffers.  Internal
+buffers expect directory paths and names to be less than 200 bytes.
+

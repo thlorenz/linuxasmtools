@@ -1,0 +1,33 @@
+
+----------------------------------------------------------------------------
+ 65 getpgrp        - get current process group id
+----------------------------------------------------------------------------
+  mov  eax,065
+  int  80h
+
+       getpgrp()  is equivalent to getpgid(0).  Each process group
+       is a member of a session and each process is a member of the session of
+       which its process group is a member.
+
+       Process  groups  are used for distribution of signals, and by terminals
+       to arbitrate requests for their input: Processes  that  have  the  same
+       process group as the terminal are foreground and may read, while others
+       will block with a signal if they attempt to read.  These calls are thus
+       used  by programs such as csh(1) to create process groups in implement-
+       ing job control.   The  TIOCGPGRP  and  TIOCSPGRP  calls  described  in
+       termios(3)  are used to get/set the process group of the control termi-
+       nal.
+
+       If a session has a controlling terminal, CLOCAL is not set and a hangup
+       occurs,  then  the  session  leader  is  sent a SIGHUP.  If the session
+       leader exits, the SIGHUP signal will be sent to  each  process  in  the
+       foreground process group of the controlling terminal.
+
+       If  the  exit of the process causes a process group to become orphaned,
+       and if any member of the newly-orphaned process group is stopped,  then
+       a  SIGHUP  signal  followed  by  a  SIGCONT signal will be sent to each
+       process in the newly-orphaned process group.
+
+RETURN VALUE
+       getpgrp always returns the current process group.
+

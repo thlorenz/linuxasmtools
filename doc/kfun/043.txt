@@ -1,0 +1,60 @@
+
+----------------------------------------------------------------------------
+ 43 times          - get process times
+----------------------------------------------------------------------------
+  mov  eax,043
+  mov  ebx,buf  ;!!! (see note)
+  int  80h
+
+  note: It appears that setting ebx to buffer is incorrect.  EBX appears to
+        be ignored.  The return value is in EAX and is time since boot in ticks.
+        The following description is widely reported but wrong.
+
+
+       The times() function stores the current process times in the struct tms
+       that buf points to.  The struct tms is as defined in <sys/times.h>:
+
+       struct tms
+              resd 1 ;user time
+              resd 1 ;system time
+              resd 1 ;user (utime) time of children
+              resd 1 ;system (stime) time of children
+       endstruc
+
+       The "user" field contains the CPU time spent executing instructions
+       of  the  calling  process.   The  "system" field contains the CPU time
+       spent in the system while executing tasks on behalf of the calling
+       process.   The  utime  field contains the sum of the children user time.
+       The stime field contains the sum of all children system times.
+
+       Times for terminated children (and their descendants) is  added  in  at
+       the  moment wait(2) or waitpid(2) returns their process ID. In particu-
+       lar, times of grandchildren that the children  did  not  wait  for  are
+       never seen.
+
+       All times reported are in clock ticks.
+
+RETURN VALUE
+       The  function times returns the number of clock ticks that have elapsed
+       since an arbitrary point in the past.  For  Linux  this  point  is  the
+       moment  the system was booted.  This return value may overflow the pos-
+       sible range of type clock_t.  On error, a negative code is returned
+
+NOTES
+       The number of clock ticks per second can be obtained using
+              sysconf(_SC_CLK_TCK);
+       In  POSIX-1996 the symbol CLK_TCK (defined in <time.h>) is mentioned as
+       obsolescent. It is obsolete now.
+
+       On Linux, if the disposition of SIGCHLD is  set  to  SIG_IGN  then  the
+       times   of  terminated  children  are  automatically  included  in  the
+       "user" and "system" fields, although POSIX 1003.1-2001 says  that
+       this should only happen if the calling process wait()s on its children.
+
+       Note that clock(3) returns values of type clock_t that are not measured
+       in clock ticks but in CLOCKS_PER_SEC.
+
+SEE ALSO
+       time, getrusage, wait, clock, sysconf
+
+

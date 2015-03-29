@@ -1,0 +1,319 @@
+  extern ascii_to_dword
+  extern lib_buf
+  extern process_search
+  extern str_end
+  extern file_access
+
+  [section .text]
+
+;----------------  m_setup.in ------------------------------
+
+keyboard_setup:
+  mov	eax,work_buf
+  call	terminfo_read
+  mov	esi,key_decode_tables
+ks_loop:
+  lodsd
+  or	eax,eax
+  jz	ks_exit
+  push	esi
+  call	terminfo_decode_setup
+  pop	esi
+  jmp	short ks_loop
+ks_exit:
+  ret
+
+
+;termios save/restore routines ----------------------
+
+save_our_termios:
+  mov	edx,our_termios
+  call	read_termios_0		;save our termios
+  ret
+
+save_app_termios:
+  mov	edx,app_termios
+  call	read_termios_0
+  ret
+
+restore_our_termios:
+  mov	edx,our_termios
+  call	output_termios_0	;restore termios
+  ret
+
+restore_app_termios:
+  mov	edx,app_termios
+  call	output_termios_0	;restore termios
+  ret
+
+;-------------------------------------------------------------------------
+  [section .data]
+
+app_termios:
+c_iflag	dd	0
+c_oflag dd	0
+c_cflag dd	0
+c_lflag dd	0
+c_line	dd	0
+cc_c	times 19 db 0
+
+our_termios:
+x_iflag	dd	0
+x_oflag dd	0
+x_cflag dd	0
+x_lflag dd	0
+x_line	dd	0
+xc_c	times 19 db 0
+
+  [section .text]
+;----------------------------------------------------------
+;input:
+; parse states:  asmbug                      <- use history data,verify history data present
+;                asmbug <prog> <parmaters>   <- stuff in history,clear existing asmdis files
+;                asmbug -a <prog>            <- set flag and lookup pid for program
+;                asmbug -h                   <- show help and exit
+;output: sign flag set if error
+parse:
+;check if any parameters
+  mov	esi,esp
+  lodsd			;clear return address from stack
+  lodsd			;get parameter count, 1=none
+
+  push	eax		;save parm count
+  lodsd			;get our executable name ptr
+  pop	eax
+
+  dec	eax
+  jnz	pi_10		;jmp if parameter entered
+  or	eax,-1
+  jmp	pi_exit		;error jump, no parameters
+;get parameters
+pi_10:
+pi_sw_lp:
+  lodsd			;eax=ptr to user parameter
+  or	eax,eax
+  jz	pi_exit		;exit if all parameters processed
+pi_12:
+  cmp	word [eax],'-a'
+  jne	pi_target
+  call	attach_setup
+  jmp	short pi_exit
+pi_target:
+  call	get_target
+  js	pi_exit
+  mov	edi,LastTargetParm
+pi_parm_lp:
+  lodsd			;get parameter ptr
+  or	eax,eax
+  jz	pi_exit2	;exit if no parameters
+  push	esi
+  mov	esi,eax
+  call	str_move
+  mov	al,' '
+  stosb
+  pop	esi		;restore stack ptr
+  jmp	short pi_parm_lp
+pi_exit2:
+  xor	eax,eax
+  stosd			;zero end of parmaters
+pi_exit:
+  or	eax,eax
+  ret
+
+;-------------------------------------------------------------
+;parse filename if present, get pid of target
+; eax=ptr to parameter
+; esi=ptr to stack ptrs 
+attach_setup:
+  lodsd			;get next parameter
+  call	get_target
+  js	as_exit0	;exit if error
+  mov	byte [parse_attach],1
+;find pid of file at LastTarget
+  mov	esi,LastTarget
+  cmp	byte [esi],'/'
+  jne	as_40		;jmp if not full path
+  call	str_end
+as_10:
+  dec	esi
+  cmp	byte [esi],'/'
+  jne	as_10		;loop till prior '/' found
+  inc	esi		;move to start of name
+;setup to search /proc
+as_40:
+  push	esi
+  mov	eax,temp_buf_size
+  call	m_allocate	;allocate buffer to read files
+  js	as_exit2
+  mov	[temp_buf_ptr],eax
+  mov	ebx,temp_buf_size
+  pop	ecx		;get match string
+  call	process_search	;find process
+  jz	as_exit0	;jmp if not found
+  js	as_exit0	;jmp if not found
+;search for pid
+  mov	esi,eax		;get buf ptr
+  mov	ecx,100		;max serach length
+as_50:
+  inc	esi
+  cmp	[esi],dword 'Pid:'
+  je	as_60		;jmp if "Pid:" found
+  loop	as_50		;keep looking
+  jmp	short as_exit0	;error exit
+;we have found string "Pid:"
+as_60:
+  add	esi,5		;move past "Pid:"
+  call	ascii_to_dword
+  mov	[attach_pid],ecx
+  xor	eax,eax
+  jmp	short as_exit1 
+as_exit0:
+  mov	eax,-1
+as_exit1:
+  push	eax
+  mov	eax,[temp_buf_ptr]
+  call	m_release
+  pop	eax
+as_exit2:
+  ret  
+;-------------------------------------------------------------
+; parse target filename,check if file
+; exists, any other parsed entry is error.
+; eax=ptr to parameter
+; esi=ptr to stack ptrs 
+get_target:
+  mov	[gt_name_ptr],eax
+  push	esi		;save stack ptr
+
+;is full path of file provided?
+gt_10:
+  cmp	byte [eax],'/'
+  jne	gt_20			;jmp if not full path
+  mov	esi,eax
+  mov	edi,lib_buf+200
+  call	str_move
+  jmp	short gt_30  
+;is file in local directory
+gt_20:
+  call	dir_current		;sets ebx=dir ptr (lib_buf)
+  mov	esi,ebx
+  mov	edi,lib_buf+200		;filename build area
+  call	str_move
+  mov	al,'/'
+  stosb
+  mov	esi,[gt_name_ptr]
+  call	str_move
+gt_30:
+  mov	ebx,lib_buf+200
+  mov	ecx,1			;check if executable
+  call	file_access
+  or	eax,eax
+  jz	gt_file_ok		;jmp if access ok
+;file not in local directory, check path
+  mov	ebx,[enviro_ptrs]
+  mov	ebp,[gt_name_ptr]
+  call	env_exec
+  jc	gt_fail			;jmp if file not found
+;move path to remote file
+  mov	esi,ebx
+  mov	edi,LastTarget
+  call	str_move
+  jmp	short gt_exit1
+;file found in local dir, move name
+gt_file_ok:
+;  mov	esi,[gt_name_ptr]
+  mov	esi,lib_buf + 200
+  mov	edi,LastTarget
+  call	str_move
+  jmp	short gt_exit1
+gt_fail:
+;  mov	eax,err1
+;  call	show_error
+  mov	eax,-1
+  jmp	short gt_exit
+gt_exit1:
+  xor	eax,eax
+gt_exit:
+  or	eax,eax
+  pop	esi		;restore esi
+  ret
+  
+;-----------
+  [section .data]
+gt_name_ptr: dd 0 ;ptr to input file name
+
+LastTargetParm	times 100 db 0
+LastTarget	times 200 db 0
+parse_attach	db	0
+attach_pid	dd	0
+
+temp_buf_size	equ	100000
+temp_buf_ptr	dd	0
+
+;----------------------------------------------------------
+  
+  [section .text]  
+
+display_setup:
+  call	read_window_size
+  mov	eax,[crt_rows]
+  mov	[mini_win_end_line],eax
+  sub	eax,11
+  mov	[app_win_last_line],eax
+  inc	eax
+  mov	[mini_win_top_line],eax
+  inc	eax
+  mov	[mini_win_top_line2],eax
+
+  mov	eax,[crt_columns]
+  sub	eax,24
+  mov	[reg_win_start_col],eax
+  dec	eax
+  mov	[dis_win_end_col],eax
+;mem_window_setup:
+  mov	eax,[app_eip]	;set initial memory window adr
+  mov	[mem_top_adr],eax
+;dis_window_setup:
+  mov	al,[mini_win_top_line]
+  mov	[select_line#],al
+
+  mov	eax,[app_eip]
+  mov	[dis_win_top],eax
+
+  mov	[symbol_process],dword symbol_handler ;sym lookup
+;set default cursor for app
+  mov	ax,0101h
+  call	move_cursor
+  call	save_cursor
+;setup for memory window
+
+  mov	eax,[_elf_phys_code_end]
+  mov	[MemWinAdr],eax
+  mov	eax,[app_esp]
+  mov	[stack_address],eax
+
+  mov	ebp,_sheader_ptrs
+slp1:
+  mov	esi,[ebp]		;get sheader ptr
+  or	esi,esi
+  jz	setup_exit
+  cmp	[esi+sect.sh_name],dword '.dat'
+  je	save_it
+  add	ebp,4
+  jmp	slp1
+save_it:
+  mov	ebx,[esi+sect.sh_addr]
+  mov	[MemWinAdr],ebx
+
+setup_exit:
+  ret
+
+
+shrink_app_win:
+  mov	al,[app_win_last_line]
+  mov	ah,[crt_columns]
+;  xor	ebx,ebx		;fd=stdin
+  mov	ebx,[master_fd]
+  call	set_screen_size
+  mov	[winch_expected],byte 1
+  ret

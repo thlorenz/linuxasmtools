@@ -1,0 +1,568 @@
+  ** kernel functions grouped by type **
+--------------------------------------------------------------------
+<020> access   20 getpid                 - process identification
+<023> access   23 setuid                 - set user identity
+<024> access   24 getuid                 - get user identity 
+<046> access   46 setgid                 - set group identity
+<047> access   47 getgid                 - get group identity
+<049> access   49 geteuid                - get user identity
+<050> access   50 getegid                - get group identity
+<057> access   57 setpgid                - set process group 
+<064> access   64 getppid                - get process identification
+<065> access   65 getpgrp                - set/get process group
+<066> access   66 setsid                 - creates a session and sets the process group ID
+<070> access   70 setreuid               - set real and/or effective user ID
+<071> access   71 setregid               - set real and / or effective group ID
+<000> access   80 getgroups              - get list of supplementary group IDs
+<081> access   81 setgroups              - set list of supplementary group IDs
+<132> access  132 getpgid                - set/get process group
+<138> access  138 setfsuid               - set user identity used for file system checks
+<139> access  139 setfsgid               - set group identity used for file system checks
+<147> access  147 getsid                 - get session ID
+<164> access  164 setresuid              - set real user ID
+<165> access  165 getresuid              - get real, effective and saved user or group ID
+<170> access  170 setresgid              - set real,effective,saved group ID
+<171> access  171 getresgid              - get real/effective/saved group ID
+<003> file      3 read                   - read from a file descriptor
+<004> file      4 write                  - write   - write to a file descriptor
+<005> file      5 open                   - open and possibly create a file or device
+<006> file      6 close                  - close a file descriptor
+<008> file      8 creat                  - create a file
+<009> file      9 link                   - make a new name for a file
+<010> file     10 unlink                 - delete a name and possibly the file it refers to
+<012> file     12 chdir                  - change working directory
+<014> file     14 mknod                  - create a special or ordinary file
+<015> file     15 chmod                  - change permissions of a file
+<016> file     16 lchown                 - change ownership of a file
+<019> file     19 lseek                  - reposition read/write file offset
+<021> file     21 mount                  - mount and unmount filesystems
+<022> file     22 umount                 - mount and unmount filesystemsx 
+<030> file     30 utime                  - chg access and/or modification times
+<033> file     33 access                 - check user's permissions for a file
+<036> file     36 sync                   - commit buffer cache to disk
+<038> file     38 rename                 - change the name or location of a file
+<039> file     39 mkdir                  - create a directory
+<040> file     40 rmdir                  - delete a directory
+<041> file     41 dup                    - duplicate a file descriptor
+<042> file     42 pipe                   - create pipe
+<052> file     52 umount2                - mount and unmount filesystemsx
+<055> file     55 fcntl                  - manipulate file descriptor
+<060> file     60 umask                  - set file creation mask
+<061> file     61 chroot                 - change root directory
+<062> file     62 ustat                  - get file system statistics 
+<063> file     63 dup2                   - duplicate a file descriptor
+<083> file     83 symlink                - make a new name for a file
+<085> file     85 readlink               - read value of a symbolic link
+<087> file     87 swapon                 - start/stop swapping to file/device
+<089> file     89 readdir                - read directory entry
+<092> file     92 truncate               - truncate file to specified length 
+<093> file     93 ftruncate              - truncate file to specified length 
+<094> file     94 fchmod                 - change permissions of a file
+<095> file     95 fchown                 - change ownership of a file 
+<099> file     99 statfs                 - get file system statistics
+<100> file    100 fstatfs                - get file system statistics
+<106> file    106 stat                   - get file status
+<107> file    107 lstat                  - get file status
+<108> file    108 fstat                  - get file status
+<115> file    115 swapoff                - stop swapping to file/device
+<118> file    118 fsync                  - synchronize  a file's complete in-core state with
+<133> file    133 fchdir                 - change working directory
+<140> file    140 llseek                 - reposition read/write file offset
+<141> file    141 getdents               - get directory entries
+<143> file    143 flock                  - apply or remove an advisory lock on an open file
+<145> file    145 readv                  - read data into multiple buffers
+<146> file    146 writev                 - read or write a vector
+<148> file    148 fdatasync              - synchronize a file's in-core data with that on disk
+<182> file    182 chown                  - change ownership of a file
+<183> file    183 getcwd                 - get current working directory
+<187> file    187 sendfile               - transfer data between file descriptors
+<054> ioctl    54 ioctl                  - control device
+<045> memory   45 brk                    - change data segment size
+<090> memory   90 mmap                   - map or unmap files or devices into memory
+<091> memory   91 munmap                 - unmap files or devices into memory
+<125> memory  125 mprotect               - control allowable accesses to a region of memory
+<144> memory  144 msync                  - synchronize a file with a memory map
+<150> memory  150 mlock                  - disable paging for some parts of memory 
+<151> memory  151 munlock                - reenable paging for some parts of memory
+<152> memory  152 mlockall               - disable paging for calling process
+<153> memory  153 munlockall             - reenable paging for calling process
+<163> memory  163 mremap                 - re-map a virtual memory address
+<002> process   2 fork                   - create a child process 
+<011> process  11 execve                 - execute program
+<026> process  26 ptrace                 - process trace
+<034> process  34 nice                   - change process priority
+<051> process  51 acct                   - switch process accounting on or off
+<096> process  96 getpriority            - get program scheduling priority
+<097> process  97 setpriority            - set program scheduling priority
+<111> process 111 vhangup                - virtually hangup the current tty
+<112> process 112 idle                   - make process 0 idle
+<117> process 117 ipc                    - System V IPC system calls
+<120> process 120 clone                  - create a child process
+<128> process 128 init_module            - initialize a loadable module entry
+<136> process 136 personality            - set the process execution domain
+<142> process 142 newselect              - sync I/O multiplexing
+<172> process 172 prctl                  - operations on a process
+<184> process 184 capget                 - get process capabilities
+<185> process 185 capset                 - set process capabilities
+<190> process 190 vfork                  - create a child process and block parent
+<027> signal   27 alarm                  - set an alarm clock for delivery of a signal
+<029> signal   29 pause                  - wait for signal
+<037> signal   37 kill                   - send signal to a process
+<048> signal   48 signal                 - ANSI C signal handling
+<067> signal   67 sigaction              - POSIX signal handling
+<068> signal   68 sgetmask               - 
+<069> signal   69 ssetmask               - 
+<072> signal   72 sigsuspend             - POSIX signal handling functionsx
+<073> signal   73 sigpending             - POSIX signal handling functions
+<119> signal  119 sigreturn              - return from signal handler and cleanup stack frame
+<126> signal  126 sigprocmask            - POSIX signal handling functions
+<173> signal  173 rt_sigreturn           - real time sigreturn
+<174> signal  174 rt_sigaction           - setup rt sighnd (RTL)
+<175> signal  175 rt_sigprocmask         - real time sigprocmask
+<176> signal  176 rt_sigpending          - real time sigaction
+<177> signal  177 rt_sigtimedwait        - real time sigtimedwait
+<178> signal  178 rt_sigqueueinfo        - real time sigqueueingo
+<179> signal  179 rt_sigsuspend          - real time sigsuspend
+<186> signal  186 sigaltstack            - get or set alternate signal stack content
+<058> system   58 ulimit                 - UNIMPLEMENTED
+<074> system   74 sethostname            - set host name 
+<075> system   75 setrlimit              - set resource limits and usage
+<076> system   76 getrlimit              - get resource limits and usage
+<077> system   77 getrusage              - get resource limits and usage
+<086> system   86 uselib                 - select shared library
+<088> system   88 reboot                 - reboot or enable/disable Ctrl-Alt-Del
+<101> system  101 ioperm                 - set port input/output permissions
+<102> system  102 socketcall             - socket system calls
+<103> system  103 syslog                 - read and/or clear kernel message ring buffer
+<110> system  110 iopl                   - iopl - change I/O privilege level
+<113> system  113 vm86old                - enter virtual 8086 mode
+<116> system  116 sysinfo                - returns information on overall system statistics
+<121> system  121 setdomainname          - get/set domain name
+<122> system  122 uname                  - get name and information about current kernel
+<123> system  123 modify_ldt             - get or set ldt
+<127> system  127 create_module          - create a loadable module entry
+<129> system  129 delete_module          - delete a loadable module entry 
+<130> system  130 get_kernel_syms        - retrieve exported kernel and module symbols 
+<131> system  131 quotactl               - manipulate disk quotas
+<134> system  134 bdflush                - start, flush, or tune buffer-dirty-flush daemon
+<149> system  149 sysctl                 - read/write system parameters
+<154> system  154 sched_setparam         - get scheduling parameters
+<155> system  155 sched_getparam         - get scheduling parameters
+<156> system  156 sched_setscheduler     - get scheduling algo-
+<157> system  157 sched_getscheduler     - get scheduling algo/param
+<158> system  158 sched_yield            - yield the processor
+<159> system  159 sched_get_priority_max - get static priority
+<160> system  160 sched_get_priority_min - get static priority rng 
+<161> system  161 sched_rr_get_interval  - get  the  SCHED_RR  interval for  the named
+<166> system  166 vm86                   - enter virtual 8086 mode   -166-
+<167> system  167 query_module           - query the kernel for bits pertaining to modules
+<169> system  169 nfsservctl             - syscall interface to kernel nfs daemon
+<188> system  188 getpmsg                - UNIMPLEMENTED
+<241> system  241 sched_setaffinity      - get a process's CPU
+<007> timing    7 waitpid                - wait for process termination  
+<013> timing   13 time                   - get time in seconds
+<025> timing   25 stime                  - set time
+<043> timing   43 times                  - get process times
+<078> timing   78 gettimeofday           - get time
+<079> timing   79 settimeofday           - set time
+<082> timing   82 select                 - synchronous I/O
+<098> timing   98 profil                 - UNIMPLEMENTED execution time profile
+<104> timing  104 setitimer              - set an interval timer
+<105> timing  105 getitimer              - get  value of an interval timer
+<114> timing  114 wait4                  - wait for process termination, BSD style
+<124> timing  124 adjtimex               - adjtimex   - tune kernel clock
+<162> timing  162 nanosleep              - pause execution for a specified time
+<168> timing  168 poll                   - wait for some event on a file descriptor
+<017> undoc    17 break                  - UNIMPLEMENTED
+<018> undoc    18 oldstat                - obsolete
+<028> undoc    28 oldfstat               - obsolete DO NOT USE
+<031> undoc    31 stty                   - UNIMPLEMENTED
+<032> undoc    32 gtty                   - UNIMPLEMENTED
+<035> undoc    35 ftime                  - UNIMPLEMENTED return date and time
+<044> undoc    44 prof                   - UNIMPLEMENTED
+<053> undoc    53 lock                   - UNIMPLEMENTED
+<056> undoc    56 mpx                    - UNIMPLEMENTED
+<059> undoc    59 oldolduname            - obsolete
+<084> undoc    84 oldlstat               - obsolete
+<109> undoc   109 olduname               - obsolete
+<135> undoc   135 sysfs                  - get file system type information
+<137> undoc   137 afs_syscall            - UNIMPLEMENTED
+<180> undoc   180 pread64                -read/write without moving file descriptor
+<181> undoc   181 pwrite64               - write to file descriptor at offset
+<189> undoc   189 putpmsg                - UNIMPLEMENTED
+<191> undoc   191 ugetrlimit             - 
+<192> undoc   192 mmap2                  - map files or devices into memory
+<193> undoc   193 truncate64             - 
+<194> undoc   194 ftruncate64            - 
+<195> undoc   195 stat64                 - 
+<196> undoc   196 lstat64                - 
+<197> undoc   197 fstat64                - 
+<198> undoc   198 lchown32               - see lchown
+<199> undoc   199 getuid32               - see getuid
+<200> undoc   200 getgid32               - see getgid
+<201> undoc   201 geteuid32              - see geteuid
+<202> undoc   202 getegid32              - see getegid
+<203> undoc   203 setreuid32             - see setreuid
+<204> undoc   204 setregid32             - see setregid
+<205> undoc   205 getgroups32            - see getgroups
+<206> undoc   206 setgroups32            - see setgroupd
+<207> undoc   207 fchown32               - see chown
+<208> undoc   208 setresuid32            - see setresuid
+<209> undoc   209 getresuid32            - 
+<210> undoc   210 setresgid32            - see setresgid
+<211> undoc   211 getresgid32            - 
+<212> undoc   212 chown32                - see chown
+<213> undoc   213 setuid32               - see setuid
+<214> undoc   214 setgid32               - see setgid
+<215> undoc   215 setfsuid32             - see setfsuit
+<216> undoc   216 setfsgid32             - see setfsgid
+<217> undoc   217 pivot_root             - change the root file system
+<218> undoc   218 mincore                - get information on whether pages are in core 
+<219> undoc   219 madvise                - give advice about use of memory
+<219> undoc   219 madvise1               - 
+<220> undoc   220 getdents64             - 
+<221> undoc   221 fcntl64                - 
+<223> undoc   223 rsbac                  - 
+<224> undoc   224 gettid                 - get thread identification
+<225> undoc   225 readahead              - Read in advance one or more pages
+<226> undoc   226 setxattr               - set an extended attribute value
+<227> undoc   227 lsetxattr              - set extended attributes
+<228> undoc   228 fsetxattr              - set extended attribute
+<229> undoc   229 getxattr               - retrieve an extended attribute value
+<230> undoc   230 lgetxattr              - get extended attribute
+<231> undoc   231 fgetxattr              - get extended attribute
+<232> undoc   232 listxattr              - list extended attribute names
+<233> undoc   233 llistxattr             - list extended attributes
+<234> undoc   234 flistxattr             - list extended attribute
+<235> undoc   235 removexattr            - remove an extended attribute
+<236> undoc   236 lremovexattr           - remove extended attributes
+<237> undoc   237 fremovexattr           - remove extended attribute
+<238> undoc   238 tkill                  - send a signal to a single process
+<239> undoc   239 sendfile64             - 
+<240> undoc   240 futex                  - Fast Userspace Locking system call
+<242> undoc   242 sched_getaffinity      - 
+<243> undoc   243 set_thread_area        - Set a Thread Local Storage (TLS) area
+<244> undoc   244 get_thread_area        - Get a Thread Local Storage (TLS) area 
+<245> undoc   245 io_setup               - io_setup   - Create an asynchronous I/O context
+<246> undoc   246 io_destroy             - Destroy an asynchronous I/O context 
+<247> undoc   247 io_getevents           - Read asynchronous I/O events from completion queue
+<248> undoc   248 io_submit              - Submit asynchronous I/O blocks for processing
+<249> undoc   249 io_cancel              - Cancel an outstanding asynchronous I/O operation
+<250> undoc   250 fadvise64              - 
+<251> undoc   251 unknown                - 
+<252> undoc   252 exit_group             - exit all process's in group
+<253> undoc   253 lookup_dcookie         - return a directory entry's path
+<254> undoc   254 epoll_create           - open an epoll file descriptor
+<255> undoc   255 epoll_ctl              - control interface for an epoll descriptor
+<256> undoc   256 epoll_wait             - wait for an I/O event on an epoll file descriptor
+<257> undoc   257 remap_file_pages       - create a non-linear file mapping
+<258> undoc   258 set_tid_address        - 
+<259> undoc   259 timer_create           - 
+<260> undoc   260 timer_settime          - 
+<261> undoc   261 timer_gettime          - 
+<262> undoc   262 timer_getoverrun       - 
+<263> undoc   263 timer_delete           - 
+<264> undoc   264 clock_settime          - set specified time
+<265> undoc   265 clock_gettime          - get specified time
+<266> undoc   266 clock_getres           - get clock precision 
+<267> undoc   267 clock_nanosleep        - process sleep
+<268> undoc   268 statfs64               - 
+<269> undoc   269 fstatfs64              - 
+<270> undoc   270 tgkill                 - 
+<271> undoc   271 utimes                 - change access and/or modification times of an inodetimes    
+<272> undoc   272 fadvise64_64           - 
+<273> undoc   273 vserver                - 
+<274> undoc   274 mbind                  - 
+<275> undoc   275 get_mempolicy          - 
+<276> undoc   276 set_mempolicy          - 
+<277> undoc   277 mq_open                - 
+<278> undoc   278 mq_unlink              - 
+<279> undoc   279 mq_timedsend           - 
+<280> undoc   280 mq_timedreceive        - 
+<281> undoc   281 mq_notify              - 
+<282> undoc   282 mq_getsetattr          - 
+<283> undoc   283 sys_kexec_load         - 
+-------------------------------------------------------
+<020>=/usr/share/doc/asmref/kfun/020.txt
+<023>=/usr/share/doc/asmref/kfun/023.txt
+<024>=/usr/share/doc/asmref/kfun/024.txt
+<046>=/usr/share/doc/asmref/kfun/046.txt
+<047>=/usr/share/doc/asmref/kfun/047.txt
+<049>=/usr/share/doc/asmref/kfun/049.txt
+<050>=/usr/share/doc/asmref/kfun/050.txt
+<057>=/usr/share/doc/asmref/kfun/057.txt
+<064>=/usr/share/doc/asmref/kfun/064.txt
+<065>=/usr/share/doc/asmref/kfun/065.txt
+<066>=/usr/share/doc/asmref/kfun/066.txt
+<070>=/usr/share/doc/asmref/kfun/070.txt
+<071>=/usr/share/doc/asmref/kfun/071.txt
+<000>=/usr/share/doc/asmref/kfun/000.txt
+<081>=/usr/share/doc/asmref/kfun/081.txt
+<132>=/usr/share/doc/asmref/kfun/132.txt
+<138>=/usr/share/doc/asmref/kfun/138.txt
+<139>=/usr/share/doc/asmref/kfun/139.txt
+<147>=/usr/share/doc/asmref/kfun/147.txt
+<164>=/usr/share/doc/asmref/kfun/164.txt
+<165>=/usr/share/doc/asmref/kfun/165.txt
+<170>=/usr/share/doc/asmref/kfun/170.txt
+<171>=/usr/share/doc/asmref/kfun/171.txt
+<003>=/usr/share/doc/asmref/kfun/003.txt
+<004>=/usr/share/doc/asmref/kfun/004.txt
+<005>=/usr/share/doc/asmref/kfun/005.txt
+<006>=/usr/share/doc/asmref/kfun/006.txt
+<008>=/usr/share/doc/asmref/kfun/008.txt
+<009>=/usr/share/doc/asmref/kfun/009.txt
+<010>=/usr/share/doc/asmref/kfun/010.txt
+<012>=/usr/share/doc/asmref/kfun/012.txt
+<014>=/usr/share/doc/asmref/kfun/014.txt
+<015>=/usr/share/doc/asmref/kfun/015.txt
+<016>=/usr/share/doc/asmref/kfun/016.txt
+<019>=/usr/share/doc/asmref/kfun/019.txt
+<021>=/usr/share/doc/asmref/kfun/021.txt
+<022>=/usr/share/doc/asmref/kfun/022.txt
+<030>=/usr/share/doc/asmref/kfun/030.txt
+<033>=/usr/share/doc/asmref/kfun/033.txt
+<036>=/usr/share/doc/asmref/kfun/036.txt
+<038>=/usr/share/doc/asmref/kfun/038.txt
+<039>=/usr/share/doc/asmref/kfun/039.txt
+<040>=/usr/share/doc/asmref/kfun/040.txt
+<041>=/usr/share/doc/asmref/kfun/041.txt
+<042>=/usr/share/doc/asmref/kfun/042.txt
+<052>=/usr/share/doc/asmref/kfun/052.txt
+<055>=/usr/share/doc/asmref/kfun/055.txt
+<060>=/usr/share/doc/asmref/kfun/060.txt
+<061>=/usr/share/doc/asmref/kfun/061.txt
+<062>=/usr/share/doc/asmref/kfun/062.txt
+<063>=/usr/share/doc/asmref/kfun/063.txt
+<083>=/usr/share/doc/asmref/kfun/083.txt
+<085>=/usr/share/doc/asmref/kfun/085.txt
+<087>=/usr/share/doc/asmref/kfun/087.txt
+<089>=/usr/share/doc/asmref/kfun/089.txt
+<092>=/usr/share/doc/asmref/kfun/092.txt
+<093>=/usr/share/doc/asmref/kfun/093.txt
+<094>=/usr/share/doc/asmref/kfun/094.txt
+<095>=/usr/share/doc/asmref/kfun/095.txt
+<099>=/usr/share/doc/asmref/kfun/099.txt
+<100>=/usr/share/doc/asmref/kfun/100.txt
+<106>=/usr/share/doc/asmref/kfun/106.txt
+<107>=/usr/share/doc/asmref/kfun/107.txt
+<108>=/usr/share/doc/asmref/kfun/108.txt
+<115>=/usr/share/doc/asmref/kfun/115.txt
+<118>=/usr/share/doc/asmref/kfun/118.txt
+<133>=/usr/share/doc/asmref/kfun/133.txt
+<140>=/usr/share/doc/asmref/kfun/140.txt
+<141>=/usr/share/doc/asmref/kfun/141.txt
+<143>=/usr/share/doc/asmref/kfun/143.txt
+<145>=/usr/share/doc/asmref/kfun/145.txt
+<146>=/usr/share/doc/asmref/kfun/146.txt
+<148>=/usr/share/doc/asmref/kfun/148.txt
+<182>=/usr/share/doc/asmref/kfun/182.txt
+<183>=/usr/share/doc/asmref/kfun/183.txt
+<187>=/usr/share/doc/asmref/kfun/187.txt
+<054>=/usr/share/doc/asmref/kfun/054.txt
+<045>=/usr/share/doc/asmref/kfun/045.txt
+<090>=/usr/share/doc/asmref/kfun/090.txt
+<091>=/usr/share/doc/asmref/kfun/091.txt
+<125>=/usr/share/doc/asmref/kfun/125.txt
+<144>=/usr/share/doc/asmref/kfun/144.txt
+<150>=/usr/share/doc/asmref/kfun/150.txt
+<151>=/usr/share/doc/asmref/kfun/151.txt
+<152>=/usr/share/doc/asmref/kfun/152.txt
+<153>=/usr/share/doc/asmref/kfun/153.txt
+<163>=/usr/share/doc/asmref/kfun/163.txt
+<002>=/usr/share/doc/asmref/kfun/002.txt
+<011>=/usr/share/doc/asmref/kfun/011.txt
+<026>=/usr/share/doc/asmref/kfun/026.txt
+<034>=/usr/share/doc/asmref/kfun/034.txt
+<051>=/usr/share/doc/asmref/kfun/051.txt
+<096>=/usr/share/doc/asmref/kfun/096.txt
+<097>=/usr/share/doc/asmref/kfun/097.txt
+<111>=/usr/share/doc/asmref/kfun/111.txt
+<112>=/usr/share/doc/asmref/kfun/112.txt
+<117>=/usr/share/doc/asmref/kfun/117.txt
+<120>=/usr/share/doc/asmref/kfun/120.txt
+<128>=/usr/share/doc/asmref/kfun/128.txt
+<136>=/usr/share/doc/asmref/kfun/136.txt
+<142>=/usr/share/doc/asmref/kfun/142.txt
+<172>=/usr/share/doc/asmref/kfun/172.txt
+<184>=/usr/share/doc/asmref/kfun/184.txt
+<185>=/usr/share/doc/asmref/kfun/185.txt
+<190>=/usr/share/doc/asmref/kfun/190.txt
+<027>=/usr/share/doc/asmref/kfun/027.txt
+<029>=/usr/share/doc/asmref/kfun/029.txt
+<037>=/usr/share/doc/asmref/kfun/037.txt
+<048>=/usr/share/doc/asmref/kfun/048.txt
+<067>=/usr/share/doc/asmref/kfun/067.txt
+<068>=/usr/share/doc/asmref/kfun/068.txt
+<069>=/usr/share/doc/asmref/kfun/069.txt
+<072>=/usr/share/doc/asmref/kfun/072.txt
+<073>=/usr/share/doc/asmref/kfun/073.txt
+<119>=/usr/share/doc/asmref/kfun/119.txt
+<126>=/usr/share/doc/asmref/kfun/126.txt
+<173>=/usr/share/doc/asmref/kfun/173.txt
+<174>=/usr/share/doc/asmref/kfun/174.txt
+<175>=/usr/share/doc/asmref/kfun/175.txt
+<176>=/usr/share/doc/asmref/kfun/176.txt
+<177>=/usr/share/doc/asmref/kfun/177.txt
+<178>=/usr/share/doc/asmref/kfun/178.txt
+<179>=/usr/share/doc/asmref/kfun/179.txt
+<186>=/usr/share/doc/asmref/kfun/186.txt
+<058>=/usr/share/doc/asmref/kfun/058.txt
+<074>=/usr/share/doc/asmref/kfun/074.txt
+<075>=/usr/share/doc/asmref/kfun/075.txt
+<076>=/usr/share/doc/asmref/kfun/076.txt
+<077>=/usr/share/doc/asmref/kfun/077.txt
+<086>=/usr/share/doc/asmref/kfun/086.txt
+<088>=/usr/share/doc/asmref/kfun/088.txt
+<101>=/usr/share/doc/asmref/kfun/101.txt
+<102>=/usr/share/doc/asmref/kfun/102.txt
+<103>=/usr/share/doc/asmref/kfun/103.txt
+<110>=/usr/share/doc/asmref/kfun/110.txt
+<113>=/usr/share/doc/asmref/kfun/113.txt
+<116>=/usr/share/doc/asmref/kfun/116.txt
+<121>=/usr/share/doc/asmref/kfun/121.txt
+<122>=/usr/share/doc/asmref/kfun/122.txt
+<123>=/usr/share/doc/asmref/kfun/123.txt
+<127>=/usr/share/doc/asmref/kfun/127.txt
+<129>=/usr/share/doc/asmref/kfun/129.txt
+<130>=/usr/share/doc/asmref/kfun/130.txt
+<131>=/usr/share/doc/asmref/kfun/131.txt
+<134>=/usr/share/doc/asmref/kfun/134.txt
+<149>=/usr/share/doc/asmref/kfun/149.txt
+<154>=/usr/share/doc/asmref/kfun/154.txt
+<155>=/usr/share/doc/asmref/kfun/155.txt
+<156>=/usr/share/doc/asmref/kfun/156.txt
+<157>=/usr/share/doc/asmref/kfun/157.txt
+<158>=/usr/share/doc/asmref/kfun/158.txt
+<159>=/usr/share/doc/asmref/kfun/159.txt
+<160>=/usr/share/doc/asmref/kfun/160.txt
+<161>=/usr/share/doc/asmref/kfun/161.txt
+<166>=/usr/share/doc/asmref/kfun/166.txt
+<167>=/usr/share/doc/asmref/kfun/167.txt
+<169>=/usr/share/doc/asmref/kfun/169.txt
+<188>=/usr/share/doc/asmref/kfun/188.txt
+<241>=/usr/share/doc/asmref/kfun/241.txt
+<007>=/usr/share/doc/asmref/kfun/007.txt
+<013>=/usr/share/doc/asmref/kfun/013.txt
+<025>=/usr/share/doc/asmref/kfun/025.txt
+<043>=/usr/share/doc/asmref/kfun/043.txt
+<078>=/usr/share/doc/asmref/kfun/078.txt
+<079>=/usr/share/doc/asmref/kfun/079.txt
+<082>=/usr/share/doc/asmref/kfun/082.txt
+<098>=/usr/share/doc/asmref/kfun/098.txt
+<104>=/usr/share/doc/asmref/kfun/104.txt
+<105>=/usr/share/doc/asmref/kfun/105.txt
+<114>=/usr/share/doc/asmref/kfun/114.txt
+<124>=/usr/share/doc/asmref/kfun/124.txt
+<162>=/usr/share/doc/asmref/kfun/162.txt
+<168>=/usr/share/doc/asmref/kfun/168.txt
+<017>=/usr/share/doc/asmref/kfun/017.txt
+<018>=/usr/share/doc/asmref/kfun/018.txt
+<028>=/usr/share/doc/asmref/kfun/028.txt
+<031>=/usr/share/doc/asmref/kfun/031.txt
+<032>=/usr/share/doc/asmref/kfun/032.txt
+<035>=/usr/share/doc/asmref/kfun/035.txt
+<044>=/usr/share/doc/asmref/kfun/044.txt
+<053>=/usr/share/doc/asmref/kfun/053.txt
+<056>=/usr/share/doc/asmref/kfun/056.txt
+<059>=/usr/share/doc/asmref/kfun/059.txt
+<084>=/usr/share/doc/asmref/kfun/084.txt
+<109>=/usr/share/doc/asmref/kfun/109.txt
+<135>=/usr/share/doc/asmref/kfun/135.txt
+<137>=/usr/share/doc/asmref/kfun/137.txt
+<180>=/usr/share/doc/asmref/kfun/180.txt
+<181>=/usr/share/doc/asmref/kfun/181.txt
+<189>=/usr/share/doc/asmref/kfun/189.txt
+<191>=/usr/share/doc/asmref/kfun/191.txt
+<192>=/usr/share/doc/asmref/kfun/192.txt
+<193>=/usr/share/doc/asmref/kfun/193.txt
+<194>=/usr/share/doc/asmref/kfun/194.txt
+<195>=/usr/share/doc/asmref/kfun/195.txt
+<196>=/usr/share/doc/asmref/kfun/196.txt
+<197>=/usr/share/doc/asmref/kfun/197.txt
+<198>=/usr/share/doc/asmref/kfun/198.txt
+<199>=/usr/share/doc/asmref/kfun/199.txt
+<200>=/usr/share/doc/asmref/kfun/200.txt
+<201>=/usr/share/doc/asmref/kfun/201.txt
+<202>=/usr/share/doc/asmref/kfun/202.txt
+<203>=/usr/share/doc/asmref/kfun/203.txt
+<204>=/usr/share/doc/asmref/kfun/204.txt
+<205>=/usr/share/doc/asmref/kfun/205.txt
+<206>=/usr/share/doc/asmref/kfun/206.txt
+<207>=/usr/share/doc/asmref/kfun/207.txt
+<208>=/usr/share/doc/asmref/kfun/208.txt
+<209>=/usr/share/doc/asmref/kfun/209.txt
+<210>=/usr/share/doc/asmref/kfun/210.txt
+<211>=/usr/share/doc/asmref/kfun/211.txt
+<212>=/usr/share/doc/asmref/kfun/212.txt
+<213>=/usr/share/doc/asmref/kfun/213.txt
+<214>=/usr/share/doc/asmref/kfun/214.txt
+<215>=/usr/share/doc/asmref/kfun/215.txt
+<216>=/usr/share/doc/asmref/kfun/216.txt
+<217>=/usr/share/doc/asmref/kfun/217.txt
+<218>=/usr/share/doc/asmref/kfun/218.txt
+<219>=/usr/share/doc/asmref/kfun/219.txt
+<219>=/usr/share/doc/asmref/kfun/219.txt
+<220>=/usr/share/doc/asmref/kfun/220.txt
+<221>=/usr/share/doc/asmref/kfun/221.txt
+<223>=/usr/share/doc/asmref/kfun/223.txt
+<224>=/usr/share/doc/asmref/kfun/224.txt
+<225>=/usr/share/doc/asmref/kfun/225.txt
+<226>=/usr/share/doc/asmref/kfun/226.txt
+<227>=/usr/share/doc/asmref/kfun/227.txt
+<228>=/usr/share/doc/asmref/kfun/228.txt
+<229>=/usr/share/doc/asmref/kfun/229.txt
+<230>=/usr/share/doc/asmref/kfun/230.txt
+<231>=/usr/share/doc/asmref/kfun/231.txt
+<232>=/usr/share/doc/asmref/kfun/232.txt
+<233>=/usr/share/doc/asmref/kfun/233.txt
+<234>=/usr/share/doc/asmref/kfun/234.txt
+<235>=/usr/share/doc/asmref/kfun/235.txt
+<236>=/usr/share/doc/asmref/kfun/236.txt
+<237>=/usr/share/doc/asmref/kfun/237.txt
+<238>=/usr/share/doc/asmref/kfun/238.txt
+<239>=/usr/share/doc/asmref/kfun/239.txt
+<240>=/usr/share/doc/asmref/kfun/240.txt
+<242>=/usr/share/doc/asmref/kfun/242.txt
+<243>=/usr/share/doc/asmref/kfun/243.txt
+<244>=/usr/share/doc/asmref/kfun/244.txt
+<245>=/usr/share/doc/asmref/kfun/245.txt
+<246>=/usr/share/doc/asmref/kfun/246.txt
+<247>=/usr/share/doc/asmref/kfun/247.txt
+<248>=/usr/share/doc/asmref/kfun/248.txt
+<249>=/usr/share/doc/asmref/kfun/249.txt
+<250>=/usr/share/doc/asmref/kfun/250.txt
+<251>=/usr/share/doc/asmref/kfun/251.txt
+<252>=/usr/share/doc/asmref/kfun/252.txt
+<253>=/usr/share/doc/asmref/kfun/253.txt
+<254>=/usr/share/doc/asmref/kfun/254.txt
+<255>=/usr/share/doc/asmref/kfun/255.txt
+<256>=/usr/share/doc/asmref/kfun/256.txt
+<257>=/usr/share/doc/asmref/kfun/257.txt
+<258>=/usr/share/doc/asmref/kfun/258.txt
+<259>=/usr/share/doc/asmref/kfun/259.txt
+<260>=/usr/share/doc/asmref/kfun/260.txt
+<261>=/usr/share/doc/asmref/kfun/261.txt
+<262>=/usr/share/doc/asmref/kfun/262.txt
+<263>=/usr/share/doc/asmref/kfun/263.txt
+<264>=/usr/share/doc/asmref/kfun/264.txt
+<265>=/usr/share/doc/asmref/kfun/265.txt
+<266>=/usr/share/doc/asmref/kfun/266.txt
+<267>=/usr/share/doc/asmref/kfun/267.txt
+<268>=/usr/share/doc/asmref/kfun/268.txt
+<269>=/usr/share/doc/asmref/kfun/269.txt
+<270>=/usr/share/doc/asmref/kfun/270.txt
+<271>=/usr/share/doc/asmref/kfun/271.txt
+<272>=/usr/share/doc/asmref/kfun/272.txt
+<273>=/usr/share/doc/asmref/kfun/273.txt
+<274>=/usr/share/doc/asmref/kfun/274.txt
+<275>=/usr/share/doc/asmref/kfun/275.txt
+<276>=/usr/share/doc/asmref/kfun/276.txt
+<277>=/usr/share/doc/asmref/kfun/277.txt
+<278>=/usr/share/doc/asmref/kfun/278.txt
+<279>=/usr/share/doc/asmref/kfun/279.txt
+<280>=/usr/share/doc/asmref/kfun/280.txt
+<281>=/usr/share/doc/asmref/kfun/281.txt
+<282>=/usr/share/doc/asmref/kfun/282.txt
+<283>=/usr/share/doc/asmref/kfun/283.txt
+

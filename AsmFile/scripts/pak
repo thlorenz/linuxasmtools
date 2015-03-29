@@ -1,0 +1,13 @@
+#! /bin/sh
+# script to create .tar.gz file for directory
+# tar.gz is created in current dir
+# input directory is also in current directory
+#
+# usage:  pak <directory>
+#
+output_dir=`pwd`
+output_file=`basename $1`
+extension=.tar.gz
+
+
+tar cvfz $output_file$extension $1

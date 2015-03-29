@@ -1,0 +1,27 @@
+#!/bin/bash
+#asmbug domac $0 'src/*.htm' 
+domac $0 out/x/download.html out/x/download.html
+exit 0
+#---------------------------
+
+^shell ("ls out/*.tar.gz > release")
+^dolist /release
+^show $doptr
+^copy $doptr $work
+^replace $work ("out/x") with ("")  ;delete
+^shrink $work #back #1  ;remove line feed 
+^show $work
+^copy $work $temp
+^shrink $temp #back #10    ;isolate xxxxxx-0.9.
+^show $temp
+^find $temp $infile
+^show $findptr
+^ifeq $findptr $temp
+^show ("found temp")
+^expand $findptr #back #10
+^show $findptr
+^copy $work $findptr    ;insert new name
+^endif
+^enddo
+
+^stop

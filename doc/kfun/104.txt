@@ -1,0 +1,85 @@
+
+----------------------------------------------------------------------------
+104 setitimer      - set an interval timer
+----------------------------------------------------------------------------
+  ;
+  mov eax,104
+  mov ebx,which   ;timer selection
+  mov ecx,ivalue  ;ptr to new setting (ivalue struc)
+  mov edx,ovalue  ;ptr to save current setting (ovalue struc)
+  int 80h
+
+
+which
+-----
+       	ITIMER_REAL	=	0
+       	ITIMER_VIRTUAL	=	1
+       	ITIMER_PROF	=	2
+
+
+       The system provides each  process  with  three  interval  timers,  each
+       decrementing in a distinct time domain.  When any timer expires, a sig-
+       nal is sent to the process, and the timer (potentially) restarts.
+
+       ITIMER_REAL    decrements in real time, and delivers SIGALRM upon expi-
+                      ration.
+
+       ITIMER_VIRTUAL decrements  only  when  the  process  is  executing, and
+                      delivers SIGVTALRM upon expiration.
+
+       ITIMER_PROF    decrements both when the process executes and  when  the
+                      system  is  executing on behalf of the process.  Coupled
+                      with ITIMER_VIRTUAL, this timer is usually used to  pro-
+                      file  the time spent by the application in user and ker-
+                      nel space.  SIGPROF is delivered upon expiration.
+ivalue
+------
+       ivalue contains new setting for timer
+
+       Timer values are defined by the following structures:
+
+            struct itimerval
+                tv_sec1  resd 1 ; seconds - reset the timer to this value if expire
+                tv_usec1 resd 1 ; microseconds - reset the timer to this value if expire
+                tv_sec2  resd 1 ; seconds - current setting to start countdown
+                tv_usec2 resd 1 ; microseconds -current setting to start countdown
+            endstruc
+
+ovalue
+------
+
+       ovalue uses same structure as ivalue and is filled with old value.  If ovalue
+       pointer is zero, this step is skipped
+
+       Timers decrement from it_value to zero, generate a signal, and reset to
+       it_interval.   A  timer  which  is set to zero (it_value is zero or the
+       timer expires and it_interval is zero) stops.
+
+       Timers  will  never  expire before the requested time, instead expiring
+       some short, constant time afterwards, dependent  on  the  system  timer
+       resolution  (currently 10ms).  Upon expiration, a signal will be gener-
+       ated and the timer reset.  If the timer expires while  the  process  is
+       active (always true for ITIMER_VIRT) the signal will be delivered imme-
+       diately when generated.  Otherwise the delivery will  be  offset  by  a
+       small time dependent on the system loading.
+
+
+RETURN VALUE
+       On  success,  zero is returned.  On error a negative code is returned
+
+ERRORS
+       EFAULT value or ovalue are not valid pointers.
+
+       EINVAL which is not one of ITIMER_REAL, ITIMER_VIRT, or ITIMER_PROF.
+
+SEE ALSO
+       gettimeofday, sigaction, signal
+
+BUGS
+       Under Linux, the generation and delivery of a signal are distinct,  and
+       each signal is permitted only one outstanding event.  It's there-
+       fore conceivable that under pathologically heavy  loading,  ITIMER_REAL
+       will  expire  before  the  signal  from  a previous expiration has been
+       delivered.  The second signal in such an event will be lost.
+
+

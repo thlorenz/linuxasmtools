@@ -1,0 +1,30 @@
+
+----------------------------------------------------------------------------
+ 66 setsid         - creates a session and sets the process group ID
+----------------------------------------------------------------------------
+  mov  eax,066
+  int  80h
+
+       setsid()  creates a new session if the calling process is not a process
+       group leader.  The calling process is the leader of  the  new  session,
+       the  process group leader of the new process group, and has no control-
+       ling tty.  The process group ID and session ID of the  calling  process
+       are set to the PID of the calling process.  The calling process will be
+       the only process in this new process group and in this new session.
+
+RETURN VALUE
+       The session ID of the calling process.
+
+ERRORS
+       On error, EPERM will be returned.  It  is returned when the process
+       group ID of any process equals the PID of the calling process. Thus,
+       setsid  fails  if the calling process is already a process group leader.
+
+NOTES
+       A  process group leader is a process with process group ID equal to its
+       PID. In order to be sure that setsid will succeed, fork and  exit,  and
+       have the child do setsid.
+
+SEE ALSO
+       setpgid, setpgrp
+

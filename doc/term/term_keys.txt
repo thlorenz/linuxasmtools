@@ -1,0 +1,217 @@
+
+Historically the UNIX keyboard has been defined by data files
+which are interrogated at run time.  This allows the keyboard
+to be defined and sometimes changed by programs.
+
+Since Linux keyboard definitions are fairly stable, the
+AsmTools have simplified the keyboard interface
+by assuming a standard key mapping.  This avoids reading
+the keyboard files (terminfo or termcap).
+
+The X keyboard handles keyboards differently and
+this is described in AsmLibx functions.
+
+When a terminal key is pressed it generates one or more
+bytes of data.  Different terminals may generate different
+bytes.  The following table list some of the bytes generated.
+Generally, it is a good idea to look for all possible byte
+strings that a key might generate.  For most keys only
+one possible byte is generated and this makes programming
+easy.  For special keys (such as F1 or arrows) it will be
+necessary to implement several byte strings.
+
+If a key isn't in the following table, use program "key_echo"
+to view keyboard output.
+
+The set of common special key sequences are:
+
+  db 1bh,4fh,50h		 F1
+  db 1bh,4fh,51h		 F2
+  db 1bh,4fh,52h		 F3
+  db 1bh,4fh,53h		 F4
+
+  db 1bh,5bh,5bh,41h		 F1
+  db 1bh,5bh,5bh,42h		 f2
+  db 1bh,5bh,5bh,43h		 f3
+  db 1bh,5bh,5bh,44h		 f4
+  db 1bh,5bh,5bh,45h		 f5
+
+  db 1bh,5bh,31h,31h,7eh	f1
+  db 1bh,5bh,31h,32h,7eh	f2
+  db 1bh,5bh,31h,33h,7eh	f3
+  db 1bh,5bh,31h,34h,7eh	f4
+  db 1bh,5bh,31h,35h,7eh	f5
+  db 1bh,5bh,31h,37h,7eh	f6
+  db 1bh,5bh,31h,38h,7eh	f7
+  db 1bh,5bh,31h,39h,7eh	f8
+  db 1bh,5bh,32h,30h,7eh	 f9
+  db 1bh,5bh,32h,31h,7eh	 f10
+  db 1bh,5bh,32h,33h,7eh	 f11
+  db 1bh,5bh,32h,34h,7eh	 f12
+  db 1bh,5bh,48h		 pad_home
+  db 1bh,5bh,41h		 pad_up
+  db 1bh,5bh,35h,7eh		 pad_pgup
+  db 1bh,5bh,44h		 pad_left
+  db 1bh,5bh,43h		 pad_right
+  db 1bh,5bh,46h		 pad_end
+  db 1bh,5bh,42h		 pad_down
+  db 1bh,5bh,36h,7eh		 pad_pgdn
+  db 1bh,5bh,32h,7eh		 pad_ins
+  db 1bh,5bh,33h,7eh		 pad_del
+
+  db 1bh,5bh,31h,7eh		 home (non-keypad)
+  db 1bh,5bh,34h,7eh		 end (non-keypad)
+  db 1bh,4fh,78h		 pad_up
+  db 1bh,4fh,79h		 pad_pgup
+  db 1bh,4fh,74h		 pad_left
+  db 1bh,4fh,76h		 pad_right
+  db 1bh,4fh,71h		 pad_end
+  db 1bh,4fh,72h		 pad_down
+  db 1bh,4fh,73h		 pad_pgdn
+  db 1bh,4fh,70h		 pad_ins
+  db 1bh,4fh,6eh		 pad_del
+  db 1bh,4fh,77h		 pad_home
+
+Alt keys definitions follow
+
+key      three output sets are possible
+---      ---------------------------------------
+alt-0    1bh,30h     0c2h,0b0h   0b0h
+alt-9    1bh,39h     0c2h,0b9h   0b9h
+
+alt-a    1bh,61h     0c3h,0a1h   0e1h
+alt-b    1bh,62h     0c3h,0a2h   0e2h
+alt-c    1bh,63h     0c3h,0a3h   0e3h
+alt-d    1bh,64h     0c3h,0a4h   0e4h
+alt-e    1bh,65h     0c3h,0a5h   0e5h
+alt-f    1bh,66h     0c3h,0a6h   0e6h
+alt-g    1bh,67h     0c3h,0a7h   0e7h
+alt-h    1bh,68h     0c3h,0a8h   0e8h
+alt-i    1bh,69h     0c3h,0a9h   0e9h
+alt-j    1bh,7ah     0c3h,0aah   0eah
+alt-k    1bh,7bh     0c3h,0abh   0ebh
+alt-l    1bh,7ch     0c3h,0ach   0ech
+alt-m    1bh,7dh     0c3h,0adh   0edh
+alt-n    1bh,7eh     0c3h,0aeh   0eeh
+alt-o    1bh,7fh     0c3h,0afh   0efh
+alt-p    1bh,70h     0c3h,0b0h   0f0h
+alt-q    1bh,71h     0c3h,0b1h   0f1h
+alt-r    1bh,72h     0c3h,0b2h   0f2h
+alt-s    1bh,73h     0c3h,0b3h   0f3h
+alt-t    1bh,74h     0c3h,0b4h   0f4h
+alt-u    1bh,75h     0c3h,0b5h   0f5h
+alt-v    1bh,76h     0c3h,0b6h   0f6h
+alt-w    1bh,77h     0c3h,0b7h   0f7h
+alt-x    1bh,78h     0c3h,0b8h   0f8h
+alt-y    1bh,79h     0c3h,0b9h   0f9h
+alt-z    1bh,7ah     0c3h,0bah   0fah
+
+single byte key definitions
+
+  db 1bh 			 esc
+  db 7fh			 backspace
+  db 1ah			 ctrl_z
+  db 01h			 ctrl_a
+  db 60h			 lquote
+  db 7eh			 ~
+  db 09h			 tab
+  db 40h			 @
+  db 23h			 #
+  db 24h			 $
+  db 25h			 %
+  db 5eh			 ^
+  db 26h			 &
+  db 2ah			 *
+  db 28h			 (
+  db 29h			 )
+  db 5fh			 _ underscore
+  db 2bh			 +
+  db 31h			 1
+  db 32h			 2
+  db 33h			 3
+  db 34h			 4
+  db 35h			 5
+  db 36h			 6
+  db 37h			 7
+  db 38h			 8
+  db 39h			 9
+  db 30h			 0
+  db 2dh			 - dash
+  db 3dh			 =
+  db 'q'			 q
+  db "w"			 w
+  db "e"			 e
+  db "r"			 r
+  db "t"			 t
+  db "y"			 y
+  db "u"			 u
+  db "i"			 i
+  db "o"			 o
+  db "p"			 p
+  db "["			 [
+  db "]"			 ]
+  db "\"			 \ beware nasm thinks "\" at end of line is operator
+  db 'Q'		
+  db 'W'		
+  db 'E'		
+  db 'R'		
+  db 'T'		
+  db 'Y'		
+  db 'U'		
+  db 'I'		
+  db 'O'		
+  db 'P'		
+  db '{'		
+  db '}'		
+  db '|'		
+  db 'a'		
+  db 's'		
+  db 'd'		
+  db 'f'		
+  db 'g'		
+  db 'h'		
+  db 'j'		
+  db 'k'		
+  db 'l'		
+  db '	
+  db 27h		 single quote 
+  db 0dh		  enter 
+  db 'A'		
+  db 'S'		
+  db 'D'		
+  db 'F'		
+  db 'G'		
+  db 'H'		
+  db 'J'		
+  db 'K'		
+  db 'L'		
+  db ':'		
+  db 22h		 double quote
+  db 'z'		
+  db 'x'			
+  db 'c'			
+  db 'v'			
+  db 'b'			
+  db 'n'			
+  db 'm'			
+  db ','			
+  db '.'			
+  db '/'			
+  db 'Z'			
+  db 'X'			
+  db 'C'			
+  db 'V'			
+  db 'B'			
+  db 'N'			
+  db 'M'			
+  db '<'			
+  db '>'			
+  db '?'			
+  db ' '			 space
+  db 0ah			 enter
+  db 03h			 ctrl-c
+  db 18h			 ctrl-x
+  db 15h                         ctrl-u
+  db 12h			 ctrl-r
+  db 21h			 explamation point
+  db 08			         backspace

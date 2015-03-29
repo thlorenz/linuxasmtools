@@ -1,0 +1,133 @@
+AsmDis disassembles Linux ELF format executables
+
+PURPOSE
+-------
+
+Asmdis can prepare inputs for AsmSrc and AsmBug.  It
+can also be used independently to view the assembly
+code in a ELF executable.
+
+USAGE
+-----
+
+  asmdis <file>        starts the decode process for <file>
+  asmdis               continues the decode process
+                       if started previously
+
+OPERATION
+---------
+
+If a filename is provided to AsmDis it calls AsmPre to
+build the following files:
+
+   asmdis_history.dat  - status of last executable disassembled
+   asmdis_image.dat    - load image of last executable
+   asmdis_fimage.dat   - flags image describing executable
+   asmdis_sym.dat      - symbol table for last executable
+   asmdis_externs.txt  - list of extern's if file used dynamic lib
+   asmdis_lib.txt      - list of dynamic libraries used
+
+These files are built in the current directory.  The disassembly
+can be spread over several scessions and data is added to the
+above files as AsmDis is executed.  If a new filename is provided
+to AsmDis it will replace the above files with new information.
+If the above files are deleted manually, the disassembly process
+restarts and a new file name must be given to AsmDis.
+
+DESIGN DISCUSSION
+-----------------
+
+A stripped ELF executable can be reduced to binary data
+without much information about where code locations or
+the types of data present.  Normally, more information
+can be found, but AsmDis does not assume any extra
+information is present.
+
+The big problem is finding code areas.  The program could
+make some guesses and be right 90 percent of the time, but
+it is much safer to work interactivly and aviod creating a
+buggy source or disassembly display.
+
+The process is expected to go like this:
+
+ 1. Run AsmDis to create the initial tables and identify
+    code that flows after the entry point.  This logic
+    will miss areas that use jump tables or computed addresses.
+    Also, code called using register jumps will not be
+    found.  Some example of calls and jumps that are not
+    followed are:
+
+      jmp eax
+
+      jmp [eax]
+
+      push  address
+      ret
+
+      ret
+
+ 2. Next, use AsmDis to view the executable and look for areas in
+    the code section that are shown as "db" statements.  It is
+    possible these areas could be data, but usually they are code.
+    Find the top of a string of data statements that end with 0c3h.
+    This should be a function and the "c3" is a ret instruction.
+    Move the select bar to top and click the "code here" button.
+    If the resulting disassembly is correct then go on to the
+    next block.  If the disassembly looks incorrect, then click
+    the undo button and try another block.  For most programs,
+    this process will identify all code areas.
+
+ 3. If the ELF has some tricky code or data fields inside instructions
+    then, we need to use AsmBug.  AsmBug allows us to step through
+    the ELF executable and watch how code executes.  It also keeps
+    records that are shared with AsmDis and AsmSrc.
+
+ 4. To check the progress of a disassembly, generate a source
+    file using AsmSrc and see if it executes.  If not then
+    compare the generated code to origional ELF using objdump.
+    Another approach is to execute both the ELF and our generated
+    executable using strace and then comparing the two traces.
+    If we are decoding a HLL program with dymanic link sections
+    then the strace option may not work very well.
+  
+BUTTONS
+-------
+
+ Show Code - selects the code (.text) section.  It also includes
+             the rodata (read only data) section if found.  This
+             section may also have library wrappers added by the
+             linker.  Everything that was present in the first
+             load section ends up here.
+
+ Show Data - selecte the data (.data) section and all sections
+             that are loaded as data.  If two load sections are
+             in the ELF then "Show Data" include everyting except
+             for the .bss data.
+
+ Show bss  - select unitialized data section (.bss).  The data
+             in this section must be initialized by the program,
+             and may appear as one large repeat statment until
+             program decode is able to identify areas.
+
+ Abort     - Exit without updating any of the files
+
+ Save      - Exit and update the decode files.
+
+ Code Here - Starts searching for code from this location.
+
+ Data Here - Forces data types db,dw,dd,string,data pointer,
+             and code pointer.  The most useful will be
+             code pointer, it tells AsmDis to go search for
+             code at pointer location.
+
+ Label Here - Create a label at this location
+
+ Undo last - undo's the last "code here" or "data here" operation.
+
+ goto top  - goto top of section
+
+ goto end  - goto end of section
+
+
+
+

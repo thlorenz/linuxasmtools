@@ -1,0 +1,281 @@
+
+struc termios_struc
+.c_iflag: resd 1
+.c_oflag: resd 1
+.c_cflag: resd 1
+.c_lflag: resd 1
+.c_line: resb 1
+.c_cc: resb 19
+endstruc
+;termios_struc_size:
+
+  extern file_close
+  extern signal_handler_default
+  extern output_termios_x
+
+;----------------------------------------------------------
+;output: sign bit set for js if error
+load_app:
+  cmp	byte [parse_attach],0
+  jz	lt_50		;jmp if normal launch
+;this is a attach
+  mov	eax,[attach_pid]
+  mov	[trace_pid],eax	;setup global variable
+  call	trace_attach
+  jmp	short lt_60  
+
+;fork duplicates program, including signal handling, open fd's etc.
+;     only pending signals are cleared and PID changed.
+;fork ---- fork
+lt_50:
+  call	signal_setup
+  call	ptysetup	;setup pty
+  mov	eax,2		;fork
+  int	byte 80h
+  or	eax,eax
+  jz	child_processing
+;parent path -- exit ---
+  mov	[trace_pid],eax
+;lt_wait:
+  mov	ebx,[trace_pid]	;process to wait for
+  mov	edx,0		;wait forever
+
+  xor	esi,esi
+  call	trace_wait
+  call	signal_restore
+lt_60:
+;get initial registers
+  mov	esi,app_regs
+  call	trace_regsget
+;check if preliminary code inserted on stack
+;and run before program.  This is common for
+;"c" programs and dynamic library usage.
+  mov	eax,[app_eip]
+  test	eax,0f0000000h	;are we on stack
+  jz	lt_exit		;exit if load point off stack
+;we are running on stack, step till program entered
+;  mov	[stack_stub_code],eax ;set stack flag
+;  call	optional_stub_msg
+lf_loop:
+  xor	esi,esi ;get signal
+  call	trace_step
+;
+  mov	esi,app_regs
+  call	trace_regsget
+
+  mov	eax,[app_eip]
+  test	eax,0f0000000h	;still on stack?
+  jnz	lf_loop
+lt_exit:
+  ret
+  
+;child processing ---------------------------- child -----------
+
+child_processing:
+
+  call	pty_open
+
+  call	traceme
+;execute command ----  exec ----
+; execve passes PID and open fd's on.  Signals are
+; set to their defualt state.  The SIGCHLD state is
+; undetermined if set to SIG_IGN (no handler)
+; pending signals are cleared.
+  mov	esi,LastTarget
+  mov	edi,lib_buf+400
+  call	str_move
+  inc	edi
+  mov	esi,LastTargetParm
+cp_lpy:
+  lodsb
+  or	al,al
+  jz	ccp_50		;jmp if end of parameters
+  cmp	al,' '
+  jne	ccp_10		;jmp if not space
+  mov	al,0
+ccp_10:
+  stosb
+  jmp	short cp_lpy
+;start app -----------
+ccp_50:
+  mov	dword [edi],0	;terminate parameters
+  mov	esi,lib_buf+400
+  call	sys_run_die
+;should not get here
+  mov	eax,1
+  int	byte 80h			;exit
+;end of child processing ----
+  ret
+;----------------------------------------------------------
+;if error master_fd is set negative
+;
+ptysetup:
+;open master psuedo tty
+  mov	eax,5			;open kernel call
+  mov	ebx,ptmx_path
+  mov	ecx,02			;O_RDRW
+  int	80h			;open /dev/ptmx
+  mov	[master_fd],eax
+  or	eax,eax
+  js	pty_setup_exit
+;open slave psuedo terminal
+;call grantpt to set slave permissions
+  mov	ebx,eax			;set ebx -> master_fd
+  mov	eax,54			;ioctl kernel call
+  mov	ecx,80045430h		;grantpt ioctl
+  mov	edx,work_buf
+  int	80h
+  or	eax,eax
+  js	pty_setup_exit
+;build name of pts
+  mov	eax,[work_buf]
+  or	al,'0'
+  mov	[pts_path2],al
+;unlock the slave (unlockpt)
+  mov	eax,54			;ioctl kernel call
+;  mov	ebx,[master_fd]
+  mov	ecx,40045431h		;TIOCSPLTLCK
+  mov	edx,blockx		;this appears to be needed!
+;old code had mov edx,blockx here (blockx = 0)?
+  int	80h
+  or	eax,eax
+  js	pty_setup_exit
+; open slave
+  mov	eax,5
+  mov	ebx,pts_path1
+  mov	ecx,102h	;O_RDWR O_NOCTTY
+  mov	edx,0
+  int	80h
+  mov	[slave_fd],eax
+pty_setup_exit:
+  ret
+;----------------------------------------------------------
+pty_open:
+;get rid of current controlling terminal
+;make child tty a controlling tty so that /dev/tty points to us
+  mov	eax,66
+  int	80h		;setsid
+;dup2 stdin
+  mov	eax,63		;dup2
+  mov	ebx,[slave_fd]
+  xor	ecx,ecx		;stdin
+  int	80h
+;dup2 stdout
+  mov	eax,63		;dup2
+  inc	ecx
+  int	80h
+;dup2 stderr
+  mov	eax,63		;dup2
+  inc	ecx
+  int	80h
+
+;  mov	dword [app_termios+termios_struc.c_iflag],dword 0100h
+;  mov	dword [app_termios+termios_struc.c_lflag],dword 8a3bh
+;now set new tty mode
+;  mov	ebx,[slave_fd]
+;  mov	edx,app_termios
+;  call	output_termios_x
+;  mov	ebx,0
+  mov	edx,app_termios
+  call	output_termios_0
+;close master fd, no longer needed
+  mov	ebx,[master_fd]
+  call	file_close
+;close slave_fd, don't need anymore, it is now stdin,stdout,stderr
+  mov	ebx,[slave_fd]
+  call	file_close
+  ret
+;------------------------------------------------------------------
+signal_setup:
+  mov	eax,67
+  mov	ebx,17		;SIGCHLD
+  mov	ecx,SIG_block
+  xor	edx,edx		;disable save of previous state
+  int	80h
+  ret  
+;------------------------------------------------------------------
+signal_restore:
+  mov	ebx,17
+  call	signal_handler_default
+  ret
+
+;--------------------------
+  [section .data]
+SIG_block: dd	0	;handler
+           dd	0		;mask
+	   dd	0		;flags
+	   dd	0		;unused
+slave_fd	dd	0
+
+select_list:
+stdin_fd	dd	0		;do not remove
+master_fd	dd	0
+		dd	-1		;end of select list
+event_buf: dd	0	;holds ptr to event bits
+
+ptmx_path	db	'/dev/ptmx',0
+pts_path1	db	'/dev/pts/'
+pts_path2	db	0,0,0,0
+blockx:		dd	0
+
+  [section .text]
+
+;----------------------------------------------------------
+%ifdef NOTYET
+
+adjust_starting_eip:
+  mov	ebx,[app_eip]
+  cmp	ebx,[_elf_phys_exec_entry]
+  je	ase_exit	;exit if starting at main
+  call	optional_stub_msg
+  mov	ebx,[_app_main]
+  or	ebx,ebx
+  jnz	ase_20		;jmp if found
+  mov	ebx,[_elf_phys_exec_entry]
+ase_20:
+  call	add_break
+  call	cmd_go
+  call	trace_wait
+  call	remove_breaks
+  mov	esi,app_regs
+  call	trace_regsget
+  dec	dword [app_eip]	;adjust for break
+  mov	esi,app_regs
+  call	trace_regsset
+  mov	[app_mode],byte 0
+ase_exit:
+  ret  
+
+;----------------------------------------------------------
+optional_stub_msg:
+;check if we skipped over stack code
+  mov	eax,[app_eip]
+;we skipped over stack code, show message
+  mov	edi,stub_adr
+  call	dwordto_hexascii
+  mov	ah,[top_screen+screen.top]
+  add	ah,4
+  mov	al,4
+  call	move_cursor
+ 
+  mov	eax,[menu_color]	;save color
+  call	crt_set_color
+
+  mov	ecx,stack_code_txt
+  mov	edx,stack_code_txt_len
+  call	crt_write
+
+  xor	eax,eax
+  mov	[stack_stub_code],eax
+osm_exit:
+  ret
+;-------------
+  [section .data]
+stack_stub_code	dd	0	;address on stack of stub code
+stack_code_txt:
+ db ' Skipped over startup code at: '
+stub_adr:
+ db '12345678 '
+stack_code_txt_len	equ $ - stack_code_txt
+  [section .text]  
+%endif

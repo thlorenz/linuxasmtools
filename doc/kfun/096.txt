@@ -1,0 +1,54 @@
+
+----------------------------------------------------------------------------
+  96 getpriority   - get program scheduling priority
+----------------------------------------------------------------------------
+  mov  eax,096
+  mov  ebx,which
+  mov  ecx,who
+  int  80h
+
+which
+-----
+       	PRIO_PROCESS	0
+       	PRIO_PGRP	1
+       	PRIO_USER	2
+
+
+       The  scheduling  priority  of  the  process, process group, or user, as
+       indicated by which and who is obtained with the  getpriority  call  and
+       set   with  the  setpriority  call.   Which  is  one  of  PRIO_PROCESS,
+       PRIO_PGRP, or PRIO_USER, and who is interpreted relative  to  which  (a
+       process  identifier  for  PRIO_PROCESS,  process  group  identifier for
+       PRIO_PGRP, and a user ID for PRIO_USER).
+
+who
+---
+       Who is set to real user id or group id.  A zero value for who  denotes
+       (respectively)  the  calling  process, the process group of the calling
+       process, or the real user ID of the calling process.
+
+
+       The getpriority call returns the  highest  priority  (lowest  numerical
+       value) enjoyed by any of the specified processes.  The setpriority call
+       sets the priorities of all of the specified processes to the  specified
+       value.  Only the super-user may lower priorities.
+
+RETURN VALUE
+       Since getpriority can legitimately return the value -1, error handling
+       must not assume it is an error.
+
+ERRORS
+       ESRCH  No process was located using the which and who values specified.
+
+       EINVAL Which was not one of PRIO_PROCESS, PRIO_PGRP, or PRIO_USER.
+
+       In addition to the errors indicated above, setpriority may fail if:
+
+       EPERM  A  process  was  located, but neither the effective nor the real
+              user ID of the caller matches its effective user ID.
+
+       EACCES A non super-user attempted to lower a process priority.
+
+SEE ALSO
+       nice, fork, renice
+

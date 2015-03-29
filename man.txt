@@ -1,0 +1,29 @@
+txt2man hints:
+
+ 1. only put one space after period.
+ 2. two blank lines indent
+
+ 3. to install us $MANPATH or /usr/share/man/man1/
+
+
+NAME
+
+SYNOPSIS
+
+DESCRIPTION
+
+USAGE
+
+EXAMPLE
+
+FILES
+
+SEE ALSO
+ asmide(1) asmmgr(1) asmref(1) asmedit(1)
+ 
+AUTHOR
+ Jeff Owens <jko@bsn1.net>
+
+COPYRIGHT
+ Copyright (C) 2007 Jeff Owens
+ This program comes with absolutely NO WARRANTY

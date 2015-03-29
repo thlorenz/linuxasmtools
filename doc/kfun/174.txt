@@ -1,0 +1,45 @@
+
+----------------------------------------------------------------------------
+174 rt_sigaction    - setup rt sighnd (RTL)
+----------------------------------------------------------------------------
+
+  mov eax,174
+  mov ebx,sig   ;signal number
+  mov ecx,act   ;ptr to act struc
+  mov edx,oact  ;ptr to oact struc, old struc save
+  mov esi,size  ;length of act,oact structres in bytes
+
+NAME
+
+   rt_sigaction - (i386 linux 2.2.14)
+
+DESCRIPTION
+
+   rt_sigaction Communication between Linux processes and real-time tasks
+   is done using the standard Real-Time Linux RT-FIFO facilities.
+
+   Note: function 67 (sigaction) uses a different structure for
+         "kernel_sigaction".  The following struc may be wrong?
+
+   struct kernel_sigaction
+      .k_sa_handler resd 1 ;
+      .sa_flags     resd 1 ;
+   endstruc
+
+   act , oact must point to a statically allocated structure.
+
+
+RETURN VALUE
+
+   On success, 0 is returned. On failure a negative value is returned as
+   described below.
+
+ERRORS
+
+   -EINVAL
+
+SEE ALSO
+
+   rt_sigaction(2) rt_sigpending (2) rt_sigprocmask(2)
+   rt_sigqueueinfo(2) rt_sigreturn(2) rt_sigsuspend(2)
+   rt_sigtimedwait(2) rt_task_ipc_delete(2),

@@ -1,0 +1,57 @@
+log for 2005-08-24  through  2005-08-26
+
+* fixed directory permissions set in install
+* fixed page down bug, some todo's were not shown
+* fixed date to use localization file
+* added date display to upper right corner of todo screen
+* fixed help file display
+* fixed screen resize if terminal size changed
+* replaced local functions with library asmlib.a functions
+* added keyboard controls to compliment mouse, this
+  allows asmplan to work in console
+* fixed the infamous nasm "\" continuation problem
+* added highlight bar to select todo
+* added delete option to mouse actions.  right click
+  on date will delete todo
+* Added "open-project" button and menu to select project.
+* Added improved menu to delete-project button
+* Modified colors for buttons slightly to make more
+  visible.
+* cleaned up files and removed unneeded functions.
+* reworded all help/hint/demo files.
+* Fixed minor problems in Makefile
+
+2005-08-28
+
+* added keyboard commands to edit mode
+* fixed problem if <enter> typed for new project name
+* search key updated current todo ptr but display top
+  ptr was not update.  Result was loss of highlight bar.
+  fixed by moving display window to encompass current
+  todo.
+* help file text updated
+* Changed click region for complete/delete to date area.
+  Previously, it was only underscore area.
+
+2005-11-02  The upper right corner date display
+  was incorrect.  The poblem was fixed by changing
+  raw2seconds.asm to clear the time.zo field.  It had
+  garbage that was corrupting the calcuations for UTC
+  mode.
+
+2005-12-18  The home path was not found it the environment
+  had an entry like: xxx_HOME=yyyy.  The library call
+  env_home was changed to only recognize: HOME=yyyy and
+  verify no data is infront of HOME.
+
+2005-12-20 When switching projects with mouse click, the
+  current page display pointer was not reset.  This
+  caused garbage on display.  Fixed, by setting
+  display_top_line to fbuf
+
+2006-06-13
+  Changed install to avoid writing to user area.  Sometimes
+  this goes to root instead.  The executable now creates
+  files in user area  /home/xxxx/.asmplan/plan
+
+

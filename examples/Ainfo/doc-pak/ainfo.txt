@@ -1,0 +1,33 @@
+
+NAME
+    Ainfo - view .info files by wrapping "info" program
+          Ainfo provides a simple interface to view
+          .info format files.  
+
+INPUTS
+    usage: ainfo <in-file>
+    The input file must be in .info format as
+    recognized by the "info" executable.     
+
+OUTPUT
+    none
+
+NOTES
+   source file:  ainfo.asm
+    
+   Ainfo calls the library function sys_wrap to
+   execute "info" and feed it keystrokes.  This
+   allows the user interface to be modified and
+   the keyboard redefined.
+
+   The arrow keys now move to topics as follows:
+   UP - move up to topic within page
+   DOWN - move down to topic within page
+   RIGHT - enter topic
+   LEFT - return to previous topic
+
+   PGDN - move down within page
+   PGUP - move up with page
+   ESC - exit (also "q" exits)
+
+   Ainfo is called by AsmMgr to view .info files.

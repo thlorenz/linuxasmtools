@@ -1,0 +1,184 @@
+  Fast text displays mini-HOWTO
+  jeff owens, jeff@linuxasmtools.net
+  v1.01, 19 April 2009
+
+  How to speed up text displays
+  ______________________________________________________________________
+
+  Table of Contents
+
+
+  1. Disclaimer
+
+  2. Introduction
+
+  3. What is the problem?
+
+  4. How do text displays work?
+
+  5. What can we do?
+  
+  6. What solutions are available?
+
+  7. Finding more information
+  ______________________________________________________________________
+
+1.  Disclaimer
+
+  The following document is offered in good faith as comprising only
+  safe programming and procedures. No responsibility is accepted by the
+  author for any loss or damage caused in any way to any person or
+  equipment, as a direct or indirect consequence of following these
+  instructions.
+
+
+2.  Introduction
+
+  The most recent version of this document can always be found at
+  http://linuxasmtools.net
+
+  There has been a lot of interest in speeding up graphical
+  displays, but little discussion of text displays.  Generally,
+  text display speeds have been sufficient or a few design
+  changes can fix the problems.   Also, graphical applications
+  dominate much of the Linux world and their slow speed has
+  grabbed programmer attention.  Should we spend time speeding
+  up text displays?  This howto looks for some answers.
+
+3. What is the problem?
+
+  Is there a problem?  For most people the answer is: no!
+  The few that are having problems assume it is due to slow
+  hardware or something else. 
+
+  The symptoms of text speed problems are:
+    * flickering displays
+    * flashing areas of screen that are too fast
+      to see.
+    * parts of display updating slowly
+    * And, the worst case, slow program execution.
+
+  These problems occur normally when a computer is under
+  heavy load, using older hardware, or running non-optimized
+  display handling.
+
+  It is difficult to know how may users have these
+  problems, it may be quite high.
+
+4. How do text displays work?
+
+  There are three main areas of text usage on Linux,
+  they are:
+
+   * X window text
+   * X terminal
+   * console
+
+  All text handling converts ASCII codes to a graphic
+  using font tables.  The resulting pixels are written
+  into display memory and a character appears.
+
+4.1 X window text displays
+
+  The X server talks directly to display memory and
+  all text handling is internal to the server.  It
+  is usually fast and of little interest to this howto.
+
+  Additionally, xlib includes some features
+  mentioned in this howto
+
+4.2 X terminal displays and console displays
+
+  Both X terminals and console displays use control
+  codes embedded with the text.  They must scan
+  the text for control codes such as line-feed,
+  cursor movement, color selection, and many others.
+  Once the control codes are processed, the remaining
+  ascii is converted to a graphic using font tables.
+
+  All this uses several layers of processing and may
+  be fertile ground for optimization.
+  
+5. What can we do?
+
+  If you look at the typical program, it builds a
+  line of data, sets the display color, moves the
+  cursor to start of line, and finally writes the
+  line.
+
+  We can save a little time by collecting all these
+  operations into one text string and writing
+  everything with one kernel call.
+
+  We could speed things up a little more by collecting
+  multiple lines and writing them all at once.
+
+  We could put the display in wrap mode, and eliminate
+  all the line-feed characters.
+
+  We could track display location and color and only
+  output control strings if a change occurs.
+
+  We could keep track of what is already on the display
+  and only send data if a area is changed.
+
+  We could sort the data by display location and
+  output data in sequence.
+
+  We could collect all writes and only send the
+  latest data for a area of the screen.
+
+  Would all these changes make a big difference?
+  For most programs that display a lot of text, they
+  will make a huge difference.  Generally, programmers
+  focus on their application and not on display
+  optimization.  This means, the typical program
+  has slow display logic.
+
+  Isn't this too complicated for programmers to
+  worry about?  It is complicated, but programmers
+  don't need to worry about it.  Instead, all we
+  need is a display handler to do it for us.
+
+  The design we need is a cache (image of display)
+  that can be read or written like a disk drive.
+  This provides a series of additional advantages:
+
+   * reading of data and colors from display
+   * functions better matched to most applications.
+   * ability to detect data that has not changed
+     and does not need display update.
+
+  The cache works by keeping a copy of each display
+  character and its color.  Each character and
+  color also has a flag which is set when the
+  they are not in sync with display contents.
+
+  When a write request comes in the data is
+  compared to image contents and flags are
+  set only if the data will change the display.
+  The color is also tracked and if it changes,
+  the flags are set to force a display update.  
+  
+6. What solutions are available?
+
+   The library asmliba provides all the features
+   discussed in this howto and also includes a
+   keyboard cache.  See section 7
+
+   The AsmLiba_tutor has some example code and
+   introduces the cache functions.
+   
+   The X server is usually called from xlib and it
+   has a function cache.
+
+
+7. Finding more information
+
+    AsmLiba  - fast display and keyboard cache.
+               http://linuxasmtools.net/asmliba.html
+
+    AsmLiba_tutor - tutorial
+               http://linuxasmtools.net/asmliba_tutorial.html
+
+

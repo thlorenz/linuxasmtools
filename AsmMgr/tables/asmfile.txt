@@ -1,0 +1,314 @@
+If this file is viewed within AsmFile the following
+index can be used with mouse.
+
+  Keyboard_use       Top_buttons
+  Mouse_use          Vertical_buttons
+  Configuration
+
+---------------------------------------------------
+
+1.0 Introduction
+
+ AsmFile is a general file manager.  It is similiar
+ to the "mc" file manager.
+
+1.1 Purpose
+
+ AsmFile was written in assembler for small size and speed.
+ It uses common Linux utilities to handle much of the
+ work and uses tables to select utilites and adjust displayed
+ buttons.
+
+1.2 Overview
+
+  The AsmFile window looks like this:
++------------------------------------------------------------------------------+
+| button1 | Butn2 | Btn3  | Btn4  |    |      |      |       |/     |/     |/  |
++         |       |       |       |    |      |      |       |      |      |---+
+| alt-p   | alt-s | alt-h | alt-q |    | alt0 | alt1 | alt2  | alt3 | alt4 | al|
++------------------------------+-----------+-----------------------------------+
+|  (left window)               | status    |   (right window)                  |
+|                              |  F1       |                                   |
+|                              | Open      |                                   |
+|  first time put hint here.   |  F2       |                                   |
+|  use Open to create project  | View      |                                   |
+|                              |  F3       |                                   |
+|  if no project name input,   | Edit      |                                   |
+|  then use history            |  F4       |                                   |
+|                              | Copy      |                                   |
+|  if no history use /asm      |  F5       |                                   |
+|                              | Move      |                                   |
+|  show results of terminal    |  F6       |                                   |
+|  commands in non-active      | Mkdir     |                                   |
+|  window.                     |  F7       |                                   |
+|                              | Delete    |                                   |
+|                              |  F8       |                                   |
+|                              | Expand    |                                   |
+|                              |  F9       |                                   |
+|                              | tar.gz    |                                   |
+|                              |  F10      |                                   |
+|                              | Compar    |                                   |
+|                              |  F11      |                                   |
+|                              | Print     |                                   |
+|                              |  F12      |                                   |
++------------------------------+-----------+-----------------------------------+
+| Term |        (show selected path, hints, input data prompts)                |
++------------------------------------------------------------------------------+
+|alt-t | >      (terminal cmd)                                                 |
++------------------------------------------------------------------------------+
+
+ The middle buttons are file related and work on the highlighted file.
+ For move or copy operatons the higlighted file/directory is moved to
+ directory shown in oposing panel.
+
+ The bottom line is always available for shell commands.
+
+ the top row of buttons are user defined.  The defaults are
+ setup to create an ide for assembler.  All top buttons are
+ attached to external programs or scripts.
+
+
+2.0 Program Inputs
+
+ When first loaded, AsmFile looks for paths on the command
+ line and if not found it used the $HOME directory.
+ AsmFile can accept paths for the two windows.
+
+ Another somewhat invisible input is from a collection of
+ files that configure the program and control how it reacts
+ to user input.  These files can describe projects, buttons,
+ button actions, and other parameters.
+
+
+3.0 Usage
+
+ The mouse is active in all windows (if AsmFile is executed in
+ an xterm).  In console mode,  the keyboard is used.  In most
+ menu's the up/down arrow keys followed by enter, will select
+ options.  Escape or ctrl-O can be used to exit most windows.
+
+3.1 Mouse_use
+
+ All buttons can be selected by mouse clicks.  The right/left
+ pannels can be activated by mouse clicks and once selected
+ individual files can be highlighted.
+
+ Right clicks on top button row will convert button into
+ a bookmark using currently active directory.
+
+3.2 Top_buttons
+
+ The top buttons can be configured with "setup" as either
+ functions or bookmarks.  A bookmark label has to start
+ with the "/" character and functions can be any executable.
+ All top buttons result in execution of a shell command.
+
+ Since some of the buttons call scripts it is easy to change
+ the way they operate.  Each top button executable recieves
+ the selected right/left window entries as parameters.
+
+ The default top buttons are:
+   
+   QUIT - exit asmfile
+   SETUP - adjust settings
+   HELP - display this help file
+   SPELL - spell check if ispell or aspell installed
+   TODO - todo  manager if AsmPlan installed.
+
+ Bookmark buttons have a short cut feature that sets the
+ current directory to bookmark.  Simply right-click on
+ a top line button and it becomes a bookmark.
+
+3.3 Vertical_buttons
+
+3.3.1 status
+
+ The status button brings up a table showing the
+ status of current highlighted entry.  It also allows
+ attributes and owners to be changed.
+
+3.3.2 open
+
+ The open button works on highlighted entry.  If a
+ directory is highlighted, it is entered.  If a file
+ is highlighted it is decoded using a table of
+ instructions (see setup function to edit table).
+ If the file is an executable it will be executed.
+
+3.3.3 view
+
+ the view button works on highlighted entry.  It
+ will try to determine viewing options using a
+ table of instructions. (see setup button to
+ edit table).
+
+3.3.4 edit
+
+ The edit button starts an editor on the currently
+ highlighted file.  The default editor can be selected
+ from the setup button.
+
+3.3.5 copy
+
+ Copy transfers files/directories from on pannel to
+ the other.  An option to change names occures before
+ the copy.
+
+3.3.6 move
+
+ Move will move files and directories and rename
+ them.  To rename anything set both pannels to the
+ same location an use move with name change.
+
+3.3.7 makedir
+ 
+ Not much to say here.
+
+3.3.8 delete
+
+ Delete is a very dangerous button.  Beware, it does
+ not ask first.
+
+3.3.9 expand
+
+ Expand knows about most compression types and expands
+ them.
+
+3.3.10 tar.gz
+
+ Tar.gz makes compressed files in only one format. 
+
+3.3.11 compar
+
+ Compare will compare the two text files in right
+ and left pannels.  It uses an external program to
+ do this which can be changed by editing the compar
+ script.  Initially AsmFile expects the program
+ xxdiff to be available and does nothing if not found.
+
+3.3.12 print
+
+ Print needs to be setup for your printer.  It is
+ currently setup for a deskjet 500 which may not
+ be ideal.  The print script can be edited to
+ change its operation.
+
+3.4 Terminal Button
+
+ The terminal button can be used to check on the results
+ of AsmFile shell commands or work in the shell.  Once in
+ the shell it is necessary to type "exit" to leave.
+
+ Another way to enter and leave the terminal is with the
+ ctrl-o key.  This is easy to remember since it is used
+ to exit many commands that call terminal programs.
+
+3.5 Terminal Entry Line
+
+ The terminal entry line accepts all alpha characters typed.
+ Pressing <return> will execute the line.  Note: if no
+ characters have been typed, the <return> key is connected
+ to the open button.
+
+ The highlighted file can be inserted into a terminal command
+ by entering "%f".  For example: to edit the current file with
+ vi type:
+  
+     vi %f <enter>
+
+ Note: Since typing <Enter> can execute a highlighted program
+ or run data on the terminal it is necessary to keep AsmFile
+ informed about which is needed.  To help with this the terminal
+ line is highlighted whenever AsmFile thinks it is being used
+ to enter commands.  To get out of the entry mode, type ESC or
+ any non-alpha key.
+
+3.6 Keyboard_use
+
+  ctrl-x      -  exit
+  alt-x       -  exit
+  alt-q       -  exit
+
+  tab    - switch pannels
+
+  ctrl-o - swith to and from the terminal display
+
+  right/left
+  arrow keys - traverse directory tree
+
+  up/down
+  arrow keys - traverse up/down file list
+
+  pgup/pgdn  - page up down file selection pannel
+
+  enter - same as open button
+
+  ESC,q,ctrl-o are all used to exit helper programs
+  run by AsmFile.  A few helper programs require other
+  keys to exit and for these programs crtl-c always
+  works.  For example the "less" viewer is run when
+  the F3 key is pressed.  Normally, "less" uses the
+  'q' key to exit.  AsmFile also recognizes ESC, F3,
+  and crtl-c as exit keys.
+
+  all other keys are show on buttons and usage is
+  obvious.
+
+4.0 Installation.
+
+  The command "make install" as "root" can be used to
+  install any AsmFileE package.  Normally, it isn't
+  necessary to do a compile. uninstalled with:
+
+     "make uninstall"
+
+5.0 Configuration
+
+  The "setup" button can be used to edit the
+  configuration files and change AsmFile operation.
+  
+  Access button  file name        Description
+  -------------  --------------   ------------------------
+  setup          configf.tbl       general settings
+  setup          top_buttonsf.tbl  defines buttons on top row
+  setup          open_buttonf.tbl  defines open button action
+  setup          view_buttonf.tbl  defines view button action
+
+  The top row buttons can also be bookmarks which are
+  set from the "setup" button or right click.
+
+6.0 Design
+
+  AsmFile is written in assembler but calls numerous
+  common system programs.  Unfortunatly, it is not
+  portable beyond Linux x86 systems.
+
+  Most of the code is from AsmLib and was created with
+  AsmEdit.
+
+  The code is not optimized and could be shrunk by at
+  least 50%.
+
+
+program flow
+------------
+
+  * open library
+  * parse input line and save
+  * if first time check if directory structure setup.
+  *   if directory missing, exit and display error msg
+  *   else - verify project directory and files copied by config.
+  * compute window demensions
+  * display window
+  *   display_buttons
+  *   display_mid_buttons
+  *   display_inactive_window
+  *   display_status_line
+  *   display_active_window
+  *   display_term_line ; waits for input
+  
+  * if new project button press, present table of options
+    assembler - project name - 
+  * copy files and check if assembler avail.  check other
+    tools.
+

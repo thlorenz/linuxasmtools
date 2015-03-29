@@ -1,0 +1,247 @@
+
+ HOW TO generate souce from elf (executable) file
+
+Why Assembler Source?
+
+  It is possible to convert any language to assembler
+  because all languages eventually end up as assembler.
+  This makes assembler the universal language.  Today
+  we have thousands of languages and a lot of abandoned
+  code.  Assembler is one way to transfer code and
+  inspect it.
+
+  There are many different assembler formats, and asmsrc
+  may be useful to convert other formats to "nasm" syntax.
+
+  Another use for assembler source is to inspect compiler
+  output to see how the code was optimized.
+
+  Existing programs (if small) can sometimes be modified
+  by converting them to assembler.  In the Linux
+  enviornment the source is usually available, so this
+  isn't often done.
+
+  Some other possible uses are: education, optimizations
+  for speed, size optimizations, and general curiosity.
+
+
+What is the ELF format?
+
+  The ELF format is a common executable format used on
+  unix systems.  It can include debug information and
+  information for executing the program.  Files can be
+  "stripped" of some information to reduce their size.
+
+  Different assembler/compilers use the ELF format
+  with their own idea of how a binary should look.
+  Most of the ELF files created by the GNU linker
+  "ld" appear about the same.  The one execption is
+  static ELF files and dynamic ELF files.
+
+  The dynamic ELF files attach libraries at execution
+  time and are much smaller.
+
+
+Overview of hacking a ELF
+
+  Step 1
+
+  The first step is to determine if the ELF
+  file is static or dynamic.  Also, it is helpful
+  knowing if symbols and other information is available.
+  The program "elfdecode" will show the information
+  available to AsmDis,AsmSrc.  Another program to view
+  the ELF in more detail is "readelf".
+
+  elfdecode is easy to use and interactive, just
+  type:
+
+     elfdecode <filename>
+
+  Step 2
+
+  Having a map of the program is often useful and
+  the asmbug program can expand on the elfdecode data.
+  This is a optional step, but usually is worth the
+  extra time.  Use asmbug to set breakpoints and call
+  the major sections.  Often it is helpful to watch
+  the display and see how the program displays data.
+
+     asmbug <filename>
+
+  Warning, asmbug will delete all previous records about
+  our ELF file, so do not use asmbug after asmdis.
+
+  Step 3
+
+  Our eventual target is to generate source with the
+  asmsrc program, but first we need to identify all
+  the source code in the program.  This is the difficult
+  part.  The problems are those troublesome data statements
+  scattered throught some programs.
+
+  Our tool to find the code is asmdis.  It is interactive
+  and allows us to identiry code areas and undo our
+  choices if we made a mistake.  For large programs this
+  is  very tedious, but small areas of the program are
+  usually easy to do.
+
+  asmdis will give warning if something isn't right.
+  When done, use the save button to keep records of what
+  code was identified.  These records can be used by
+  asmsrc.
+
+  Step 4
+
+  We can now attempt to generate a source file
+  with:
+
+   asmsrc <filename>    <- starts from scratch, delete
+                           all previos recodes first.
+
+   asmsrc               <- looks for records from
+                           asmdis
+
+  The source fill will be named <filename>.src and be
+  in the current directory.
+
+  Step 5
+
+  The top of our source file will have some information
+  on compiling.  It is brief and the examples given later
+  will have more information.  Anyway, the next step is
+  to assemble the source.
+
+  Step 6
+
+  The assembler almost always find some things to complain
+  about and we can now decide to fix the source or go back
+  to step 3 and work with asmdis some more.
+
+Sourcing a simple assembler program
+
+  This is an example for a the simple "hello"
+  assembler program.  First type in the program
+  and assemble it.  Edit a file called "hello"
+  and add the code:
+
+  global main
+  main: mov eax,4
+        mov ebx,1
+        mov ecx,msg
+        mov edx,6
+        int 80h
+        mov eax,1
+        int 80h
+  [section .data]
+  msg 'hello',0ah
+
+  Assemble with: nasm -felf -g hello.asm
+  Link with:     ld hello.o -o hello
+
+  The linker "ld" will put the ELF executable
+  in the current directory.  It can be executed
+  by:  ./hello
+
+  To generate a source file from the ELF file
+  type:
+
+     asmsrc hello
+
+  We now have a source file created from
+  the hello ELF file.
+
+  assemble our new source file with:
+
+  nasm -felf -g hello.src
+  ld hello.o -o hello
+
+  We can now run our generated program
+  by typing  ./hello
+
+
+Sourcing a dynamic ELF file
+
+  First create a simple ELF executable by editing
+  the file hello.c with the following:
+
+   #include <stdio.h>
+   main()
+   {
+   printf("Hello, world!\n");
+   return 0;
+   }
+
+
+  Compile the above with:
+
+    gcc hello.c -o hello
+
+  To generate a source file from the ELF file
+  type:
+
+     asmsrc hello
+
+  We now have a source file created from
+  the hello ELF file.  If we inspect the
+  source file we see a lot of code at the
+  front and end of our program.  This code
+  was appended by the linker.  It needs to
+  be stripped off.
+
+  Edit hello.src and strip off the library
+  code at front and rear.  We may also have
+  to set the entry point "main" as global.
+
+  assemble our new source file with:
+
+  nasm -felf -g hello.src
+  ld hello.o -o hello
+
+  We can now run our generated program
+  by typing  ./hello
+
+
+Sourcing a static ELF file
+
+  First create a simple ELF executable by editing
+  the file hello.c with the following:
+
+   #include <stdio.h>
+   main()
+   {
+   printf("Hello, world!\n");
+   return 0;
+   }
+
+
+  Compile the above with:
+
+    gcc -static hello.c -o hello
+
+  To generate a source file from the ELF file
+  take a few aspirn and allocate a few days of
+  work.  What we find next is a lot of library
+  code to wade through.  I suggest you inspect
+  the source, just to see how much code a simple
+  'c" program can generte.  asmbug or asmdis can
+  be used to inspect the "hello" executable.
+
+  If you do manage to clean up the library code
+  with asmdis, then type:
+
+     asmsrc hello
+
+  We now have a source file created from
+  the hello ELF file.
+
+  assemble our new source file with:
+
+  nasm -felf -g hello.src
+  ld hello.o -o hello
+
+  We can now run our generated program
+  by typing  ./hello
+
+
+ 

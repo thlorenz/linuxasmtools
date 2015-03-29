@@ -1,0 +1,40 @@
+
+----------------------------------------------------------------------------
+118 fsync          - write file cache to disk
+----------------------------------------------------------------------------
+  mov  eax,118
+  mov  ebx,fd
+  int  80h
+
+       fsync copies all in-core parts of a file to disk, and waits  until  the
+       device  reports  that all parts are on stable storage.  It also updates
+       metadata stat information. It does  not  necessarily  ensure  that  the
+       entry  in the directory containing the file has also reached disk.  For
+       that an explicit fsync on the file descriptor of the directory is  also
+       needed.
+
+RETURN VALUE
+       On success, zero is returned.  On error a negative code is returned
+
+ERRORS
+       EBADF  fd is not a valid file descriptor open for writing.
+
+       EROFS, EINVAL
+              fd  is  bound  to a special file which does not support synchro-
+              nization.
+
+       EIO    An error occurred during synchronization.
+
+NOTES
+       In case the hard disk has write cache enabled, the data may not  really
+       be on permanent storage when fsync/fdatasync return.
+
+       When  an  ext2  file  system is mounted with the sync option, directory
+       entries are also implicitly synced by fsync.
+
+       On kernels before 2.4, fsync on  big  files  can  be  inefficient.   An
+       alternative might be to use the O_SYNC flag to open(2).
+
+SEE ALSO
+       bdflush, open, sync, mount, update
+

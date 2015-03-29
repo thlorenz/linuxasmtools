@@ -1,0 +1,97 @@
+;edit_todo:
+;build_years:
+;build_days:
+;light_state:
+;light_year:
+;light_month:
+;light_day:
+;light_schedule:
+;extract_text:
+;find_line_end:
+;insert_text:
+;insert_text_helper:
+;display_edit_table:
+;display_tail:
+;cursor_to_table:
+;table_to_cursor:
+;find_mouse_process:
+;
+;edit_pending		;-1
+;edit_complete		;-2
+;edit_deleted_status	;3
+;edit_year1		;4
+;edit_year2		;5
+;edit_year3		;6
+;edit_month_01		;7
+;edit_month_02		;8
+;edit_month_03		;9
+;edit_month_04		;10
+;edit_month_05		;11
+;edit_month_06		;12
+;edit_month_07		;13
+;edit_month_08		;14
+;edit_month_09		;15
+;edit_month_10		;16
+;edit_month_11		;17
+;edit_month_12		;18
+;edit_day_01		;19
+;edit_day_02		;20
+;edit_day_03		;21
+;edit_day_04		;22
+;edit_day_05		;23
+;edit_day_06		;24
+;edit_day_07		;25
+;edit_day_08		;26
+;edit_day_09		;27
+;edit_day_10		;28
+;edit_day_11		;29
+;edit_day_12		;30
+;edit_day_13		;31
+;edit_day_14		;32
+;edit_day_15		;33
+;edit_day_16		;34
+;edit_day_17		;35
+;edit_day_18		;36
+;edit_day_19		;37
+;edit_day_20		;38
+;edit_day_21		;39
+;edit_day_22		;40
+;edit_day_23		;41
+;edit_day_24		;42
+;edit_day_25		;43
+;edit_day_26		;44
+;edit_day_27		;45
+;edit_day_28		;46
+;edit_day_29		;47
+;edit_day_30		;48
+;edit_day_31		;49
+;edit_sched_once		;50
+;edit_sched_daily	;51
+;edit_sched_eom		;52
+;edit_sched_wk1		;53
+;edit_sched_wk2		;54
+;edit_sched_wk3		;55
+;edit_sched_wk4		;56
+;edit_sched_m1		;57
+;edit_sched_m2		;58
+;edit_sched_m3		;59
+;edit_sched_m4		;60
+;edit_sched_m6		;61
+;edit_sched_y1		;62
+;edit_sched_y2		;63
+;edit_sched_y3		;64
+;edit_help_button	;65
+;edit_del_button		;66
+;edit_done_button	;67
+;edit_text_line1		;68
+;edit_text_line2		;69
+;edit_text_line3		;70
+;edit_text_line4		;71
+;edit_text_line5		;72
+;get_string:
+;position_string_cursor:
+;display_get_string:
+;decode_get_string_key:
+;lookup_key:
+;decode_key:
+

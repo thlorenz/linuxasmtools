@@ -1,0 +1,13 @@
+
+----------------------------------------------------------------------------
+ 20 getpid         - get pid for current process
+----------------------------------------------------------------------------
+  mov  eax,020
+  int  80h
+
+      getpid returns in eax the process ID of the current process.
+
+SEE ALSO
+       exec, fork,  kill,  mkstemp
+
+

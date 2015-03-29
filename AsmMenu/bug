@@ -1,0 +1,17 @@
+#!/bin/bash
+insight_ --args asmmenu $0
+exit
+#menu definition follows
+buttonsize: 2,8
+header: "header1"
+		b0-row0
+		b0-row+
+
+	b1-row1	b2-row1	b3-row1
+	b1-row2	b2-row2	b3-row2
+
+	b4-row3	b5-row3
+	b4-row4	b5-row4
+
+	b6-row6		b7-row6
+	b6-row7		b7-row7

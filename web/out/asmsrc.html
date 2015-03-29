@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>AsmSrc disassembler for X86 ELF</title>
+ <meta name="keywords" content="disassembler, linux, utilities, x86, assembly, tools, programming">
+ <meta name="description" content="assembler source file generator for x86 Linux">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+
+<br>
+NAME<br>
+<br>
+ asmsrc - create nasm source for ELF executable<br>
+<br>
+SYNOPSIS<br>
+<br>
+ asmsrc &lt;file&gt;<br>
+<br>
+        &lt;file&gt; is optional ELF target. If no &lt;file&gt;<br>
+        is provided then this is continuation and<br>
+        asmsrc looks for existing database of ELF<br>
+        decoding information in current directory.<br>
+<br>
+DESCRIPTION<br>
+<br>
+ asmsrc generates nasm formatted assembler source<br>
+ files. It can use preproccessed data from<br>
+ asmdis or asmbug. If a filename is provided,<br>
+ asmsrc ignores any existing database and recreates<br>
+ a database for the target file.<br>
+ All files are expected to be in the current<br>
+ directory.<br>
+<br>
+USAGE<br>
+<br>
+The current directory is a work directory and asmsrc<br>
+writes its output file here as xxxx.src.<br>
+There are two expected modes of operation.<br>
+<br>
+mode 1<br>
+<br>
+If source is available and debug information included,<br>
+this provides asmsrc more information and allows it<br>
+to create better source files. This is useful to<br>
+convert from one assembler or HLL to the nasm format.<br>
+<br>
+mode 2<br>
+<br>
+When source is not available it is necessary to<br>
+identify all code areas and try to generate a<br>
+source that will compile. This requires use to<br>
+asmdis and asmbug to identify areas of the ELF<br>
+file and help build descriptive tables.<br>
+<br>
+Typically mode 2 starts with asmdis and after<br>
+the displayed data looks correct, asmsrc is<br>
+started without any parameters. asmsrc writes<br>
+a file xxxxx.src using the ELF file name as<br>
+a base.<br>
+<br>
+<br>
+<br>
+FILES<br>
+<br>
+ asmbug - debugger<br>
+ asmdis - disassembler that works with asmbug<br>
+ asmsrc - source code generator that works with asmbug<br>
+<br>
+   asmdis_history.dat  - status of last executable disassembled<br>
+   asmdis_image.dat    - load image of last executable<br>
+   asmdis_fimage.dat   - flags image describing executable<br>
+   asmdis_sym.dat      - symbol table for last executable<br>
+   asmdis_externs.txt  - list of extern's if file used dynamic lib<br>
+   asmdis_lib.txt      - list of dynamic libraries used<br>
+<br>
+SEE ALSO<br>
+ asmmgr(1) asmref(1) asmedit(1) asmsrc(1) asmdis(1)<br>
+ asmbug(1)<br>
+ <br>
+AUTHOR<br>
+ Jeff Owens &lt;jko@bsn1.net&gt;<br>
+<br>
+COPYRIGHT<br>
+ Copyright (C) 2007 Jeff Owens<br>
+ This program comes with absolutely NO WARRANTY<br>
+<br>
+        <br>
+      </big><br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

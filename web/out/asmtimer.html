@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>AsmTimer program timmer</title>
+ <meta name="keywords" content="program timer, linux, utilities, development, programming">
+ <meta name="description" content="small program timer for Linux">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+
+NAME<br>
+<br>
+ asmtimer - time program execution<br>
+<br>
+SYNOPSIS<br>
+ <br>
+ asmtimer &lt;executable file&gt;<br>
+<br>
+ if the &lt;executable file&gt; is omitted, a file<br>
+ browser will allow selection of file.<br>
+<br>
+DESCRIPTION<br>
+<br>
+ asmtimer executes a file a specified number of<br>
+ times. Each execution is timed using data supplied<br>
+ by the kernel and by manually recording start and<br>
+ stop times. All these time are collected and<br>
+ averages computed. The results are displayed.<br>
+<br>
+ the program being timed is most accurate if<br>
+ no keyboard waits (key pressing) are required<br>
+ and program output is piped to a file.<br>
+<br>
+ also, it helps to run the timer several times<br>
+ in quick secession to get a sampling of times.<br>
+<br>
+ Linux is a difficult system to get accurate<br>
+ timing information without patching the kernel<br>
+ and writing special programs. Asmtimer tries<br>
+ to solve this problem by using averages and<br>
+ repeated executions. It appears to be useful<br>
+ for comparing programs.<br>
+<br>
+OPERATION<br>
+<br>
+asmTimer reads the system time before executing a<br>
+program and again after it completes. This time<br>
+is saved in an array for each time a program is<br>
+timed. Also information from the kernel is collected<br>
+and stored in the same array.<br>
+<br>
+the timed program is executed in a shell (such as bash)<br>
+and the time to load the shell is included. The shell<br>
+load time can be calculated and subtracted out if<br>
+necessary, see hints.<br>
+<br>
+after all timing runs have been completed the averages<br>
+are computed and the array sorted. Information from<br>
+the array is then displayed.<br>
+<br>
+to remove the load times for a shell or the program<br>
+being timed, it is necessary to determine times and<br>
+subtract them out. To find a shells load time, run<br>
+it and divide by two. Essentially, we are calling<br>
+the shell to run the shell and then exit.<br>
+<br>
+to get more accurate timing it helps to do 8 or more<br>
+timing runs. Eventually, the program will run with<br>
+little interference from the kernel and we will have<br>
+a more accurate timing. This does not work as well<br>
+for programs that take seconds or even minutes, but<br>
+it does get close to the real time.<br>
+<br>
+it is possible to use shell commands to time programs.<br>
+for example in bash type:<br>
+<br>
+  time ls &gt; any_file<br>
+<br>
+The output appears to be kernel information and<br>
+somewhat confusing.<br>
+<br>
+AUTHOR<br>
+ Jeff Owens &lt;jko@bsn1.net&gt;<br>
+<br>
+COPYRIGHT<br>
+ Copyright (C) 2007 Jeff Owens<br>
+ This program comes with absolutely NO WARRANTY<br>
+      <br>
+      </big><br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

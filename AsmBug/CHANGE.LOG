@@ -1,0 +1,13 @@
+This file started on 10-06-2007. to record history
+
+
+1-06-2007 Changed code hunt to start at elf_phys_code_start
+          rather than elf_phys_exec_entry.  This picks up some
+          move code above EIP that was messing up the scroll
+          up and down of window.  The window uses body bits to
+          find previous line when centering EIP.
+
+11-10-2007 Enhanced calculator to use any combination of label,
+         operator, value, register
+
+ 

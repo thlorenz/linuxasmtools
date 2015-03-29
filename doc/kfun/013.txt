@@ -1,0 +1,37 @@
+
+----------------------------------------------------------------------------
+ 13 time           - get time in seconds since 1-jan-1970
+----------------------------------------------------------------------------
+  mov  eax,013
+  mov  ebx,tloc   ;either ptr or null to return time in eax only
+  int  80h
+
+       time returns the time since the Epoch (00:00:00 UTC, January 1, 1970),
+       measured in seconds in eax.
+
+       If tloc is non-NULL, the return value is also stored in the memory pointed
+       to by tloc.
+
+RETURN VALUE
+       On  success,  the value of time in seconds since the Epoch is returned.
+       On error eax is set to negative error code
+
+ERRORS
+       EFAULT tloc points outside your accessible address space.
+
+NOTES
+       POSIX.1 defines seconds since the Epoch as a value to be interpreted as
+       the number of seconds between a specified time and the Epoch, according
+       to a formula for conversion from UTC equivalent to  conversion  on  the
+       naïve  basis that leap seconds are ignored and all years divisible by 4
+       are leap years.  This value is not the same as  the  actual  number  of
+       seconds  between  the  time  and the Epoch, because of leap seconds and
+       because clocks are not required to be synchronised to a standard refer-
+       ence.   The  intention  is that the interpretation of seconds since the
+       Epoch values be consistent; see  POSIX.1  Annex  B  2.2.2  for  further
+       rationale.
+
+SEE ALSO
+       date,  gettimeofday
+
+

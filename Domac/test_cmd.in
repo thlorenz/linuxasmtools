@@ -1,0 +1,243 @@
+;this is a test file
+
+^copy ("1212") $work
+^replace $work ("2") with ("3")
+^show $work
+
+^copy ("12345678") $work
+^find ("34") in token $work
+^shrink $findptr #back #1
+^ifeq $findptr ("3")
+^show ("shrink $findptr #back #1 - pass")
+^endif
+^ifne $findptr ("3")
+^show ("shrink $findptr #back #1 - fail")
+^stop
+^endif
+
+^copy ("12345678") $work
+^find ("34") in token $work
+^shrink $findptr #back #till ("3")
+^ifeq $findptr ("3")
+^show ("shrink $findptr #back #till 3 - pass")
+^endif
+^ifne $findptr ("3")
+^show ("shrink $findptr #back #till 3 - fail")
+^stop
+^endif
+
+^copy ("12345678") $work
+^find ("34") in token $work
+^expand $findptr #back #1
+^ifeq $findptr ("345")
+^show ("expand $findptr #back #1 - pass")
+^endif
+^ifne $findptr ("345")
+^show ("expand $findptr #back #1 - fail")
+^stop
+^endif
+
+^copy ("12345678") $work
+^find ("34") in token $work
+^expand $findptr #back #till ("5")
+^ifeq $findptr ("345")
+^show ("expand $findptr #back #till - pass")
+^endif
+^ifne $findptr ("345")
+^show ("expand $findptr #back #till - fail")
+^stop
+^endif
+
+^copy ("1") $work
+^expand $work #back /2
+^show $work
+
+^copy ("12345678") $work
+^find ("34") in token $work
+^expand $findptr #back /2
+^show $work
+
+^copy ("1") $work
+^expand $work #back ("2")
+^ifeq $work ("12")
+^show ("expand $work #back string - pass")
+^endif
+^ifne $work ("12")
+^show ("expand $work #back string - fail")
+^stop
+^endif
+
+^copy ("1") $work
+^copy ("2") $infilename
+^expand $work #back $infilename
+^ifeq $work ("12")
+^show ("expand $work #back token - pass")
+^endif
+^ifne $work ("12")
+^show ("expand $work #back token - fail")
+^stop
+^endif
+
+^copy ("12345678") $work
+^find ("34") in token $work
+^shrink $findptr #front #till ("4")
+^ifeq $findptr ("4")
+^show ("shrink $findptr #front #till - pass")
+^endif
+^ifne $findptr ("4")
+^show ("shrink $findptr #front #till - fail")
+^stop
+^endif
+
+^copy ("1") $work
+^expand $work #front ("0")
+^ifeq $work ("01")
+^show ("expand $work #front string - pass")
+^endif
+^ifne $work ("01")
+^show ("expand $work #front string - fail")
+^stop
+^endif
+
+^copy ("12345678") $work
+^find ("34") in token $work
+^shrink $findptr #front #1
+^ifeq $findptr ("4")
+^show ("shrink $findptr #front #1 - pass")
+^endif
+^ifne $findptr ("4")
+^show ("shrink $findptr #front #1 - fail")
+^stop
+^endif
+
+^copy ("12345678") $work
+^find ("34") in token $work
+^expand $findptr #front #1
+^ifeq $findptr ("234")
+^show ("expand $findptr #front #1 - pass")
+^endif
+^ifne $findptr ("234")
+^show ("expand $findptr #front #1 - fail")
+^stop
+^endif
+
+
+^copy ("") $work 
+^ifeq $work ("")
+^show ("if null $work pass1")
+^endif
+^ifne $work ("")
+^show ("if null $work fail1")
+^endif
+
+^copy ("1") $work
+^expand $work #front /2
+^ifne $work ("21")
+^show ("expand #front /2 - failed")
+^stop
+^endif
+^show ("expand #front /2 - passed")
+
+
+^copy ("") $work
+^ifeq $work ("")
+^show ("if null $work pass2")
+^endif
+^ifne $work ("")
+^show ("if null $work fail2")
+^endif
+^show $work
+
+^copy string ("if") to $work
+^ifne $work and ("if")
+^ifne $work and ("not")
+^show ("nested if fail")
+^stop
+^endif
+^show ("nested if fail")
+^stop
+^endif
+^show ("nested if pass")
+
+^copy string ("if") to $work
+^copy string ("if") to $infilename
+^ifeq $work and $infilename
+^show ("ifeq pass")
+^endif
+
+^ifeq $work and ("if")
+^show ("if string pass")
+^endif
+
+^ifne $work and $infilename
+^show ("ifne fail")
+^stop
+^endif
+^show ("ifne pass")
+
+^ifeq $work and ("if")
+^ifne $work and ("not")
+^show ("nested if pass")
+^endif
+^endif
+
+^copy ("this is search string") $work
+^find ("search") in token $work
+^shrink $findptr #front #till ("i")
+^show $findptr
+
+^copy ("this is search string") $work
+^find ("search") in token $work
+^expand $findptr #front #5
+^show $findptr
+
+^copy ("this is search string") $work
+^find ("search") in token $work
+^expand $findptr #front #till ("i")
+^show $findptr
+
+^copy ("-test-") $work
+^expand $work #front /y
+^show $work
+
+^copy ("-test-") $work
+^expand $work #front ("-string-")
+^show $work
+
+^copy ("-test-") $work
+^copy ("-this-") $infilename
+^expand $work #front $infilename
+^show $work
+
+^copy ("put insert here ->style<-") to $work
+^find the string ("style") in token $work
+^copy /y to $findptr
+^show $work
+
+^copy ("put insert here ->style<-") to $work
+^find the string ("style") in token $work
+^copy ("-insert-") to $findptr
+^show $work
+
+^copy ("put insert here ->style<-") to $work
+^find the string ("style") in token $work
+^copy ("-insert-") to $temp
+^copy $temp to $findptr
+^show $work
+
+^copy /y $work
+^show $work
+
+^copy ("a string") $temp
+^show $temp
+
+^find the string ("style") in token $infile
+^copy $findptr $temp
+^show $findptr 
+^show $temp
+!shell("ls > ls_files")
+^show $outfilename
+^copy $outfilename $temp
+^show $temp
+;exit is next
+^stop ;end of all commands

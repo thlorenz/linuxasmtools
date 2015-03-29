@@ -1,0 +1,208 @@
+ extern file_status_name,file_status_handle,file_open_rd
+ extern file_close,file_open,build_current_path,build_homepath
+ extern filename_extract,filepath_extract
+ extern lib_buf
+ extern file_read_all,file_read_grow
+ extern file_write_close
+ extern file_list_copy
+
+ [section .text]
+
+
+  global _start
+  global main
+
+_start:
+main:
+  call	file_write_test
+  call	file_copy_test
+  call	file_read_test
+  call	file_name_test
+  call	file_open_test
+  mov	eax,1		;exit
+  int	80h
+;-------------------------------------------------------------
+file_copy_test:
+
+  mov	edi,esp
+ft_lp:
+  pop	ebp
+  or	ebp,ebp
+  jnz	ft_lp
+  mov	ebp,esp
+  mov	esp,edi
+
+  mov	esi,clist
+  call	file_list_copy
+  ret
+
+clist:
+copy_list:
+  db	1,  'a_error',0,   0ah, '.a/a_error',0
+  db	1,  'a_dir',0,     0ah, '.a/a_dir',0
+  db	1,  'a_config',0,  0ah, '.a/a_config',0
+  db	1,  'a_todo',0,    0ah, '.a/a_config',0
+  db	1,  'a_help',0,    0ah, '.a/a_help',0
+  db	1,  'asmlib.a',0,  0ah, '.a/asmlib.a',0
+  db	1,  'a.f3',0,      0ah, '.a/asmlib.a',0
+  db	1,  'a.f4',0,      0ah, '.a/asmlib.a',0
+  db	1,  'a.f5',0,      0ah, '.a/a.f5',0
+  db	1,  'a.f6',0,      0ah, '.a/a_f6',0
+  db	1,  'a.f7',0,      0ah, '.a/a.f7',0
+;  db	'a_f8',0
+;  db	'a_f9',0
+;  db	'a_fa',0
+  db	1, 'a.hlp',0,          0ah, '.a/a.hlp',0
+  db	1, 'a_quick.txt',0,    0ah, '.a/a_quick.txt',0
+  db	1, 'asmlib.txt',0,     0ah, '.a/asmlib.txt',0
+  db	1, 'includes',0,       0ah, '.a/includes',0
+  db	1, 'kernel.txt',0,     0ah, '.a/kernel.txt',0
+  db	1, 'plugins.txt',0,    0ah, '.a/plugins.txt',0
+  db	1, 'syserr.txt',0,     0ah, '.a/syserr.txt',0
+  db	1, 'tutor1',0,         0ah, '.a/tutor1',0
+  db	1, 'tutor2',0,         0ah, '.a/tutor2',0
+  db	1, 'x86_nasm.txt',0,   0ah, '.a/x86_nasm.txt',0
+  db	1, 'x86_ref.txt',0,    0ah, '.a/x86_ref.txt',0
+  db	0		;end of table
+
+;-------------------------------------------------------------
+file_read_test:
+  mov	ebp,homefil	;get file name
+  mov	edx,fbuf	;buffer end ptr
+  mov	ecx,fbuf
+  mov	edi,fbuf_end
+  mov	al,3
+
+  mov	esi,esp
+frt_lp:
+  pop	ebx
+  or	ebx,ebx
+  jnz	frt_lp
+  mov	ebx,esp
+  mov	esp,esi
+
+  call	file_read_grow
+
+  mov	ebp,filen	;get file name
+  mov	edx,800		;buffer size
+  mov	ecx,fbuf
+  mov	al,3		;try everywhere
+  call	file_read_all
+
+  ret
+
+filen	db	'xxx',0
+homefil db	'.a/a.ini',0
+
+  [section .bss]
+fbuf	resb	800
+fbuf_end resb	1
+
+  [section .text]  
+;-------------------------------------------------------------
+;  file_write_close - open,write, and close file
+; INPUTS
+;    ebx = file name ptr           
+;    eax = buffer
+;    ecx = lenght of write
+;    ebp = ptr to enviornment pointer if flag bit 0010 set
+;    edx = file attributes if flag bit 1000 set 
+;    esi = flags 0000 0001 write to local dir or full path if given
+;                0000 0010 write to $HOME or full path if given
+;                0000 0100 check for existing file and preserve attr
+;                0000 1000 file attr are in edx, ignore 0100 flag
+;                0001 0000 append to existing file if found
+;    Note: file name in ebx can include partial dir  (dir/file.inc)
+; OUTPUT
+;    eax = 0 or + normal
+;        = -x error occured
+
+file_write_test:
+  mov	ebx,filename
+  mov	eax,wbuf
+  mov	ecx,12
+  mov	esi,1001b		;write to local file
+  mov	edx,666q
+  pusha
+  call	file_write_close
+  popa
+  mov	esi,15h		;check for file, append
+  pusha
+  call	file_write_close
+  popa
+
+  mov	edi,esp
+fwt_lp:
+  pop	ebp
+  or	ebp,ebp
+  jnz	fwt_lp
+  mov	ebp,esp
+  mov	esp,edi
+  
+  mov	esi,2		;write to /home/jeff/x
+  call	file_write_close
+  ret
+
+  
+
+  [section .data]
+filename:  db 'x',0
+env_ptr	   dd 0
+wbuf	   db 'hi im a data',0
+  [section .text]
+
+;-------------------------------------------------------------
+file_open_test:
+  mov	ebx,lib_buf
+  mov	ebp,fname	;append string
+  call	build_current_path
+  mov	ebx,lib_buf
+  call	file_status_name  ; eax = err edx=permissions
+  jns	fot_ok	     ; dx = attributes
+  nop
+fot_ok:
+  mov	ebx,lib_buf
+  xor	ecx,ecx
+  call	file_open
+  mov	ebx,eax
+  call	file_status_handle
+  jns	fot_ok2
+  nop
+fot_ok2:		;edx = attributes
+  call	file_close	
+
+  mov	ebx,lib_buf
+  call	file_open_rd
+  mov	ebx,eax
+  call	file_close
+
+  mov	edx,esp
+fot_lp:
+  pop	ebx
+  or	ebx,ebx
+  jnz	fot_lp	;get env variables list
+  mov	ebx,esp
+  mov	esp,edx
+
+  mov	edi,lib_buf
+  call	build_homepath
+  ret
+
+fname: db "test",0
+;-------------------------------------------------------------
+file_name_test:
+  mov	esi,extracted
+  mov	edi,full_path
+  call	filename_extract
+  mov	esi,extracted
+  mov	edi,full_path
+  call	filepath_extract  
+  ret
+
+  [section .data]
+full_path: db '/hello/full/filename',0
+extracted: times 10 db 0
+  [section .text]
+
+;------------------------------------------------------
+  ret

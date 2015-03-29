@@ -1,0 +1,53 @@
+
+----------------------------------------------------------------------------
+133 fchdir         - change working directory
+----------------------------------------------------------------------------
+  mov   eax,133
+  mov   ebx,fd
+  int   80h
+
+       chdir changes the current directory to that specified by "fd".
+       fd is an open file descriptor.
+
+RETURN VALUE
+       On success, zero is returned.  On error a negative code is returned
+
+ERRORS
+       Depending  on  the file system, other errors can be returned.  The more
+       general errors for chdir are listed below:
+
+       EFAULT path points outside your accessible address space.
+
+       ENOMEM Insufficient kernel memory was available.
+
+       EACCES Search permission is denied on a component of path.
+
+       ELOOP  Too many symbolic links were encountered in resolving path.
+
+       EIO    An I/O error occurred.
+
+       The general errors for fchdir are listed below:
+
+       EBADF  fd is not a valid file descriptor.
+
+       EACCES Search permission was denied on the directory open on fd.
+
+NOTES
+       The prototype for fchdir is only available if  _BSD_SOURCE  is  defined
+       (either  explicitly,  or  implicitly,  by not defining _POSIX_SOURCE or
+       compiling with the -ansi flag).
+
+CONFORMING TO
+       The chdir call is compatible with SVr4, SVID,  POSIX,  X/OPEN,  4.4BSD.
+       SVr4  documents  additional  EINTR, ENOLINK, and EMULTIHOP error condi-
+       tions but has no ENOMEM.  POSIX.1 does not have ENOMEM or  ELOOP  error
+       conditions.   X/OPEN  does  not have EFAULT, ENOMEM or EIO error condi-
+       tions.
+
+       The fchdir call is compatible with SVr4, 4.4BSD and X/OPEN.  SVr4 docu-
+       ments additional EIO, EINTR, and ENOLINK error conditions.  X/OPEN doc-
+       uments additional EINTR and EIO error conditions.
+
+SEE ALSO
+       getcwd, chroot
+

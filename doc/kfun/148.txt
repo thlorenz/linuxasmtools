@@ -1,0 +1,46 @@
+
+----------------------------------------------------------------------------
+148 fdatasync      - synchronize a file's in-core data with that on disk
+----------------------------------------------------------------------------
+  mov  eax,148
+  mov  ebx,fd  ;file descriptor
+  int  80h
+
+       fdatasync copies all in-core parts of a file to disk, and waits  until  the
+       device  reports  that all parts are on stable storage.  It does not update
+       metadata stat information. It does  not  necessarily  ensure  that  the
+       entry  in the directory containing the file has also reached disk.  For
+       that an explicit fsync on the file descriptor of the directory is  also
+       needed.
+
+       fdatasync only flushes user data, not the
+       meta data like the mtime or atime.
+
+
+RETURN VALUE
+       On success, zero is returned.  On error, -1 is returned, and  errno  is
+       set appropriately.
+
+ERRORS
+       EBADF  fd is not a valid file descriptor open for writing.
+
+       EROFS, EINVAL
+              fd  is  bound  to a special file which does not support synchro-
+              nization.
+
+       EIO    An error occurred during synchronization.
+
+NOTES
+       In case the hard disk has write cache enabled, the data may not  really
+       be on permanent storage when fsync/fdatasync return.
+
+       When  an  ext2  file  system is mounted with the sync option, directory
+       entries are also implicitly synced by fsync.
+
+       On kernels before 2.4, fsync on  big  files  can  be  inefficient.   An
+       alternative might be to use the O_SYNC flag to "open" call.
+
+SEE ALSO
+       bdflush, open, sync, mount, update, sync
+
+

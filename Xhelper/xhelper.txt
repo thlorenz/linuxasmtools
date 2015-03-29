@@ -1,0 +1,562 @@
+
+           "xhelper" desktop controler
+          
+
+  PURPOSE
+
+xhelper is a simple way to control linux desktop
+programs. It is a script (batch processor)
+for x windows. The language is easy to read
+and can be understood without useing a manual.
+It has the unique capibility to add comments
+everywhere, even inside commands. Also, it
+is designed for embedding into scripts or
+other languages.
+
+  STARTING XHELPER
+
+The calling sequence for xhelper is;
+
+ xhelper <switches> <control file>
+
+   "switches" can be: -h for help
+                      -s disable focus save at
+                         start and restore at exit
+                      -goto <label> start at label
+                      -x alternate window
+                         list
+
+   "control file" is optional file name.
+
+If no file is provided a dump of all
+known windows, programs, and help is
+sent to stdout.
+
+The alternate window list uses x server
+information about windows. Normally, the
+window information is provided by the
+window manager.
+
+For more information on using the goto
+parameter, see discussion of function
+libraries.
+
+Some examples:
+
+ 1. list all windows and programs active.
+
+    xhelper
+
+    -or-
+
+    xhelper -x
+
+ 2. start a control file running.
+
+    xhelper file-name
+
+ 3. embed xhelper into a script 
+
+    #!/bin/bash
+    #add additional script commands here
+    xhelper $0
+    exit 0
+    ;xhelper commands are placed here
+
+    The above text can be placed in any
+    file and the execute attribute set. It
+    will run as a xhelper program.
+
+
+  XHELPER OPERATION
+
+All xhelper commands start with "^" followed by a name.
+Everything else is assumed to be comments and is ignored.
+Once a valid command name is found, the program then
+expects parameters which are enclosed by (" and ").
+
+xhelper is primarily a "window" minipulation tool
+and relies on its ability to identify windows.
+Any command that has a ("window") name, results
+in a search of all current windows for a match.
+Matches can be partial and the first match found
+is used by a command. If you enter ("") this 
+will match all windows. Entering ("dog") will
+match all window titles with "dog" somewhere
+in the name.
+
+To identify a window, find a unique string
+that appears in the title. Titles visible to
+the program can be seen with the ^dump command
+or by running xhelper without a command file.
+
+The windows known to xhelper can be modified
+by using the -x parameter. When -x is used, the
+window list is obtained from x server. The
+x server list can include hundreds of windows.
+The default xhelper operation is to get the
+window list from "window manager". The window
+manager list is shorter and easier to work
+with, but special windows may not appear.
+
+
+  XHELPER COMMANDS
+
+^run ("program")
+
+  Start a program running. Before working with a
+  running program, it may be necessary to wait
+  until windows are created or the program has
+  been given control. the "wait_program" and
+  "wait_window" can be used.
+
+  Running programs will die when xhelper exitss,
+  so it may be necessary to wait while programs
+  run.
+
+  example:  ^run ("xclock")
+            ^wait_program ("xclock")
+            ^stop
+
+^kill ("program")
+
+  Kill a running program.
+
+^stop
+
+  The ^stop command terminates xhelper. It needs to
+  be used at end of program and within any "if" commands
+  that want to force an exit.
+
+  example: 1. terminate the program if error
+
+  ^if_no_program ("browser")
+  ^show ("browser died or exited")
+  ^stop
+  ^endif
+
+^goto ("label")
+
+  Labels may be defined anywhere, and are
+  followed by a ":"  The goto command will
+  jump to the label and begin processing.
+
+  example:
+
+  ^goto ("my_label")
+  ^show ("this command is not executed")
+  my_label:  <-- note the ":" added at end
+  ^stop
+  
+^sleep ("seconds")
+
+  Sleep gives other programs time to run. It
+  may be useful when waiting for windows or
+  programs to appear.
+
+^dump
+
+  Dump sends a list of programs and windows to
+  stdout out. This is useful to find the names
+  of windows or status of a point in xhelper
+  command execution. If xhelper output is
+  piped to a file, the dump command can be
+  used to log status:
+
+  xhelper command_file > log_file
+
+^show ("message")
+
+  The ^show command displays text. It can be used
+  to debug programs or display status of processing.
+
+  example:  ^show ("string")
+
+
+^set_timeout ("seconds")
+
+  The "wait" commands wait forever and this
+  can create programs that hang. To
+  avoid hung programs, the "set_timeout"
+  command will cause all "wait" commands to
+  exit when the timeout expires. The timeout
+  needs to be restarted for each command, or
+  can be used with multiple "wait" commands.
+  It continues to count down as each wait
+  command is called.
+
+  see also, ^if_timeout command and all
+  wait commands.
+
+^wait_program ("name")
+
+  wait_program will wait for a named program
+  to appear. To avoid waiting forever, the
+  set_timeout command should be used.
+
+  To be safe always set the timeout first. To
+  disable the timeout set it to ("0")
+
+^wait_no_program ("name")
+
+  wait_no_program will wait for a named program
+  to exit. To avoid waiting forever, the
+  set_timeout command should be used.
+
+  To be safe always set the timeout first. To
+  disable the timeout set it to ("0")
+
+^wait_window ("name")
+
+  Windows can come and go, so it may be
+  necessary to wait before trying to operate
+  on them. The set_timeout should be used
+  to avoid waiting forever.
+
+  To be safe always set the timeout first. To
+  disable the timeout set it to ("0")
+
+^wait_no_window ("name")
+
+  Wait for a window to be destroyed. This
+  can also be used to wait for a program
+  to exit and close its windows. See
+  set_timeout.
+
+  To be safe always set the timeout first. To
+  disable the timeout set it to ("0")
+
+^wait_file ("file")
+
+  Wait for a file to exist. This command
+  can work with set_timeout.
+
+  To be safe always set the timeout first. To
+  disable the timeout set it to ("0")
+
+^wait_no_file ("file")
+
+  Wait for a file to be deleted. Also, see
+  set_timeout
+
+  To be safe always set the timeout first. To
+  disable the timeout set it to ("0")
+
+^if_program ("name")
+
+  Check if a program is running. If program
+  is found, execute all commands until a
+  ^endif command is encountered.
+
+  example:  ^if_program ("kppp")
+            ^show ("kppp running")
+            ^endif
+
+^if_no_program ("name")
+
+  Check if program is not running. If no program
+  then execute all commands until a ^endif
+  command is encountered.
+
+  example:  ^if_no_program ("kppp")
+            ^run ("kppp")
+            ^show ("starting conection")
+            ^endif
+
+^if_window ("name")
+
+  Check if a window has been created. It is
+  possible the window is a work in process and
+  not ready to be displayed yet, so beware.
+
+  If window is found, all commands are executed
+  until a ^endif is found. Otherwise, commands
+  are ignored until a ^endif
+
+  example:  ^if_window ("jumbo")
+            ^show ("found window jumbo")
+            ^endif
+
+^if_no_window ("name")
+
+  Check if a window is not present.
+
+  example:  ^if_no_window ("jumbo")
+            ^show ("window jumbo not found")
+            ^endif
+
+^if_file ("name")
+
+  Check if file exists.
+
+  example:  ^if_file ("/etc/ppp/x")
+            ^show ("found file x")
+            ^endiff
+
+^if_no_file ("name")
+
+  Check if file not present.
+
+  example:  ^if_no_file ("/etc/resolv")
+            ^show ("file resolv not found")
+            ^endif
+
+^if_timeout
+
+  Check if last wait command timed out.
+
+  example:  ^if_timeout
+            ^show ("wait timed out")
+            ^stop aborting program here
+            ^endif
+
+^if_no_timeout
+
+  Check if last wait was successful.
+
+  example: ^if_no_timeout
+           ^show ("do operation now")
+           ^endif
+
+^endif
+
+  ^endif signal the end of a list of "if" commands.
+  It can be nested.
+
+^move_window ("window name") ("x") ("y")
+
+  Move a window. The ^dump command or executing
+  xhelper without a command file, will show current
+  window location. The x and y values are in
+  decimal. x is pixel column, y is pixel row.
+
+^resize_window ("window name") ("x") ("y")
+
+  Resize a displayed window.
+
+^activate_window ("name")
+
+  The send_keys command only works with the
+  active window. Once a window has focus and
+  is displayed, it can be minipulated or used
+  as target for keys.
+
+^send_keys ("flag") ("xkey")
+
+  Send_keys uses the xtest protocall extension
+  to send keys to a activated window (See the
+  activate_window command).
+
+  Each key consists of two hex values; a flag
+  and xcode. The flag is used to hold down a
+  modifier key. Modifier keys are:
+
+  shift   01
+  ctrl    04
+  alt     08
+
+  example:  to hold down ctrl-alt  flag=0c
+            to send upper case     flag=01
+
+  The xkey is a code used by x server to identify
+  a key. The follow is a table of common keys:
+
+        
+    x-code
+    ----- 
+     08     
+     09  (Escape)
+     0a  (1)     
+     0b  (2)     
+     0c  (3)     
+     0d  (4)     
+     0e  (5)     
+     0f  (6)     
+     10  (7)     
+     11  (8)     
+     12  (9)     
+     13  (0)     
+     14  (minus) 
+     15  (equal) 
+     16  (BackSpace)
+     17  (Tab)   
+     18  (q)     
+     19  (w)     
+     1a  (e)     
+     1b  (r)     
+     1c  (t)     
+     1d  (y)     
+     1e  (u)     
+     1f  (i)     
+     20  (o)     
+     21  (p)     
+     22  (bracketleft)
+     23  (bracketright)
+     24  (Return)
+     25  (Control L)
+     26  (a)     
+     27  (s)     
+     28  (d)     
+     29  (f)     
+     2a  (g)     
+     2b  (h)     
+     2c  (j)     
+     2d  (k)     
+     2e  (l)     
+     2f  (semicolon)
+     30  (apostrophe)
+     31  (grave) 
+     32  (Shift_L
+     33  (backslash)
+     34  (z)     
+     35  (x)     
+     36  (c)     
+     37  (v)     
+     38  (b)     
+     39  (n)     
+     3a  (m)     
+     3b  (comma) 
+     3c  (period)
+     3d  (slash) 
+     3e  (Shift_R)
+     3f  (KP_Multiply)
+     40  (Alt_L)	
+     41  (space)	
+     42  (Caps_Lock)
+     43  (F1)	   
+     44  (F2)	   
+     45  (F3)	   
+     46  (F4)	   
+     47  (F5)	   
+     48  (F6)	   
+     49  (F7)	   
+     4a  (F8)	   
+     4b  (F9)	   
+     4c  (F10)	  
+     4d  (Num_Lock)
+     4e  (Scroll_Lock)
+     4f  (KP_Home)
+     50  (KP_Up)	
+     51  (KP_Pgup)
+     52  (KP_Subtract)
+     53  (KP_Left)
+     54  (KP_Begin)
+     55  (KP_Right)
+     56  (KP_Add)
+     57  (KP_End)
+     58  (KP_Down)
+     59  (KP_Pgdn)
+     5a  (KP_Insert)
+     5b  (KP_Delete)
+     5c  (Mode_switch)
+     5e  (less)  
+     5f  (F11)
+     60  (F12)   
+     61  (Home)	
+     63  (Pgup )	
+     64  (Left)	
+     66  (Right)	
+     67  (End)	
+     69  (Pgdn)	
+     6b  (Delete)
+     6c  (KP_Enter)
+     6d  (Control R)
+     6e  (Pause) 
+     6f  (Print) 
+     70  (KP_Divide)
+     71  (Alt_R) 
+
+
+^move_mouse ("x_col") ("y_row")
+
+  The move_mouse command sets the mouse cursor.
+  It is independent of windows that may or may
+  not be present. The values for x and y are
+  in decimal
+
+  example:
+  ^move_mouse ("500") ("10")
+
+^click_mouse ("right")
+^click_mouse ("left")
+^cllck_mouse ("middle")
+
+  The click_mouse command sends a mouse button
+  down command, followed by a mouse button up.
+
+  COMPILING
+
+xhelper does not need to be compiled, but if a
+compile is desired, the libraries asmlibx and
+asmlib are needed. The linker needs to have
+asmlibx listed first.
+
+
+  FUNCTION LIBRARIES AND SCRIPT USAGE
+
+It is easy to create complex programs with
+libraries of functions and interact with a
+script.  The script could be shell such as
+bash or zsh and xhelper programs can be
+included within the script.
+
+Here is an example of three xhelper programs
+inside a bash script.
+
+    #!/bin/bash
+    xhelper $0 -goto program1
+    #shell commands here, other programs,
+    #dialog with user, etc.
+    xhelper $0 -goto program2
+    xhelper $0 -goto program2
+    exit 0
+    program1:
+    ^show ("hello this is program1")
+    ^stop
+    program2:
+    ^show ("hello this is program2")
+    ^stop
+    program3:
+    ^show ("hello this is program3")
+    ^stop
+   
+
+  XHELPER EXAMPLES
+
+A simple hello world program. Assumes that
+xhelper is installed.
+
+    #!/bin/bash
+    xhelper $0
+    exit 0
+    ^show ("hello world")
+    ^stop
+
+We can create a standalone command file
+and duplicate the previous example:
+
+file cmds = ^show ("hello world")
+            ^stop
+
+we now call xhelper as follows:
+
+   xhelper cmds
+
+
+  PROBLEMS
+
+Nothing happened?
+This often occurs if xhelper runs without any pauses, or
+logging. It is very fast for some commands, windows
+come and go without being seen. First try putting in
+some delays or printouts.
+
+The window moved and my mouse clicks went to wrong
+place!
+It is best to force windows to known locations.
+The window manager often decides to move windows
+and we have to tell it where we want the window.
+
+
+
+

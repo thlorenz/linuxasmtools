@@ -1,0 +1,140 @@
+
+--------------------------------------------------------------------
+267 clock_nanosleep  - sleep (delay)
+--------------------------------------------------------------------
+
+  mov  eax,267
+  mov  ebx,which_clock
+  mov  ecx,rqtp         ;pointer to timespec struc
+  mov  edx,rmtp         ;pointer to timespec struc
+  int  80h
+
+
+
+SYNOPSIS
+
+       #include <time.h>
+
+       int  clock_nanosleep(clockid_t  which_clock,  int  flags,  const struct
+       timespec *rqtp, struct timespec *rmtp);
+
+     #define CLOCK_REALTIME			0
+     #define CLOCK_MONOTONIC			1
+     #define CLOCK_PROCESS_CPUTIME_ID	2
+     #define CLOCK_THREAD_CPUTIME_ID		3
+
+     struct timespec {
+	time_t	tv_sec;		/* seconds */
+	long	tv_nsec;	/* nanoseconds */
+     };
+
+DESCRIPTION
+       clock_nanosleep suspends execution  of  the  currently  running  thread
+       until  the  time  specified  by  rqtp  has  elapsed or until the thread
+       receives a signal.
+
+       The default behavior is to interpret the specified sleep time as  rela‐
+       tive  to  the  current time.  The TIMER_ABSTIME flag specified in flags
+       will modify this behavior to make the time specified by  rqtp  absolute
+       with respect to the clock value specified by which_clock.
+
+       If  the TIMER_ABSTIME flag is specified and the time value specified by
+       rqtp is less than or equal to the current time value of  the  specified
+       clock  (or  the  clock’s value is changed to such a time), the function
+       will return immediately.  Further, the time slept is  affected  by  any
+       changes  to  the  clock after the call to clock_nanosleep(3).  That is,
+       the call will complete when the actual time is equal  or  greater  than
+       the  requested time no matter how the clock reaches that time, via set‐
+       ting or actual passage of time or some combination of these.  The  only
+       clock  that  can  be  set is CLOCK_REALTIME and CLOCK_REALTIME_HR which
+       are,  in  fact  the  same  clock  with  differing  resolutions.    Thus
+       clock_settime(3) on either of these clocks changes both.  This clock is
+       also set by the settimeofday(3) call and  by  the  syncronization  code
+       adjtimex(2) call.
+
+       If TIMER_ABSTIME is not specified, the timespec structure pointed to by
+       rmtp is updated to contain the amount of time remaining in the interval
+       (i.e.,  the  requested time minus the time actually slept).  If rmtp is
+       NULL, the remaining time is not set.  The rmtp value is not set in  the
+       case of an absolute time value.
+
+       The time slept may be longer than requested as the specified time value
+       is rounded up to an integer multiple of the clock resolution, or due to
+       scheduling and other system activity.  Except for the case of interrup‐
+       tion by a signal, the suspension time is never less than requested.
+
+       The CLOCK_PROCESS_CPUTIME_ID and CLOCK_THREAD_CPUTIME_ID clocks are not
+       supported by clock_nanosleep(3).
+
+       Like  nanosleep(2),  but  unlike  sleep(3), clock_nanosleep(3) does not
+       affect signals.
+
+       For a listing of valid clocks, see clock_gettime(3).
+
+RETURN VALUE
+       On success, clock_nanosleep returns the value  0  after  at  least  the
+       specified time has elapsed.
+
+       On  failure,  clock_nanosleep returns one of the errors below and errno
+       is NOT set.
+
+NOTE:
+       errno is NOT set by clock_nanosleep, ever.
+
+
+       ERRORS
+
+       EFAULT A specified memory address is outside the address range  of  the
+              calling process.
+
+       EINTR  The  call was interrupted by a signal.  In this case the remain‐
+              ing value to sleep is returned in rmtp.  This value may be  more
+              than the orgional request value because that value is a) rounded
+              up to the nearest resolution and b) it is  further  advanced  to
+              account  for  the fact that the call is not exactly on a resolu‐
+              tion point.  This means that code such as:
+
+              struct timespec sleep;
+
+              sleep.tv_sec = secs;
+              sleep.tv_nsec = nsecs;
+
+              while( clock_nanosleep(CLOCK_REALTIME,  0,  &sleep,  &sleep)  &&
+                     errno == EINTR);
+
+              will  never  complete  if  the  call  is interrupted continually
+              within this roundup time.  This  problem  is  avoided  with  the
+              TIMER_ABSTIME  call in which case the above code fragement would
+              be:
+
+              struct timsepec sleep;
+
+              clock_gettime(CLOCK_REALTIME, &sleep);
+              sleep.tv_sec += secs;
+              sleep.tv_nsec += nsecs;
+              if (sleep.tv_nsec > 1000000000) {
+                   sleep.tv_sec++;
+                   sleep.tv_nsec -= 1000000000;
+              }
+              while(clock_nanosleep(CLOCK_REALTIME,   TIMER_ABSTIME,   &sleep,
+                     NULL) && errno == EINTR);
+
+       EINVAL The clock specified by which_clock is invalid, the rqtp argument
+              specified a nanosecond value less than zero or greater  than  or
+              equal  to  1,000 million, or TIMER_ABSTIME is specified in flags
+              and the value specified by rqtp is  outside  the  range  of  the
+              clock  specified  by which_clock, or the resulting sleep time is
+              too large for the system. Values "too large" are those that  can
+              not  be converted to "jiffies" from "now" with a resulting value
+              less than MAX_LONG.
+
+       ENOSYS The function is not supported on this implementation.
+
+CONFORMING TO
+       POSIX 1003.1b (formerly POSIX.4) as ammended by POSIX 1003.1j-2000.
+
+SEE ALSO
+       clock_getres(3),  clock_gettime(3),   clock_settime(3),   nanosleep(2),
+       sleep(3), usleep(3)
+
+

@@ -1,0 +1,428 @@
+AsmEdit Overview
+----------------
+              
+project name- -> Asmedit  -> engine <a>  <-->  (helper programs)
+                    ^           ^              a_help  <-- documentation
+                    |           |              a_dir
+              (config-files) (source-files)    a_error 
+           (helper programs)                   a_plan  <-> project notes
+                                               a_config <-> file a.ini
+                                               a_scripts -> a.xx
+definitions for above diagram:
+
+ project name - this name will also be name of directory with project
+                data.
+
+ Asmedit - file manager to organize project directories and initialization
+           functions to create projects and manage them.
+
+ Engine (a) - Editor to create and modify source files and other files
+           needed for development.  Also complie and debug programs.
+
+ helper programs - a collection of scripts and ELF executables to
+              add IDE features to editor engine.
+
+
+Window design
+-------------
++------------------------------------------------------------------------------+
+| Project | Setup | Help  | Quit  | -- | plan | make | debug | home | home | ho|
++------------------------------------------------------------------------------+
+| alt-p   | alt-s | alt-h | alt-q | -- | alt0 | alt1 | alt2  | alt3 | alt4 | al|
++------------------------------+-----------+-----------------------------------+
+|  (left window)               | chmod     |   (right window)                  |
+|                              |  F1       |                                   |
+|                              | Open      |                                   |
+|  first time put hint here.   |  F2       |                                   |
+|  use Open to create project  | View      |                                   |
+|                              |  F3       |                                   |
+|  if no project name input,   | Edit      |                                   |
+|  then use history            |  F4       |                                   |
+|                              | Copy      |                                   |
+|  if no history use /asm      |  F5       |                                   |
+|                              | Move      |                                   |
+|  show results of terminal    |  F6       |                                   |
+|  commands in non-active      | Mkdir     |                                   |
+|  window.                     |  F7       |                                   |
+|                              | Delete    |                                   |
+|                              |  F8       |                                   |
+|                              | Expand    |                                   |
+|                              |  F9       |                                   |
+|                              | Squeze    |                                   |
+|                              |  F10      |                                   |
+|                              | Dif       |                                   |
+|                              |  F11      |                                   |
+|                              | Print     |                                   |
+|                              |  F12      |                                   |
++------------------------------+-----------+-----------------------------------+
+| Term |        (show selected path, hints, input data prompts)                |
++------------------------------------------------------------------------------+
+|alt-t | >      (terminal cmd)                                                 |
++------------------------------------------------------------------------------+
+
+
+Window areas
+------------
+ 
+ button-line - line 1
+ left-window - variable lenght width and length, contains file list
+ action_line - variable length, fixed width list of actions
+ right_window - variable length and width, contains file list
+ status-line - messages, current mode, hints, help for prompt line input
+ prompt-line - terminal commands or special input requests.
+               0dh terminates term command if any character has been entered,
+               otherwise odh signals act on highlighted file.  All alpha
+               keys go to prompt line.
+
+
+mouse actions
+-------------
+
+ button-line - left click selects button
+ left/right windows - left click select file if not highlighted
+                    - if window not active, it is activated
+                    - right click acts on file (same as Open-action)
+ action-line - left click selects button
+ status-line - ignored
+ prompt-line - moves cursor if text present
+
+keyboard actions
+----------------
+
+ arrow keys - scroll active file window
+ pgup/pgdn - pages active window
+ alt-keys - connected to upper case characters on button line
+ function keys - used for action-line
+ alpha-keys - directed to prompt line
+
+command line input to asmedit
+-----------------------------
+
+ asmedit accepts project name as input.
+ If no name provided, the last active project
+ is displayed.  If no previous project is found
+ a help message is displayed.
+
+program flow
+------------
+
+  * open library
+  * parse input line and save
+  * if first time check if directory structure setup.
+  *   if directory missing, exit and display error msg
+  *   else - verify project directory and files copied by config.
+  * if no project selected, read dir and pick first one.
+  * if project selected, then read dir and create new proj if
+       name does not match existing projects.
+  * compute window demensions
+lp1:
+  * display window
+  *   display_buttons
+  *   display_mid_buttons
+lp2:
+  *   display_inactive_window
+lp3:
+  *   display_status_line
+  *   display_active_window
+lp4:
+  *   display_term_line ; waits for input
+  
+  * if new project button press, present table of options
+    assembler - project name - 
+  * copy files and check if assembler avail.  check other
+    tools.
+
+  * Shrink memory before launching programs?
+  
+file lists
+----------
+
+ $HOME/.a/asmedit - directory for asmedit config files
+   asmedit.ini - asmedit general setup
+   actions  - extensions and the actions they trigger
+   viewers - extensions and external programs for view button
+   makefile-templates - for assembler
+   sorcefile-templates - 
+
+ $HOME/asm - default area for projects          
+
+
+
+config file formats
+-------------------
+
+
+ asmedit.ini - default assebler, last project, tab buttonn
+               definitions, xterm button def,actions, viewers
+
+ format of file:  <label>=<data><space><group><0ah>
+   where: label = identifier that is used to search control table.
+                  this may appear in config screen
+          <data> = any string to associate with label
+          <group> = any identifier to uniquely identify
+                    labels with same name. 
+
+
+New project window
+------------------
+
+ assembler?
+ robodoc?
+ project name
+ project path
+
+Setup window
+------------
+
+ tab button name -- tab button path
+ tab button name -- tab button path
+ tab button name -- tab button path
+ tab button name -- tab button path
+
+ term button name - term button command
+
+ default assembler
+ default path for projects
+ 
+ confirm delete?
+
+ extension file edit for actons
+ extension file edit for viewers
+
+
+asmedit helper programs
+-----------------------
+	Open=info -f %f
+  # Manual page - compressed
+  	Open=gzip -dc %f | nroff -c -Tlatin1 -mandoc | %var{PAGER:more}
+  	View=%view{ascii,nroff} gzip -dc %f | nroff -c -Tlatin1 -mandoc
+  
+  regex/([^0-9]|^[^\.]*)\.([1-9][a-z]?|n)\.bz$
+  	Open=bzip -dc %f | nroff -c -Tlatin1 -mandoc | %var{PAGER:more}
+  	View=%view{ascii,nroff} bzip -dc %f | nroff -c -Tlatin1 -mandoc
+  
+  regex/([^0-9]|^[^\.]*)\.([1-9][a-z]?|n)\.bz2$
+  	Open=bzip2 -dc %f | nroff -c -Tlatin1 -mandoc | %var{PAGER:more}
+  	View=%view{ascii,nroff} bzip2 -dc %f | nroff -c -Tlatin1 -mandoc
+  
+  # Postscript
+  	Open=(gv %f &)
+  	View=%view{ascii} ps2ascii %f
+  
+  # PDF
+  type/^PDF
+  	Open=(xpdf %f >/dev/null&)
+  	#Open=(acroread %f &)
+  	#Open=(ghostview %f &)
+  
+  # html
+  regex/\.([Hh]tml?|HTML?)$
+  	Open=if test -n "" && test -n "$DISPLAY"; then ( file://%d/%p &) >/dev/null 2>&1; else links %f 2>/dev/null || lynx -force_html %f; fi
+  	View=%view{ascii} lynx -dump -force_html %f
+  
+  # AbiWord
+  shell/.abw
+  	Open=(abiword %f &)
+  # Microsoft Word Document
+  	Open=(abiword %f >/dev/null 2>&1 &)
+  	View=%view{ascii} catdoc -w %f || word2x -f text %f - || strings %f
+  type/^Microsoft\ Word
+  	Open=(abiword %f >/dev/null 2>&1 &)
+  	View=%view{ascii} catdoc -w %f || word2x -f text %f - || strings %f
+  
+  # RTF document
+  regex/\.(rtf|RTF|Rtf)$
+  	Open=(abiword %f >/dev/null 2>&1 &)
+  
+  # DVI
+  regex/\.([Dd]vi|DVI)$
+  	Open=if [ x$DISPLAY = x ]; then dvisvga %f; else (xdvi %f &); fi
+  	View=%view{ascii} dvi2tty %f
+  
+  # .tgz, .tpz, .tar.gz, .tar.z, .tar.Z
+  	Open=%cd %p#utar
+  	View=%view{ascii} gzip -dc %f 2>/dev/null | tar tvvf -
+  
+  regex/\.tar\.bz$
+  	# Open=%cd %p#utar
+	View=%view{ascii} bzip -dc %f 2>/dev/null | tar tvvf -
+
+  regex/\.tar\.bz2$
+  	Open=%cd %p#utar
+  	View=%view{ascii} bzip2 -dc %f 2>/dev/null | tar tvvf -
+  
+  # tar
+  	Open=%cd %p#utar
+  	View=%view{ascii} tar tvvf %f
+  
+  # zip
+  	Open=%cd %p#uzip
+  	View=%view{ascii} unzip -v %f
+  
+  # gzip
+  	Open=gzip -dc %f | %var{PAGER:more}
+  	View=%view{ascii} gzip -dc %f 2>/dev/null
+  
+  # bzip2
+  	Open=bzip2 -dc %f | %var{PAGER:more}
+  	View=%view{ascii} bzip2 -dc %f 2>/dev/null
+  
+  # bzip
+  	Open=bzip -dc %f | %var{PAGER:more}
+  	View=%view{ascii} bzip -dc %f 2>/dev/null
+  
+  # RPM packages (SuSE uses *.spm for source packages)
+	Open=%cd %p#rpm
+	View=%view{ascii} if rpm --nosignature --version >/dev/null 2>&1; then RPM="rpm --nosignature" ; else RPM="rpm" ; fi ; $RPM -qivlp --scripts %f
+
+
+
+internal database
+-----------------
+
+;---- start of window database -------
+active_window  db 0		;0=none 1=left 2=right
+
+left_window:
+left_columns:  db 0
+left_rows:     db 0
+top_left_row:  db 0
+top_left_col:  db 0
+ltop_row_ptr    dd 0		;ptr to row at top of window
+;
+left_win_status db 0 ;0=uninitialized 1=in memory 2=swaped to temp file
+left_win_path	times 100 db 0
+left_win_select db 2 ;row selected for action
+lselected_ptr   dd 0		;ptr to row currently selected
+
+mid_window:
+mid_columns:  db 0
+mid_rows:     db 0
+top_mid_row:  db 0
+top_mid_col:  db 0
+
+
+right_window:
+right_columns:  db 0
+right_rows:     db 0
+top_right_row:  db 0
+top_right_col:  db 0
+rselected_ptr   dd 0		;ptr to row currently selected
+;
+right_win_status db 0 ;0=uninitialized 1=active 2=swaped to temp file
+right_win_path	times 100 db 0
+right_win_select db 2 ;row selected for action
+rtop_row_ptr    dd 0		;ptr to row at top of window
+
+status_line_row	db 0
+status_line_mode db 0
+terminal_line_row db 0
+;--- end of window database -----
+
+
+pane1_selection
+
+pane2_selection
+
+get_str_blk:  key_string1 data block
+   - data buffer ptr +0 (dword) cleared or preload with text
+   - max string length +4 (dword) buffer must be 1 byte bigger
+   - color ptr +8 (dword) (see file crt_data.asm)
+   - display row +12 (db) ;row (1-x)
+   - display column +13 (db) ;column (1-x)
+   - allow 0d/0a in str +14 (db) ;0=no 1=yes
+   - initial curosr col +15 (db) ;must be within data area
+
+
+existing library functions
+--------------------------
+
+17. crt/crt_mouse_line
+19. crt/crt_page
+29. env/env_exec
+38. file/dir_change
+39. file/dir_create
+41. file/dir_read
+42. file/dir_status
+63. key_mouse/key_decode1
+64. key_mouse/key_decode2
+68. key_mouse/key_string1
+71. key_mouse/mouse_line_decode
+72. sort/sort_bubble
+83. sys/sys_launch
+
+
+new library functions
+---------------------
+
+string substutite for %f, this could also be exist block functions.
+dir_format - extracts dir data and builds list of pointers.
+             puts space infront of each path string
+             splits buffer into read area, move areaa, and ptr area?
+             ptr buffer could be input parameter?
+dir_types -  uses ptr list to get type of each path and set first
+             byte to flag
+sort_selection - selection sort.
+
+
+Window functions
+----------------
+
+select_win_or_mode	;modifies active_window, knows if window has terminal
+                         data or viewer or ?
+
+display_left_window     ;use database flags, sets left_win_status
+    save_right_window   ;only if not active
+    restore_left_window ;only if left window not active
+    open_left_window    ;only if dir not opened yet/ not saved
+      open_window
+        dir_read
+        dir_format
+        dir_types      ;/=dir @=link <space>=file
+        sort_selection ;sort using ptrs, include dir-type info
+    crt_win_from_ptrs  ;display window lines
+      crt_line	       ;display one line with colors embedded
+    save_left_window   ;only if not active window
+    restore_right_window ;only if right window is active
+display_right_window  ;sets right_win_status
+    save_left_window     ;only if left active
+    restore_right_window ;only if right win saved previously & right not active
+    open_right_window    ;only if right win not opened yet/not saved/ not in memory
+      open_window
+        dir_read
+        dir_format
+        dir_types
+        sort_selection
+    crt_win_from_ptrs
+      crt_line
+    save_right_window  ;only if left window active
+    restore_left_window ;only if left window active
+
+
+lp1:
+  * display window
+  *   display_buttons
+  *   display_mid_buttons
+lp2:
+  *   display_inactive_window
+lp3:
+  *   display_status_line
+  *   display_active_window
+lp4:
+  *   display_term_line ; waits for input
+
+
+color definitions
+-----------------
+
+button_color1
+button_spacer_color
+active_win_color
+inactive_win_color
+select_line_color
+mid_button_color1
+mid_button_color2
+status_line_color
+term_line_color
+cursor_color
+

@@ -1,0 +1,23 @@
+
+----------------------------------------------------------------------------
+   0 resume        - resumes an interrupted system call
+----------------------------------------------------------------------------
+  mov  eax,000
+  int  80h
+
+      If the system call succeeds the return value is from
+      system  call  it restarts. If the system call fails
+      (in case when no system call was interrupted) the return
+      value is -EINTR
+
+
+RETURN VALUE
+      If the call succeedes, normal kernel functioning proceeds.
+      If the call fails, EINTR is returned
+
+NOTES
+      This function has not been verified
+
+SEE ALSO
+
+

@@ -1,0 +1,543 @@
+AsmLib tutorial
+
+Contents
+--------
+
+1.0  intro
+2.0  terminal (display handling)
+3.0  memory
+4.0  file functions
+5.0  program parameters
+6.0  process control
+7.0  signals
+
+
+1.0  intro
+----------
+
+This tutorial introduces some basic asmlib
+functions and includes many sample programs.
+
+The demo programs and all file are expected to be
+in current local directory.
+Some demo's display data, and others need to be
+run from a debugger.  To be safe, run all programs
+from a debugger.  For example, to run memory demo use:
+
+  asmbug asmlib_memory_demo
+
+This demo is a collection of files discussed by a
+text document (tutor.txt).  It will be easiest to
+move between the files if multiple windows or a
+good file manager is used.  Also, a good debugger
+is needed to view the executables. A non-windowing
+debugger will mix debugger output and demo displays,
+making demo unusable.
+
+AsmTools comes with two file managers and a debugger
+that are ideal for viewing this tutorial.
+
+  asmfile - file manager
+  asmmgr  - file manager
+  asmbug  - debugger
+
+Many other utilities and debuggers will also work,
+but most have deficiencies.  When code has macros
+or source isn't available, many Linux debuggers
+are difficult to use. For this reason and others
+we suggest using asmbug.
+
+AsmLib documentation is included in the program
+AsmRef and this needs to be installed before
+running the demo.  AsmRef allows easy lookup
+of each library call and lots of other information.
+Before starting it is a good idea to become familiar
+with AsmRef.
+
+AsmRef sections of interest might be:
+  AsmBug manual
+  AsmFile manual
+  AsmLib introduction
+  AsmLib function lookup
+
+1.1 Using this tutorial
+-----------------------
+
+Each tutorial section consists of a description
+and some source code.  The following tutorial steps
+are recommended:
+
+  - Read material about demo in file tutor.txt
+  - Use AsmBug to step through executable demo.
+    (use step over function to skip library internals)
+  - Use AsmRef to lookup any questions.
+  - If library internals are of interest, run demo
+    again and step through library calls.
+
+
+2.0 terminal (display handling)
+-------------------------------
+
+AsmLib terminal functions can be complex, but this
+demo introduces some basic functions that will handle
+most terminals.  Three demo programs are used to
+introduce terminal functions, they are: 
+
+    <asmlib_display_demo1>   classical UNIX displays
+    <asmlib_display_demo2>   display with color and cursor
+    <asmlib_display_demo3>   display with mouse active
+
+2.1 display demo1
+-----------------
+
+display_demo1 introduces these functions:
+  stdout_str   - display string 
+  read_stdin   - read keyboard
+  delay        - delay
+  sys_exit     - exit program
+
+This is the classical mode where data is written to
+the screen and scrolls down as we add new lines.  The
+demo program writes one line to display, then waits
+for a key press.  After key is pressed, it is displayed
+on the next line.
+
+_start:
+  mov	ecx,demo1_msg1	;get message
+  call	stdout_str	;display message
+  call	read_stdin	;read key
+  mov	al,[kbuf]	;get key read
+  mov	[out_char],al	;store key in output msg
+  mov	ecx,demo1_msg2	;get message 2
+  call	stdout_str	;display message 2
+  mov	eax,-2		;delay 2 seconds
+  call	delay
+  call	sys_exit	;all done
+
+Classical UNIX programs can be connected together by
+piping and their inputs/outputs redirected to files
+or even the Internet.  All these programs treat data
+as a stream of bytes and use this classical mode.
+
+2.2 display demo2
+-----------------
+
+display_demo2 introduces these functions:
+  env_stack        - save initial program stack
+  read_window_size - get terminal display size
+  crt_clear        - clear display
+  stdout_str       - display string 
+  read_stdin       - read keyboard
+  move_cursor      - move cursor to x/y position
+  crt_set_color    - set display color
+  sys_exit         - exit program
+
+Demo2 adds color and cursor movement to our displays.
+We can now use the terminal as a window and draw
+on it where we want.
+
+_start:
+  call	env_stack	;save environment (on stack)
+  call	read_window_size;get window size
+  mov	eax,30003437h	;color code
+  call	crt_clear	;clear display
+  mov	al,[crt_columns];get display
+  mov	ah,[crt_rows]	;  size
+  shr	al,1		;   and compute
+  shr	ah,1		;     center
+  call	move_cursor	;move cursor to center
+  mov	eax,30003734h	;color
+  call	crt_set_color	;change color
+  mov	ecx,demo2_msg	;get message 'center'
+  call	stdout_str	;show center message
+  call	read_stdin	;wait for key
+  call	sys_exit	;all done
+  [section .data]
+demo2_msg   db '<- center, hit key',0
+
+
+2.3 display demo3
+-----------------
+
+display_demo3 introduces one new function:
+  mouse_enable - allows mouse clicks
+
+Demo3 moves the cursor to center of window, displays a
+message, then asks the user to click on exact center
+of window.  If the click is in center, the message
+"winner" is displayed.
+
+_start:
+; first we need to tell asmlib where the stack
+; information is.  This is done by calling env_stack
+; when the stack is at entry state.  The library function
+; 'read_window_size' needs information on stack to determine
+; terminal type.
+  call	env_stack	;save environment (on stack)
+  call	read_window_size;get window size
+  mov	eax,30003437h	;color code
+  call	crt_clear	;clear display
+  mov	al,[crt_columns];get display
+  mov	ah,[crt_rows]	;  size
+  shr	al,1		;   and compute
+  shr	ah,1		;     center
+  push	eax
+  call	move_cursor	;move cursor to center
+  mov	eax,30003734h	;color
+  call	crt_set_color	;change color
+  mov	ecx,demo3_msg1	;get message 'center'
+  call	stdout_str	;show center message
+  call	read_stdin	;wait for mouse
+  pop	eax		;restore center of screen
+  cmp	al,[kbuf+2]	;check click column
+  jne	failure
+  cmp	ah,[kbuf+3]	;check click row
+  jne	failure
+  mov	ecx,demo3_win_msg
+  call	stdout_str
+  mov	ecx,-2
+  call	delay
+failure:
+  call	sys_exit	;all done
+  [section .data]
+demo3_msg1   db 'X <- click here to win',0
+demo3_win_msg db ' winner',0
+
+The function read_stdin is used to read both keyboard
+and mouse activity.  When a mouse click is found, the
+output of read_stdin is proceeded with a byte containing
+-1, then the mouse button pressed, and finally the x and y
+coordinates.
+
+
+3.0 memory
+----------
+
+A typical program has three types of memory available.  For convienence
+these memory types are identified as follows:
+
+  read-only     - usually called [.test] and includes executable program
+                - some programmers define a [.rodata] section for read only data   
+  initialized   - usually called [.data] includes db,dd,dw data statements
+  uninitialized - usually called [.bss]  includes resb,resw,resd statements
+
+For most programs all memory management is handled by the program and 
+we don't need any library help.  If we want to expand memory
+areas as a programs runs, or reuse memory as needed, then asmlib provides
+the following functions:
+
+  m_setup      - prepare memory record keeping
+  m_allocate   - allocate area of memory
+  m_release    - release area of memory
+  m_close      - close out memory management
+
+The memory management functions work with [.bss] section and append
+more memory to our program.  This appended memory is provided 
+as needed.  The demo program <asmlib_memory_demo> allocates memory
+and releases it.
+
+  _start:
+    call	m_setup			;prepare memory manager
+    mov	eax,[allocation_size]
+    call	m_allocate		;allocate block of memory
+    or	eax,eax			;eax=allocated address
+    js	test_err1
+    mov	[eax],byte 11h		;store data into memory
+    mov	bl,[eax]		;read it to register
+    call	m_release		;release memory (eax=address)
+    call	m_close			;close memory manager
+  test_err1:
+    call	sys_exit
+
+4.0 file functions
+------------------
+
+AsmLib provides over 50 file and directory functions, but we can
+do most operations with a small set of functions.  The first demo
+shows basic file handling, open,write,read,close.  This is followed
+by a demo of directory controls.
+
+4.1 file demo1
+--------------
+
+The "block" file functions are preferred, and can perform basic
+file functions.  The block functions used by our demo are:
+
+  block_open_update - open file for read/write
+  block_read        - read block
+  block_seek        - move to position within file
+  block_write       - write block
+  block_close       - close file
+
+The <file_demo1> program will create a file in system "tmp"
+directory, write it, read it, and close it, then delete it.
+
+_start:
+  mov	ebx,file_path		;file path
+  xor	ecx,ecx			;use default file permissions
+  call	block_open_update
+  or	eax,eax			;any errors?
+  js	test_err1		;exit if error
+  mov	[file_handle],ebx	;save file handle
+;now write data to file
+  mov	ecx,file_write_data
+  mov	edx,file_size
+  call	block_write
+;seek to start of file
+  mov	ebx,[file_handle]
+  xor	ecx,ecx			;seek to start of file
+  call	block_seek
+;read data back from file
+  mov	ebx,[file_handle]
+  mov	ecx,file_read_data
+  mov	edx,file_size
+  call	block_read
+;verify we read file
+  cmp	[file_read_data],byte 55h
+  jne	test_err1
+  cmp	[file_read_data+file_size-1],byte 55h
+  jne	test_err1
+;close file
+  mov	ebx,[file_handle]
+  call	block_close
+  mov	ebx,file_path
+  call	file_delete
+test_err1:
+  call	sys_exit
+  [section .data]
+file_path:  db  '/tmp/file_demo1',0
+file_handle: dd 0
+file_write_data: times 100 db 55h
+file_size	equ $ - file_write_data
+  [section .bss]
+file_read_data:	resb 100
+
+
+4.2 file demo2  
+--------------
+
+The <file_demo2> program will check if a directory exists, then
+create it.  It will then check if it exists, and delete it.
+
+Functions needed are:
+  dir_access - check directory status
+  dir_create - create directory
+  dir_delete - remove directory
+
+_start:
+  mov	ebx,dir_path		;file path
+  xor	ecx,ecx			;check if dir exists
+  call	dir_access
+  or	eax,eax			;check return
+  jz	remove_dir		;jmp if directory exists
+;create directory
+  mov	ebx,dir_path
+  call	dir_create		;create directory
+  or	eax,eax
+  js	test_err1		;jmp if error
+  mov	ebx,dir_path
+  xor	ecx,ecx			;check if dir exists
+  call	dir_access
+  or	eax,eax
+  jnz	test_err1		;jmp if directory not found
+;remove directory
+remove_dir:
+  mov	ebx,dir_path
+  call	dir_delete		;remove directory 
+test_err1:
+  call	sys_exit
+  [section .data]
+dir_path:  db  '/tmp/file_demo2',0
+
+
+5.0  program parameters
+-----------------------
+
+Parameters are provided to programs on the stack.  These
+parameters may be typed by user, for example: "edit my_file".
+In this case the parameter "my_file" is provided to a program
+called "edit".  We can also set global parameters for all
+programs by inserting them into the environment.
+
+When our program starts we can look on the stack and find
+the following:
+
+  1. number of parameters entered
+  2. pointers to each parameter
+  3. zero dword, end of parameters
+  4. pointers to environment variables
+  5. zero dword, end of environment pointers
+
+The program "asmlib_parameters_demo" shows how parameters
+can be accessed.  It uses the library call:
+  env_stack - save stack state
+  find_env_variable - look for global variable
+
+_start:
+  call	env_stack	;save stack state
+  mov	esi,esp		;get stack pointer
+  lodsd			;get number of parameters
+  mov	ecx,eax		;save parameter count
+  lodsd			;get first parameters, this is always our program name
+ploop:
+  lodsd
+  loop	ploop		;loop till all parameters read
+  mov	ecx,term
+  mov	edx,results
+  call	find_env_variable
+;look at memory variable "results" to find terminal name
+  call	sys_exit	;all done
+  [section .data]
+term	dd 'TERM',0
+results times 20 db 0
+
+If we run this demo, it will place the terminal
+name at memory variable "results".  The initial program
+loop will demonstrate that the first parameter passed
+to a program is always its name. The second (optional)
+parameter is beginning of user entries.
+  
+
+6.0  process control
+--------------------
+
+UNIX process logic uses two kernel functions.  The first
+function splits our program into two processes, and the
+second replaces the current process with a new one.
+This allows us the flexibility of either replacing our
+current process, or starting a independent process.
+
+Our example code will start a child process, check its
+status and then kill it.  If we try to view the demo using
+a debugger, some problems exist.  Our parent and child
+process share the same terminal.  This means the messages
+from both processes will appear on terminal.
+
+The functions we will be using are:
+
+   sys_fork_run     - start independent process
+   check_process    - check process status
+   stdout_str       - display message
+   kill_process     - kill a process
+   delay            - delay
+   sys_exit         - exit program
+
+The demo starts by calling sys_fork_run to start
+a dummy process.  This process will display a message
+and wait forever.  Here is the complete program:
+
+_start:
+  mov	esi,child_process_name
+  call	sys_fork_run
+  or	eax,eax		;check if success
+  js	do_exit		;goto exit if error
+  mov	[child_pid],eax	;save process id for child
+;check if child process is running
+check_loop:
+  mov	ebx,[child_pid]
+  call	check_process	;get child status
+; al contains status as follows
+;  'U' unknown pid
+;  'S' sleeping
+;  'R' running
+;  'T' stopped
+;  'D' uninterruptable
+;  'Z' zombie
+  cmp	al,'U'
+  je	check_loop	;loop till process created
+  mov	ecx,demo_msg1	;get message
+  call	stdout_str	;display message
+;kill child process
+  mov	ebx,[child_pid]
+  call	kill_process
+  or	eax,eax		;zero = success
+  jnz	do_exit		;exit if error
+  mov	ecx,demo_msg2	;get message 2
+  call	stdout_str	;display message 2
+  mov	eax,-2		;delay 2 seconds
+  call	delay
+do_exit:
+  call	sys_exit	;all done
+  [section .data]
+child_process_name: db 'dummy_process',0
+child_pid	dd 0	;process id for child
+demo_msg1:	db 0ah,'child process started and running',0ah
+		db 'sending kill message to child',0
+demo_msg2:	db 0ah,'child process killed',0ah,0
+
+The main (parent) process waits for child to begin, then
+it displays a message.  Next, it kills the child process
+and exits itself.
+
+7.0  signals
+------------
+
+Signals interrupt a process and some can have
+a handler installed by the process.
+
+Before working with signals it is helpful to
+review the following table of Linux signals.  Signals
+can be catorgrized by their default actions, which
+are:
+
+  Term   Default action is to terminate the process.
+  Ign    Default action is to ignore the signal.
+  Core   Default action is to terminate the process and dump core.
+  Stop   Default action is to stop the process.
+
+The above actions can be found in the column titled "Action".
+Also, each signal has a number to identify it.  This number
+appears in "Value" column.
+
+  Signal	  Value	    Action   Comment
+  --------------  ------    ------   --------------------------------------
+  SIGHUP	     1	     Term    Hangup detected on controlling terminal
+  SIGINT	     2	     Term    Interrupt from keyboard
+  SIGQUIT	     3	     Core    Quit from keyboard
+  SIGILL	     4	     Core    Illegal Instruction
+  SIGABRT	     6	     Core    Abort signal from abort(3)
+  SIGFPE	     8	     Core    Floating point exception
+  SIGKILL	     9	     Term    Kill signal
+  SIGSEGV	    11	     Core    Invalid memory reference
+  SIGPIPE	    13	     Term    Broken pipe: write to pipe with no readers
+  SIGALRM	    14	     Term    Timer signal from alarm(2)
+  SIGTERM	    15	     Term    Termination signal
+  SIGUSR1	    10       Term    User-defined signal 1
+  SIGUSR2	    12       Term    User-defined signal 2
+  SIGCHLD	    17       Ign     Child stopped or terminated
+  SIGCONT	    18   	     Continue if stopped
+  SIGSTOP	    19       Stop    Stop process
+  SIGTSTP	    20       Stop    Stop typed at tty
+  SIGTTIN	    21       Stop    tty input for background process
+  SIGTTOU	    22       Stop    tty output for background process
+  SIGBUS	     7       Core    Bus error (bad memory access)
+  SIGPOLL	    29       Term    Pollable event (Sys V). Synonym of SIGIO
+  SIGPROF	    27       Term    Profiling timer expired
+  SIGTRAP	    5	     Core    Trace/breakpoint trap
+  SIGURG	    23       Ign     Urgent condition on socket (4.2 BSD)
+  SIGVTALRM         26       Term    Virtual alarm clock (4.2 BSD)
+  SIGXCPU	    24       Core    CPU time limit exceeded (4.2 BSD)
+  SIGXFSZ	    25       Core    File size limit exceeded (4.2 BSD)
+  SIGIOT	    6	     Core    IOT trap. A synonym for SIGABRT
+  SIGSTKFLT         16       Term    Stack fault on coprocessor (unused)
+  SIGIO	            29       Term    I/O now possible (4.2 BSD)
+  SIGPWR	    30       Term    Power failure (System V)
+  SIGINFO	     -               A synonym for SIGPWR
+  SIGLOST	     -       Term    File lock lost
+  SIGWINCH	    28       Ign     Window resize signal (4.3 BSD, Sun)
+  SIGUNUSED         31       Term    Unused signal (will be SIGSYS)
+
+  The signals SIGKILL and SIGSTOP cannot be caught, blocked, or  ignored.
+
+The demo program "asmlib_signal_demo" will attempt to install all
+possible signals and send signals specified by a keyboard entry.
+See listing of asmlib_signal_demo.asm for extensive comments.
+
+The library functions that handle signals are:
+
+  signal_install  - install a local signal handler
+  signal_send     - send signal to process
+
+For most applications these two functions will handle
+signals.
+

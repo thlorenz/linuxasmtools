@@ -1,0 +1,22 @@
+
+----------------------------------------------------------------------------
+ 29 pause           - wait for signal
+----------------------------------------------------------------------------
+  mov  eax,029
+  int  80h
+
+       The  pause  function causes the invoking process (or thread) to
+       sleep until a signal is received that either terminates it or causes it
+       to call a signal-catching function.
+
+RETURN VALUE
+       The  pause  function only returns when a signal was caught and the sig-
+       nal-catching function returned.
+
+ERRORS
+       EINTR  a signal was caught and the signal-catching function returned.
+
+SEE ALSO
+       kill, select, signal
+
+

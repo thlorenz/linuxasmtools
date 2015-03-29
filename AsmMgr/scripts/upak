@@ -1,0 +1,42 @@
+#! /bin/sh
+
+if test -d "$1"; then
+	echo "$0: input $1 must be archive file" >&2
+	echo "$0: usage: upak <archive> " >&2
+	exit 1
+else
+	case "$1" in
+	*.[tT][aA][rR])                  tar -xvf "$1";;
+	*.[tT][aA][rR].[bB][zZ])         bzip -dc "$1"|tar -xvf -;;
+	*.[tT][aA][rR].[bB][zZ]2)        bzip2 -dc "$1"|tar -xvf -;;
+	*.[tT][aA][rR].[gG][zZ])         gzip -dc -- "$1"|tar -xvf -;;
+	*.[tT][aA][rR].[zZ])             uncompress -dc "$1"|tar -xvf -;;
+	*.[cC][pP][iI][oO])		 cat "$1"|cpio -i -d;;
+	*.[cC][pP][iI][oO].[bB][zZ])     bzip -dc "$1"|cpio -i -d;;
+	*.[cC][pP][iI][oO].[bB][zZ]2)    bzip2 -dc "$1"|cpio -i -d;;
+	*.[cC][pP][iI][oO].[gG][zZ])     gzip -dc -- "$1"|cpio -i -d;;
+	*.[cC][pP][iI][oO].[zZ])         uncompress -dc "$1"|cpio -i -d;;
+	*.[tT][gG][zZ])                  gzip -dc -- "$1"|tar -xvf -;;
+	*.[tT][aA][zZ])                  uncompress -dc "$1"|tar -xvf -;;
+	*.[tT][rR][zZ])                  uncompress -dc "$1"|tar -xvf -;;
+	*.[jJ][aA][rR])                  jar -xvf "$1";;
+	*.[zZ][iI][pP])                  unzip "$1";;
+	*.[aA][rR][jJ]|*.[aA][0-9][0-9]) unarj x "$1";;
+	*.[rR][aA][rR]|*.[rR][0-9][0-9]) rar x -y -r -v "$1";;
+	*.[lL][hH][aA]) 		 lha -xvf "$1";;
+	*.[lL][zZ][hH])		         lha -xvf "$1";;
+	*.[zZ])			         uncompress "$1";;
+	*.[bB][zZ])			 bzip -d "$1";;
+	*.[bB][zZ]2)		         bzip2 -d "$1";;
+	*.[gG][zZ])			 gunzip "$1";;
+	*.[sS][hH][aA][rR])		 sh "$1";;
+	*.[uU][uU])			 uudecode "$1";;
+	*.[rR][pP][mM])		         rpm2cpio "$1"|cpio -v -i -d;;
+	*.[dD][eE][bB])		         ar -xv "$1";;
+	*.[aA])			         ar -xv "$1";;
+	*) echo "$0: $1: unknown archive type" >&2; echo "$0: usage: upak <archive> " >&2
+	   exit_code=1
+	esac
+
+fi
+

@@ -1,0 +1,7 @@
+text viewer with internal links
+asmlinks is a small assembler program with
+a very simple link structure. It is used
+to view help files which point to other
+files or links.
+runs in the console or x terminal
+http://linuxasmtools.net

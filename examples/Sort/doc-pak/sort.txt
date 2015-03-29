@@ -1,0 +1,31 @@
+
+NAME
+
+  sort - sort text file
+
+SYNOPSIS
+
+  sort <infile> <ourfile>
+
+DESCRIPTION
+
+ sorts infile and stores at outfile.  This version
+ does not allocate memory, so file and index must
+ fit in 300k
+
+ The merge_sort is a text sort and assumes lines end
+ with 0ah (eol).  Tabs are equivelent to spaces.
+
+ This program will usually produce the same output
+ as standard GNU sort program without any parameters.
+
+SEE ALSO
+ asmlib
+ 
+AUTHOR
+ Jeff Owens <jko@bsn1.net>
+
+COPYRIGHT
+ Copyright (C) 2007 Jeff Owens
+ This program comes with absolutely NO WARRANTY
+

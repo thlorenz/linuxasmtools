@@ -1,0 +1,153 @@
+
+ AsmLib Memory Manager Notes
+ ---------------------------
+
+All memory managers are optimized differently
+and involve a lot of trade-offs.  The AsmLib
+memory manager is no exception and this discussion
+will cover some of the highlights.
+
+Goals
+-----
+
+The goals for a memory manager are:
+
+ 1. Efficient garbage collection
+ 2. speed of execution
+ 3. minimum overhead (code size)
+ 4. reliability
+ 5. ease of use
+
+ _1_ garbage collection
+
+  m_release handles garbage collection by keeping a
+  chained list of available memory blocks.  Initially
+  this is one large block, but as small blocks are
+  allocated, it fragments.  Garbage collection is the
+  process of combining small adjacent blocks.  This
+  is accomplished by keeping the chain sorted and
+  check the forward and back block to see if they
+  can be combined.  This is a very fast way of doing
+  garbage collection and insures all possible block
+  combines are done.
+
+ _2_ speed of execution
+
+  The memory manager is faster than most other managers,
+  but could be much faster.  It only asks Linux for memory
+  if the request can not be satisfied by the current pool.
+  Once released, memory remains in the pool and is not
+  returned to Linux until the program exits.  this design
+  and the use of assembler code insures moderate speed.
+
+  The reliability logic adds a small penalty to the speed
+  equation (see reliability discussion)
+
+ _3_ overhead (code size)
+
+  The design is very efficient and uses little  record keeping
+  or code.  The code is small because of assembler a very
+  efficient design.  Each block of allocated memory has its
+  records at the top.  This small block (12 bytes) assumes
+  the memory is located at next consecutive location and this
+  saves 4 bytes.  The header block contains:
+
+             .prev_block_ptr  resd 1
+             .block_size      resd 1
+             .checksum        resd 1
+
+  The checksum entry was added for reliability and isn't
+  essential.
+
+  The prev_block_ptr and block_size are used for chaining
+  the block in the forward and backwards direction.  This
+  is essential for garbage collection, allocation, and
+  sorting.
+
+ _4_ reliability
+
+  The reason for checksum is to catch memory block overflow.
+  This is a very common programming problem and can be difficult
+  to detect.  Since the block record keeping is at the top of each
+  block, the end of each block has record keeping for the next
+  block.  Errors which cause either of these block to be modified
+  will be detected by the memory manager when the corrupted block
+  is used.
+
+  This provides very fast error detection with minimal overhead
+  or speed penalties.
+
+ _5_ ease of use
+
+  The memory manager has 4 basic calls as follows:
+
+  m_setup
+  m_allocate
+  m_release
+  m_close
+
+  It is possible to close memory and then reinitialize it
+  and start all over.  Since all the records are kept at
+  within the allocated memory, program size does not change
+  and no internal buffers or data blocks are used.
+
+Design considerations
+---------------------
+
+  It is possible to eliminate the m_setup and m_close calls
+  and simplify the user interface further, but this makes
+  user code less clear.  The presence of m_setup and m_close
+  provide useful clues about program operation.
+
+  A large amount of code is used for keeping checksums and
+  eliminating this would provide both size and speed
+  improvements.  Also the checksum logic make the code much
+  harder to follow and maintain.  One might think stable
+  application could use a memory manager without checksumming.
+  Unfortunately, experience has shown that memory bugs can
+  lurk for years and cause more frustration than any other
+  type of problem.
+
+  The memory keeps two chains of memory blocks.  Those in use
+  and those available.  These chains are at the top of
+  each memory block.  If two blocks are combined into one
+  then, one chain is lost and becomes part of the memory
+  pool.  This is very efficient and makes maximum use of memory.
+
+Testing
+-------
+
+  Since memory managers respond to varying requests and
+  fragmentation states, testing is very difficult.  The
+  AsmLib memory manager used a random generator to allocate
+  varying memory blocks and another random generator to
+  release blocks.  This test was run for a few hours and
+  then it  released all blocks.  No errors were detected
+  and the original memory allocation existed at end of
+  test.  The program was released and users found several
+  bugs.  These bugs were fixed and the function appears
+  to be bug free.
+
+  The following comment is at top of source file:
+
+       Memory managers are often blamed for program bugs
+       and become corrupted if their record keeping is hit
+       my memory leaks.  To avoid these problems all headers
+       are checksummed and if any corruption occurs the
+       memory manager returns an error.
+
+  The key phrase here is "often blamed for program bugs".
+  I've written several memory managers and always they
+  are always blamed for program errors.  One time a program
+  team rewrote the memory manager in "C" because they were
+  convinced the assembly version was corrupting the program.
+  Eventually, they found the program bug.  But still did
+  not trust the assembly version of the memory manager.
+
+  The moral here is.. do error detection in the memory
+  manager and expect fear of assembler.
+
+
+  
+  
+

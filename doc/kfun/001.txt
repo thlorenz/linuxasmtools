@@ -1,0 +1,26 @@
+
+----------------------------------------------------------------------------
+   1 exit          - terminate the current process
+----------------------------------------------------------------------------
+  mov  eax,001
+  mov  ebx,return_value
+  int  80h
+
+       The  function  _exit  terminates the calling process "immediately". Any
+       open file descriptors belonging to the process are closed; any children
+       of the process are inherited by process 1, init, and the process's par-
+       ent is sent a SIGCHLD signal.
+
+       The return_value is returned to the parent processb as the process's
+       exit status, and can be collected  using one of the wait family of
+       calls.
+
+
+RETURN VALUE
+       This function does not return.
+
+NOTES
+
+SEE ALSO
+       fork, execve, waitpid, wait4,  kill,  wait
+

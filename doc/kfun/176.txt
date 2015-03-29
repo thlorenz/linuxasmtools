@@ -1,0 +1,19 @@
+
+----------------------------------------------------------------------------
+176 rt_sigpending   - real time sigaction
+----------------------------------------------------------------------------
+
+  mov  eax,176
+  mov  ebx,sigset  ;ptr to sigset
+  mov  ecx,size    ;usually 8 (8 byte bit field)
+  int  80h
+
+sigset
+------
+
+ sigset has one bit set for each pending signal.
+ 
+The sigpending and rt_sigpending calls differ as follows:
+  sys_sigpending   (old_sigset_t __user *set)
+  sys_rt_sigpending(sigset_t __user *set,   size_t sigsetsize)
+

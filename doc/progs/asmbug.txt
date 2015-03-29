@@ -1,0 +1,160 @@
+NAME
+ asmbug - debugger for ELF executables
+
+SYNOPSIS
+ asmbug <switches> <file> <file parameters>
+
+     where: <switches> are:
+
+           -a attach
+           <file> ELF executable
+           <parameters> parameters for ELF file
+
+     The current directory will be used to store a configuration
+     file and must be writable. This file can be edited to
+     change program settings. Some settings can be changed
+     from within asmbug by clicking the Prep button.
+
+DESCRIPTION
+
+ asmbug is a windowed debugger for a x86 Linux
+ terminal. It provides a register display, breakpoint
+ display, a code display, and memory display.
+
+ assembly language is displayed in code window using
+ nasm format.
+
+ comments and debug symbols are displayed in the code
+ window, but asmbug is not a source debugger. This means
+ asmbug will work with any ELF and does not require a
+ a source file for the target ELF. The comments are
+ extracted from any source file found in the current
+ directory. If programs have not been compiled with
+ stabs debugging support, comments and some labels
+ will not be displayed in asmbug.
+
+ The design goal was to eliminate typing of addresses
+ and other data. This was accomplished by making all
+ values displayed active menu targets. By left
+ clicking on any address or instruction a menu appears.
+
+USAGE
+
+For normal debugging asmbug is started with a file name.
+When a file is not provided, asmbug checks for a
+configuration file in the current directory.  If no
+file is found in the configuration a error is reported.
+
+The current directory is a work directory and asmbug
+stores descriptive files here. It also looks for
+source files and other work files in this directory.
+
+To move around the code window use up/pgup,down,pgdn
+keys or click on any address, then select view in code window.
+For example, if the you are lost somewhere in the code and
+want to return to the execution point, right click on EIP
+register and select view. To view code at break point,
+just right click on break and select view.
+
+Generally, right click on any address produces a
+menu. Left clicks act on values or addresses.
+
+WINDOW PLACEMENT
+
+The debug window is always placed at left edge and
+has a fixed width. The length can be adjusted.
+The application window is resized if the AppResize
+paramater is set to one. Normally, terminal programs
+are placed on right a debug window on left. This can
+be changed by disabling AppResize and manually
+placing the app window.
+
+REGISTER WINDOW
+
+The register window shows current contends and
+color indicates if last operation changed the
+register value. The mouse provides a powerful
+set of operations as follows:
+
+ left click on name - enable register tracking
+ left click on value - enters edit mode
+ right click on value - pops up menu if legal address
+
+BREAK WINDOW
+
+The break window shows current breaks set. Menu
+buttons allow break entry (add) and clearing of
+all breaks (zap). The mouse actions are:
+
+ left click on value - clear break
+ right click on value - pop up menu
+
+Breaks are remembered between debug scessions
+if the program has not been recompiled.
+
+MEMORY WINDOW
+
+The memory window shows memory contents as bytes,
+words, or dwords. Buttons select display type and
+also retrieve previous addresses. The entry line
+provides for hex entry, register name (tracking),
+label entry, calculations, and hex converter. Just
+type in value and asmbug determines what is needed.
+
+When a label is entered a search through the symbol
+table occurs. It stops with first match. The next
+match can be found by pressing <Enter> key.
+
+The mouse interface is:
+
+  left click on value - edit mode
+  left click on address - set break
+  right click on address - pop up menu
+
+CODE WINDOW
+
+The code window provides the following buttons
+
+  Go - start app running (g key)
+  Step - single step (s or space key)
+  stepO - step over next instruction if safe
+  Prep - simple setup menu
+  Find - show entry line for entry of address,
+         label, calculations, conversions.
+         The <enter> key repeats searches.
+  Exit - quit program.
+
+POP UP REGISTERS
+
+The floating point registers and xmm registers
+can be displayed by pressing the f1 key.
+
+PROBLEMS
+
+AsmBug sometimes fails to disassemble correctly. This
+often occurs if data is included within the .text section.
+Stepping into the code may fix the disassembly.
+
+FILES
+
+AsmBug is contained within one file and builds work
+files in the current directory. Most of these files
+are erased upon exit.
+
+
+DEPENDENCIES
+
+  Optional compile dependency: AsmLib
+                               AsmLibx
+
+SEE ALSO
+  asmsrc(1) asmdis(1)
+ 
+AUTHOR
+ Jeff Owens <jko@bsn1.net>
+
+COPYRIGHT
+ GNU Copyright (C) 2007 Jeff Owens
+ This program comes with absolutely NO WARRANTY
+
+  

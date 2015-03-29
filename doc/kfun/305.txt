@@ -1,0 +1,67 @@
+
+---------------------------------------------------------------------
+305 readlink  - read symbolic link relative
+---------------------------------------------------------------------
+
+  mov  eax,305
+  mov  ebx,fd
+  mov  ecx,pathname  ;pointer t asciiz string
+  mov  edx,buffer    ;pointer to buffer
+  mov  esi,size      ;size of buffer
+  int  80h
+
+   Reads value of a symbolic link relative to a directory file
+   descriptor.
+   This system call operates in exactly the same way as sys_readlink,
+   except for the differences described below.
+
+args
+----
+
+ ebx Directory file descriptor.
+
+ ecx A pointer to a null-terminated string specifying the symbolic link
+   pathname.
+   If the pathname is relative, then it is interpreted relative to the
+   directory referred to by the file descriptor ebx (rather than relative
+   to the current working directory of the calling process, as is done by
+   sys_readlink for a relative pathname).
+   If the pathname is relative and ebx is the special value AT_FDCWD,
+   then path is interpreted relative to the current working directory of
+   the calling process.
+   If the pathname is absolute, then ebx is ignored.
+
+ edx A pointer to a buffer which will receive the value. null byte is
+   not appended by sys_readlink.
+
+ esi Size of the buffer pointed by edx. In case the buffer is too small
+   the value sys_readlink will truncate its contents.
+
+Return values
+
+   If the system call succeeds the return value is the count of
+   characters placed in the buffer.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EACCES Search permission is denied for a component of the path
+     prefix.
+   -EFAULT Buffer pointed by edx extends outside the process's allocated
+     address space.
+   -EINVAL The named file is not a symbolic link.
+     -or-
+     esi is not positive.
+   -EIO An I/O error occurred while reading from the file system.
+   -ELOOP Too many symbolic links were encountered in translating the
+     pathname.
+   -ENAMETOOLONG A pathname, or a component of a pathname, was too long.
+   -ENOENT The named file does not exist.
+   -ENOMEM Insufficient kernel memory was available.
+   -ENOTDIR A component of the path prefix is not a directory.
+     -or-
+     Path is a relative path and ebx is a file descriptor referring to a
+     file other than a directory.
+   -EBADF ebx is not a valid file descriptor.
+
+   Available since 2.6.16
+

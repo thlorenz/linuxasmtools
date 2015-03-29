@@ -1,0 +1,20 @@
+
+----------------------------------------------------------------------------
+147 getsid         - get session ID
+----------------------------------------------------------------------------
+  mov  eax,147
+  mov  ebx,pid  ;if zero callers sid is returned, else pid's
+  int  80h
+
+       getsid(0)  returns  the  session  ID of the calling process.  getsid(p)
+       returns the session ID of the process with process ID p.  (The  session
+       ID  of  a  process  is the process group ID of the session leader.)  On
+       error a negative code will be returned
+
+ERRORS
+       ESRCH  No process with process ID p was found.
+
+SEE ALSO
+       getpgid, setsid
+
+

@@ -1,0 +1,1390 @@
+
+
+----------------------------------------------------------------------------
+ 117 ipc           - System V IPC system calls
+----------------------------------------------------------------------------
+
+  mov  eax,117
+  mov  ebx,function
+  mov  ecx,(see functions)
+  mov  edx,(see functions)
+  mov  esi,(see functions)
+  mov  edi,(see functions)
+  int  80h
+
+The ipc function contains many sub functions, including
+semaphores, share memory, and others.  The sub function
+list from kernel includes:
+
+functions set in ebx:
+        SEMOP		 1 - semaphore operation
+        SEMGET		 2 - semaphore get
+        SEMCTL		 3 - semaphore control
+        SEMTIMEDOP	 4 - semaphore operation mod
+        MSGSND		11 - messages
+        MSGRCV		12 - message recieve
+        MSGGET		13 - message get
+        MSGCTL		14 - message control
+        SHMAT		21 - shared memory attach
+        SHMDT		22 - shared memory detatch
+        SHMGET		23 - shared memory get
+        SHMCTL		24 - shared memory control
+
+----------------------------------------------------------------------
+
+MSGCTL - message control
+
+  mov  eax,117		;ipc
+  mov  ebx,14		;function msgctl
+  mov  ecx,meqid	;message queue id
+  mov  edx,cmd
+  mov  esi,(cmd specific)
+  int  80h
+   
+
+   Perform the control operation specified by edx on the message queue
+   with identifier ecx.
+
+ args
+ ----
+
+ ecx Message queue ID.
+
+ edx Command to perform. It may be one of the following:
+
+        IPC_RMID 0     /* remove resource */
+        IPC_SET  1     /* set ipc_perm options */
+        IPC_STAT 2     /* get ipc_perm options */
+        IPC_INFO 3     /* see ipcs */
+
+   IPC_STAT Copy information from the kernel data structure associated
+   with ecx into the msqid_ds structure pointed to by esi. The caller
+   must have read permission on the message queue.
+
+   struc msqid_ds
+   .msg_perm    ipc_perm ; Ownership and permissions
+   .msg_first   resd 1 ; First message on queue, unused
+   .msg_last    resd 1 ; Last message in queue, unused
+   .msg_stime   resd 1 ; Time of last MSGSND
+   .msg_rtime   resd 1 ; Time of last MSGRCV
+   .msg_ctime   resd 1 ; Time of last change
+   .msg_lcbytes resd 1 ; *to be documented*
+   .msg_lqbytes resd 1 ; *to be documented*
+   .msg_cbytes  resw 1 ; Current number of bytes in queue (non-standard)
+   .msg_qnum    resw 1 ; Current number of messages in queue
+   .msg_qbytes  resw 1 ; Maximum number of bytes allowed in queue
+   .msg_lspid   resw 1 ; PID of last MSGSND
+   .msg_lrpid   resw 1 ; PID of last MSGRCV
+   endstruc
+
+   struc ipc_perm
+   .key  resd 1
+   .uid  resw 1
+   .gid  resw 1
+   .cuid resw 1
+   .cgid resw 1
+   .mode resw 1
+   .seq  resw 1
+   endstruc
+
+   IPC_SET Write the values of some members of the msqid_ds structure
+   pointed to by esi to the kernel data structure associated with this
+   message queue, updating also its msg_ctime member. The following
+   members of the structure are updated: msg_qbytes, msg_perm.uid,
+   msg_perm.gid, and (the least significant 9 bits of) msg_perm.mode. The
+   effective UID of the calling process must match the owner
+   (msg_perm.uid) or creator (msg_perm.cuid) of the message queue, or the
+   caller must be privileged. Appropriate privilege (the CAP_IPC_RESOURCE
+   capability) is required to raise the msg_qbytes value beyond the
+   system parameter MSGMNB.
+
+   IPC_RMID Immediately remove the message queue, awakening all waiting
+   reader and writer processes (with an error return -EIDRM). The calling
+   process must have appropriate privileges or its effective user ID must
+   be either that of the creator or owner of the message queue.
+
+   IPC_INFO Returns information about system-wide message queue limits
+   and parameters in the msginfo structure pointed to by esi:
+
+   struc msginfo
+   .msgpool resd 1  ;Size in bytes of buffer pool used to hold message data; unused
+   .msgmap  resd 1  ;Max. # of entries in message map; unused
+   .msgmax  resd 1  ;Max. # of bytes that can be written in a single message
+   .msgmnb  resd 1  ;Max. # of bytes that can be written to queue; used to initialize
+                    ;  msg_qbytes during queue creation (MSGGET)
+   .msgmni  resd 1  ;Max. # of message queues
+   .msgssz  resd 1  ;Message segment size; unused
+   .msgtql  resd 1  ;Max. # of messages on all queues in system; unused
+   .msgseg  resw 1  ;Max. # of segments; unused
+   endstruc
+
+   The msgmni, msgmax, and msgmnb settings can be changed via /proc files
+   of the same name.
+
+   MSG_INFO Returns a msginfo structure (see above) containing the same
+   information as for IPC_INFO, except that the following fields are
+   returned with information about system resources consumed by message
+   queues: the msgpool field returns the number of message queues that
+   currently exist on the system; the msgmap field returns the total
+   number of messages in all queues on the system; and the msgtql field
+   returns the total number of bytes in all messages in all queues on the
+   system.
+
+   MSG_STAT Returns a msqid_ds structure as for IPC_STAT. However, the
+   msqid argument is not a queue identifier, but instead an index into
+   the kernel's internal array that maintains information about all
+   message queues on the system.
+
+  esi This parameter depends on the command used (edx). See above for
+   information on available commands.
+
+   Return values
+
+   If the function succeeds the return value depends on the command used:
+   IPC_STAT, IPC_SET, IPC_RMID Return value is 0.
+   IPC_INFO, MSG_INFO Return value is the index of the highest used entry
+   in the kernel's internal array recording information about all message
+   queues. (This information can be used with repeated MSG_STAT
+   operations to obtain information about all queues on the system.)
+   MSG_STAT Return value is the identifier of the queue whose index was
+   given in ecx.
+
+   If the function fails the return value is one of the following errno
+   values:
+   -EACCES The argument edx is equal to IPC_STAT or MSG_STAT, but the
+     calling process does not have read permission on the message queue
+     ecx, and does not have the CAP_IPC_OWNER capability.
+   -EFAULT The argument edx has the value IPC_SET or IPC_STAT, but the
+     address pointed to by esi isn't accessible.
+   -EIDRM The message queue was removed.
+   -EINVAL Invalid value for edx or ecx. Or: for a MSG_STAT operation,
+     the index value specified in ecx referred to an array slot that is
+     currently unused.
+   -EPERM The argument edx has the value IPC_SET or IPC_RMID, but the
+     effective user ID of the calling process is not the creator (as found
+     in msg_perm.cuid) or the owner (as found in msg_perm.uid) of the
+     message queue, and the process is not privileged (it does not have the
+   CAP_SYS_ADMIN capability).
+
+   Remarks
+
+   The IPC_INFO, MSG_STAT and MSG_INFO operations are used by the ipcs
+   program to provide information on allocated resources. In the future
+   these may modified or moved to a /proc file system interface.
+
+----------------------------------------------------------------------
+
+MSGGET - get message queue identifier
+
+  mov  eax,117		;ipc
+  mov  ebx,13		;sub function MSGGET
+  mov  ecx,key          ;key value
+  mov  edx,flags	;operation flags
+  int  80h
+
+   Return the message queue identifier associated with the value of the
+   ecx argument.
+
+args
+----
+
+ ecx Key value. This key value is compared to existing key values that
+   exist within the kernel for other message queues.
+   If IPC_PRIVATE is specified for this argument, a new message queue
+   will be created and the system call will ignore everything but the
+   least significant 9 bits of edx.
+
+ edx Operation flags:
+   IPC_CREAT Create the queue if it doesn't already exist in the kernel
+   and argument in ecx is not IPC_PRIVATE.
+   IPC_EXCL When used with IPC_CREAT, fail if queue already exists.
+   If both IPC_CREAT and IPC_EXCL are specified and a message queue
+   already exists for ecx, then MSGGET fails with -EEXIST. (This is
+   analogous to the effect of the combination "O_CREAT or O_EXCL" for
+   sys_open.)
+   Upon creation, the least significant bits of the argument edx define
+   the permissions of the message queue:
+
+   S_IRUSR  - owner has read permission
+   S_IWUSR  - owner has write permission
+   S_IRGRP  - group has read permission
+   S_IWGRP  - group has write permission
+   S_IROTH  - others have read permission
+   S_IWOTH  - others have write permission
+
+  If a new message queue is created, then its associated data structure
+   msqid_ds (see MSGCTL) is initialised as follows:
+   msg_perm.cuid and msg_perm.uid are set to the effective user ID of the
+   calling process.
+   msg_perm.cgid and msg_perm.gid are set to the effective group ID of
+   the calling process.
+   The least significant 9 bits of msg_perm.mode are set to the least
+   significant 9 bits of msgflg.
+   msg_qnum, msg_lspid, msg_lrpid, msg_stime and msg_rtime are set to 0.
+   msg_ctime is set to the current time.
+   msg_qbytes is set to the system limit MSGMNB.
+   If the message queue already exists the permissions are verified, and
+   a check is made to see if it is marked for destruction.
+
+   Return values
+
+   If the function succeeds the return value is a message queue
+   identifier (a nonnegative integer).
+   If the function fails the return value is one of the following errno
+   values:
+
+   -EACCES A message queue exists for ecx, but the calling process does
+     not have permission to access the queue, and does not have the
+     CAP_IPC_OWNER capability.
+   -EEXIST A message queue exists for ecx and edx specified both
+     IPC_CREAT and IPC_EXCL.
+   -ENOENT No message queue exists for ecx and edx did not specify
+     IPC_CREAT.
+   -ENOMEM message queue has to be created but the system does not have
+     enough memory for the new data structure.
+   -ENOSPC A message queue has to be created but the system limit for the
+     maximum number of message queues (MSGMNI) would be exceeded.
+
+   Remarks
+
+   The following is a system limit on message queue resources affecting a
+   MSGGET call:
+   MSGMNI - System wide maximum number of message queues: policy
+   dependent (this limit can be read and modified via
+   /proc/sys/kernel/msgmni).
+
+
+----------------------------------------------------------------------
+   MSGRCV
+
+  mov  eax,117		;ipc
+  mov  ebx,12		;function msgctl
+  mov  ecx,meqid	;message queue id
+  mov  edx,size         ;max size of mtext
+  mov  esi,type         ;type of message
+  mov  edi,ipc_kludge   ;ptr to ipc_kludge
+  mov  ebp,opflag       ;operation flags
+  int  80h
+
+   Read a message from the message queue specified by ecx into the
+   ipc_kludge pointed to by the edi argument, removing the read message
+   from the queue.
+
+args
+----
+
+ ecx Message queue ID.
+
+ edx Maximum size in bytes for the member mtext of the structure pointed to
+   by theipc_kludge.msgp argument. If the message text has length greater
+   than edx, then the behavior depends on whether MSG_NOERROR is
+   specified in ebp. If MSG_NOERROR is specified, then the message text
+   will be truncated (and the truncated part will be lost); if
+   MSG_NOERROR is not specified, then the message isn't removed from the
+   queue and the system call fails returning -E2BIG.
+
+ esi Specifies the type of message requested and may be either:
+   0 The the first message in the queue is read.
+   < 0 Then the first message in the queue of type esi is read, unless
+   MSG_EXCEPT was specified in ebp, in which case the first message in
+   the queue of type not equal to esi will be read.
+   < 0 Then the first message in the queue with the lowest type less than
+   or equal to the absolute value of esi will be read.
+
+ edi Pointer to a properly initialized ipc_kludge structure:
+
+   struc ipc_kludge
+   .msgp   resd 1
+   .msgtyp resd 1
+   endstruc
+
+   msgp should point to a caller-defined structure of the following
+   general form:
+
+   struc msgbuf
+   .mtype resd 1 ; message type
+   .mtext resb 1 ; message data
+   ends
+
+ ebp Operation flag:
+   IPC_NOWAIT For immediate return if no message of the requested type is
+    in the queue. The system call fails with -ENOMSG.
+   MSG_EXCEPT Used with esi greater than 0 to read the first message in
+    the queue with message type that differs from edi.
+   MSG_NOERROR To truncate the message text if longer than edx bytes.
+
+ Return values
+
+   If the function succeeds the return value is the number of bytes
+   actually copied into the mtext array.
+   If the function fails the return value is one of the following errno
+   values:
+
+   -E2BIG The message text length is greater than edx and MSG_NOERROR
+     isn't specified in ebp.
+   -EACCES The calling process does not have read permission on the
+     message queue, and does not have the CAP_IPC_OWNER capability.
+   -EFAULT The address pointed to by edi isn't accessible.
+   -EIDRM While the process was sleeping to receive a message, the
+     message queue was removed.
+   -EINTR While the process was sleeping to receive a message, the
+     process caught a signal.
+   -EINVAL ecx was invalid, or edx was less than 0.
+   -ENOMSG IPC_NOWAIT was specified in ebp and no message of the
+     requested type existed on the message queue.
+
+ Remarks
+
+   If no message of the requested type is available and IPC_NOWAIT isn't
+   specified in ebp, the calling process is blocked until one of the
+   following conditions occurs:
+     * A message of the desired type is placed in the queue.
+     * The message queue is removed from the system. In this case the
+       system call fails with -EIDRM.
+     * The calling process catches a signal. In this case the system call
+       fails with -EINTR.
+
+   Upon successful completion the message queue data structure is updated
+   as follows:
+    msg_lrpid is set to the process ID of the calling process.
+    msg_qnum is decremented by 1.
+    msg_rtime is set to the current time.
+
+
+----------------------------------------------------------------------
+
+MSGSND - Add message to queue
+
+  mov  eax,117		;ipc
+  mov  ebx,11		;function msgctl
+  mov  ecx,meqid	;message queue id
+  mov  edx,size         ;size of msgbuf
+  mov  esi,opflags      ;operation flags
+  mov  edi,msgbuf       ;ptr to msgbuf
+  int  80h
+
+   Append a copy of the message pointed to by edi to the message queue
+   whose identifier is specified by ecx. The calling process must have
+   write permission on the message queue in order to send a message.
+   If sufficient space is available in the queue, MSGSND succeeds
+   immediately. (The queue capacity is defined by the msg_bytes field in
+   the associated data structure for the message queue. During queue
+   creation this field is initialised to MSGMNB bytes, but this limit can
+   be modified using MSGCTL) If insufficient space is available in the
+   queue, then the default behaviour of MSGSND is to block until space
+   becomes available. If IPC_NOWAIT is specified in esi, then the call
+   instead fails with the error -EAGAIN.
+   A blocked MSGSND call may also fail if the queue is removed (in which
+   case the system call fails with errno -EIDRM), or a signal is caught
+   (in which case the system call fails with errno -EINTR). (MSGSND and
+   MSGRCV are never automatically restarted after being interrupted by
+   a signal handler, regardless of the setting of the SA_RESTART flag
+   when establishing a signal handler.)
+   Upon successful completion the message queue data structure is updated
+   as follows:
+    msg_lspid is set to the process ID of the calling process.
+    msg_qnum is incremented by 1.
+    msg_stime is set to the current time.
+
+args
+----
+
+ ecx Message queue ID.
+
+ edx Size of the msgbuf.mtext array. Messages of zero length (i.e., no
+   mtext field) are permitted.
+
+ esi Operation flags:
+   IPC_NOWAIT For immediate return if the queue is full and the message
+   couldn't be appended at the moment. The system call will fail with
+   errno -EAGAIN in such case.
+
+ edi Pointer to a properly initialized caller-defined structure of the
+   following general form:
+
+   struc msgbuf
+   mtype resd 1 ; message type, must be > 0
+   mtext resb 1 ; message data
+   endstruc
+
+   The mtype field must have a strictly positive integer value. This
+   value can be used by the receiving process for message selection (see
+   the description of MSGRCV).
+
+   Return values
+
+   If the function succeeds the return value is 0.
+   If the function fails the return value is one of the following errno
+   values:
+
+   -EACCES The calling process does not have write permission on the
+     message queue, and does not have the CAP_IPC_OWNER capability.
+   -EAGAIN The message can't be sent due to the msg_qbytes limit for the
+     queue and IPC_NOWAIT was specified in edi.
+   -EFAULT The address pointed to by edx isn't accessible.
+   -EIDRM The message queue was removed.
+   -EINTR Sleeping on a full message queue condition, the process caught
+     a signal.
+   -EINVAL Invalid ecx value, or nonpositive mtype value, or invalid esi
+     value (less than 0 or greater than the system value MSGMAX).
+   -ENOMEM The system has not enough memory to make a copy of the
+     supplied msgbuf structure.
+
+   Remarks
+
+   The following limits on message queue resources affect the MSGSND
+   call:
+     * MSGMAX - Maximum size for a message text: 8192 bytes (this limit
+       can be read and modified via /proc/sys/kernel/msgmax).
+     * MSGMNB - Default maximum size in bytes of a message queue: 16384
+       bytes (this limit can be read and modified via
+       /proc/sys/kernel/msgmnb). The superuser can increase the size of a
+       message queue beyond MSGMNB by a MSGCTL system call.
+
+   The implementation has no intrinsic limits for the system wide maximum
+   number of message headers (MSGTQL) and for the system wide maximum
+   size in bytes of the message pool (MSGPOOL).
+
+
+----------------------------------------------------------------------
+
+SEMCTL - semaphore control
+
+  mov  eax,117		;ipc
+  mov  ebx,03		;function msgctl
+  mov  ecx,semid	;semaphore id
+  mov  edx,index        ;index
+  mov  esi,operation    ;operation to perform
+  mov  edi,int_ptr      ;ptr to integer
+  int  80h
+
+   Perform the control operation specified by esi on the semaphore set
+   identified by ecx, or on the nth semaphore of that set specified by
+   edx. (The semaphores in a set are numbered starting at 0.)
+
+args
+----
+
+ ecx Semaphore set ID.
+
+ edx Index (null based) of a semaphore within the semaphore set.
+
+ esi Control operation to perform. It should be one of the following
+   values:
+
+        IPC_RMID 0     /* remove resource */
+        IPC_SET  1     /* set ipc_perm options */
+        IPC_STAT 2     /* get ipc_perm options */
+        IPC_INFO 3     /* see ipcs */
+
+   IPC_RMID Immediately remove the semaphore set, awakening all processes
+   blocked in SEMOP calls on the set (with an errno -EIDRM). The
+   effective user ID of the calling process must match the creator or
+   owner of the semaphore set, or the caller must be privileged. 
+
+   edi should point to a null integer. edx is ignored.
+   IPC_SET Write the values of some members of the semid_ds structure
+   pointed to by the pinter pointed by edi to the kernel data structure
+   associated with this semaphore set, updating also its sem_ctime
+   member. The following members of the structure are updated:
+   sem_perm.uid, sem_perm.gid, and (the least significant 9 bits of)
+   sem_perm.mode. The effective UID of the calling process must match the
+   owner (sem_perm.uid) or creator (sem_perm.cuid) of the semaphore set,
+   or the caller must be privileged. The argument in edx is ignored.
+   IPC_STAT Copy information from the kernel data structure associated
+   with argument in ecx into the semid_ds structure pointed by the
+   pointer pointed by edi. The argument in edx is ignored. The calling
+   process must have read permission on the semaphore set.
+   IPC_INFO Returns information about system-wide semaphore limits and
+   parameters in the seminfo structure pointed to by pointer pointed by
+   edi:
+
+   struc seminfo
+   .semmap resd 1 ; # of entries in semaphore map; unused.
+   .semmni resd 1 ; Max. # of semaphore sets.
+   .semmns resd 1 ; Max. # of semaphores in all semaphore sets.
+   .semmnu resd 1 ; System-wide max. # of undo structures; unused.
+   .semmsl resd 1 ; Max. # of semaphores in a set.
+   .semopm resd 1 ; Max. # of operations for SEMOP.
+   .semume resd 1 ; Max. # of undo entries per process; unused.
+   .semusz resd 1 ; Size of struct sem_undo.
+   .semvmx resd 1 ; Maximum semaphore value.
+   .semaem resd 1 ; Max. value that can be recorded for semaphore
+   adjustment (SEM_UNDO).
+   endstruc
+
+   The semmsl, semmns, semopm, and semmni settings can be changed via
+   /proc/sys/kernel/sem.
+
+   SEM_STAT Returns a semid_ds structure as for IPC_STAT. However, the
+   semid argument is not a semaphore identifier, but instead an index
+   into the kernel's internal array that maintains information about all
+   semaphore sets on the system.
+
+   SEM_INFO Returns a seminfo structure containing the same information
+   as for IPC_INFO, except that the following fields are returned with
+   information about system resources consumed by semaphores: the semusz
+   field returns the number of semaphore sets that currently exist on the
+   system; and the semaem field returns the total number of semaphores in
+   all semaphore sets on the system.
+   GETPID The system call returns the value of sempid for the nth
+   semaphore of the set specified by edx (i.e. the PID of the process
+   that executed the last SEMOP call for the nth semaphore of the set).
+   The calling process must have read permission on the semaphore set.
+   GETVAL The system call returns the value of semval for the nth
+   semaphore of the set specified by edx. The calling process must have
+   read permission on the semaphore set.
+   GETALL Return semval (i.e., the current value) for all semaphores of
+   the set into semun.array. The argument in edx is ignored. The calling
+   process must have read permission on the semaphore set.
+   GETNCNT The system call returns the value of semncnt (i.e., the number
+   of processes waiting for the value of this semaphore to increase) for
+   the nth semaphore of the set specified by edx (i.e. the number of
+   processes waiting for an increase of semval for the nth semaphore of
+   the set). The calling process must have read permission on the
+   semaphore set.
+   GETZCNT The system call returns the value of semzcnt (i.e., the number
+   of processes waiting for the value of this semaphore to become zero)
+   for the nth semaphore of the set specified by edx (i.e. the number of
+   processes waiting for semval of the nth semaphore of the set to become
+   0). The calling process must have read permission on the semaphore
+   set.
+   SETVAL Set the value of semval to semun.val for the nth semaphore of
+   the set specified by edx, updating also the sem_ctime member of the
+   semid_ds structure associated with the set. Undo entries are cleared
+   for altered semaphores in all processes. If the changes to semaphore
+   values would permit blocked SEMOP calls in other processes to proceed,
+   then those processes are woken up. The calling process must have alter
+   permission on the semaphore set.
+   SETALL Set semval for all semaphores of the set using the array
+   pointed by the pointer pointed by edi, updating also the sem_ctime
+   member of the semid_ds structure associated with the set. Undo entries
+   (see SEMOP) are cleared for altered semaphores in all processes. If
+   the changes to semaphore values would permit blocked SEMOP calls in
+   other processes to proceed, then those processes are woken up. The
+   argument in edx is ignored. The calling process must have alter
+   (write) permission on the semaphore set.
+
+ edi Value of this argument depends on the command used (esi) and may
+   be either ignored or contain a pointer to one of the following
+   strcutres/arrays:
+   For GETALL,
+   or SETALL edi points to a pointer to an array of word values.
+   For SETVAL edi points to a pointer to an integer value.
+   For IPC_STAT,
+   or IPC_SET edi points to a pointer to a semid_ds structure:
+
+   struc semid_ds
+   .sem_perm         ipc_perm ; Permissions.
+   .sem_otime        resd 1 ; Last SEMOP time.
+   .sem_ctime        resd 1 ; Last change time.
+   .sem_base         resd 1 ; Pointer to a sem structure specifing first
+   semaphore in array.
+   .sem_pending      resd 1 ; Pointer to a sem_queue structure specifing
+   pending operations to be processed.
+   .sem_pending_last resd 1 ; Pointer to a pointer to a sem_queue structure
+   specifing last pending operation.
+   .undo             resd 1 ; Pointer to a sem_undo structure specifing
+   undo requests on this array.
+   .sem_nsems        resw 1 ; Number of semaphores in array.
+   endstruc
+
+   Where ipc_perm, sem, sem_queue, and sem_undo defined as follows:
+
+   struc ipc_perm
+   .key  resd 1 ; Key supplied to SEMGET.
+   .uid  resw 1 ; Effective UID of owner.
+   .gid  resw 1 ; Effective GID of owner.
+   .cuid resw 1 ; Effective UID of creator.
+   .cgid resw 1 ; Effective GID of creator.
+   .mode resw 1 ; Permissions.
+   .seq  resw 1 ; Sequence number.
+   endstruc
+
+   struc sem
+   .semval resd 1 ; Current value.
+   .sempid resd 1 ; PID of last operation.
+   endstruc
+
+   struc sem_undo
+   .proc_next resd 1 ; Pointer to a sem_undo structure identifying next
+   entry on this process.
+   .id_next   resd 1 ; Pointer to a sem_undo structure identifying next
+   entry on this semaphore set.
+   .semid     resd 1 ; Semaphore set identifier.
+   .semadj    resd 1 ; Pointer to an array of adjustments, one per
+   semaphore.
+   endstruc
+
+   struc sem_queue
+   next    resd 1 ; Pointer to a sem_queue structure identifying next entry
+                    in the queue.
+   prev    resd 1 ; Pointer to a pointer to a sem_queue structure
+                    identifying previous entry in the queue.
+   sleeper resd 1 ; Pointer to a task_struct (*to be documented*).
+   undo    resd 1 ; Pointer to a sem_undo structure.
+   pid     resd 1 ; Process id of requesting process.
+   status  resd 1 ; Completion status of operation.
+   sma     resd 1 ; Pointer to a sem_array structure identifying semaphore
+                    array for operations (see below).
+   id      resd 1 ; Internal sem ID.
+   sops    resd 1 ; Pointer to a sembuf structure identifying array of
+                    pending operations (see below).
+   nsops   resd 1 ; Number of operations.
+   alter   resd 1 ; Specifies whether the operation alters the array or not.
+   endstruc
+
+   struc sembuf
+   sem_num resw 1 ; Semaphore index in array.
+   sem_op  resw 1 ; Semaphore operation.
+   sem_flg resw 1 ; Operation flags.
+   ends
+
+   struc sem_array
+   .sem_perm         kern_ipc_perm ; Permissions structure (see below)
+   .sem_id           resd 1 ;
+   .sem_otime        resd 1 ; Last SEMOP time.
+   .sem_ctime        resd 1 ; Last change time.
+   .sem_base         resd 1 ; Pointer to a sem structure identifying first
+                              semaphore in the array.
+   .sem_pending      resd 1 ; Pointer to a sem_queue structure identifying
+                              pending operations to be processed.
+   .sem_pending_last resd 1 ; Pointer to a pointer to a sem_queue structure
+                              identifying last pending operation.
+   .undo             resd 1 ; Pointer to a sem_undo structure identifying
+                              undo requests on this array.
+   .sem_nsems        resd 1 ; Number of semaphores in array.
+   endstruc
+
+   struc kern_ipc_perm
+   .lock     spinlock_t
+   .deleted  resd 1
+   .key      resd 1
+   .uid      resd 1
+   .gid      resd 1
+   .cuid     resd 1
+   .cgid     resd 1
+   .mode     resw 1
+   .seq      resd 1
+   .security resd 1
+   endstruc
+
+
+   Return values
+
+   If the function succeeds the return value depends on the command used
+   and may be one of the following:
+
+   GETNCNT The value of semncnt.
+   GETPID The value of semncnt.
+   GETVAL The value of semval.
+   GETZCNT The value of semzcnt.
+   IPC_INFO The index of the highest used entry in the kernel's internal
+     array recording information about all semaphore sets. (This
+     information can be used with repeated SEM_STAT operations to obtain
+     information about all semaphore sets on the system.)
+   SEM_INFO As for IPC_INFO.
+   SEM_STAT The identifier of the semaphore set whose index was given in
+     ecx.
+
+   If the function fails the return value is one of the following errno
+   values:
+
+   -EACCES The argument in esi has one of the values GETALL, GETPID,
+     GETVAL, GETNCNT, GETZCNT, IPC_STAT, SEM_STAT, SETALL, or SETVAL and
+     the calling process does not have the required permissions on the
+     semaphore set and does not have the CAP_IPC_OWNER capability.
+   -EFAULT The address pointed to by edi or by value pointed by edi isn't
+     accessible.
+   -EIDRM The semaphore set was removed.
+   -EINVAL Invalid value for esi or ecx. Or: for a SEM_STAT operation,
+     the index value specified in ecx referred to an array slot that is
+     currently unused.
+   -EPERM The argument in esi has the value IPC_SET or IPC_RMID but the
+     effective user ID of the calling process is not the creator (as found
+     in sem_perm.cuid) or the owner (as found in sem_perm.uid) of the
+     semaphore set, and the process does not have the CAP_SYS_ADMIN
+     capability.
+   -ERANGE The argument in esi has the value SETALL or SETVAL and the
+     value to which semval is to be set (for some semaphore of the set) is
+     less than 0 or greater than the implementation limit SEMVMX.
+
+   Remarks
+
+   The IPC_INFO, SEM_STAT and SEM_INFO operations are used by the ipcs
+   program to provide information on allocated resources. In the future
+   these may modified or moved to a /proc file system interface.
+   The following system limit on semaphore sets affects a SEMCTL call:
+   SEMVMX - Maximum value for semval: 32767.
+
+
+----------------------------------------------------------------------
+
+SEMGET - get semaphore identifier
+
+  mov  eax,117		;ipc
+  mov  ebx,02		;function msgctl
+  mov  ecx,key          ;key value
+  mov  edx,num          ;semaphore number
+  mov  esi,opflags      ;operation flags
+  int  80h
+
+   Return the semaphore set identifier associated with the argument ecx.
+
+
+args
+----
+
+ ecx Key value. This key value is compared to existing key values that
+   exist within the kernel for other semaphore sets.
+   If IPC_PRIVATE is specified for this argument, a new semaphore sets
+   will be created and the system call will ignore everything but the
+   least significant 9 bits of esi.
+
+ edx Number of semaphores.
+   This argument can be 0 (a don't care) when a semaphore set is not
+   being created. Otherwise edx must be greater than 0 and less than or
+   equal to the maximum number of semaphores per semaphore set (SEMMSL).
+
+ esi Operation flags:
+   IPC_CREAT Create if the semaphore set doesn't already exist in the
+   kernel and argument in ecx is not IPC_PRIVATE.
+   IPC_EXCL When used with IPC_CREAT, fail if semaphore set already
+   exists.
+   If both IPC_CREAT and IPC_EXCL and a semaphore set already exists for
+   given key, then SEMGET fails with errno -EEXIST. (This is analogous to
+   the effect of the combination "O_CREAT or O_EXCL" for sys_open.)
+   Upon creation, the least significant 9 bits of the esi argument define
+   the permissions (write permissions mean permission to alter semaphore
+   values):
+
+   S_IRUSR  - owner has read permission
+   S_IWUSR  - owner has write permission
+   S_IRGRP  - group has read permission
+   S_IWGRP  - group has write permission
+   S_IROTH  - others have read permission
+   S_IWOTH  - others have write permission
+
+   When creating a new semaphore set, SEMGET initialises the set's
+   associated data structure semid_ds (see SEMCTL) as follows:
+   sem_perm.cuid and sem_perm.uid are set to the effective user ID of the
+   calling process.
+   sem_perm.cgid and sem_perm.gid are set to the effective group ID of
+   the calling process.
+   The least significant 9 bits of sem_perm.mode are set to the least
+   significant 9 bits of esi.
+   sem_nsems is set to the value of edx.
+   sem_otime is set to 0.
+   sem_ctime is set to the current time.
+   If the semaphore set already exists, the permissions are verified.
+
+   Return values
+
+   If the function succeeds the return value is semaphore set identifier
+   (a nonnegative integer).
+   If the function fails the return value is one of the following errno
+   values:
+
+   -EACCES A semaphore set exists for key, but the calling process does
+     not have permission to access the set, and does not have the
+     CAP_IPC_OWNER capability.
+   -EEXIST A semaphore set exists for key and esi specified both
+     IPC_CREAT and IPC_EXCL.
+   -EINVAL edx is less than 0 or greater than the limit on the number of
+     semaphores per semaphore set (SEMMSL), or a semaphore set
+     corresponding to key already exists, and edx is larger than the number
+     of semaphores in that set.
+   -ENOENT No semaphore set exists for key and esi did not specify
+     IPC_CREAT.
+   -ENOMEM A semaphore set has to be created but the system does not have
+     enough memory for the new data structure.
+   -ENOSPC A semaphore set has to be created but the system limit for the
+     maximum number of semaphore sets (SEMMNI), or the system wide maximum
+     number of semaphores (SEMMNS), would be exceeded.
+
+   Remarks
+
+   The following limits on semaphore set resources affect the SEMGET
+   call:
+   SEMMNI System wide maximum number of semaphore sets: policy dependent
+   (this limit can be read and modified via the fourth field of
+   /proc/sys/kernel/sem).
+   SEMMSL Maximum number of semaphores per semid: implementation
+   dependent (this limit can be read and modified via the first field of
+   /proc/sys/kernel/sem).
+   SEMMNS System wide maximum number of semaphores: policy dependent
+   (this limit can be read and modified via the second field of
+   /proc/sys/kernel/sem). Values greater than SEMMSL * SEMMNI makes it
+   irrelevant.
+
+
+----------------------------------------------------------------------
+
+SEMOP - semaphore operations
+
+  mov  eax,117		;ipc
+  mov  ebx,01		;function msgctl
+  mov  ecx,semid        ;semaphore id
+  mov  edx,array        ;ptr to array
+  mov  esi,numop        ;number of operations
+  int  80h
+
+   This function performs operations on selected members of the semaphore
+   set indicated by ecx.
+   Each semaphore in a semaphore set has the following associated values:
+
+   semval  - Semaphore value [16bit]
+   semzcnt - Number waiting for zero [16bit]
+   semncnt - Number waiting for increase [16bit]
+   sempid  - Process that did last operation [32bit]
+
+args
+----
+
+ ecx Semaphore set ID.
+
+ edx Pointer to an array of sembuf structures specifying the operations
+   to be performed on a semaphore set:
+
+   struc sembuf
+   sem_num resw 1
+   sem_op  resw 1
+   sem_flg resw 1
+   endstruc
+
+   sembuf members:
+   sem_num
+   The number of the semaphore you wish to deal with.
+   sem_op
+
+   The operation (positive, negative, or zero) to perform on each
+   semaphore in the specified set:
+   If sem_op is a positive integer, the operation adds this value to the
+   semaphore value (semval). Furthermore, if SEM_UNDO is asserted for
+   this operation, the system updates the process undo count (semadj) for
+   this semaphore. This operation can always proceed - it never forces a
+   process to wait. The calling process must have alter permission on the
+   semaphore set.
+   If sem_op is zero, the process must have read access permission on the
+   semaphore set. This is a "wait-for-zero" operation: if semval is zero,
+   the operation can immediately proceed. Otherwise, if IPC_NOWAIT is
+   asserted in sem_flg, the system call fails with -EAGAIN (and none of
+   the operations is performed). Otherwise semzcnt (the count of
+   processes waiting until this semaphore's value becomes zero) is
+   incremented by one and the process sleeps until one of the following
+   occurs:
+
+     * semval becomes 0, at which time the value of semzcnt is
+       decremented.
+     * The semaphore set is removed: the system call fails, with -EIDRM.
+     * The calling process catches a signal: the value of semzcnt is
+       decremented and the system call fails, with -EINTR.
+
+   If sem_op is less than zero, the process must have alter permission on
+   the semaphore set. If semval is greater than or equal to the absolute
+   value of sem_op, the operation can proceed immediately: the absolute
+   value of sem_op is subtracted from semval, and, if SEM_UNDO is
+   asserted for this operation, the system updates the process undo count
+   (semadj) for this semaphore. If the absolute value of sem_op is
+   greater than semval, and IPC_NOWAIT is asserted in sem_flg, the system
+   call fails, with -EAGAIN (and none of the operations is performed).
+   Otherwise semncnt (the counter of processes waiting for this
+   semaphore's value to increase) is incremented by one and the process
+   sleeps until one of the following occurs:
+
+     * semval becomes greater than or equal to the absolute value of
+       sem_op, at which time the value of semncnt is decremented, the
+       absolute value of sem_op is subtracted from semval and, if
+       SEM_UNDO is asserted for this operation, the system updates the
+       process undo count (semadj) for this semaphore.
+     * The semaphore set is removed from the system: the system call
+       fails with -EIDRM.
+     * The calling process catches a signal: the value of semncnt is
+       decremented and the system call fails with -EINTR.
+
+   On successful completion, the sempid value for each semaphore
+   specified in the array pointed to by edx is set to the process ID of
+   the calling process. In addition, the sem_otime is set to the current
+   time.
+   sem_flg
+   Operational flags:
+
+   IPC_NOWAIT - Return error on wait.
+   SEM_UNDO   - Undo the operation on exit.
+
+ esi Number of operations in the array specified by esi.
+
+   Return values
+
+   If the function succeeds the return value is 0.
+   If the function fails the return value is one of the following errno
+   values:
+
+   -E2BIG The argument in esi is greater than SEMOPM, the maximum number
+     of operations allowed per system call.
+   -EACCES The calling process has no access permissions on the semaphore
+     set as required by one of the specified operations.
+   -EAGAIN An operation could not proceed immediately and IPC_NOWAIT was
+     asserted in its sem_flg.
+   -EFAULT The address pointed to by edx isn't accessible.
+   -EFBIG For some operation the value of sem_num is less than 0 or
+     greater than or equal to the number of semaphores in the set.
+   -EIDRM The semaphore set was removed.
+   -EINTR While blocked in this system call, the process caught a signal.
+   -EINVAL The semaphore set doesn't exist, or semaphore set ID is less
+     than zero, or esi has a non-positive value.
+   -ENOMEM The sem_flg of some operation asserted SEM_UNDO and the system
+     does not have enough memory to allocate the undo structure.
+   -ERANGE For some operation sem_op+semval is greater than SEMVMX, the
+     implementation dependent maximum value for semval.
+
+   Remarks
+
+   SEMOP is never automatically restarted after being interrupted by a
+   signal handler, regardless of the setting of the SA_RESTART flags when
+   establishing a signal handler.
+   semadj is a per-process integer which is simply the (negative) count
+   of all semaphore operations performed specifying the SEM_UNDO flag.
+   When a semaphore's value is directly set using the SETVAL or SETALL
+   request to SEMCTL, the corresponding semadj values in all processes
+   are cleared.
+   The semval, sempid, semzcnt, and semnct values for a semaphore can all
+   be retrieved using appropriate SEMCTL calls.
+   The followings are limits on semaphore set resources affecting a SEMOP
+   call:
+
+     * SEMOPM - Maximum number of operations allowed for one SEMOP call
+       (32).
+     * SEMVMX - Maximum allowable value for semval ( 32767).
+
+   The implementation has no intrinsic limits for the adjust on exit
+   maximum value (SEMAEM), the system wide maximum number of undo
+   structures (SEMMNU) and the per-process maximum number of undo entries
+   system parameters.
+   When a process terminates, its set of associated semadj structures is
+   used to undo the effect of all of the semaphore operations it
+   performed with the SEM_UNDO flag. This raises a difficulty: if one (or
+   more) of these semaphore adjustments would result in an attempt to
+   decrease a semaphore's value below zero, what should an implementation
+   do? One possible approach would be to block until all the semaphore
+   adjustments could be performed. This is however undesirable since it
+   could force process termination to block for arbitrarily long periods.
+   Another possibility is that such semaphore adjustments could be
+   ignored altogether (somewhat analogously to failing when IPC_NOWAIT is
+   specified for a semaphore operation). Linux adopts a third approach:
+   decreasing the semaphore value as far as possible (i.e., to zero) and
+   allowing process termination to proceed immediately.
+   In kernels prior to 2.6.11 there is a bug that in some circumstances
+   prevents a process that is waiting for a semaphore value to become
+   zero from being woken up when the value does actually become zero.
+   This bug is fixed in kernel 2.6.11.
+
+
+----------------------------------------------------------------------
+
+SEMTIMEDOP - non sleeping operatins
+
+
+  mov  eax,117		;ipc
+  mov  ebx,04		;function msgctl
+  mov  ecx,semid        ;semaphore id
+  mov  edx,array        ;ptr to array
+  mov  esi,numop        ;number of operations
+  int  80h
+
+   SEMTIMEDOP behaves identically to SEMOP except that in those cases
+   were the calling process would sleep, the duration of that sleep is
+   limited by the amount of elapsed time specified by the timespec
+   structure whose address is passed in the edi parameter. If the
+   specified time limit has been reached, SEMTIMEDOP fails with -EAGAIN
+   (and none of the operations in sops is performed). If the timeout
+   parameter is NULL, then SEMTIMEDOP behaves exactly like SEMOP.
+
+
+----------------------------------------------------------------------
+
+SHMAT - attach to shared memory block.  This is needed to access
+        shared memory.
+
+      mov  eax,117
+      mov  ebx,21
+      mov  ecx,shmid    (from SHMGET)
+      mov  edx,address  (normally zero)
+      mov  esi,flag     (normally zero for R/W access)
+      int  80h
+
+   Attach the shared memory segment identified by ecx to the address
+   space of the calling process.
+   The sys_brk value of the calling process is not altered by the
+   attach. The segment will automatically be detached at process exit.
+   The same segment may be attached as a read and as a read-write one,
+   and more than once, in the process's address space.
+   A successful SHMAT call updates the members of the shmid_ds structure
+   (see SHMCTL) associated with the shared memory segment as follows:
+    shm_atime is set to the current time.
+    shm_lpid is set to the process-ID of the calling process.
+    shm_nattch is incremented by one
+
+args
+----
+
+ ecx Shared memory segment ID.
+
+ edx The attaching address. If it is NULL, the system chooses a
+   suitable (unused) address at which to attach the segment.
+   If it isn't NULL and SHM_RND is specified in esi, the attach occurs at
+   the address equal to edx rounded down to the nearest multiple of
+   SHMLBA. Otherwise edx must be a page-aligned address at which the
+   attach occurs.
+
+ esi Mode flags:
+   SHM_RDONLY If this flag is specified, then the segment is attached for
+   reading and the process must have read permission for the segment.
+   Otherwise the segment is attached for read and write and the process
+   must have read and write permission for the segment. There is no
+   notion of a write-only shared memory segment.
+   SHM_RND See above.
+   SHM_REMAP If this flag is specified, then the mapping of the segment
+   will replace any existing mapping in the range starting at edx and
+   continuing for the size of the segment. (Normally an -EINVAL error
+   would result if a mapping already exists in this address range.) In
+   this case, edx must not be NULL.
+   SHM_EXEC If this flag is specified, then the segment is attached with
+   execution access (PROT_EXEC).
+
+   Return values
+
+   If the function succeeds the return value is the address of the
+   attached shared memory segment.
+   If the function fails the return value is one of the following errno
+   values:
+
+   -EACCES The calling process does not have the required permissions for
+     the requested attach type, and does not have the CAP_IPC_OWNER
+     capability.
+   -EINVAL Invalid ecx value, unaligned (i.e., not page-aligned and
+     SHM_RND was not specified) or invalid edx value, or failing attach at
+     sys_brk, or SHM_REMAP was specified and edx was NULL.
+   -EFAULT
+   -ENOMEM Could not allocate memory for the descriptor or for the page
+     tables.
+
+   Remarks
+
+   Using SHMAT with edx equal to NULL is the preferred, portable way of
+   attaching a shared memory segment. Be aware that the shared memory
+   segment attached in this way may be attached at different addresses in
+   different processes. Therefore, any pointers maintained within the
+   shared memory must be made relative (typically to the starting address
+   of the segment), rather than absolute.
+   It is possible to attach a shared memory segment even if it is already
+   marked to be deleted.
+   The following system parameter affects SHMAT:
+   SHMLBA - Segment low boundary address multiple. Must be page aligned.
+   For the current implementation the SHMLBA value is PAGE_SIZE.
+   The implementation places no intrinsic limit on the per-process
+   maximum number of shared memory segments (SHMSEG).
+
+
+----------------------------------------------------------------------
+
+SHMCTL - a collection of operations on shared memory
+
+      mov  eax,117
+      mov  ebx,24
+      mov  ecx,shmid
+      mov  edx,code
+      mov  esi,struc/buf
+      int  80h
+
+     codes are:  done with memory - 0
+                 set values in buf  1
+                 get values to buf  2
+
+     The data in struc/buf is described at kernel includes
+     as IPC_SET and IPC_STAT
+
+   Obtain information about a shared memory segment, set the owner,
+   group, and permissions of a segment, or destroy a segment.
+
+args
+----
+
+ ecx Shared memory segment ID.
+
+ edx Command to perform. It may be one of the following values:
+   IPC_STAT Copy information from the kernel data structure associated
+   with ecx into the shmid_ds structure pointed to by esi. The caller
+   must have read permission on the shared memory segment.
+
+   struc shmid_ds
+   .shm_perm    ipc_perm ; Ownership and permissions
+   .shm_segsz   resd 1 ; Size of segment (bytes)
+   .shm_atime   resd 1 ; Last attach time
+   .shm_dtime   resd 1 ; Last detach time
+   .shm_ctime   resd 1 ; Last change time
+   .shm_cpid    resw 1 ; PID of creator
+   .shm_lpid    resw 1 ; PID of last SHMAT/SHMDT
+   .shm_nattch  resw 1 ; Number of current attaches
+   .shm_unused  resw 1 ; Not used
+   .shm_unused2 resd 1 ; Not used
+   .shm_unused3 resd 1 ; Not used
+   endstruc
+
+   IPC_SET Write the values of some members of the shmid_ds structure
+   pointed to by esi to the kernel data structure associated with this
+   shared memory segment, updating also its shm_ctime member. The
+   following fields can be changed: shm_perm.uid, shm_perm.gid, and (the
+   least significant 9 bits of) shm_perm.mode. The effective UID of the
+   calling process must match the owner (shm_perm.uid) or creator
+   (shm_perm.cuid) of the shared memory segment, or the caller must be
+   privileged.
+   IPC_RMID Mark the segment to be destroyed. The segment will only
+   actually be destroyed after the last process detaches it (i.e., when
+   the shm_nattch member of the associated structure shmid_ds is zero).
+   The caller must be the owner or creator, or be privileged. If a
+   segment has been marked for destruction, then the (non-standard)
+   SHM_DEST flag of the shm_perm.mode field in the associated data
+   structure retrieved by IPC_STAT will be set.
+   IPC_INFO Returns information about system-wide shared memory limits
+   and parameters in the shminfo structure pointed to by esi:
+
+   struc shminfo
+   .shmmax resd 1 ; Max. segment size
+   .shmmin resd 1 ; Min. segment size; always 1
+   .shmmni resd 1 ; Max. # of segments
+   .shmseg resd 1 ; Max. # of segments that a process can attach; unused
+   .shmall resd 1 ; Max. # of pages of shared memory, system-wide
+   endstruc
+
+   The shmmni, shmmax, and shmall settings can be changed via /proc files
+   of the same name.
+   SHM_INFO Returns a shm_info structure (pointed by esi) whose fields
+   contain information about system resources consumed by shared memory:
+
+   struc shm_info
+   .used_ids       resd 1 ; # of currently existing segments
+   .shm_tot        resd 1 ; Total number of shared memory pages
+   .shm_rss        resd 1 ; # of resident shared memory pages
+   .shm_swp        resd 1 ; # of swapped shared memory pages
+   .swap_attempts  resd 1 ; Unused
+   .swap_successes resd 1 ; Unused
+   endstruc
+
+   SHM_STAT Returns a shmid_ds structure as for IPC_STAT. However, the
+   ecx argument is not a segment identifier, but instead an index into
+   the kernel's internal array that maintains information about all
+   shared memory segments on the system.
+   SHM_LOCK Prevent swapping of the shared memory segment. The caller
+   must fault in any pages that are required to be present after locking
+   is enabled. If a segment has been locked, then the (non-standard)
+   SHM_LOCKED flag of the shm_perm.mode field in the associated data
+   structure retrieved by IPC_STAT will be set.
+   SHM_UNLOCK Unlock the segment, allowing it to be swapped out.
+
+ esi This argument depends on the command used. See above.
+
+   Return values
+
+   If the function succeeds the return value depends on the command used
+   (for other commands return value is 0):
+   IPC_INFO, SHM_INFO Return value is the index of the highest used entry
+   in the kernel's internal array recording information about all shared
+   memory segments. (This information can be used with repeated SHM_STAT
+   operations to obtain information about all shared memory segments on
+   the system.)
+   SHM_STAT Return value is the identifier of the shared memory segment
+   whose index was given in ecx.
+
+   If the function fails the return value is one of the following errno
+   values:
+
+   -EACCES IPC_STAT or SHM_STAT is requested and shm_perm.mode does not
+     allow read access for ecx, and the calling process does not have the
+     CAP_IPC_OWNER capability.
+   -EFAULT The argument edx has value IPC_SET or IPC_STAT but the address
+     pointed to by esi isn't accessible.
+   -EIDRM ecx points to a removed identifier.
+   -EINVAL ecx is not a valid identifier, or edx is not a valid command.
+     Or: for a SHM_STAT operation, the index value specified in ecx
+     referred to an array slot that is currently unused.
+   -ENOMEM (In kernels since 2.6.9), SHM_LOCK was specified and the size
+     of the to-be-locked segment would mean that the total bytes in locked
+     shared memory segments would exceed the limit for the real user ID of
+     the calling process. This limit is defined by the RLIMIT_MEMLOCK soft
+     resource limit (see sys_setrlimit).
+   -EOVERFLOW IPC_STAT is attempted, and the GID or UID value is too
+     large to be stored in the structure pointed to by esi.
+   -EPERM IPC_SET or IPC_RMID is attempted, and the effective user ID of
+     the calling process is not that of the creator (found in
+     shm_perm.cuid), or the owner (found in shm_perm.uid), and the process
+     was not privileged (did not have the CAP_SYS_ADMIN capability).
+     Or (in kernels before 2.6.9), SHM_LOCK or SHM_UNLOCK was specified,
+     but the process was not privileged (did not have the CAP_IPC_LOCK
+     capability). (Since Linux 2.6.9, this error can also occur if the
+     RLIMIT_MEMLOCK is 0 and the caller is not privileged.)
+
+   Remarks
+
+   The caller must ensure that a segment is eventually destroyed;
+   otherwise its pages that were faulted in will remain in memory or
+   swap.
+   In kernels before 2.6.10, only a privileged process could employ
+   SHM_LOCK and SHM_UNLOCK. Since kernel 2.6.10, an unprivileged process
+   can employ these operations if its effective UID matches the owner or
+   creator UID of the segment, and (for SHM_LOCK) the amount of memory to
+   be locked falls within the RLIMIT_MEMLOCK resource limit (see
+   sys_setrlimit).
+   The IPC_INFO, SHM_STAT and SHM_INFO operations are used by the ipcs
+   program to provide information on allocated resources. In the future
+   these may modified or moved to a /proc file system interface.
+   Linux permits a process to attach (SHMAT) a shared memory segment
+   that has already been marked for deletion using SHMCTL with IPC_RMID
+   command.
+
+------------------------------------------------------------------------
+ SHMDT - shared memory detach
+
+      mov  eax,117
+      mov  ebx,22
+      mov  ecx,adr
+      int  80h
+
+   Detach a shared memory segment located at the address specified by ecx
+   from the address space of the calling process.
+   The to-be-detached segment must be currently attached with ecx equal
+   to the value returned by the attaching SHMAT call.
+
+   Arguments
+   ecx Address of the process to be detached.
+
+   Return values
+
+   If the function succeeds the return value is 0.
+   If the function fails the return value is -EINVAL meaning that there
+   is no shared memory segment attached at the address specified by ecx.
+
+----------------------------------------------------------------------
+
+SHMGET - allocate or get existing shared memory id (shmid)
+
+   Return the identifier of the shared memory segment associated with the
+   value of the argument ecx.
+   If a new shared memory segment is created, then its associated data
+   structure shmid_ds (see SHMCTL) is initialized as follows:
+   shm_perm.cuid and shm_perm.uid are set to the effective user ID of the
+   calling process.
+   shm_perm.cgid and shm_perm.gid are set to the effective group ID of
+   the calling process.
+   The least significant 9 bits of shm_perm.mode are set to the least
+   significant 9 bit of shmflg.
+   shm_segsz is set to the value of size.
+   shm_lpid, shm_nattch, shm_atime and shm_dtime are set to 0.
+   shm_ctime is set to the current time.
+   If the shared memory segment already exists, the permissions are
+   verified, and a check is made to see if it is marked for destruction.
+
+
+       mov  eax,117
+       mov  ebx,23
+       mov  ecx,key  (if zero, a child can access using 0 as key)
+       mov  edx,size (bytes to allocate)
+       mov  esi,flags(see below)
+       int  80h      (returns id (shmid) or error
+
+ SHMGET modes are:
+	IPC_CREAT = 	00001000q (only needed once to setup memory)
+	IPC_EXCL = 	00002000q (give error if existing key found)
+	owner read =	00000400q
+	owner write =	00000200q
+	group read =	00000040q
+	group write =	00000020q
+	other read =	00000004q
+	other write =	00000002q
+
+args
+----
+
+ ecx Key value. If this value is IPC_PRIVATE then a new shared memory
+   segment, with size equal to the value of edx rounded up to a multiple
+   of PAGE_SIZE, is created and the system call ignores everything but
+   the least significant 9 bits of esi.
+
+ edx Shared memory segment size (used when creating new segment).
+
+ esi Flags. It is should be compsed of least significant 9 bits
+   specifying the permissions granted to the owner, group, and world.
+   (These bits have the same format, and the same meaning, as the mode
+   argument of sys_open. Presently, the execute permissions are not
+   used by the system.) and the following flags:
+   SHM_HUGETLB
+
+   Allocate HUGETLB pages for shared memory. IPC_CREAT to create a new
+   segment. If this flag is not used, then SHMGET will find the segment
+   associated with ecx and check to see if the user has permission to
+   access the segment.
+
+   function not implimented -ENOSYS
+
+   SHM_DEST equ 01000o
+   SHM_LOCKED equ 02000o
+   SHM_HUGETLB equ 04000o
+   SHM_NORESERVE equ 010000o
+
+   IPC_CREAT Create a new segment. If this flag is not used, then SHMGET
+   will find the segment associated with ecx, check to see if the user
+   has permission to receive the shmid associated with the segment, and
+   ensure the segment is not marked for destruction.
+   IPC_EXCL Used with IPC_CREAT to ensure failure if the segment exists.
+   If esi specifies both IPC_CREAT and IPC_EXCL and a shared memory
+   segment already exists for ecx, then SHMGET fails with -EEXIST. (This
+   is analogous to the effect of the combination "O_CREAT or O_EXCL" for
+   sys_open.)
+
+   Return values
+
+   If the function succeeds the return value is a valid segment
+   identifier.
+   If the function fails the return value is one of the following errno
+   values:
+
+   -EACCES The user does not have permission to access the shared memory
+     segment, and does not have the CAP_IPC_OWNER capability.
+   -EEXIST "IPC_CREAT or IPC_EXCL" was specified and the segment exists.
+   -EINVAL A new segment was to be created and size < SHMMIN or size >
+     SHMMAX, or no new segment was to be created, a segment with given key
+     existed, but edx is greater than the size of that segment.
+   -ENFILE The system limit on the total number of open files has been
+     reached.
+   -ENOENT No segment exists for the given ecx, and IPC_CREAT was not
+     specified.
+   -ENOMEM No memory could be allocated for segment overhead.
+   -ENOSPC All possible shared memory IDs have been taken (SHMMNI), or
+     allocating a segment of the requested size would cause the system to
+     exceed the system-wide limit on shared memory (SHMALL).
+   -EPERM The SHM_HUGETLB flag was specified, but the caller was not
+     privileged (did not have the CAP_IPC_LOCK capability).
+
+   Remarks
+
+   The following limits on shared memory segment resources affect the
+   SHMGET call:
+   SHMALL System wide maximum of shared memory pages (this limit can be
+   read and modified via /proc/sys/kernel/shmall).
+   SHMMAX Maximum size in bytes for a shared memory segment: policy
+   dependent (this limit can be read and modified via
+   /proc/sys/kernel/shmmax).
+   SHMMIN Minimum size in bytes for a shared memory segment:
+   implementation dependent (currently 1 byte, though PAGE_SIZE is the
+   effective minimum size).
+   SHMMNI System wide maximum number of shared memory segments:
+   implementation dependent (currently 4096, this limit can be read and
+   modified via /proc/sys/kernel/shmmni).
+
+   After a sys_fork the child inherits the attached shared memory
+   segments.
+   After a sys_exec all attached shared memory segments are detached
+   (not destroyed).
+   Upon sys_exit all attached shared memory segments are detached (not
+   destroyed).
+

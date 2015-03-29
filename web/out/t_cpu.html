@@ -1,0 +1,375 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ 
+ <title>finding cpu information mini howto</title><meta name="keywords" content="howto, assembler, linux, cpu, x86, assembly, programming">
+ <meta name="description" content="Howto find CPU info with example program">
+ <meta name="robots" content="NOINDEX NOFOLLOW"><!-- ==================== -->
+
+
+
+  <link rel="stylesheet" href="stylej.css" type="text/css"><!-- ==================== --><!-- main layout table --></head>
+<body>
+<br>
+    <br>
+  <table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td class="menuleft" style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools" src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td nowrap="nowrap" width="100%">
+
+<!-- header here -->
+
+
+      <h2><big>LinuxAsmTools - HowTo read CPU information</big>
+      </h2>
+      <hr style="width: 100%; height: 2px;">
+<!-- begin content here --> 
+      <br>
+  Finding CPU information mini-HOWTO<br>
+  jeff owens, jeff@linuxasmtools.net<br>
+  v1.01, 06 April 2009<br>
+<br>
+  How to find CPU information.<br>
+  ______________________________________________________________________<br>
+<br>
+  Table of Contents<br>
+<br>
+  1. Disclaimer<br>
+<br>
+  2. Introduction<br>
+<br>
+  3. Why do we need CPU information?<br>
+<br>
+  4. How do we get CPU data?<br>
+<br>
+  5. Running the Example program<br>
+  <br>
+  6. Compiling the example program<br>
+<br>
+  7. Finding more information<br>
+  ______________________________________________________________________<br>
+<br>
+  1.  Disclaimer<br>
+<br>
+  The following document is offered in good faith as comprising only<br>
+  safe programming and procedures. No responsibility is accepted by the<br>
+  author for any loss or damage caused in any way to any person or<br>
+  equipment, as a direct or indirect consequence of following these<br>
+  instructions.<br>
+<br>
+<br>
+  2.  Introduction<br>
+<br>
+  The most recent version of this document can always be found at<br>
+  http://linuxasmtools.net<br>
+<br>
+  The CPU (Central Processing Unit) is the engine that runs<br>
+  a computer.  Over the years this engine has changed and<br>
+  grown in complexity.  This howto describes the X86 family<br>
+  of CPU's which is found in most comuters.<br>
+<br>
+  The sample program used here is built from two files: CPU.asm<br>
+  and CPU.inc.<br>
+<br>
+<br>
+  3. Why do we need CPU information?<br>
+<br>
+  The X86 family started with the 8086 processor and grew as<br>
+  enhancements were added.  Each processer added a few new<br>
+  instructions that assembly programmers could utilize. When<br>
+  these new instructions were used, the resulting programs<br>
+  could not be run on older processors.  Additionally, new<br>
+  features were added to memory handling and modes of operation.<br>
+<br>
+  Today, the latest processors can run legacy code from the<br>
+  8086, but older processors present problems for programmers.<br>
+  Each program may need to check the CPU and decide it their<br>
+  program is compatable.<br>
+<br>
+<br>
+  4. How do we Get CPU data?<br>
+<br>
+  CPU data is obtained by executing the "cpuid" instruction<br>
+  and others. By watching how the computer handles various<br>
+  instructions we can determine the type of processor.<br>
+<br>
+  The code to do this can be lengthy, so most programmers<br>
+  rely on libraries, programs, or other ways of obtaining<br>
+  the information.  On linux we have the /proc file system<br>
+  which does the job.  All we need to do is read /proc/cpuinfo<br>
+  and we get something like this:<br>
+<br>
+    processor	: 0<br>
+    vendor_id	: AuthenticAMD<br>
+    cpu family	: 6<br>
+    model		: 8<br>
+    model name	: AMD Athlon(tm) MP<br>
+    stepping	: 1<br>
+    cpu MHz		: 1050.092<br>
+    cache size	: 256 KB<br>
+    fdiv_bug	: no<br>
+    hlt_bug		: no<br>
+    f00f_bug	: no<br>
+    coma_bug	: no<br>
+    fpu		: yes<br>
+    fpu_exception	: yes<br>
+    cpuid level	: 1<br>
+    wp		: yes<br>
+flags : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat pse36 mmx fxsr sse syscall mp mmxext 3dnowext 3dnow up ts<br>
+    bogomips	: 2103.10<br>
+    clflush size	: 32<br>
+<br>Next, we look at a sample program to read<br>/proc/cpuinfo. &nbsp;The sample program consists<br>of two files which are available as <a href="cpu.asm">cpu.asm</a> and<br><a href="cpu.inc">cpu.inc</a><br><br><br>
+------------ start of source file cpu.asm ----------<br>
+  extern crt_write<br>
+  extern block_read_all<br>
+  extern sys_exit<br>
+<br>
+  global _start,main<br>
+main:<br>
+_start:<br>
+  mov	ecx,cpu_msg	;message ptr<br>
+  mov	edx,cpu_msg_size	;message length<br>
+  call	crt_write	;kernel call<br>
+<br>
+  mov	ebx,cpuinfo_path<br>
+  mov	ecx,buffer<br>
+  mov	edx,buffer_size<br>
+  call	block_read_all<br>
+  or	eax,eax<br>
+  js	sc_exit		;exit if error<br>
+<br>
+  mov	edx,eax		;size to edx<br>
+  mov	ecx,buffer	;data ptr<br>
+  call	crt_write<br>
+<br>
+sc_exit:<br>
+  call	sys_exit<br>
+<br>
+;----------<br>
+  [section .data]<br>
+cpuinfo_path: db '/proc/cpuinfo',0<br>
+cpu_msg:<br>
+incbin "cpu.inc"<br>
+cpu_msg_size	equ $ - cpu_msg<br>
+  [section .bss]<br>
+<br>
+buffer	resb	200<br>
+buffer_size equ $ - buffer<br>
+<br>
+------------- end of source file cpu.asm ---------------<br>
+<br>
+------------- start of source file cpu.inc -------------<br>
+  The CPU is a computers engine.  It executes all programs<br>
+  after converting them to machine code.  A computer can have<br>
+  multiple cpu's (called multi core's) that work as a team.<br>
+  When multiple cpu's are found, each one is described.<br>
+<br>
+  The following Information about the CPU is obtained from the<br>
+  Linux proc file system at:  /proc/cpuinfo<br>
+------------- end of source file cup.inc --------------<br>
+<br>
+Some of the information we want is shown as flags (fpu vme de psc).  To<br>
+decode these flags we can use the kernel include file cpufeatures_32.h.<br>
+See the links for more information.  Here is the information from<br>
+the include:<br>
+<br>
+/* Intel-defined CPU features, CPUID level 0x00000001 (edx), word 0 */<br>
+#define X86_FEATURE_FPU		(0*32+ 0) /* Onboard FPU */<br>
+#define X86_FEATURE_VME		(0*32+ 1) /* Virtual Mode Extensions */<br>
+#define X86_FEATURE_DE		(0*32+ 2) /* Debugging Extensions */<br>
+#define X86_FEATURE_PSE 	(0*32+ 3) /* Page Size Extensions */<br>
+#define X86_FEATURE_TSC		(0*32+ 4) /* Time Stamp Counter */<br>
+#define X86_FEATURE_MSR		(0*32+ 5) /* Model-Specific Registers, RDMSR, WRMSR */<br>
+#define X86_FEATURE_PAE		(0*32+ 6) /* Physical Address Extensions */<br>
+#define X86_FEATURE_MCE		(0*32+ 7) /* Machine Check Architecture */<br>
+#define X86_FEATURE_CX8		(0*32+ 8) /* CMPXCHG8 instruction */<br>
+#define X86_FEATURE_APIC	(0*32+ 9) /* Onboard APIC */<br>
+#define X86_FEATURE_SEP		(0*32+11) /* SYSENTER/SYSEXIT */<br>
+#define X86_FEATURE_MTRR	(0*32+12) /* Memory Type Range Registers */<br>
+#define X86_FEATURE_PGE		(0*32+13) /* Page Global Enable */<br>
+#define X86_FEATURE_MCA		(0*32+14) /* Machine Check Architecture */<br>
+#define X86_FEATURE_CMOV	(0*32+15) /* CMOV instruction (FCMOVCC and FCOMI too if FPU present) */<br>
+#define X86_FEATURE_PAT		(0*32+16) /* Page Attribute Table */<br>
+#define X86_FEATURE_PSE36	(0*32+17) /* 36-bit PSEs */<br>
+#define X86_FEATURE_PN		(0*32+18) /* Processor serial number */<br>
+#define X86_FEATURE_CLFLSH	(0*32+19) /* Supports the CLFLUSH instruction */<br>
+#define X86_FEATURE_DS		(0*32+21) /* Debug Store */<br>
+#define X86_FEATURE_ACPI	(0*32+22) /* ACPI via MSR */<br>
+#define X86_FEATURE_MMX		(0*32+23) /* Multimedia Extensions */<br>
+#define X86_FEATURE_FXSR	(0*32+24) /* FXSAVE and FXRSTOR instructions (fast save and restore */<br>
+				          /* of FPU context), and CR4.OSFXSR available */<br>
+#define X86_FEATURE_XMM		(0*32+25) /* Streaming SIMD Extensions */<br>
+#define X86_FEATURE_XMM2	(0*32+26) /* Streaming SIMD Extensions-2 */<br>
+#define X86_FEATURE_SELFSNOOP	(0*32+27) /* CPU self snoop */<br>
+#define X86_FEATURE_HT		(0*32+28) /* Hyper-Threading */<br>
+#define X86_FEATURE_ACC		(0*32+29) /* Automatic clock control */<br>
+#define X86_FEATURE_IA64	(0*32+30) /* IA-64 processor */<br>
+<br>
+/* AMD-defined CPU features, CPUID level 0x80000001, word 1 */<br>
+/* Don't duplicate feature flags which are redundant with Intel! */<br>
+#define X86_FEATURE_SYSCALL	(1*32+11) /* SYSCALL/SYSRET */<br>
+#define X86_FEATURE_MP		(1*32+19) /* MP Capable. */<br>
+#define X86_FEATURE_NX		(1*32+20) /* Execute Disable */<br>
+#define X86_FEATURE_MMXEXT	(1*32+22) /* AMD MMX extensions */<br>
+#define X86_FEATURE_RDTSCP	(1*32+27) /* RDTSCP */<br>
+#define X86_FEATURE_LM		(1*32+29) /* Long Mode (x86-64) */<br>
+#define X86_FEATURE_3DNOWEXT	(1*32+30) /* AMD 3DNow! extensions */<br>
+#define X86_FEATURE_3DNOW	(1*32+31) /* 3DNow! */<br>
+<br>
+/* Transmeta-defined CPU features, CPUID level 0x80860001, word 2 */<br>
+#define X86_FEATURE_RECOVERY	(2*32+ 0) /* CPU in recovery mode */<br>
+#define X86_FEATURE_LONGRUN	(2*32+ 1) /* Longrun power control */<br>
+#define X86_FEATURE_LRTI	(2*32+ 3) /* LongRun table interface */<br>
+<br>
+/* Other features, Linux-defined mapping, word 3 */<br>
+/* This range is used for feature bits which conflict or are synthesized */<br>
+#define X86_FEATURE_CXMMX	(3*32+ 0) /* Cyrix MMX extensions */<br>
+#define X86_FEATURE_K6_MTRR	(3*32+ 1) /* AMD K6 nonstandard MTRRs */<br>
+#define X86_FEATURE_CYRIX_ARR	(3*32+ 2) /* Cyrix ARRs (= MTRRs) */<br>
+#define X86_FEATURE_CENTAUR_MCR	(3*32+ 3) /* Centaur MCRs (= MTRRs) */<br>
+/* cpu types for specific tunings: */<br>
+#define X86_FEATURE_K8		(3*32+ 4) /* Opteron, Athlon64 */<br>
+#define X86_FEATURE_K7		(3*32+ 5) /* Athlon */<br>
+#define X86_FEATURE_P3		(3*32+ 6) /* P3 */<br>
+#define X86_FEATURE_P4		(3*32+ 7) /* P4 */<br>
+#define X86_FEATURE_CONSTANT_TSC (3*32+ 8) /* TSC ticks at a constant rate */<br>
+#define X86_FEATURE_UP		(3*32+ 9) /* smp kernel running on up */<br>
+#define X86_FEATURE_FXSAVE_LEAK (3*32+10) /* FXSAVE leaks FOP/FIP/FOP */<br>
+#define X86_FEATURE_ARCH_PERFMON (3*32+11) /* Intel Architectural PerfMon */<br>
+#define X86_FEATURE_PEBS	(3*32+12)  /* Precise-Event Based Sampling */<br>
+#define X86_FEATURE_BTS		(3*32+13)  /* Branch Trace Store */<br>
+/* 14 free */<br>
+#define X86_FEATURE_SYNC_RDTSC	(3*32+15)  /* RDTSC synchronizes the CPU */<br>
+#define X86_FEATURE_REP_GOOD   (3*32+16) /* rep microcode works well on this CPU */<br>
+<br>
+/* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */<br>
+#define X86_FEATURE_XMM3	(4*32+ 0) /* Streaming SIMD Extensions-3 */<br>
+#define X86_FEATURE_MWAIT	(4*32+ 3) /* Monitor/Mwait support */<br>
+#define X86_FEATURE_DSCPL	(4*32+ 4) /* CPL Qualified Debug Store */<br>
+#define X86_FEATURE_EST		(4*32+ 7) /* Enhanced SpeedStep */<br>
+#define X86_FEATURE_TM2		(4*32+ 8) /* Thermal Monitor 2 */<br>
+#define X86_FEATURE_CID		(4*32+10) /* Context ID */<br>
+#define X86_FEATURE_CX16        (4*32+13) /* CMPXCHG16B */<br>
+#define X86_FEATURE_XTPR	(4*32+14) /* Send Task Priority Messages */<br>
+#define X86_FEATURE_DCA		(4*32+18) /* Direct Cache Access */<br>
+<br>
+/* VIA/Cyrix/Centaur-defined CPU features, CPUID level 0xC0000001, word 5 */<br>
+#define X86_FEATURE_XSTORE	(5*32+ 2) /* on-CPU RNG present (xstore insn) */<br>
+#define X86_FEATURE_XSTORE_EN	(5*32+ 3) /* on-CPU RNG enabled */<br>
+#define X86_FEATURE_XCRYPT	(5*32+ 6) /* on-CPU crypto (xcrypt insn) */<br>
+#define X86_FEATURE_XCRYPT_EN	(5*32+ 7) /* on-CPU crypto enabled */<br>
+#define X86_FEATURE_ACE2	(5*32+ 8) /* Advanced Cryptography Engine v2 */<br>
+#define X86_FEATURE_ACE2_EN	(5*32+ 9) /* ACE v2 enabled */<br>
+#define X86_FEATURE_PHE		(5*32+ 10) /* PadLock Hash Engine */<br>
+#define X86_FEATURE_PHE_EN	(5*32+ 11) /* PHE enabled */<br>
+#define X86_FEATURE_PMM		(5*32+ 12) /* PadLock Montgomery Multiplier */<br>
+#define X86_FEATURE_PMM_EN	(5*32+ 13) /* PMM enabled */<br>
+<br>
+/* More extended AMD flags: CPUID level 0x80000001, ecx, word 6 */<br>
+#define X86_FEATURE_LAHF_LM	(6*32+ 0) /* LAHF/SAHF in long mode */<br>
+#define X86_FEATURE_CMP_LEGACY	(6*32+ 1) /* If yes HyperThreading not valid */<br>
+<br>
+/*<br>
+ * Auxiliary flags: Linux defined - For features scattered in various<br>
+ * CPUID levels like 0x6, 0xA etc<br>
+ */<br>
+#define X86_FEATURE_IDA		(7*32+ 0) /* Intel Dynamic Acceleration */<br>
+<br>
+<br>
+  5. Running the example program.<br>
+<br>
+  The example program can be started with:<br>
+<br>
+  ./cpu<br>
+<br>
+  To create a file with the CPU data use:<br>
+<br>
+  ./cpu &gt; file<br>
+<br>
+  6. Compiling the example program.<br>
+<br>
+  The example program can be compiled with the<br>
+  following tools:<br>
+<br>
+  nasm - assembler<br>
+  asmlib - library of assembler functions<br>
+<br>
+  The easy way to do this is to install, asmide<br>
+  and start it as follows:<br>
+<br>
+  asmide cpu.asm<br>
+<br>
+  asmide will provide a menu, with compile and<br>
+  debug options.<br>
+<br>
+  To manually compile the source use the following:<br>
+<br>
+  nasm -g -f elf cpu.asm<br>
+  ld cpu.o -static -o cpu /usr/lib/asmlib.a<br>
+<br>
+  7. Finding more information<br>
+<br>
+  flag definitions can be found in linux source include<br>
+  /usr/source/linux-headers.../include/asm-x86/cpufeature-32.h<br>
+<br>
+  The various processors and the cpuid instruction can be<br>
+  researched at:<br>
+<br>
+    http://sandpile.org<br>
+    http://www.x86.org<br>
+    http://developer.intel.com<br>
+    http://www.amd.com/support/techdocdir.html<br>
+    http://www.cyrix.com/products/cyrindex.htm<br>
+<br>
+
+
+<!-- END of the content cell --></td></tr></tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: April 06, 2009</em></div>
+
+</body></html>

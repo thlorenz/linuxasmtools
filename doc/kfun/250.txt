@@ -1,0 +1,37 @@
+
+------------------------------------------------------------
+250 fadvise64  - give kernel advice on file handling
+------------------------------------------------------------
+
+  mov  eax,250
+  mov  ebx,fd   ;file descriptor
+  mov  ecx,offset ;starting offset into file
+  mov  ecx,lenght ;length of file
+  mov  esi,flag
+  int  80h
+
+
+DESCRIPTION
+   Gives the kernel an 'advice' on how it should use the file handle, so
+   that the kernel can choose appropriate read-ahead and caching
+   techniques for access to the corresponding file.
+
+flag
+----
+   The "flag" parameter can be:
+
+   POSIX_FADV_NORMAL     - No further special treatment.
+   POSIX_FADV_RANDOM     - Expect random page references.
+   POSIX_FADV_SEQUENTIAL - Expect sequential page references.
+   POSIX_FADV_WILLNEED   - Expect access in the near future.
+   POSIX_FADV_DONTNEED   - Don't access in the near future.
+   POSIX_FADV_NOREUSE    - Data will be accessed once.
+
+RETURN VALUE
+   If the system call succeeds the return value is 0 else,
+
+   -EBADF An invalid file descriptor was specified.
+   -EINVAL An invalid f_mapping of file, edx value is samller than 0, or
+           esi value unknown.
+
+   Available since kernel version 2.6.0

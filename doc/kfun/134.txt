@@ -1,0 +1,53 @@
+
+----------------------------------------------------------------------------
+system 134 bdflush                 - start, flush, or tune buffer-dirty-flush daemon
+----------------------------------------------------------------------------
+ (this function is not available, returns error)
+
+  mov   eax,134
+  mov   ebx,func
+  mov   ecx,address
+  int   80h
+
+       bdflush  starts, flushes, or tunes the buffer-dirty-flush daemon.  Only
+       the super-user may call bdflush.
+
+       If func is negative or 0, and no daemon has been started, then  bdflush
+       enters the daemon code and never returns.
+
+       If func is 1, some dirty buffers are written to disk.
+
+       If  func  is  2 or more and is even (low bit is 0), then address is the
+       address of a long word, and the tuning parameter numbered (func-2)/2 is
+       returned to the caller in that address.
+
+       If  func  is  3  or more and is odd (low bit is 1), then data is a long
+       word, and the kernel sets tuning parameter numbered (func-3)/2 to  that
+       value.
+
+       The set of parameters, their values, and their legal ranges are defined
+       in the kernel source file fs/buffer.c.
+
+RETURN VALUE
+       If func is negative or 0 and the daemon  successfully  starts,  bdflush
+       never  returns.   Otherwise, the return value is 0 on success and -1 on
+       failure, with errno set to indicate the error.
+
+ERRORS
+       EPERM  Caller is not super-user.
+
+       EFAULT address points outside your accessible address space.
+
+       EBUSY  An attempt was made to  enter  the  daemon  code  after  another
+              process has already entered.
+
+       EINVAL An  attempt  was made to read or write an invalid parameter num-
+              ber, or to write an invalid value to a parameter.
+
+CONFORMING TO
+       bdflush is Linux specific and should not be used in  programs  intended
+       to be portable.
+
+SEE ALSO
+       fsync, sync, update
+

@@ -1,0 +1,90 @@
+
+----------------------------------------------------------------------
+314 sync_file_range  - flush disk cache for file segment
+----------------------------------------------------------------------
+
+  mov  eax,314
+  mov  ebx,fd      ;descriptor
+  mov  ecx,offset  ;offset into file
+  mov  edx,length  ;length of file segment
+  mov  esi,flags   ;see below and sync
+  int  80h
+
+   Synchronizes a file segment with disk
+
+args
+----
+
+ ebx File descriptor of a file to be synchronized.
+
+ ecx Offset of the file range to be synchronized. Synchronization is
+   done in units of the system page size: ebx is rounded down to a page
+   boundary; (ebx+ecx-1) is rounded up to a page boundary.
+
+ edx Length of the range to be synchronized, in bytes. If edx is zero,
+   then all bytes from offset specified by ecx through to the end of file
+   are synchronized.
+
+ esi Flag bit-mask. It may include following flags (esi may be 0, if no
+   operation is required):
+
+   SYNC_FILE_RANGE_WAIT_BEFORE Wait upon write-out of all pages in the
+   specified range that have already been submitted to the device driver
+   for write-out before performing any write.
+   This can be used after an earlier "SYNC_FILE_RANGE_WAIT_BEFORE or
+
+   SYNC_FILE_RANGE_WRITE" operation to wait for completion of that
+   operation, and obtain its result.
+   This flag will detect any I/O errors or ENOSPC conditions and will
+   return these to the caller.
+
+   SYNC_FILE_RANGE_WRITE Initiate write-out of all dirty pages in the
+   specified range which are not presently submitted write-out. This is
+   an asynchronous flush-to-disk operation. This is not suitable for data
+   integrity operations.
+
+   SYNC_FILE_RANGE_WAIT_AFTER Wait upon write-out of all pages in the
+   range after performing any write.
+   This can be used after an earlier "SYNC_FILE_RANGE_WAIT_BEFORE or
+
+   SYNC_FILE_RANGE_WRITE" operation to wait for completion of that
+   operation, and obtain its result.
+   This flag will detect any I/O errors or ENOSPC conditions and will
+   return these to the caller.
+
+   Useful flags combinations:
+
+   SYNC_FILE_RANGE_WAIT_BEFORE or SYNC_FILE_RANGE_WRITE Ensures that all
+   pages in the specified range which were dirty when sys_sync_file_range
+   was called are placed under write-out. This is a
+   start-write-for-data-integrity operation.
+
+   SYNC_FILE_RANGE_WAIT_BEFORE or SYNC_FILE_RANGE_WRITE or
+
+   SYNC_FILE_RANGE_WAIT_AFTER This is a traditional [1]sys_fdatasync
+   operation. It is a write-for-data-integrity operation that will ensure
+   that all pages in the specified range which were dirty when
+   sys_sync_file_range was called are committed to disk.
+
+   Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EBADF ebx is not a valid file descriptor
+   -EIO I/O error.
+   -EINVAL esi specifies an invalid bit; or ecx or edx is invalid.
+   -ENOMEM Out of memory.
+   -ENOSPC Out of disk space.
+   -ESPIPE ebx refers to something other than a regular file, a block
+     device, a directory, or a symbolic link.
+
+
+   sys_sync_file_range does not write out the file's metadata. Therefore,
+   unless the application is strictly performing overwrites of
+   already-instantiated disk blocks, there are no guarantees that the
+   data will be available after a crash.
+
+   Available since 2.0.1
+

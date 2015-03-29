@@ -1,0 +1,131 @@
+
+ ** AsmBug FAQ (Frequently Asked Questions) **
+ ---------------------------------------------
+
+Why do some code areas appear as data statements?
+
+  Most debugger show source and don't actually decode
+  the contents of memory.  Other debuggers only
+  display disassembly if told where to start.
+  They do this because finding code areas reliably
+  is close to impossible.  If they have debug info
+  in the ELF file it helps a little.  The problem
+  is caused by imbedded data statements in code
+  segments. 
+
+  In "C" programs the code isn't as tricky and
+  we could have a more aggressive disassembler,
+  but AsmBug is cautions and assumes everything
+  is data until it is sure.
+
+  This can be useful for debugging programs, by
+  identifying areas that do not execute.
+
+How can I eliminate data statements in the source
+display and show instructions?
+
+  The easiest way to convert data statements
+  to code is to set a break by left clicking
+  the address.  Removing the break by clicking
+  again will leave area identified as code.
+
+  This operation can not be reversed, so use
+  with caution.
+  
+I'm debugging a "C" program and it doesn't start
+in the right place?
+
+  The "C" library appends some code to the front
+  of programs.  Inspect this code and look for
+  a "push" instruction with address for operand.
+  Set a breakpoint at operand and you will
+  have a stop at top of your program.
+
+How do I get symbols and comments displayed?
+
+  Compile your program with STABS debugging enabled.
+  
+     nasm -felf -g MyProgram.asm
+     ld MyProgram.o -o MyProgram
+
+  If you utilize AsmLib then modify the link as follows:
+
+     ld MyProgram.o -o MyProgram /usr/lib/asmlib.a
+ 
+Why is one section of my program missing comments and labels?
+
+  This is usually caused by placing code in a ".data"
+  section.  The solution is to check the source and
+  insert a "section .text" entry before the code.
+
+Why do we need all those signals displayed on the
+status line?
+
+  Many programing errors will trigger a signal and
+  some signals occur naturally as the program operates.
+  The SIGSEGV signal indicates a memory error and
+  is very common.  The SIGTRAP is caused by a breakpoint
+  or single step and can be ignored.  Other signals
+  are:
+
+       SIGWINCH - screen resize
+       SIGILL   - illegal instruction
+       SIGCHLD  - application child exited
+       SIGSTOP  - application was stopped
+
+I got a "tricky code" message, what does it mean?
+
+  It usually means the code has data statements where
+  code was expected.  An example is the fasm assembler.
+  Fasm puts message addresses on the stack by doing a
+  "call" as follows:
+
+    show_message:
+      call display
+    message_here:
+      db 'Hello'
+
+  The disassemble will usually detect this and complain
+  because more code is expected after call statements.
+
+My program triggers the "tricky code" message, and my code
+looks normal?
+
+  Look for data following instructions.  A very common
+  cause of tricky code messages is the following exit
+  call:
+
+     mov eax,1     ;kernel exit function
+     xor ebx,ebx   ;return code
+     int byte 80h  ;request exit
+     db  'hello'
+
+Can I modify or delete the .abugrc file that appears in my
+directory?
+
+  Yes, but AsmBug may adjust some values or not allow
+  changes.
+
+Can you add some complex breakpoints to watch register or
+memory values?
+
+  There are a endless number of ways to do complex breakpoints
+  and many radically change program timing.  The best way to
+  find complex problems is usually simple log statements
+  or by adding small code fragments to check program status.
+
+I'm watching some data in the code window and it doesn't
+change?  Is this a bug?
+
+  The code window is a snapshot of memory at initial load and
+  does not change.  This allows very fast displays and
+  gives a view of program structure.  The memory window
+  will show current memory contents.
+
+  The static code window is also a map of all program
+  areas and is updated as the program executes.  As data
+  sizes or instuction areas are identified, this will appear
+  in the map. Asmbug will try to identify all ascii strings
+  and also put this in the map.  All this mapping is very
+  useful when working with stripped binaries that do not
+  have any debug information.

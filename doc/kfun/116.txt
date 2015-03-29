@@ -1,0 +1,51 @@
+
+
+----------------------------------------------------------------------------
+system 116 sysinfo                 - returns information on overall system statistics
+----------------------------------------------------------------------------
+  mov  eax,116
+  mov  ebx,info
+  int  80h
+
+
+       Since Linux  2.3.23  (i386),  2.3.48 (all architectures) the structure for
+       info is:
+
+
+              struct sysinfo
+                   uptime    resd 1 ; Seconds since boot */
+                   loads     resd 3 ; 1, 5, and 15 minute load averages */
+                   totalram  resd 1 ; Total usable main memory size */
+                   freeram   resd 1 ; Available memory size */
+                   sharedram resd 1 ; Amount of shared memory */
+                   bufferram resd 1 ; Memory used by buffers */
+                   totalswap resd 1 ; Total swap space size */
+                   freeswap  resd 1 ; swap space still available */
+                   procs     resw 1 ; Number of current processes */
+                   pad       resw 1 ;
+                   totalhigh resd 1 ; Total high memory size */
+                   freehigh  resd 1 ; Available high memory size */
+                   mem_unit  resd 1 ; Memory unit size in bytes */
+                   f         resb 8 ; Padding for libc5 */
+              endstruc
+
+       sysinfo  provides  a  simple  way of getting overall system statistics.
+       This is more portable than reading /dev/kmem.
+
+RETURN VALUE
+       On  success,  zero is returned.  On error a negative code is returned
+
+ERRORS
+       EFAULT pointer to struct sysinfo is invalid
+
+CONFORMING TO
+       This function is Linux-specific, and should not  be  used  in  programs
+       intended to be portable.
+
+       The  Linux kernel has a sysinfo system call since 0.98.pl6.  Linux libc
+       contains a sysinfo() routine since 5.3.5, and glibc has one since 1.90.
+
+SEE ALSO
+       proc
+
+

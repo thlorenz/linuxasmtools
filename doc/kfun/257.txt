@@ -1,0 +1,79 @@
+
+---------------------------------------------------------------------------
+257 remap_file_pages  - remap arbitrary pages of a shared backing store file
+---------------------------------------------------------------------------
+
+  mov  eax,257
+  mov  ebx,start  ;beginning of the remapped virtual memory range
+  mov  ecx,size   ;size of the remapped virtual memory range
+  mov  edx,prot   ;new protection bits of the range
+                  ;ignored, should be passed as zero
+  mov  esi,pgoff  ;mapped page of the backing store file
+  mov  edi,flags  ;0 or MAP_NONBLOCKED - the latter will cause no IO.
+  int  80h
+
+
+SYNOPSIS
+       #define _GNU_SOURCE
+       #include <sys/mman.h>
+
+       int remap_file_pages(void *start, size_t size, int prot,
+                            ssize_t pgoff, int flags);
+
+DESCRIPTION
+       The  remap_file_pages() system call is used to create a non-linear map‐
+       ping, that is, a mapping in which the pages of the file are mapped into
+       a   non-sequential   order   in   memory.    The   advantage  of  using
+       remap_file_pages() over using repeated calls to  mmap(2)  is  that  the
+       former  approach  does  not require the kernel to create additional VMA
+       (Virtual Memory Area) data structures.
+
+       To create a non-linear mapping we perform the following steps:
+
+       1.     Use mmap(2) to create a mapping  (which  is  initially  linear).
+              This mapping must be created with the MAP_SHARED flag.
+
+       2.     Use  one  or  more  calls to remap_file_pages() to rearrange the
+              correspondence between the pages of the mapping and the pages of
+              the  file.   It  is possible to map the same page of a file into
+              multiple locations within the mapped region.
+
+       The pgoff and size arguments specify the region of the file that is  to
+       be relocated within the mapping: pgoff is a file offset in units of the
+       system page size; size is the length of the region in bytes.
+
+       The start argument serves two purposes.  First, it identifies the  map‐
+       ping  whose pages we want to rearrange.  Thus, start must be an address
+       that falls within a region previously mapped  by  a  call  to  mmap(2).
+       Second,  start specifies the address at which the file pages identified
+       by pgoff and size will be placed.
+
+       The values specified in start and size should be multiples of the  sys‐
+       tem  page  size.   If  they are not, then the kernel rounds both values
+       down to the nearest multiple of the page size.
+
+       The prot argument must be specified as 0.
+
+       The flags argument has the same meaning as for mmap(2), but  all  flags
+       other than MAP_NONBLOCK are ignored.
+
+RETURN VALUE
+       On  success, remap_file_pages() returns 0.  On error a negative code
+       is returned
+
+ERRORS
+       EINVAL start does not  refer  to  a  valid  mapping  created  with  the
+              MAP_SHARED flag.
+
+       EINVAL start, size, prot, or pgoff is invalid.
+
+VERSIONS
+       The remap_file_pages() system call appeared in Linux 2.5.46; glibc sup‐
+       port was added in version 2.3.3.
+
+CONFORMING TO
+       The remap_file_pages() system call is Linux specific.
+
+SEE ALSO
+       getpagesize, mmap, mmap2,  mprotect,  mremap,  msync,
+

@@ -1,0 +1,44 @@
+
+----------------------------------------------------------------------------
+173 rt_sigreturn    - real time sigreturn
+----------------------------------------------------------------------------
+
+NAME
+
+   sigreturn - return from signal handler and cleanup stack frame
+
+SYNOPSIS
+
+   int sigreturn(unsigned long __unused);
+
+DESCRIPTION
+
+   When the Linux kernel creates the stack frame for a signal handler, a
+   call to sigreturn is inserted into the stack frame so that the the
+   signal handler will call sigreturn upon return. This inserted call to
+   sigreturn cleans up the stack so that the process can restart from
+   where it was interrupted by the signal.
+
+RETURN VALUE
+
+   sigreturn never returns.
+
+WARNING
+
+   The sigreturn call is used by the kernel to implement signal handlers.
+   It should never be called directly. Better yet, the specific use of
+   the __unused argument varies depending on the architecture.
+
+CONFORMING TO
+
+   sigreturn is specific to Linux and should not be used in programs
+   intended to be portable.
+
+FILES
+
+   /usr/src/linux/arch/i386/kernel/signal.c
+   /usr/src/linux/arch/alpha/kernel/entry.S
+
+SEE ALSO
+
+   kill, signal

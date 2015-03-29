@@ -1,0 +1,29 @@
+#!/bin/bash
+#asmbug ../xhelper $0
+../xhelper $0 > log
+#../xhelper $0
+exit 0
+
+^show ("starting gedit")
+^set_timeout ("0") wait forever
+^run ("gedit")
+^wait_program ("gedit")
+^show ("gedit started ok")
+^sleep ("1")
+^dump
+^resize_window ("gedit") ("400") ("500")
+^sleep ("1")
+^show ("window resized")
+^if_window ("gedit")
+^show ("found gedit")
+^endif
+^dump
+^resize_window ("gedit") ("519") ("873")
+^sleep ("1")
+^dump
+^show ("gedit kill request")
+^kill ("gedit")
+^wait_no_program ("gedit")
+^show ("gedit killed, test complete")
+
+^stop

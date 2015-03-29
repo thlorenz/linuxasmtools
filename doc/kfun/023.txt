@@ -1,0 +1,50 @@
+
+----------------------------------------------------------------------------
+ 23 setuid         - set user identity
+----------------------------------------------------------------------------
+  mov  eax,023
+  mov  ebx,uid
+  int  80h
+
+       setuid  sets  the  effective  user  ID  of the current process.  If the
+       effective userid of the caller is root, the real and  saved  user  ID's
+       are also set.
+
+       Under  Linux,  setuid  is  implemented  like the POSIX version with the
+       _POSIX_SAVED_IDS feature.  This allows a setuid (other than root)  pro-
+       gram  to  drop  all of its user privileges, do some un-privileged work,
+       and then re-engage the original effective user ID in a secure manner.
+
+       If the user is root or the program is setuid root, special care must be
+       taken.  The  setuid function checks the effective uid of the caller and
+       if it is the superuser, all process related user ID's are set  to  uid.
+       After  this  has  occurred,  it is impossible for the program to regain
+       root privileges.
+
+       Thus, a setuid-root program wishing to  temporarily  drop  root  privi-
+       leges,  assume  the  identity  of a non-root user, and then regain root
+       privileges afterwards cannot use setuid.  You can accomplish this  with
+       the (non-POSIX, BSD) call seteuid.
+
+RETURN VALUE
+       On  success, zero is returned. else a negative error
+
+ERRORS
+       EPERM  The user is not the super-user, and uid does not match the  real
+              or saved user ID of the calling process.
+
+       EAGAIN The  uid  does  not match the current uid and uid brings process
+              over it's NPROC rlimit.
+
+LINUX-SPECIFIC REMARKS
+       Linux has the concept of filesystem user  ID,  normally  equal  to  the
+       effective user ID.  The setuid call also sets the filesystem user ID of
+       the current process.  See setfsuid(2).
+
+       If uid is different from the old effective uid,  the  process  will  be
+       able to leave a core dumps.
+
+SEE ALSO
+       getuid, setreuid, seteuid, setfsuid
+
+

@@ -1,0 +1,29 @@
+
+----------------------------------------------------------------------------
+ 72 sigsuspend      - temporarily set signal mask
+----------------------------------------------------------------------------
+  ; sigsuspend - Temporarily sets the signal mask (as specified)
+  ; and then suspends the process pending a signal.
+  mov  eax,072
+  mov  edx,mask	 <- pointer to temporary mask
+  int  80h
+
+  The sigsuspend call  temporarily  replaces  the  signal  mask  for  the
+  process  with  that given by mask and then suspends the process until a
+  signal is received.
+
+  If the signal terminates the process, then assessing does not return.
+  If the signal is caught, then sys_sigsuspend returns after the signal
+  handler returns, and the signal mask is restored to the state before
+  the call to sys_sigsuspend.
+
+  Normally, sys_sigsuspend is used in conjunction with
+  sys_sigprocmask in order to prevent delivery of a signal during the
+  execution of a critical code section. The caller first blocks the
+  signals with sys_sigprocmask. When the critical code has completed,
+  the caller then waits for the signals by calling sys_sigsuspend with
+  the signal mask that was returned by sys_sigprocmask.
+
+
+  Return value is always -ERESTARTNOHAND.
+

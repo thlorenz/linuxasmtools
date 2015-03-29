@@ -1,0 +1,116 @@
+;--------------  m_signals.in ----------------------
+  [section .text]
+
+  extern message_box
+
+;---------------------------------------
+signal_install:
+  mov	ebp,signal_table
+  call	install_signals
+  ret
+
+;signal_uninstall:
+  mov	dword [sig_mod1],0
+  call	signal_install
+  mov	dword [sig_mod1],winch_signal
+  ret
+
+winch_signal:
+  cmp	[winch_expected],byte 0
+  je	ws_exit
+  cmp	[term_type],byte 2	;console?
+  je	ws_exit		;ignore resize if console
+  mov	[window_resize],byte 1	;set resize flag
+ws_exit:
+  mov	[winch_expected],byte 0	;clear expectations
+  ret
+;----------------------------------------------------
+step_signal_report:
+;put signal into buffer
+  mov	al,[mini_win_top_line]
+  add	al,4
+  mov	[sig_msg_row],al
+
+  mov	edi,msg_build
+  movzx esi,byte [app_status+1]
+  shl	esi,3
+  add	esi,SIGHUP_msg - 8
+  movsd		;move signal
+  movsd		;name
+;enable pop up message
+  mov	esi,sig_msg
+  call	message_box
+ssr_exit:
+  ret
+
+;-----
+  [section .data]
+sig_msg:
+  dd	30003137h	;window color
+  dd	pre_msg
+  dd	sig_msg_end
+  dd	0		;scroll
+  db	28		;columns in box
+  db	2		;rows in box
+sig_msg_row:
+  db	00		;starting row
+  db	14		;starting colulmn
+  dd	30003137h	;outline box color
+  
+;----------------------------------------------------
+
+SIGHUP_msg: db    'SIGHUP  ' ;1
+SIGINT_msg: db    'SIGINT  '
+SIGQUIT_msg: db   'SIGQUIT '
+SIGILL_msg: db    'SIGILL  '
+SIGTRAP_msg: db   'SIGTRAP ' ;5
+SIGABRT_msg: db   'SIGABRT '
+SIGBUS_msg: db    'SIGBUS  '
+SIGFPE_msg: db    'SIGFPE  '
+SIGKILL_msg: db   'SIGKILL '
+SIGUSR1_msg: db   'SIGUSR1 ' ;10
+SIGSEGV_msg: db   'SIGSEGV ' ;11
+SIGUSR2_msg: db   'SIGUSR2 ' ;12
+SIGPIPE_msg: db   'SIGPIPE '
+SIGALRM_msg: db   'SIGALRM '
+SIGTERM_msg: db   'SIGTERM '
+SIGSTKFLT_msg: db 'SIGSTKFL'
+SIGCHLD_msg: db   'SIGCHLD ' ;17
+SIGCONT_msg: db   'SIGCONT '
+SIGSTOP_msg: db   'SIGSTOP '
+SIGTSTP_msg: db   'SIGTSTP '
+SIGTTIN_msg: db   'SIGTTIN '
+SIGTTOU_msg: db   'SIGTTOU '
+SIGURG_msg: db    'SIGURG  '
+SIGXCPU_msg: db   'SIGXCPU '
+SIGXFSZ_msg: db   'SIGXFSZ '
+SIGVTALRM_msg: db 'SIGVTALR'
+SIGPROF_msg: db   'SIGPROF '
+SIGWINCH_msg: db  'SIGWINCH'
+SIGIO_msg: db     'SIGIO   '
+           db	  'UNKNOWN '
+	   db	  'UNKNOWN '
+	   db	  'UNKNOWN '
+	   db	  'UNKNOWN '
+	   db	  'UNKNOWN '
+
+pre_msg:   db 'Signal '
+msg_build: times 8 db 0
+	db ' is pending',0ah,'press esc to continue'
+sig_msg_end:	db 0	;dummy, not used
+
+;----------------------------------------------------
+
+winch_expected	db 0	;set by window_resize
+window_resize	db 0	;set if window resized
+
+signal_table:
+  db	28
+sig_mod1:
+  dd	winch_signal
+  dd	0
+  dd	0
+  dd	0
+  db	0		;end of install table
+
+ [section .text]

@@ -1,0 +1,6 @@
+compute fitness using a timed walk
+walktest is a example program from
+AsmLib.  It uses a formula to determine
+fitness.
+walktest runs in console or X terminal.
+http://linuxasmtools.net

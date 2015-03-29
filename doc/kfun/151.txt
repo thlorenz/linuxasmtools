@@ -1,0 +1,43 @@
+
+----------------------------------------------------------------------------
+memory 151 munlock        - reenable paging for some parts of memory
+----------------------------------------------------------------------------
+  mov  eax,151
+  mov  ebx,addr  ;address to enable
+  mov  ecx,len   ;length (range) to enable
+  int  80h
+
+       munlock  reenables  paging for the memory in the range starting at addr
+       with length len bytes. All pages which contain a part of the  specified
+       memory  range can after calling munlock be moved to external swap space
+       again by the kernel.
+
+       Memory locks do not stack, i.e., pages which have been  locked  several
+       times  by  calls to mlock or mlockall will be unlocked by a single call
+       to munlock for the corresponding range or by munlockall.   Pages  which
+       are  mapped  to  several  locations or by several processes stay locked
+       into RAM as long as they are locked at least at one location or  by  at
+       least one process.
+
+       On  POSIX systems on which mlock and munlock are available, _POSIX_MEM-
+       LOCK_RANGE is defined in <unistd.h> and the value PAGESIZE  from  <lim-
+       its.h> indicates the number of bytes per page.
+
+RETURN VALUE
+       On  success,  munlock returns zero.  On error, -1 is returned, errno is
+       set appropriately, and no changes are made to any locks in the  address
+       space of the process.
+
+ERRORS
+       ENOMEM Some  of  the  specified  address  range  does not correspond to
+              mapped pages in the address space of the process.
+
+       EINVAL (Not on Linux) addr was not a multiple of the page size.
+
+       Linux adds
+
+       EINVAL len was negative.
+
+SEE ALSO
+       mlock, mlockall, munlockall
+

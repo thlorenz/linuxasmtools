@@ -1,0 +1,78 @@
+
+---------------------------------------------------------------------------
+234 flistxattr     - list extended attribute names
+---------------------------------------------------------------------------
+
+  mov  eax,234
+  mov  ebx,fd    ;open file descriptor
+  mov  ecx,list  ;pointer to buffer
+  mov  edx,size  ;buffer size
+  int  80h
+
+
+DESCRIPTION
+       Extended attributes are name:value pairs associated with inodes (files,
+       directories, symbolic links, etc).  They are extensions to  the  normal
+       attributes  which  are  associated with all inodes in the system (i.e.,
+       the stat(2) data).  A complete overview of extended attributes concepts
+       can be found in attr(5).
+
+       listxattr()  retrieves  the list of extended attribute names associated
+       with the given path in the filesystem.  The list is the set  of  (null-
+       terminated)  names,  one after the other.  Names of extended attributes
+       to which the calling process does not have access may be  omitted  from
+       the list.  The length of the attribute name list is returned.
+
+       llistxattr()  is identical to listxattr(), except in the case of a sym‐
+       bolic link, where the list of names of extended  attributes  associated
+       with the link itself is retrieved, not the file that it refers to.
+
+       flistxattr() is identical to listxattr(), only the open file pointed to
+       by filedes (as returned by open(2)) is interrogated in place of path.
+
+       A single extended attribute name is a  simple  null-terminated  string.
+       The  name  includes  a namespace prefix; there may be several, disjoint
+       namespaces associated with an individual inode.
+
+       An empty buffer of size zero can be passed into these calls  to  return
+       the  current size of the list of extended attribute names, which can be
+       used to estimate the size of a buffer which is  sufficiently  large  to
+       hold the list of names.
+
+   Example
+       The  list of names is returned as an unordered array of null-terminated
+       character strings (attribute names are separated by null bytes (’\0’)),
+       like this:
+
+              user.name1\0system.name1\0user.name2\0
+
+       Filesystems  like  ext2,  ext3 and XFS which implement POSIX ACLs using
+       extended attributes, might return a list like this:
+
+              system.posix_acl_access\0system.posix_acl_default\0
+
+RETURN VALUE
+       On success, a positive number is returned indicating the  size  of  the
+       extended attribute name list.  On failure a negative code is returned
+
+       If the size of the list buffer is too small to hold the  result,  errno
+       is set to ERANGE.
+
+       If extended attributes are not supported by the filesystem, or are dis‐
+       abled, errno is set to ENOTSUP.
+
+       The errors documented for the stat(2) system call are  also  applicable
+       here.
+
+VERSIONS
+       These system calls have been available on Linux since kernel 2.4; glibc
+       support is provided since version 2.3.
+
+CONFORMING TO
+       These system calls are Linux specific.
+
+SEE ALSO
+       getxattr, open,  removexattr
+       attr, stat
+
+

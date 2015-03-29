@@ -1,0 +1,93 @@
+
+---------------------------------------------------------------------
+297 mknodat  - create filesystem node
+---------------------------------------------------------------------
+
+  mov  eax,297
+  mov  ebx,fd
+  mov  ecx,name  ;ptr to path
+  mov  edx,mode
+  mov  esi,type
+  int  80h
+
+   Creates a filesystem node (file, device special file or named pipe)
+   relative to a directory file descriptor.
+   This system call operates in exactly the same way as sys_mknod,
+   except for the differences described below.
+   The newly created node will be owned by the effective user ID of the
+   process. If the directory containing the node has the set-group-ID bit
+   set, or if the filesystem is mounted with BSD group semantics, the new
+   node will inherit the group ownership from its parent directory;
+   otherwise it will be owned by the effective group ID of the process.
+
+args
+----
+
+ ebx Directory file descriptor.
+
+ ecx A pointer to a null-terminated string that specifies the pathname.
+   If the pathname is relative, then it is interpreted relative to the
+   directory referred to by the file descriptor ebx (rather than relative
+   to the current working directory of the calling process, as is done by
+   sys_mknod for a relative pathname).
+   If the pathname is relative and ebx is the special value AT_FDCWD,
+   then pathname is interpreted relative to the current working directory
+   of the calling process.
+   If the pathname is absolute, then ebx is ignored.
+
+ edx Mode. This argument specifies both the permissions to use and the
+   type of node to be created. It should be a combination (using
+   bitwise-or) of one of the file types listed below and the permissions
+   for the new node.
+   The permissions are modified by the process's umask in the usual way:
+   the permissions of the created node are (ecx & ~umask).
+   The file type must be one of the following:
+
+   S_IFREG  A normal file (which will be created empty).
+   S_IFCHR  Character special file.
+   S_IFBLK  Block special file.
+   S_IFIFO  FIFO (named pipe).
+   S_IFSOCK Unix domain socket.
+
+ esi This argument is used only if file type is S_IFCHR or S_IFBLK in
+   which case it specifies the major and minor numbers of the newly
+   created device special file. Otherwise it's ignored.
+
+Return values
+
+   If the system call succeeds the return value is 0.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EACCES The parent directory does not allow write permission to the
+     process, or one of the directories in the path prefix did not allow
+     search permission
+   -EEXIST Path pointed by ecx already exists.
+   -EFAULT Path pointed by ecx points outside your accessible address
+     space.
+   -EINVAL edx requested creation of something other than a normal file,
+     device special file, FIFO or socket.
+   -ELOOP Too many symbolic links were encountered in resolving the path
+     pointed by ecx.
+   -ENAMETOOLONG Path pointed by ecx was too long.
+   -ENOENT A directory component in the path pointed by ecx does not
+     exist or is a dangling symbolic link.
+   -ENOMEM Insufficient kernel memory was available.
+   -ENOSPC The device containing the path pointed by ecx has no room for
+     the new node.
+   -ENOTDIR A component used as a directory in the path pointed by ecx is
+     not, in fact, a directory.
+     -or-
+     Pathname is a relative path and ebx is a file descriptor referring to
+     a file other than a directory.
+   -EPERM edx requested creation of something other than a regular file,
+     FIFO (named pipe), or Unix domain socket, and the caller is not
+     privileged (does not have the CAP_MKNOD capability); also returned if
+     the filesystem containing the path pointed by ebx does not support the
+     type of node requested.
+   -EROFS Path pointed by ecx refers to a file on a read-only filesystem.
+   -EBADF ebx is not a valid file descriptor.
+
+
+   Available since 2.6.16
+

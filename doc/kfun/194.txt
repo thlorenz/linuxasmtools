@@ -1,0 +1,76 @@
+
+----------------------------------------------------------------------------
+194 ftruncate64    - truncate file to specified length
+----------------------------------------------------------------------------
+  mov  eax,093
+  mov  ebx,fd      ;open file descriptor
+  mov  ecx,length  ;low 32 bits of length
+  mov  edx,length  ;high 32 bits of length
+  int  80h
+
+       The  ftruncate function causes the regular file
+       referenced by fd to be truncated to a size of precisely  length
+       bytes.
+
+       If  the  file  previously  was larger than this size, the extra data is
+       lost.  If the file previously was shorter,  it  is  extended,  and  the
+       extended part reads as zero bytes.
+
+       The file pointer is not changed.
+
+       If  the  size changed, then the ctime and mtime fields for the file are
+       updated, and suid and sgid mode bits may be cleared.
+
+       With ftruncate, the file must be open for writing;
+
+RETURN VALUE
+       On  success,  zero is returned.  On error, a negative code is returned
+
+ERRORS
+
+       EACCES Search permission is denied for a component of the path  prefix,
+              or the named file is not writable by the user.
+
+       EFAULT Path points outside the process's allocated address space.
+
+       EFBIG  The argument length is larger than the maximum file size. (XSI)
+
+       EINTR  A signal was caught during execution.
+
+       EINVAL The  argument length is negative or larger than the maximum file
+              size.
+
+       EIO    An I/O error occurred updating the inode.
+
+       EISDIR The named file is a directory.
+
+       ELOOP  Too many symbolic links  were  encountered  in  translating  the
+              pathname.
+
+       ENAMETOOLONG
+              A  component of a pathname exceeded 255 characters, or an entire
+              path name exceeded 1023 characters.
+
+       ENOENT The named file does not exist.
+
+       ENOTDIR
+              A component of the path prefix is not a directory.
+
+       EROFS  The named file resides on a read-only file system.
+
+       ETXTBSY
+              The file is a pure procedure (shared text) file  that  is  being
+              executed.
+
+       EBADF  The fd is not a valid descriptor.
+
+       EBADF or EINVAL
+              The fd is not open for writing.
+
+       EINVAL The fd does not reference a regular file.
+
+
+SEE ALSO
+       open truncate
+
+

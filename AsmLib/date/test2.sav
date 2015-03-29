@@ -1,0 +1,104 @@
+
+; The collection of values associated with the calendric
+; representation of a time.
+
+%include "time.inc"
+
+
+ [section .text]
+
+  extern get_raw_time
+  extern raw2seconds
+  extern seconds2bins
+  extern bins2ascii
+  extern seconds2timeregs
+  extern seconds2dateregs
+  extern regs2ascii
+  extern ascii2days
+  extern leap_count
+  extern leap_check
+  extern days2ascii
+  extern raw2ascii
+  extern lib_buf
+
+;  extern mmap_open_ro
+ 
+  global _start
+  global main
+
+_start:
+main:
+  call	get_raw_time		;returns raw time in eax,ebx
+show_entry:
+  mov	edi,tmf
+  call	raw2seconds
+  mov	ebp,tmf
+  call	seconds2bins
+; All representable values have now been calculated. edi is changed
+; to point to the output buffer. The program then proceeds to render
+; the format string into buf by calling ftime.
+
+  mov	ebx,tmf
+  mov	ebp,format_string
+  mov	edi,buf
+  call	bins2ascii
+
+; A newline is appended, the string is output to stdout, and the
+; program exits.
+
+  mov	al, 10
+  stosb
+  mov	ecx,buf
+  mov	edx, edi		;compute length
+  sub	edx, ecx		; of output string
+  mov	ebx,1			;stdout
+  mov	eax,4
+  int	80h
+;------------------------------------------------
+; test raw2ascii
+
+;fill lib buf
+  mov	edi,lib_buf
+  mov	ecx,500
+  mov	al,-1
+  rep	stosb
+
+rloop:
+  call	get_raw_time
+  mov	edi,out_buf
+  mov	ebx,format
+  call	raw2ascii
+
+  mov	ecx,out_buf
+  mov	edx, edi		;compute length
+  sub	edx, ecx		; of output string
+  mov	ebx,1			;stdout
+  mov	eax,4
+  int	80h
+
+  dec	byte [count]
+  jnz	rloop
+
+  mov	eax,1
+  int	80h			;exit
+
+
+  [section .data]
+out_buf: times 50 db ' '
+format:
+  db '7- 2 6- ',0ah,0
+count:	db	5
+
+
+;----------------------------------------------------------
+format_string:
+  db '6+ 2, 7+ 0 1-2-0 3:4:58 9 (6- 7-)',0
+
+  section .bss
+
+; The time structure.
+tmf:		resb	time_size
+; The output buffer that the formatting string is rendered into.
+buf:		resb	8192
+
+end

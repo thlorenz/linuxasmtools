@@ -1,0 +1,45 @@
+
+-----------------------------------------------------------------
+254 epoll_create   -  open an epoll file descriptor
+-----------------------------------------------------------------
+
+  mov  eax,254
+  mov  ebx,size
+  mov  ecx,epfd  ;epoll file descriptor, 'epfd'
+  int  80h
+
+
+SYNOPSIS
+       #include <sys/epoll.h>
+
+       int epoll_create(int size);
+
+DESCRIPTION
+       Open  an  epoll  file  descriptor  by requesting the kernel allocate an
+       event backing store dimensioned for size descriptors.  The size is  not
+       the  maximum  size  of  the backing store but just a hint to the kernel
+       about how to dimension internal structures.  The returned file descrip‐
+       tor  will  be used for all the subsequent calls to the epoll interface.
+       The file descriptor returned by epoll_create(2) must be closed by using
+       close(2).
+
+RETURN VALUE
+       When successful, epoll_create(2) returns a non-negative integer identi‐
+       fying the descriptor.  When an error occurs, epoll_create returns a
+       negative code
+
+ERRORS
+       EINVAL size is not positive.
+
+       ENFILE The  system  limit  on  the  total number of open files has been
+              reached.
+
+       ENOMEM There was insufficient memory to create the kernel object.
+
+CONFORMING TO
+       epoll_create(2) is Linux specific, and was introduced in kernel 2.5.44.
+
+SEE ALSO
+       close, epoll_ctl, epoll_wait
+
+

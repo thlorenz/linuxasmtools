@@ -1,0 +1,41 @@
+
+----------------------------------------------------------------------------
+145 readv          - read data into multiple buffers
+----------------------------------------------------------------------------
+  mov  eax,145
+  mov  ebx,fd     ;open file descriptor
+  mov  ecx,vector ;ptr to iovec struc
+  mov  edx,count  ;number of buffers to fill
+  int  80h
+
+       The  readv()  function reads count blocks from the file associated with
+       the file descriptor fd into the multiple buffers described by vector.
+
+       The pointer vector points to a struct iovec defined in sys/uio.h as
+
+          struct iovec
+              .iov_base resd 1 ;ptr to buffer
+              .iov_len  resd 1 ;number of bytes to read into buffer
+          endstruc
+
+       Buffers are processed in the order specified.
+
+       The  readv()  function  works  just  like "read" except that multiple
+       buffers are filled.
+
+
+RETURN VALUE
+       On  success, the readv() function returns the number of bytes read; the
+       writev() function returns the number of bytes written.  On error a
+       negatave code is returned
+
+ERRORS
+       The  errors  are  as  given for read and write.  Additionally the
+       following error is defined.
+
+       EINVAL The sum of the iov_len values overflows an  ssize_t  value.  Or,
+              the vector count count is zero or greater than MAX_IOVEC.
+
+SEE ALSO
+       read, write
+

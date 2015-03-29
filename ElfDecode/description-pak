@@ -1,0 +1,6 @@
+decoder for ELF programs
+elfdecode is a console/X terminal utility
+to show structure of ELF files.  It is used
+by other programs to generate tables describing
+a ELF file.
+http://linuxasmtools.net

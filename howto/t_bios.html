@@ -1,0 +1,221 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ 
+ <title>bios access mini howto</title><meta name="keywords" content="bios, assembler, linux, howto, x86, assembly, programming">
+ <meta name="description" content="Howto access bios with x86 assembler">
+ <meta name="robots" content="NOINDEX NOFOLLOW"><!-- ==================== -->
+
+
+
+  <link rel="stylesheet" href="stylej.css" type="text/css"><!-- ==================== --><!-- main layout table --></head>
+<body>
+<br>
+    <br>
+  <table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td class="menuleft" style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools" src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td nowrap="nowrap" width="100%">
+
+<!-- header here -->
+
+
+      <h2><big>LinuxAsmTools - HowTo read CMOS memory</big>
+      </h2>
+      <hr style="width: 100%; height: 2px;">
+<!-- begin content here --> 
+      <br>
+  Reading BIOS memory with assembler mini-HOWTO<br>
+  jeff owens, jeff@linuxasmtools.net<br>
+  v1.01, 06 April 2009<br>
+<br>
+<br>
+  How to read BIOS area with example program.<br>
+  ______________________________________________________________________<br>
+<br>
+  Table of Contents<br>
+<br>
+<br>
+  1. Disclaimer<br>
+<br>
+  2. Introduction<br>
+<br>
+  3. Where is physical memory<br>
+<br>
+  4. How do we find the BIOS<br>
+<br>
+  5. Running the Example program<br>
+  <br>
+  6. Compiling the example program<br>
+<br>
+  7. Finding more information<br>
+<br>
+  ______________________________________________________________________<br>
+<br>
+  1.  Disclaimer<br>
+<br>
+  The following document is offered in good faith as comprising only<br>
+  safe programming and procedures. No responsibility is accepted by the<br>
+  author for any loss or damage caused in any way to any person or<br>
+  equipment, as a direct or indirect consequence of following these<br>
+  instructions.<br>
+<br>
+<br>
+  2.  Introduction<br>
+<br>
+  The most recent version of this document can always be found at<br>
+  http://linuxasmtools.net<br>
+<br>
+  The BIOS (boot code) is contained in ROM (Read Only Memory)<br>
+  and includes startup code plus configuration menus.  After<br>
+  a system boots programs are provided virtual memory and<br>
+  ignores the BIOS memory area.  This program finds the BIOS<br>
+  in physical memory and displays information stored by<br>
+  manufacturer.<br>
+<br>
+  The sample program is built from two files: <a href="bios.asm">bios.asm</a> and<br><a href="bios.inc">
+  bios.inc</a>.<br>
+<br>
+  3. Where is physical memory<br>
+<br>
+  To get at physical memory we need to read the device<br>
+  /dev/mem.  This device also can use the seek function<br>
+  or it can be mapped with mmap.  We will use the open,<br>
+  seek, read functions to search for the BIOS area.<br>
+<br>
+  Before starting it is a good idea to check our status<br>
+  as follows:<br>
+<br>
+  call	sys_getuid	;asmlib call to get our UID<br>
+  or	eax,eax		;check if root<br>
+  jz	we_root		;jmp if root<br>
+<br>
+<br>
+  Next, we open the physical memory device with:<br>
+<br>
+  mov	ebx,mem_dev<br>
+  call	block_open_read<br>
+<br>
+  The opened device handle is returned in eax, we<br>
+  use it to seek to address 0e0000h.  At this point<br>
+  we will begin our search.<br>
+<br>
+  mov	[mem_handle],eax<br>
+  mov	ebx,eax		;handle to ebx<br>
+  mov	ecx,0e0000h	;seek offset<br>
+  mov	[current_seek],ecx<br>
+  call	block_seek<br>
+<br>
+  4. How do we find the BIOS<br>
+<br>
+  We are now at address 0e0000h in physical memory.<br>
+  Now, we want to search for the string "_DMI_" which<br>
+  indicates the top of BIOS tables.<br>
+<br>
+dmi_search:<br>
+  mov	ecx,buffer<br>
+  mov	edx,16		;size of read<br>
+  call	block_read	;read 16 bytes<br>
+  cmp	[ecx],dword '_DMI'<br>
+  je	got_dmi<br>
+  add	[current_seek],dword 16<br>
+  dec	ebp		;timeout<br>
+  jnz	dmi_search<br>
+<br>
+<br>
+  If we have a standard plug-and-play BIOS, it<br>
+  will have a standard format.  We can scan the<br>
+  tables and extract the manufacturer and BIOS<br>
+  author.<br>
+<br>
+<br>
+  5. Running the example program.<br>
+<br>
+  If we currently have root status, the example program<br>
+  can be started with:<br>
+<br>
+  ./bios<br>
+<br>
+  It will show date values read from bios. Normally<br>
+  we will not be root, so we might us sudo as follows:<br>
+<br>
+  sudo ./bios<br>
+<br>
+  6. Compiling the example program.<br>
+<br>
+  The example program can be compiled with the<br>
+  following tools:<br>
+<br>
+  nasm - assembler<br>
+  asmlib - library of assembler functions<br>
+<br>
+  The easy way to do this is to install, asmide<br>
+  and start it as follows:<br>
+<br>
+  asmide bios.asm<br>
+<br>
+  asmide will provide a menu, with compile and<br>
+  debug options.<br>
+<br>
+  To manually compile the source use the following:<br>
+<br>
+  nasm -g -f elf bios.asm<br>
+  ld bios.o -static -o bios /usr/lib/asmlib.a<br>
+<br>
+
+
+  7. Finding more information<br>
+<br>
+     Standards are at:<br>
+     http://www.dmtf.org/standards/smbios    <br>
+<br>
+
+<!-- END of the content cell --></td></tr></tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: April 06, 2009</em></div>
+
+</body></html>

@@ -1,0 +1,99 @@
+
+--------------------------------------------------------------------
+256 epoll_wait  -  wait for an I/O event on an epoll file descriptor
+--------------------------------------------------------------------
+
+  mov  eax,256
+  mov  ebx,epfd
+  mov  ecx,events  ;pointer to events
+  mov  edx,maxevents
+  mov  esi,timeout
+ (mov  edi,sigmask) ;?? is the epoll_pwait system call created by
+                    ;adding this register?  see discussion below
+  int  80h
+
+
+SYNOPSIS
+       #include <sys/epoll.h>
+
+       int epoll_wait(int epfd, struct epoll_event *events,
+                      int maxevents, int timeout);
+
+       int epoll_pwait(int epfd, struct epoll_event *events,
+                      int maxevents, int timeout,
+                      const sigset_t *sigmask);
+
+DESCRIPTION
+       The epoll_wait() system  call  waits  for  events  on  the  epoll  file
+       descriptor epfd for a maximum time of timeout milliseconds.  The memory
+       area pointed to by events will contain the events that will  be  avail‐
+       able  for  the  caller.  Up to maxevents are returned by epoll_wait(2).
+       The maxevents parameter must be greater than zero.  Specifying a  time‐
+       out  of  -1  makes  epoll_wait(2) wait indefinitely, while specifying a
+       timeout equal to zero makes epoll_wait(2) to return immediately even if
+       no  events  are  available  (return  code  equal  to zero).  The struct
+       epoll_event is defined as :
+
+            typedef union epoll_data {
+                void *ptr;
+                int fd;
+                __uint32_t u32;
+                __uint64_t u64;
+            } epoll_data_t;
+
+            struct epoll_event {
+                __uint32_t events;      /* Epoll events */
+                epoll_data_t data;      /* User data variable */
+            };
+
+       The data of each returned structure will contain the same data the user
+       set  with a epoll_ctl(2) (EPOLL_CTL_ADD,EPOLL_CTL_MOD) while the events
+       member will contain the returned event bit field.
+
+   epoll_pwait()
+       The relationship between epoll_wait() and epoll_pwait() is analogous to
+       the  relationship  between  select(2)  and pselect(2): like pselect(2),
+       epoll_pwait() allows an application to safely wait until either a  file
+       descriptor becomes ready or until a signal is caught.
+
+       The following epoll_pwait() call:
+
+           ready = epoll_pwait(epfd, &events, maxevents, timeout, &sigmask);
+
+       is equivalent to atomically executing the following calls:
+
+           sigset_t origmask;
+
+           sigprocmask(SIG_SETMASK, &sigmask, &origmask);
+           ready = epoll_wait(epfd, &events, maxevents, timeout);
+           sigprocmask(SIG_SETMASK, &origmask, NULL);
+
+
+RETURN VALUE
+       When  successful,  epoll_wait(2) returns the number of file descriptors
+       ready for the requested I/O, or zero if no file descriptor became ready
+       during  the  requested  timeout  milliseconds.   When  an error occurs,
+       epoll_wait(2) returns a negative code
+
+ERRORS
+       EBADF  epfd is not a valid file descriptor.
+
+       EFAULT The memory area pointed to by  events  is  not  accessible  with
+              write permissions.
+
+       EINTR  The  call  was interrupted by a signal handler before any of the
+              requested events occurred or the timeout expired.
+
+       EINVAL epfd is not an epoll file descriptor, or maxevents is less  than
+              or equal to zero.
+
+VERSIONS
+       epoll_pwait() was added to Linux in kernel 2.6.19.
+
+       Glibc  support for epoll_pwait() is provided starting with version 2.6.
+
+CONFORMING TO
+       epoll_wait(2) is Linux specific, and was introduced in kernel 2.5.44.
+
+SEE ALSO
+       epoll_create, epoll_ctl

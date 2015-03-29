@@ -1,0 +1,35 @@
+NAME
+
+ asmproj - setup directory for assembler project
+
+SYNOPSIS
+
+  asmproj
+  no parameters are used by asmproj
+
+DESCRIPTION
+
+  asmproj is an interactive program to check if
+  tools (programs) are available to support a project
+  and build a simple source file and a makefile to
+  compile it.
+
+USAGE
+
+  all activity is controlled by menus with visible
+  help. The program does not have additional
+  documentation.
+
+  asmproj assumes each project will have a separate directory
+  and sets this up first. Then it selects the type of project
+  by the needed tools.
+
+SEE ALSO
+  asmmgr(1) asmref(1)
+ 
+AUTHOR
+ Jeff Owens <jko@bsn1.net>
+
+COPYRIGHT
+ Copyright (C) 2007 Jeff Owens
+ This program comes with absolutely NO WARRANTY

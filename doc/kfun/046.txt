@@ -1,0 +1,29 @@
+
+----------------------------------------------------------------------------
+ 46 setgid         - set group identity
+----------------------------------------------------------------------------
+  mov  eax,046
+  mov  ebx,gid
+  int  80h
+
+       setgid  sets  the  effective  group  ID  of the current process. If the
+       caller is the superuser, the real and saved group ID's are also set.
+
+       Under Linux, setgid is implemented like  the  POSIX  version  with  the
+       _POSIX_SAVED_IDS  feature.   This  allows  a setgid program that is not
+       suid root to drop all of its group privileges,  do  some  un-privileged
+       work,  and  then  re-engage the original effective group ID in a secure
+       manner.
+
+RETURN VALUE
+       On success, zero is returned.  On error a negative error code.
+
+ERRORS
+       EPERM  The  user  is  not  the super-user (does not have the CAP_SETGID
+              capability), and gid does not match the effective  group  ID  or
+              saved set-group-ID of the calling process.
+
+SEE ALSO
+       getgid, setregid, setegid
+
+

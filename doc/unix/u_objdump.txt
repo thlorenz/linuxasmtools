@@ -1,0 +1,14 @@
+
+ objdump - display contents of ELF executables and objects
+
+objdump is useful for getting a disassembly of a program or
+to see symbols and other data.  Sample usage:
+
+To dump a disassembly in Intel format use:
+
+  objdump -d -M intel <infile> > <outfile>
+
+To dump a disassembly and include source code use:
+
+  objdump -d -S <infile> > <outfile>
+

@@ -1,0 +1,124 @@
+
+---------------------------------------------------------------------
+284 waitid  - wait for child id
+---------------------------------------------------------------------
+
+  mov  eax,284
+  mov  ebx,wait_flag
+  mov  ecx,PID
+  mov  edx,siginfo   ;pointer to siginfo structure
+  mov  esi,state     ;state to wait for
+  mov  edi,?
+  int  80h
+
+   Suspends execution of the current process until the specified child
+   has changed state.
+   This system call is similar to [1]sys_waitpid, but provides more
+   precise control over which child state changes to wait for.
+   A state change is considered to be: the child terminated; the child
+   was stopped by a signal; or the child was resumed by a signal. In the
+   case of a terminated child, performing a wait allows the system to
+   release the resources associated with the child; if a wait is not
+   performed, then terminated the child remains in a "zombie" state (see
+   Remarks below).
+   If a child has already changed state, then this call return
+   immediately. Otherwise they block until either a child changes state
+   or a signal handler interrupts the call (assuming that system calls
+   are not automatically restarted using the SA_RESTART flag of
+   sys_sigaction). In the remainder of this page, a child whose state
+   has changed and which has not yet been waited upon by one of these
+   system calls is termed waitable.
+
+args
+----
+
+ ebx Child(ren) to wait for. It may be one of the following values:
+
+   P_PID  Wait for the child whose process ID matches ecx.
+   P_PGID Wait for any child whose process group ID matches ecx.
+   P_ALL  Wait for any child; ecx is ignored.
+
+ ecx PID of the child.
+
+ edx A pointer to a siginfo structure. *to be documented*
+
+ esi The child state changes to wait for. Specified by bitwsie-or'ing
+   one or more of the following flags:
+
+   WEXITED Wait for children that have terminated.
+   WSTOPPED Wait for children that have been stopped by delivery of a
+     signal.
+   WCONTINUED Wait for (previously stopped) children that have been
+     resumed by delivery of SIGCONT.
+
+   Following flags may additionally be bitwise-or'ed in esi:
+
+   WNOHANG Return immediately if no child has exited.
+   WNOWAIT Leave the child in a waitable state; a later wait call can be
+     used to again retrieve the child status information.
+
+ edi *to be documented*
+
+   Return values
+
+   If the system call succeeds the return value is the process ID of the
+   child whose state has changed. If WNOHANG was specified and no
+   child(ren) specified by ebx has yet changed state, then 0 is returned.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -ECHILD The process specified by ebx does not exist or is not a child
+     of the calling process. (This can happen for one's own child if the
+     action for SIGCHLD is set to SIG_IGN.)
+   -EINTR WNOHANG was not set and an unblocked signal or a SIGCHLD was
+     caught.
+   -EINVAL edx argument was invalid.
+
+Remarks
+
+   A child that terminates, but has not been waited for becomes a
+   "zombie". The kernel maintains a minimal set of information about the
+   zombie process (PID, termination status, resource usage information)
+   in order to allow the parent to later perform a wait to obtain
+   information about the child. As long as a zombie is not removed from
+   the system via a wait, it will consume a slot in the kernel process
+   table, and if this table fills, it will not be possible to create
+   further processes. If a parent process terminates, then its "zombie"
+   children (if any) are adopted by init (man 8 init), which
+   automatically performs a wait to remove the zombies.
+   POSIX.1-2001 specifies that if the disposition of SIGCHLD is set to
+   SIG_IGN or the SA_NOCLDWAIT flag is set for SIGCHLD (see[3]
+   sys_sigaction), then children that terminate do not become zombies and
+   a call to [4]sys_wait4 or sys_waitpid will block until all children
+   have terminated, and then fail with - ECHILD. (The original POSIX
+   standard left the behaviour of setting SIGCHLD to SIG_IGN
+   unspecified.) Linux 2.6 conforms to this specification. However, Linux
+   2.4 (and earlier) does not: if a [5]sys_wait4 or sys_waitpid call is
+   made while SIGCHLD is being ignored, the call behaves just as though
+   SIGCHLD were not being ignored, that is, the call blocks until the
+   next child terminates and then returns the process ID and status of
+   that child.
+   In the Linux kernel, a kernel-scheduled thread is not a distinct
+   construct from a process. Instead, a thread is simply a process that
+   is created using the Linux-unique [6]sys_clone system call; other
+   routines such as the portable pthread_create (man 3 pthread_create)
+   call are implemented using [7]sys_clone. Before Linux 2.4, a thread
+   was just a special case of a process, and as a consequence one thread
+   could not wait on the children of another thread, even when the latter
+   belongs to the same thread group. However, POSIX prescribes such
+   functionality, and since Linux 2.4 a thread can, and by default will,
+   wait on children of other threads in the same thread group.
+   The following Linux-specific options are for use with children created
+   using [8]sys_clone:
+   __WCLONE Wait for "clone" children only. If omitted then wait for
+   "non-clone" children only. (A "clone" child is one which delivers no
+   signal, or a signal other than SIGCHLD to its parent upon
+   termination.) This option is ignored if __WALL is also specified.
+   __WALL (Since Linux 2.4) Wait for all children, regardless of type
+   ("clone" or "non-clone").
+   __WNOTHREAD (Since Linux 2.4) Do not wait for children of other
+   threads in the same thread group. This was the default before Linux
+   2.4.
+
+   Available since 2.6.9.
+

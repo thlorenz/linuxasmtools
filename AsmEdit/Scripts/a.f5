@@ -1,0 +1,23 @@
+#! /bin/bash
+if test -e ispell ; then
+ispell $1 ;
+else
+aspell -c $1
+fi
+
+
+#
+# NAME
+#>1 script
+#  a.f4 - example spell check script
+# INPUTS
+#  $1 is base name of program being edited.  It
+#  can be used to envoke a spell program
+# OUTPUT
+#  The file name in $1 is read back and used as
+#  current edit file.
+# NOTES
+#   file: a.f5  <- tied to function key f5 in AsmEdit
+#                  May be attached to AsmMgr button.
+#<
+# * ----------------------------------------------

@@ -1,0 +1,129 @@
+
+
+----------------------------------------------------------------------------
+ 14 mknod          - create a special or ordinary file
+----------------------------------------------------------------------------
+  mov  eax,014
+  mov  ebx,filename  ;ptr to asciiz path
+  mov  ecx,mode      ;permissions and type of file bit flags
+  mov  edx,dev       ;device# if S_IFCHR or S_IFBLK mode
+  int  80h
+
+  mode
+  ----
+
+    S_ISUID	0004000q	;set user id on execution
+    S_ISGID	0002000q	;set group id on execution
+    S_ISTXT	0001000q	;sticky bit
+
+    S_IRWXU	0000700q	;RWX mask for owner
+    S_IRUSR	0000400q	;R for owner
+    S_IWUSR	0000200q	;W for owner
+    S_IXUSR	0000100q	;X for owner
+
+    S_IREAD		S_IRUSR
+    S_IWRITE	S_IWUSR
+    S_IEXEC		S_IXUSR
+
+    S_IRWXG	0000070q	;RWX mask for group
+    S_IRGRP	0000040q	;R for group
+    S_IWGRP	0000020q	;W for group
+    S_IXGRP	0000010q	;X for group
+
+    S_IRWXO	0000007q	;RWX mask for other
+    S_IROTH	0000004q	;R for other
+    S_IWOTH	0000002q	;W for other
+    S_IXOTH	0000001q	;X for other
+
+    S_IFMT	 0170000q	;type of file mask
+    S_IFIFO	 0010000q	;named pipe (fifo)
+    S_IFCHR	 0020000q	;character special
+    S_IFDIR	 0040000q	;directory
+    S_IFBLK	 0060000q	;block special
+    S_IFREG	 0100000q	;regular
+    S_IFLNK	 0120000q	;symbolic link
+    S_IFSOCK 0140000q	;socket
+    S_IFWHT  0160000q	;whiteout
+    S_ISVTX	 0001000q	;save swapped text even after use
+
+       The  system  call mknod creates a filesystem node (file, device special
+       file or named pipe) named pathname, with attributes specified  by  mode
+       and dev.
+
+       The mode argument specifies both the permissions to use and the type of
+       node to be created.  It should be a combination (using bitwise  OR)  of
+       one  of  the  file  types  listed below and the permissions for the new
+       node.
+
+       The permissions are modified by the process's umask in the  usual  way:
+       the permissions of the created node are (mode & ~umask).
+
+       The  file  type  must  be  one of S_IFREG, S_IFCHR, S_IFBLK, S_IFIFO or
+       S_IFSOCK to specify a normal file (which will be created empty),  char-
+       acter  special  file,  block  special  file, FIFO (named pipe), or Unix
+       domain socket, respectively.  (Zero file type  is  equivalent  to  type
+       S_IFREG.)
+
+       If pathname already exists, or is a symbolic link, this call fails with
+       an EEXIST error.
+
+       The newly created node will be  owned  by  the  effective  uid  of  the
+       process.  If the directory containing the node has the set group id bit
+       set, or if the filesystem is mounted with BSD group semantics, the  new
+       node will inherit the group ownership from its parent directory; other-
+       wise it will be owned by the effective gid of the process.
+
+    dev
+    ---
+
+       If the file type is S_IFCHR or S_IFBLK then dev specifies the major and
+       minor numbers of the newly created device special file; otherwise it is
+       ignored.
+
+RETURN VALUE
+       mknod returns zero on success, or a negative code if an  error  occurred
+
+ERRORS
+       EPERM  mode  requested creation of something other than a regular file,
+              FIFO (named pipe), or Unix domain socket, and the caller is  not
+              the  superuser; also returned if the filesystem containing path-
+              name does not support the type of node requested.
+
+       EINVAL mode requested creation of something other than a  normal  file,
+              device special file, FIFO or socket.
+
+       EEXIST pathname already exists.
+
+       EFAULT pathname points outside your accessible address space.
+
+       EACCES The  parent  directory  does  not  allow write permission to the
+              process, or one of the directories in  pathname  did  not  allow
+              search (execute) permission.
+
+       ENAMETOOLONG
+              pathname was too long.
+
+       ENOENT A  directory  component  in pathname does not exist or is a dan-
+              gling symbolic link.
+
+       ENOTDIR
+              A component used as a directory in pathname is not, in  fact,  a
+              directory.
+
+       ENOMEM Insufficient kernel memory was available.
+
+       EROFS  pathname refers to a file on a read-only filesystem.
+
+       ELOOP  Too  many symbolic links were encountered in resolving pathname.
+
+       ENOSPC The device containing pathname has no room for the new node.
+
+       Under  Linux,  this  call  cannot  be  used to create directories.  One
+       should make directories with mkdir, and FIFOs with mkfifo.
+
+       There are many infelicities in the protocol underlying  NFS.   Some  of
+       these affect mknod.
+
+SEE ALSO
+       fcntl,  mkdir, mount, socket, stat, umask, unlink, mkfifo
+

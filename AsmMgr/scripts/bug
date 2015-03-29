@@ -1,0 +1,6 @@
+#! /bin/bash
+if [ -x $PWD"/debug" ] ; then
+./debug
+else
+echo "no local script"
+fi

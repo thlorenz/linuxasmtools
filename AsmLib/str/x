@@ -1,0 +1,46 @@
+all: hash_setup.o hash_add.o hash_remove.o hash_lookup.o \
+     hashfile_open.o hashfile_close.o  hashfile_archive.o hashfile_restore.o \
+     test
+
+debug: hash_setup.o hash_add.o hash_remove.o \
+       hash_lookup.o hashfile_open.o hashfile_close.o hashfile_archive.o \
+       hashfile_restore.o \
+       test
+
+test:  test.o hash_setup.o
+	ld -o test test.o hash_setup.o hash_add.o hash_remove.o \
+            hash_lookup.o hashfile_open.o hashfile_close.o \
+            hashfile_archive.o hashfile_restore.o \
+            /usr/lib/asmlib.a
+	rm -f test.o
+
+test.o:	test.asm hash_setup.asm
+	nasm -g -felf -otest.o test.asm
+
+
+hash_setup.o: hash_setup.asm
+	nasm -g -felf -o hash_setup.o hash_setup.asm
+
+hash_add.o: hash_add.asm
+	nasm -g -felf -o hash_add.o hash_add.asm
+
+hash_remove.o: hash_remove.asm
+	nasm -g -felf -o hash_remove.o hash_remove.asm
+
+hash_lookup.o: hash_lookup.asm
+	nasm -g -felf -o hash_lookup.o hash_lookup.asm
+
+hashfile_archive.o: hashfile_archive.asm
+	nasm -g -felf -o hashfile_archive.o hashfile_archive.asm
+
+hashfile_restore.o: hashfile_restore.asm
+	nasm -g -felf -o hashfile_restore.o hashfile_restore.asm
+
+hashfile_open.o: hashfile_open.asm
+	nasm -g -felf -o hashfile_open.o hashfile_open.asm
+
+hashfile_close.o: hashfile_close.asm
+	nasm -g -felf -o hashfile_close.o hashfile_close.asm
+
+
+

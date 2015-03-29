@@ -1,0 +1,103 @@
+
+--------------------------------------------------------------------
+265 clock_gettime  - get clock setting
+--------------------------------------------------------------------
+
+  mov  eax,265
+  mov  ebx,which_clock
+  mov  ecx,tp          ;pointer to timespec
+  int  80h
+
+
+SYNOPSIS
+       #include <time.h>
+
+       int clock_gettime(clockid_t which_clock, struct timespec *setting);
+
+     #define CLOCK_REALTIME			0
+     #define CLOCK_MONOTONIC			1
+     #define CLOCK_PROCESS_CPUTIME_ID	2
+     #define CLOCK_THREAD_CPUTIME_ID		3
+
+
+     struct timespec {
+	time_t	tv_sec;		/* seconds */
+	long	tv_nsec;	/* nanoseconds */
+     };
+
+DESCRIPTION
+       clock_gettime  retrieves  the  current value for the clock specified by
+       which_clock.  The retrieved value is placed in the  timespec  structure
+       pointed  to  by  setting.  Depending on the resolution of the specified
+       clock, it may be possible to retrieve the same value  with  consecutive
+       calls to clock_gettime(3).
+
+       To  set  the current time value of a given clock, see clock_settime(3).
+       To retrieve the resolution of a given clock, see clock_getres(3).
+
+
+   Clock types
+       The which_clock argument specifies  the  clock  type.   The  type  used
+       determines the behavior and properties of the clock.  Valid clock types
+       are:
+
+       CLOCK_REALTIME
+              Wall clock.  The time is expressed in  seconds  and  nanoseconds
+              since the UNIX Epoch (00:00 1 Jan 1970 UTC).  The POSIX standard
+              dictates the resolution of this clock not be  worse  than  100Hz
+              (10ms). In Linux, the resolution is 1/HZ (usually 10ms on 32-bit
+              architectures and 1ms on 64-bit architectures).  As  this  clock
+              is  based on wall time, either the user or system can set it and
+              thus it is not guaranteed to be monotonic.
+
+       CLOCK_REALTIME_HR
+              High-resolution version of CLOCK_REALTIME.  Resolution is archi‐
+              tecture-dependent.
+
+       CLOCK_MONOTONIC
+              System  uptime  clock.   The  time  is  expressed in seconds and
+              nanoseconds since boot.  The  resolution  is  again  1/HZ.   The
+              clock is guaranteed to be monotonic.
+
+       CLOCK_MONOTONIC_HR
+              High-resolution   version  of  CLOCK_MONOTONIC.   Resolution  is
+              architecture-dependent.
+
+       CLOCK_PROCESS_CPUTIME_ID
+              CPU-time clock of the calling process.  Time is measured in sec‐
+              onds  and nanoseconds the current process has spent executing on
+              the system.  The resolution is implementation-defined; in  Linux
+              it  is 1/HZ.  Timers and clock_nanosleep calls on this clock are
+              not supported.
+
+       CLOCK_THREAD_CPUTIME_ID
+              Like CLOCK_PROCESS_CPUTIME_ID, but for the current  thread,  not
+              process.
+
+       The clocks CLOCK_REALTIME_HR and CLOCK_MONOTONIC_HR are present only if
+       the kernel is configured with high-resolution timer support.
+
+RETURN VALUE
+       On success, clock_gettime returns the value 0 and places the  requested
+       clock value in the specified structure.
+
+       On  failure, clock_gettime returns the value -1 and errno is set appro‐
+       priately.
+
+ERRORS
+       EFAULT A specified memory address is outside the address range  of  the
+              calling process.
+
+       EINVAL The clock specified by which_clock is invalid.
+
+       ENOSYS The function is not supported on this implementation.
+
+CONFORMING TO
+       POSIX 1003.1b (formerly POSIX.4) as ammended by POSIX 1003.1j-2000.
+
+SEE ALSO
+       clock_getcpuclockid(3),        clock_getres(3),       clock_settime(3),
+       clock_nanosleep(3),     pthread_getcpuclockid(3),      timer_create(3),
+       timer_delete(3), timer_settime(3), timer_gettime(3)
+
+

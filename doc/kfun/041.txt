@@ -1,0 +1,37 @@
+
+----------------------------------------------------------------------------
+ 41 dup            - duplicate a file descriptor
+----------------------------------------------------------------------------
+  mov  eax,041       ;dup (dupfd)
+  mov   ebx,oldfd    ;fd to dup
+  int   80h
+
+       dup creates a copy of the file descriptor oldfd.
+       dup uses the lowest-numbered unused descriptor for the new  descriptor.
+
+       After successful return of dup , the old and new descriptors may
+       be used interchangeably. They share locks, file position  pointers  and
+       flags;  for example, if the file position is modified by using lseek on
+       one of the descriptors, the position is also changed for the other.
+
+       The two descriptors do not share the close-on-exec flag, however.
+
+RETURN VALUE
+       dup returns the new descriptor, or negative error
+
+ERRORS
+       EBADF  oldfd  isn't  an  open  file  descriptor, or newfd is out of the
+              allowed range for file descriptors.
+
+       EMFILE The process already has the maximum number of  file  descriptors
+              open and tried to open a new one.
+
+       EINTR  The dup2 call was interrupted by a signal.
+
+       EBUSY  (Linux  only)  This may be returned by dup2 during a race condi-
+              tion with open() and dup().
+
+SEE ALSO
+       fcntl, open, close dup2
+
+

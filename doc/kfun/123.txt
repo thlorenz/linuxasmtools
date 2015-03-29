@@ -1,0 +1,59 @@
+
+
+----------------------------------------------------------------------------
+system 123 modify_ldt              - get or set ldt
+----------------------------------------------------------------------------
+  mov  eax,123
+  mov  ebx,func
+  mov  ecx,ptr
+  mov  edx,bytecount
+  int  80h
+
+args
+----
+
+ ebx contains function code (since kernel 2.4.18)
+
+        0 : read_ldt(ptr, bytecount);
+        2 : read_default_ldt(ptr, bytecount);
+        1 : write_ldt(ptr, bytecount, 1);
+        17: write_ldt(ptr, bytecount, 0);
+
+ ecx     ptr to where the ldt data should be stored
+
+ edx     size per bytes of storeage area at [ecx].
+
+       modify_ldt reads or writes the  local  descriptor  table  (ldt)  for  a
+       process.   The ldt is a per-process memory management table used by the
+       i386 processor.  For more information on this table, see an  Intel  386
+       processor handbook.
+
+       When  func is 0, modify_ldt reads the ldt into the memory pointed to by
+       ptr.  The number of bytes read is the  smaller  of  bytecount  and  the
+       actual size of the ldt.
+
+       When  func  is  1,  modify_ldt modifies one ldt entry.  ptr points to a
+       modify_ldt_ldt_s structure and bytecount must equal the  size  of  this
+       structure.
+
+RETURN VALUE
+       On  success,  modify_ldt returns either the actual number of bytes read
+       (for reading) or 0 (for writing).  On failure a negative code is returned
+
+ERRORS
+       ENOSYS func is neither 0 nor 1.
+
+       EINVAL ptr is 0, or func is 1 and bytecount is not equal to the size of
+              the structure modify_ldt_ldt_s, or func is 1  and  the  new  ldt
+              entry has invalid values.
+
+       EFAULT ptr points outside the address space.
+
+CONFORMING TO
+       This call in Linux-specific and should not be used in programs intended
+       to be portable.
+
+SEE ALSO
+       vm86
+
+

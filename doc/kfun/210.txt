@@ -1,0 +1,11 @@
+
+   210. [111]setresgid, setresgid32
+
+                 arg     eax     210
+                         ebx
+                 return
+                 errors  eax
+                 ref               sys_setresgid16 [112]kernel/uid16.c - re lx 2.2. '[113]setresgid'.
+
+
+

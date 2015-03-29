@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>AsmLinks file viewer</title>
+ <meta name="keywords" content="small, fast, file viewer, assembler, linux, utilities,">
+ <meta name="description" content="file viewer with links to other files">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+
+<br>
+NAME<br>
+  <br>
+  Asmlinks - text file viewer with imbedded link handling<br>
+<br>
+USAGE<br>
+<br>
+    usage: asmlinks file<br>
+<br>
+<br>
+INTRODUCTION<br>
+<br>
+asmlinks reads a file into memory and converts all non-text<br>
+(binary) data to "." (period) characters. The data is then<br>
+displayed in a window. The data can contain links to other files<br>
+<br>
+KEYBOARD ACTIONS<br>
+<br>
+          up key    - move to prev (up) link, if not found move up one line<br>
+          down key  - move to next link (donw) if not found move down one line<br>
+          pgup key  - page up<br>
+          pgdn key  - page down<br>
+          right     - enter link<br>
+          Enter     - enter link<br>
+          left      - previous file or exit if at root<br>
+          Esc       - previous file or exit if at root<br>
+          f10       - previous file or exit if at root<br>
+          f1        - help<br>
+          f2        - find, places match on top line<br>
+          f3        - find again<br>
+          home      - goto top of file<br>
+          end       - goto end of file<br>
+<br>
+SEARCHING<br>
+<br>
+Search strings can be entered by typing a normal text character.<br>
+The search string will appear on the status line (bottom of the<br>
+display).<br>
+<br>
+Searching always begins from the second line of currently displayed<br>
+page and all matches are positioned on the top line of the display.<br>
+To continue searching, just keep pressing &lt;f3&gt;. To start a search<br>
+from the top of file, type &lt;home&gt; and then either &lt;Enter&gt; or a new<br>
+search string followed by &lt;Enter&gt;<br>
+<br>
+All non-control keys are assumed to be part of a search string and<br>
+will be shown at the bottom of the screen.<br>
+<br>
+FILE FORMAT<br>
+-----------<br>
+<br>
+AsmLinks will view normal text files and special link files.<br>
+Link files are recognized by finding link table at end. Each<br>
+link table has entries consisting of:<br>
+<br>
+&lt;keyword&gt;=/file/path<br>
+<br>
+Within the text a link entry is created by entering &lt;keyword&gt;<br>
+Keywords entered without a couresponding table entry are<br>
+ignored.<br>
+<br>
+COMPILING<br>
+---------<br>
+<br>
+ Compile with:  nasm -felf xxxx.asm -o xxxx.o<br>
+                ld xxxx.o -o xxxx<br>
+<br>
+ <br>
+INSTALLING <br>
+----------<br>
+<br>
+ see file INSTALL for more information.<br>
+ The AsmTools consists of many programs which<br>
+ can be installed separatly. All programs are<br>
+ selfcontained but many also interact with other<br>
+ programs.<br>
+<br>
+ The easiest way to get started is to install the<br>
+ complete package<br>
+<br>
+Limitations<br>
+-----------<br>
+<br>
+ AsmIDE programs only run on X86 processors using<br>
+ the Linux kernel version 2.4 or later. It isn't<br>
+ portable to other UNIX flavors but over 90 percent<br>
+ of all UNIX installations are for Linux X86.<br>
+<br>
+ Also, AsmLinks runs in a console or terminal. If<br>
+ the X window GUI is being used then, AsmLinks needs<br>
+ to be placed in a terminal. In the console mode<br>
+ it does not  set up a mouse interface and relies<br>
+ on the keyboard.<br>
+<br>
+BUG/COMMENTS<br>
+------------<br>
+<br>
+ The author can be found on the DesktopLinuxAsm<br>
+ discussion group at yahoogroups. To join send<br>
+ a blank email to:<br>
+<br>
+   DesktopLinuxAsm-subscribe@yahoogroups.com<br>
+<br>
+ Additional information may be available on the<br>
+ home page at:<br>
+<br>
+ http://linuxasmtools.net/<br>
+<br>
+This package is part of AsmTools (a collection of<br>
+programs for assembler developent on Linux X86 cpu's.)<br>
+<br>
+      <br>
+      </big><br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

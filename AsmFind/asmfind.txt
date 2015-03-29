@@ -1,0 +1,156 @@
+
+NAME
+ asmfind - search for files or text within files
+
+SYNOPSIS
+     asmfind "text string"
+     
+     the "text string" is optional and if omitted
+     asmfind enters a prompting mode. The prompting
+     mode is preferred usage.
+
+
+DESCRIPTION
+      asmfind presents a menu if no parameters are given. This is
+      the expected mode of operation and offers more options than a
+      simple search string.
+
+      after setting the file mask, starting directory, case flag,
+      and search sting the programs uses a fast Boyer-Moore search
+      technique to find text matches. After each match a list of
+      options are given as follows:
+     
+         ignore this match
+         view file containing match
+         view file with smart file viewer
+         edit file (call -a- script)
+         abort search
+
+   simple search
+   -------------
+
+      When AsmFind is called with a search string it does the following:
+       1. set search starting point at current directory
+       2. set ignore case flag
+       3. set the file mask to match all files (search all files)
+
+      each match found will display the standard menu of options.
+
+      if the search string has spaces or special characters then
+      it needs to be quoted as follows:
+
+           asmfind "search string"
+
+  interactive Menu Search
+  ------------------------
+
+     the interactive menu mode is initiated by  calling asmfind
+     without any parameters. It asks for the following information:
+
+           starting path __________________
+           file mask     __________________
+           search string __________________
+           case flag
+
+     next, the search can be started by pressing the start button.
+     the search can be aborted by any key and all matches provide
+     another menu of actions.
+
+     it is possible to search for files by leaving the search string
+     blank.
+
+VIEWING FILES
+
+ files are viewed using AsmView as follows:
+
+ asmview reads a file into memory and converts all non-text data
+ to the "." (period) character. The data is then displayed in a
+ window. The data can be scrolled in any direction. Long lines
+ will extend beyond the right edge of the screen and can be viewed
+ with the right-arrow key.
+
+         keyboard controls
+         ----------------
+
+          up key - scroll up
+          down key - scroll down
+          pgup key - page up
+          pgdn key - page down
+          right,left - scroll
+          esc   - exit
+          f10   = exit
+          f3    = exit
+          enter key - begin/repeat  search
+          f1 - help
+          home - goto top of file
+          end = goto end of file
+
+
+search strings can be entered by typing a normal text character.
+the search string will appear on the status line (bottom of the
+display). The search string keys are:
+
+  text key - appended to current search string
+  rubout   - removes the last text character entered
+  Enter    - begins search
+
+searching always begins from the second line of currently displayed
+page and all matches are positioned on the top line of the  display.
+to continue searching, just keep pressing <Enter>. To start a search
+from the top of file, type <home> and then either <Enter> or a new
+search string followed by <Enter>
+
+All non-control keys are assumed to be part of a search string and
+will be shown at the bottom of the screen.
+
+EDITING FILES
+
+If a match is found and the -e- (edit) options is
+selected, AsmFind will call a script by the name
+of -a- (dashes are not part of name).  This script
+should contain editor of choice.
+An example script:
+
+ #! /bin/sh
+ # shortcut to asmedit
+ asmedit $1 $2
+
+The -a- script must be reachable by the $PATH and
+normally is placed in the users /bin directory.
+It needs to have the executable attribute set.
+
+DEPENDENCIES
+
+AsmView - included with tar.gz
+a       - user created script
+
+Optional compile dependency: AsmLib
+ 
+SEE ALSO
+  asmmgr(1) asmref(1)
+ 
+ asmfind is called by several programs to view files.
+ see ainfo, asmmgr, viewer, asmref, and others
+ 
+AUTHOR
+ Jeff Owens
+
+COPYRIGHT
+ Copyright (C) 2007 Jeff Owens
+ This program comes with absolutely NO WARRANTY
+
+------------
+
+ The author can be found on the DesktopLinuxAsm
+ discussion group at yahoogroups.  To join send
+ a blank email to:
+
+   DesktopLinuxAsm-subscribe@yahoogroups.com
+
+ Additional information may be available on the
+ home page at:
+
+ http://linuxasmtools.net
+
+ http://sourceforge.net/projects/asmedit
+

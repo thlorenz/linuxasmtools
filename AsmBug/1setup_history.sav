@@ -1,0 +1,733 @@
+ extern  _white
+ extern  _grey
+ extern  _skyblue
+ extern  _blue
+ extern  _navy
+ extern  _cyan
+ extern  _green
+ extern  _yellow
+ extern  _gold
+ extern  _tan	
+ extern  _brown
+ extern  _orange
+ extern  _red	
+ extern  _maroon
+ extern  _pink
+ extern  _violet
+ extern  _purple
+ extern  _black
+
+
+write_history:
+
+  mov	esi,history_process_tbl
+  mov	edi,[his_buf_ptr]
+
+  mov	al,0ah
+  stosb
+
+wh_lp1:
+  xor	eax,eax
+  lodsb			;get code
+  mov	ebx,eax		;save code
+  lodsw			;get token ptr
+  or	bl,bl
+  js	wh_flush	;jmp if end of tokens
+;move token name to buffer
+  push	esi
+  mov	esi,eax
+  add	esi,token_table
+  call	str_move	;move token name
+  mov	al,'='
+  stosb
+  pop	esi		;restore control table ptr
+;decode data type in -bl-
+  lodsw			;get ptr to data
+  add	eax,history_data ;point at data
+  shl	ebx,2		;convert to dword index
+  add	ebx,jmp_table
+  call	[ebx]
+  mov	al,0ah
+  stosb  
+  jmp	short wh_lp1
+
+wh_flush:
+  mov	ebx,his_local	;write to local directory
+  xor	edx,edx		;default permissions
+  mov	ecx,[his_buf_ptr]
+  mov	esi,edi		;compute length of write
+  sub	esi,ecx		;lenght
+  call	block_write_all
+
+wh_exit1:
+wh_exit2:
+  ret
+;------------
+wh_string:
+;------------
+wh_color:
+  push	esi
+  mov	esi,eax
+  call	str_move
+  pop	esi
+  ret
+;------------
+wh_decimal:
+  mov	eax,[eax]	;get value
+  or	eax,eax
+  jz	wh_decimal1	;exit if null value
+  call	dword_to_ascii
+wh_decimal1:
+  ret
+;------------
+wh_hex:
+  push	esi
+  mov	ecx,1		;max number of hex values
+  jmp	short wh_do_hex
+;------------
+wh_brk_list:
+  push	esi
+  mov	ecx,8		;max number of hex values
+wh_do_hex:
+  mov	esi,eax		;setup ptr to data
+wh_hex_lp:
+  lodsd			;get dataa
+  or	eax,eax
+  jz	wh_hex_done
+  call	dwordto_hexascii
+  mov	[edi],byte ' '
+  inc	edi
+  lodsb			;get byte value
+  call	byteto_hexascii
+  dec	ecx
+  jecxz	wh_hex_done	;jmp if done
+  mov	[edi],byte ' '
+  inc	edi
+  jmp	short wh_hex_lp
+wh_hex_done:
+  pop	esi
+  ret
+  
+;-------------------------------------------------------------
+read_history:
+;  mov	eax,his_buf_size
+;  call	m_allocate	;allocate buffer to read files
+;  jns	rh_05		;jmp if memory avail
+;  jmp	rh_exit2
+rh_05:
+;  mov	[his_buf_ptr],eax
+;read local file first
+  mov	ebx,his_local
+  mov	ecx,[his_buf_ptr]
+  mov	edx,his_buf_size
+  call	block_read_all
+  jns	rh_10		;jmp if file read ok
+;try global file
+  mov	ebx,his_global
+  mov	ecx,[his_buf_ptr]
+  mov	edx,his_buf_size
+  call	block_read_all
+  js	rh_exit1	;exit if no setup files found
+;we have read a config file into buffer, setup for parse
+rh_10:
+  mov	ebx,[his_buf_ptr]
+  mov	[parse_block],ebx
+  add	ebx,eax		;compute end of file
+  mov	[parse_block+4],ebx
+rh_lp1:			;parse loop
+  mov	eax,parse_block
+  call	parse_token
+  js	rh_exit1	;exit if done
+  jnz	rh_lp1		;loop if not token
+;token parsed now in lib_buf
+  mov	esi,lib_buf	;setup for token
+  mov	edi,token_table ;  search
+  call	lookup_token	;returns token index in ecx
+  jne	rh_lp1		;loop if not legal token
+;eax = token index, use to find history_process_tbl entry
+  mov	eax,5
+  mul	ecx		;index * 5
+  add	eax,history_process_tbl
+  mov	esi,eax
+  xor	eax,eax
+  lodsb			;get code
+  shl	eax,2		;convert to dword index
+  add	eax,rjmp_table
+  call	[eax]
+  jmp	short rh_lp1	;loop till done
+
+rh_exit1:
+;  mov	eax,[his_buf_ptr]
+;  call	m_release
+  xor	eax,eax		;set good exit
+rh_exit2:  
+  ret
+;-----------
+;inputs: esi=ptr to token table entry, data entry
+;        lib_buf has parsed token
+rh_color:
+rh_string:
+  push	esi
+  mov	eax,parse_block
+  call	parse_token
+  pop	esi
+  jnc	rh_color1	;jmp if not eol
+;rh_color0:
+  mov	byte [lib_buf],0 ;force null entry
+rh_color1:
+  xor	eax,eax
+  lodsw			;get token table index
+  lodsw			;get data table index
+  add	eax,history_data
+  mov	edi,eax
+  mov	esi,lib_buf
+  call	str_move	;move data to table
+  ret  
+;------
+;inputs: esi=ptr to token table entry, data entry
+;        lib_buf has parsed token
+rh_decimal:
+  push	esi
+  mov	eax,parse_block
+  call	parse_token
+  pop	esi
+  jnc	rh_decimal1	;jmp if not eol
+;rh_decimal0:
+  mov	dword [lib_buf],0 ;force null entry
+rh_decimal1:
+  xor	eax,eax
+  lodsw			;get token table index
+  lodsw			;get data table index
+  add	eax,history_data
+  mov	edi,eax
+  cmp	byte [lib_buf],0 ;
+  jnz	rh_decimal2
+  xor	ecx,ecx
+  jmp	short rh_decimal3 ;skip if null entry
+rh_decimal2:
+  mov	esi,lib_buf
+  push	edi
+  call	ascii_to_dword	;convert ascii to value
+  pop	edi
+rh_decimal3:
+  mov	[edi],ecx	;store  value
+  ret  
+;------
+;inputs: esi=ptr to token table entry, data entry
+;        lib_buf has parsed token
+rh_hex:
+rh_hex_list:
+  movzx	edi,word [esi+2]	;get data table index
+  add	edi,history_data	;compute store point for data
+rh_hex_lp:
+  mov	eax,parse_block
+  call	parse_token
+  jc	rh_hex_done
+  mov	esi,lib_buf
+  call	hexascii_to_dword	;convert ascii to value
+  mov	eax,ecx
+  stosd				;store data
+  
+  mov	eax,parse_block
+  call	parse_token
+  jc	rh_hex_done
+  mov	esi,lib_buf
+  call	hexascii_to_dword	;convert ascii to value
+  mov	eax,ecx
+  stosb				;store byte
+
+  jmp	short rh_hex_lp		;loop till done
+rh_hex_done:
+  ret  
+;----------
+  [section .data]
+
+parse_block:
+  dd 0	;buffer start ptr
+  dd 0  ;buffer end ptr
+  db "=",' ',",",0	;separators
+
+rjmp_table:
+  dd rh_color
+  dd rh_decimal
+  dd rh_string
+  dd rh_hex
+  dd rh_hex_list
+
+  [section .text]
+;-------------------------------------------------------------
+;called after window_create has built color list
+;
+lookup_color_id:
+
+  mov	esi,CodeMenuBColor	;get start of names
+  mov	edx,codeMenuBColor	;get stuff point
+
+lci_lp1:
+  push	esi
+  mov	edi,color_names		;get table of legal colors
+  call	lookup_token
+  jne	lci_skip		;jmp if error, token not on list
+;ecx is token index 0+ into table 
+  shl	ecx,2			;make dword index
+  add	ecx,color_code_ptrs	;get ptr to color id
+  mov	eax,[ecx]		;get color id ptr
+  mov	eax,[eax]		;get color id
+;store color into id table
+  mov	[edx],eax
+lci_skip:
+  add	edx,4			;next stuff point
+  pop	esi
+  add	esi,8			;move to next color
+  cmp	byte [esi],0		;end of colors
+  jne	lci_lp1			;loop till done
+  ret
+
+;-----------
+  [section .data]
+
+jmp_table:
+  dd wh_color
+  dd wh_decimal
+  dd wh_string
+  dd wh_hex
+  dd wh_brk_list
+
+his_buf_size	equ  8000
+his_buf_ptr:	dd the_his_buf	;allocated memory pointer
+the_his_buf	times his_buf_size db 0
+
+his_global: db '/usr/share/asmbug/abugrc',0
+his_local: db '.abugrc',0
+;--------------------------------------------------------------
+;The following three tables have entires in the same order
+
+;This table initially contains defaults, the defaults are overwritten
+;by data found in history file:
+history_data:
+DebugWinWidth:		dd 0	;3 pixels
+DebugWinHeight:		dd 0	;4 pixels
+DebugWinFont:		dd 0	; pixel width of char, 8,9,10,11,12,13,14
+LastTarget:		times 20 db 0 ;5
+LastTargetParm:		times 40 db 0 ;6
+max_breaks equ 12
+Breaks:			times (max_breaks * 5) db 0 ;7	;breaks with restore byte
+MemWinAdr:		dd	0     ;8
+CodeMenuBColor:		db 'navy',0,0,0,0 ;9	;Code Menu Background Color
+CodeMenuBButton:	db 'grey',0,0,0,0 ;10	;Code Menu Background Button Color
+CodeMenuForButton:	db 'navy',0,0,0,0 ;11
+CodeBColor:		db 'navy',0,0,0,0 ;12	;Code win background color
+CodeFColor:		db 'white',0,0,0  ;13	;code win foreground color
+CodeExecFColor:		db 'skyblue',0    ;14	;code eip line foreground color
+CodeExecBColor:		db 'navy',0,0,0,0 ;15	;code eip line background color
+CodeSelFColor:		db 'pink',0,0,0,0 ;16	;code select line foreground color
+CodeSelBColor:		db 'navy',0,0,0,0 ;17	;code select line background color
+CodeBrkFColor:		db 'red',0,0,0,0,0;18	;breakpoint in code, foreground color
+CodeBrkBColor:		db 'navy',0,0,0,0 ;19	;breakpoint in code, backgound color
+RegMenuForButton:	db 'blue',0,0,0,0 ;20
+RegMenuBButton:  	db 'skyblue',0    ;21	;reg win background button color
+RegBColor:		db 'blue',0,0,0,0 ;22	;reg win background color
+RegFColor:		db 'white',0,0,0  ;23	;reg win foreground color
+RegChangeBColor:	db 'blue',0,0,0,0 ;24	;register changed, background color
+RegChangeFColor: 	db 'green',0,0,0  ;25	;register changed, foreground color
+BrkMenuForButton:	db 'maroon',0,0   ;26
+BrkMenuBakButton:	db 'skyblue',0    ;27
+BrkBColor:		db 'maroon',0,0  ;28	;break win background color
+BrkFColor:		db 'white',0,0,0  ;29	;break win foreground color
+MemMenuForButton:	db 'black',0,0,0  ;30
+MemMenuBakButton:	db 'skyblue',0    ;31
+MemBColor:		db 'blue',0,0,0,0 ;32
+MemFColor:		db 'white',0,0,0  ;33
+CodeScrollBColor:	db 'skyblue',0	  ;34
+CodeScrollFColor:	db 'black',0,0,0    ;35
+MemScrollBColor:	db 'skyblue',0   ;36
+MemScrollFColor:	db 'black',0,0,0    ;37
+StringBColor:		db 'pink',0,0,0,0
+StringFColor:		db 'black',0,0,0
+CursorBColor:		db 'red',0,0,0,0,0
+CursorFColor:		db 'white',0,0,0
+PopBorderBColor:	db 'maroon',0,0
+PopBorderFColor:	db 'yellow',0,0
+PopBColor:		db 'maroon',0,0
+PopButBColor:		db 'yellow',0,0
+PopButFColor:		db 'black',0,0,0
+			db 0			;end of table
+
+;this table contains names of tokens, parameters are assinged
+;to these tokens with a "=" character.
+token_table:
+DebugWinWidth_:
+ db 'DebugWinWidth',0	;3
+DebugWinHeight_:
+ db 'DebugWinHeight',0	;4
+DebugWinFont_:
+ db 'DebugWinFont',0
+LastTarget_:
+ db 'LastTarget',0	;5
+LastTargetParm_:
+ db 'LastTargetParm',0	;6
+Breaks_:
+ db 'Breaks',0		;7
+MemWinAdr_:
+ db 'MemWinAdr',0	;8
+CodeMenuBColor_:
+ db 'CodeMenuBColor',0	;9	;Code Menu Background Color
+CodeMenuBButton_:
+ db 'CodeMenuBButton',0	;10	;Code Menu Background Button Color
+CodeMenuForButton_:
+ db 'CodefMenuForButton',0 ;11
+CodeBColor_:
+ db 'CodeBColor',0	;12	;Code win background color
+CodeFColor_:
+ db 'CodeFColor',0	;13	;code win foreground color
+CodeExecFColor_:
+ db 'CodeExecFColor',0	;14	;code eip line foreground color
+CodeExecBColor_:
+ db 'CodeExecBColor',0	;15	;code eip line background color
+CodeSelFColor_:
+ db 'CodeSelFColor',0	;16	;code select line foreground color
+CodeSelBColor_:
+ db 'CodeSelBColor',0	;17	;code select line background color
+CodeBrkFColor_:
+ db 'CodeBrkFColor',0	;18	;breakpoint in code, foreground color
+CodeBrkBColor_:
+ db 'CodeBrkBColor',0	;19	;breakpoint in code, backgound color
+RegMenuForButton_:
+ db 'RegMenuForButton',0;20
+RegMenuBButton_:
+ db 'RegMenuBButton',0  ;21	;reg win background button color
+RegBColor_:
+ db 'RegBColor',0	;22	;reg win background color
+RegFColor_:
+ db 'RegFColor',0	;23	;reg win foreground color
+RegChangeBColor_:
+ db 'RegChangeBColor',0	;24	;register changed, background color
+RegChangeFColor_:
+ db 'RegChangeFColor',0 ;25	;register changed, foreground color
+BrkMenuForButton_:
+ db 'BrkMenuForButton',0;26
+BrkMenuBakButton_:
+ db 'BrkMenuBakButton',0;27
+BrkBColor_:
+ db 'BrkBColor',0	;28	;break win background color
+BrkFColor_:
+ db 'BrkFColor',0	;29	;break win foreground color
+MemMenuForButton_:
+ db 'MemMenuForButton',0;30
+MemMenuBakButton_:
+ db 'MemMenuBakButton',0;31
+MemBColor_:
+ db 'MemBColor',0	;32
+MemFColor_:
+ db 'MemFColor',0	;33
+CodeScrollBColor_:
+ db 'CodeScrollBColor',0 ;34
+CodeScrollFColor_:
+ db 'CodeScrollFColor',0 ;35
+MemScrollBColor_:
+ db 'MemScrollBColor',0	;36
+MemScrollFColor_:
+ db 'MemScrollFColor',0 ;37
+StringBColor_:
+ db 'StringBColor',0
+StringFColor_:
+ db 'StringFColor',0
+CursorBColor_:
+ db 'CursorBColor',0
+CursorFColor_:
+ db 'CursorFColor',0
+PopBorderBColor_:
+ db 'PopBorderBColor',0
+PopBorderFColor_:
+ db 'PopBorderFColor',0
+PopBColor_:
+ db 'PopBColor',0
+PopButBColor_:
+ db 'PopButBColor',0
+PopButFColor_:
+ db 'PopButFColor',0
+ db 0			;end of table
+
+;
+;first byte (flag) codes= 0 =color name
+;                         1 =decimal ascii
+;                         2 = string
+;                         3=hex adr
+;                         4=hex list         
+;next dw = token ptr
+;next dw = data ptr
+history_process_tbl:
+_DebugWinWidth:
+  db 1
+  dw DebugWinWidth_ - token_table
+  dw DebugWinWidth - history_data
+_DebugWinHeight:
+  db 1
+  dw DebugWinHeight_ - token_table
+  dw DebugWinHeight - history_data
+_DebugWinFont:
+  db 1
+  dw DebugWinFont_ - token_table
+  dw DebugWinFont - history_data
+_LastTarget:
+  db 2
+  dw LastTarget_ - token_table
+  dw LastTarget - history_data
+_LastTargetParm:
+  db 2
+  dw LastTargetParm_ - token_table
+  dw LastTargetParm - history_data
+_Breaks:
+  db 4
+  dw Breaks_ - token_table
+  dw Breaks - history_data
+_MemWinAdr:				;8
+  db 3
+  dw MemWinAdr_ - token_table
+  dw MemWinAdr - history_data
+_CodeMenuBColor:
+  db 0
+  dw CodeMenuBColor_ - token_table
+  dw CodeMenuBColor - history_data
+_CodeMenuBButton:
+  db 0
+  dw CodeMenuBButton_ - token_table
+  dw CodeMenuBButton - history_data
+_CodefMenuForButton:
+  db 0
+  dw CodeMenuForButton_ - token_table
+  dw CodeMenuForButton - history_data
+_CodeBColor:
+  db 0
+  dw CodeBColor_ - token_table
+  dw CodeBColor - history_data
+_CodeFColor:
+  db 0
+  dw CodeFColor_ - token_table
+  dw CodeFColor - history_data
+_CodeExecFColor:
+  db 0
+  dw CodeExecFColor_ - token_table
+  dw CodeExecFColor - history_data
+_CodeExecBColor:
+  db 0
+  dw CodeExecBColor_ - token_table
+  dw CodeExecBColor - history_data
+_CodeSelFColor:				;16
+  db 0
+  dw CodeSelFColor_ - token_table
+  dw CodeSelFColor - history_data
+_CodeSelBColor:
+  db 0
+  dw CodeSelBColor_ - token_table
+  dw CodeSelBColor - history_data
+_CodeBrkFColor:
+  db 0
+  dw CodeBrkFColor_ - token_table
+  dw CodeBrkFColor - history_data
+_CodeBrkBColor:
+  db 0
+  dw CodeBrkBColor_ - token_table
+  dw CodeBrkBColor - history_data
+_RegMenuForButton:
+  db 0
+  dw RegMenuForButton_ - token_table
+  dw RegMenuForButton - history_data
+_RegMenuBButton:
+  db 0
+  dw RegMenuBButton_ - token_table
+  dw RegMenuBButton - history_data
+_RegBColor:
+  db 0
+  dw RegBColor_ - token_table
+  dw RegBColor - history_data
+_RegFColor:
+  db 0
+  dw RegFColor_ - token_table
+  dw RegFColor - history_data
+_RegChangeBColor:			;24
+  db 0
+  dw RegChangeBColor_ - token_table
+  dw RegChangeBColor - history_data
+_RegChangeFColor:
+  db 0
+  dw RegChangeFColor_ - token_table
+  dw RegChangeFColor - history_data
+_BrkMenuForButton:
+  db 0
+  dw BrkMenuForButton_ - token_table
+  dw BrkMenuForButton - history_data
+_BrkMenuBakButton:
+  db 0
+  dw BrkMenuBakButton_ - token_table
+  dw BrkMenuBakButton - history_data
+_BrkBColor:
+  db 0
+  dw BrkBColor_ - token_table
+  dw BrkBColor - history_data
+_BrkFColor:
+  db 0
+  dw BrkFColor_ - token_table
+  dw BrkFColor - history_data
+_MemMenuForButton:
+  db 0
+  dw MemMenuForButton_ - token_table
+  dw MemMenuForButton - history_data
+_MemMenuBakButton:
+  db 0
+  dw MemMenuBakButton_ - token_table
+  dw MemMenuBakButton - history_data
+_MemBColor:				;32
+  db 0
+  dw MemBColor_ - token_table
+  dw MemBColor - history_data
+_MemFColor:				;33
+  db 0
+  dw MemFColor_ - token_table
+  dw MemFColor - history_data
+_CodeScrollBColor:
+  db 0
+  dw CodeScrollBColor_ -token_table
+  dw CodeScrollBColor - history_data
+_CodeScrollFColor:
+  db 0
+  dw CodeScrollFColor_ - token_table
+  dw CodeScrollFColor - history_data
+_MemScrollBColor:
+  db 0
+  dw MemScrollBColor_ - token_table
+  dw MemScrollBColor - history_data
+_MemScrollFColor:
+  db 0
+  dw MemScrollFColor_ - token_table
+  dw MemScrollFColor - history_data
+_StringBColor:
+  db 0
+  dw StringBColor_ - token_table
+  dw StringBColor - history_data
+_StringFColor:
+  db 0
+  dw StringFColor_ - token_table
+  dw StringFColor - history_data
+_CursorBColor:
+  db 0
+  dw CursorBColor_ - token_table
+  dw CursorBColor - history_data
+_CursorFColor:
+  db 0
+  dw CursorFColor_ - token_table
+  dw CursorFColor - history_data
+_PopBorderBColor:
+  db 0
+  dw PopBorderBColor_ - token_table
+  dw PopBorderBColor - history_data
+_PopBorderFColor:
+  db 0
+  dw PopBorderFColor_ - token_table
+  dw PopBorderFColor - history_data
+_PopBColor:
+  db 0
+  dw PopBColor_ - token_table
+  dw PopBColor - history_data
+_PopButBColor:
+  db 0
+  dw PopButBColor_ - token_table
+  dw PopButBColor - history_data
+_PopButFColor:
+  db 0
+  dw PopButFColor_ - token_table
+  dw PopButFColor - history_data
+
+
+  db -1			;end of table
+;----------------------------------------
+;translation table for colors, goes  from
+;color name to window.inc structure entry
+
+color_names:
+ db 'white',0
+ db 'grey',0
+ db 'skyblue',0
+ db 'blue',0
+ db 'navy',0
+ db 'cyan',0
+ db 'green',0
+ db 'yellow',0
+ db 'gold',0
+ db 'tan',0
+ db 'brown',0
+ db 'orange',0
+ db 'red',0
+ db 'maroon',0
+ db 'pink',0
+ db 'violet',0
+ db 'purple',0
+ db 'black',0
+ db 0		;end of table
+
+color_code_ptrs:
+ dd _white
+ dd _grey
+ dd _skyblue
+ dd _blue
+ dd _navy
+ dd _cyan
+ dd _green
+ dd _yellow
+ dd _gold
+ dd _tan	
+ dd _brown
+ dd _orange
+ dd _red	
+ dd _maroon
+ dd _pink
+ dd _violet
+ dd _purple
+ dd _black
+
+;----------------------------------------
+;colors codes used by window_id_color
+; filled in by lookup_color_id
+; colors occur in same order as history_data color list 
+codeMenuBColor:		dd 0
+codeMenuBButton:	dd 0
+codeMenuForButton:	dd 0
+codeBColor:		dd 0
+codeFColor:		dd 0
+codeExecFColor:		dd 0
+codeExecBColor:		dd 0
+codeSelFColor:		dd 0
+codeSelBColor:		dd 0
+codeBrkFColor:		dd 0
+codeBrkBColor:		dd 0
+regMenuForButton:	dd 0
+regMenuBButton:  	dd 0
+regBColor:		dd 0
+regFColor:		dd 0
+regChangeBColor:	dd 0
+regChangeFColor: 	dd 0
+brkMenuForButton:	dd 0
+brkMenuBakButton:	dd 0
+brkBColor:		dd 0
+brkFColor:		dd 0
+memMenuForButton:	dd 0
+memMenuBakButton:	dd 0
+memBColor:		dd 0
+memFColor:		dd 0
+codeScrollBColor:	dd 0
+codeScrollFColor:	dd 0
+memScrollBColor:	dd 0
+memScrollFColor:	dd 0 
+stringBColor:		dd 0
+stringFColor:		dd 0
+cursorBColor:		dd 0
+cursorFColor:		dd 0
+popBorderBColor:	dd 0
+popBorderFColor:	dd 0
+popBColor:		dd 0
+popButBColor:		dd 0
+popButFColor:		dd 0
+
+
+;-------------
+  [section .text]

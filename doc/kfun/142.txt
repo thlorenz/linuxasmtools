@@ -1,0 +1,659 @@
+
+----------------------------------------------------------------------------
+ 142 newselect         - synchronous I/O
+----------------------------------------------------------------------------
+
+  mov   eax,142
+  mov   ebx,n           ;highest fd +1 , used to size bit arrarys that follow
+  mov   ecx,readfds     ;ptr to read fd's (bit encoded)
+  mov   edx,writefds    ;ptr to write fd's (bit encoded)
+  mov   esi,exceptfds   ;ptr to except fd's (bit encoded)
+  mov   edi,time        ;ptr to time structure
+  int   80h
+
+  time:  dd   ;seconds
+         dd   ;microseconds
+
+  readfds: -variable lenght bit field set with "bts" instruction.
+            example:  bts [readfds],eax   eax= file descriptor
+            if the fd=20 then a large bit array is needed and the
+            kernel is informed by setting n=21 (ebx).  For stdin
+            a bit array of two bytes can be used.
+  writefds: (same format as readfds)
+  exceptfds: (same format as readfds)
+
+       select is the pivot function that  handles  more than one simultaneous
+       file descriptor (or socket handle) in an
+       efficient manner. Its principal arguments  are  three  arrays  of  file
+       descriptors:  readfds,  writefds, and exceptfds. The way that select is
+       usually used is to block while waiting for a "change of status" on  one
+       or  more  of  the  file  descriptors. A "change of status" is when more
+       characters become available from the file  descriptor,  or  when  space
+       becomes  available  within the kernel's internal buffers for more to be
+       written to the file descriptor, or when a  file  descriptor  goes  into
+       error  (in  the  case of a socket or pipe this is when the other end of
+       the connection is closed).
+
+       In summary, select just watches multiple file descriptors, and  is  the
+       standard Unix call to do so.
+
+       The  arrays  of file descriptors are called file descriptor sets.
+       select modifies the contents of the sets according
+       to the rules described below; after calling select you can test if your
+       file descriptor is still present in the set.
+
+
+ARGUMENTS
+       readfds
+              This set is watched to see if data is available for reading from
+              any of its file descriptors. After select has returned,  readfds
+              will  be  cleared  of all file descriptors except for those file
+              descriptors that are immediately available for  reading  with  a
+              recv()  (for  sockets) or read() (for pipes, files, and sockets)
+              call.
+
+       writefds
+              This set is watched to see if there is space to  write  data  to
+              any  of its file descriptor. After select has returned, writefds
+              will be cleared of all file descriptors except  for  those  file
+              descriptors  that  are  immediately available for writing with a
+              send() (for sockets) or write() (for pipes, files, and  sockets)
+              call.
+
+       exceptfds
+              This  set is watched for exceptions or errors on any of the file
+              descriptors. However, that is actually just a rumor. How you use
+              exceptfds  is  to  watch for out-of-band (OOB) data. OOB data is
+              data sent  on  a  socket  using  the  MSG_OOB  flag,  and  hence
+              exceptfds  only  really  applies  to  sockets.  See  recv(2) and
+              send(2) about this. After select has returned, exceptfds will be
+              cleared  of  all  file  descriptors except for those descriptors
+              that are available for reading OOB data. You can only ever  read
+              one  byte  of  OOB  data though (which is done with recv()), and
+              writing OOB data (done with send) can be done at  any  time  and
+              will not block. Hence there is no need for a fourth set to check
+              if a socket is available for writing OOB data.
+
+       nfds   This is an integer  one  more  than  the  maximum  of  any  file
+              descriptor  in  any  of  the sets. In other words, while you are
+              busy adding file descriptors to your sets,  you  must  calculate
+              the  maximum  integer  value of all of them, then increment this
+              value by one, and then pass this as nfds to select.
+
+       utimeout
+              This is the minimum time select must wait before returning, even
+              if  nothing  interesting  happened.  If  this value is passed as
+              NULL, then select blocks  indefinitely  waiting  for  an  event.
+              utimeout  can  be  set  to  zero seconds, which causes select to
+              return immediately. The structure struct timeval is defined as,
+
+              struct timeval {
+                  time_t tv_sec;    /* seconds */
+                  long tv_usec;     /* microseconds */
+              };
+
+       ntimeout
+              This argument has the same meaning as utimeout but struct  time-
+              spec has nanosecond precision as follows,
+
+              struct timespec {
+                  long tv_sec;    /* seconds */
+                  long tv_nsec;   /* nanoseconds */
+              };
+
+
+
+COMBINING SIGNAL AND DATA EVENTS
+       pselect  must  be  used if you are waiting for a signal as well as data
+       from a file descriptor. Programs that receive signals  as  events  nor-
+       mally  use  the  signal handler only to raise a global flag. The global
+       flag will indicate that the event must be processed in the main loop of
+       the program. A signal will cause the select (or pselect) call to return
+       with errno set to EINTR. This behavior is essential so that signals can
+       be  processed  in  the main loop of the program, otherwise select would
+       block indefinitely. Now, somewhere in the main loop will  be  a  condi-
+       tional  to  check  the  global  flag.  So we must ask: what if a signal
+       arrives after the conditional, but before the select call?  The  answer
+       is  that select would block indefinitely, even though an event is actu-
+       ally pending. This race condition is solved by the pselect  call.  This
+       call can be used to mask out signals that are not to be received except
+       within the pselect call. For instance, let us say  that  the  event  in
+       question  was the exit of a child process. Before the start of the main
+       loop, we would block SIGCHLD using sigprocmask. Our pselect call  would
+       enable  SIGCHLD by using the virgin signal mask. Our program would look
+       like:
+
+       int child_events = 0;
+
+       void child_sig_handler (int x) {
+           child_events++;
+           signal (SIGCHLD, child_sig_handler);
+       }
+
+       int main (int argc, char **argv) {
+           sigset_t sigmask, orig_sigmask;
+
+           sigemptyset (&sigmask);
+           sigaddset (&sigmask, SIGCHLD);
+           sigprocmask (SIG_BLOCK, &sigmask,
+                                       &orig_sigmask);
+
+           signal (SIGCHLD, child_sig_handler);
+
+           for (;;) { /* main loop */
+               for (; child_events > 0; child_events--) {
+                   /* do event work here */
+               }
+               r = pselect (nfds, &rd, &wr, &er, 0, &orig_sigmask);
+
+               /* main body of program */
+           }
+       }
+
+       Note that the above pselect call can be replaced with:
+
+               sigprocmask (SIG_BLOCK, &orig_sigmask, 0);
+               r = select (nfds, &rd, &wr, &er, 0);
+               sigprocmask (SIG_BLOCK, &sigmask, 0);
+
+       but then there is still the possibility  that  a  signal  could  arrive
+       after  the  first sigprocmask and before the select. If you do do this,
+       it is prudent to at least put a finite timeout so that the process does
+       not  block. At present glibc probably works this way.  The Linux kernel
+       does not have a native pselect system call as yet so this is all proba-
+       bly much of a mute point.
+
+
+PRACTICAL
+       So  what  is  the  point  of  select? Can't I just read and write to my
+       descriptors whenever I want? The point of select  is  that  it  watches
+       multiple  descriptors at the same time and properly puts the process to
+       sleep if there is no activity. It does this while enabling you to  han-
+       dle  multiple  simultaneous  pipes  and sockets. Unix programmers often
+       find themselves in a position where they have to handle  IO  from  more
+       than  one  file  descriptor where the data flow may be intermittent. If
+       you were to merely create a sequence of read and write calls, you would
+       find  that  one of your calls may block waiting for data from/to a file
+       descriptor, while another file descriptor is  unused  though  available
+       for data. select efficiently copes with this situation.
+
+       A classic example of select comes from the select man page:
+
+       #include <stdio.h>
+       #include <sys/time.h>
+       #include <sys/types.h>
+       #include <unistd.h>
+
+       int
+       main(void) {
+           fd_set rfds;
+           struct timeval tv;
+           int retval;
+
+           /* Watch stdin (fd 0) to see when it has input. */
+           FD_ZERO(&rfds);
+           FD_SET(0, &rfds);
+           /* Wait up to five seconds. */
+           tv.tv_sec = 5;
+           tv.tv_usec = 0;
+
+           retval = select(1, &rfds, NULL, NULL, &tv);
+           /* Don't rely on the value of tv now! */
+
+           if (retval == -1)
+               perror("select()");
+           else if (retval)
+               printf("Data is available now.\n");
+               /* FD_ISSET(0, &rfds) will be true. */
+           else
+               printf("No data within five seconds.\n");
+
+           exit(0);
+       }
+
+
+
+PORT FORWARDING EXAMPLE
+       Here is an example that better demonstrates the true utility of select.
+       The listing below a TCP forwarding program that forwards from  one  TCP
+       port to another.
+
+       #include <stdlib.h>
+       #include <stdio.h>
+       #include <unistd.h>
+       #include <sys/time.h>
+       #include <sys/types.h>
+       #include <string.h>
+       #include <signal.h>
+       #include <sys/socket.h>
+       #include <netinet/in.h>
+       #include <arpa/inet.h>
+       #include <errno.h>
+
+       static int forward_port;
+
+       #undef max
+       #define max(x,y) ((x) > (y) ? (x) : (y))
+
+       static int listen_socket (int listen_port) {
+           struct sockaddr_in a;
+           int s;
+           int yes;
+           if ((s = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
+               perror ("socket");
+               return -1;
+           }
+           yes = 1;
+           if (setsockopt
+               (s, SOL_SOCKET, SO_REUSEADDR,
+                (char *) &yes, sizeof (yes)) < 0) {
+               perror ("setsockopt");
+               close (s);
+               return -1;
+           }
+           memset (&a, 0, sizeof (a));
+           a.sin_port = htons (listen_port);
+           a.sin_family = AF_INET;
+           if (bind
+               (s, (struct sockaddr *) &a, sizeof (a)) < 0) {
+               perror ("bind");
+               close (s);
+               return -1;
+           }
+           printf ("accepting connections on port %d\n",
+                   (int) listen_port);
+           listen (s, 10);
+           return s;
+       }
+
+       static int connect_socket (int connect_port,
+                                  char *address) {
+           struct sockaddr_in a;
+           int s;
+           if ((s = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
+               perror ("socket");
+               close (s);
+               return -1;
+           }
+
+           memset (&a, 0, sizeof (a));
+           a.sin_port = htons (connect_port);
+           a.sin_family = AF_INET;
+
+           if (!inet_aton
+               (address,
+                (struct in_addr *) &a.sin_addr.s_addr)) {
+               perror ("bad IP address format");
+               close (s);
+               return -1;
+           }
+
+           if (connect
+               (s, (struct sockaddr *) &a,
+                sizeof (a)) < 0) {
+               perror ("connect()");
+               shutdown (s, SHUT_RDWR);
+               close (s);
+               return -1;
+           }
+           return s;
+       }
+
+       #define SHUT_FD1 {                      \
+               if (fd1 >= 0) {                 \
+                   shutdown (fd1, SHUT_RDWR);  \
+                   close (fd1);                \
+                   fd1 = -1;                   \
+               }                               \
+           }
+
+       #define SHUT_FD2 {                      \
+               if (fd2 >= 0) {                 \
+                   shutdown (fd2, SHUT_RDWR);  \
+                   close (fd2);                \
+                   fd2 = -1;                   \
+               }                               \
+           }
+
+       #define BUF_SIZE 1024
+
+       int main (int argc, char **argv) {
+           int h;
+           int fd1 = -1, fd2 = -1;
+           char buf1[BUF_SIZE], buf2[BUF_SIZE];
+           int buf1_avail, buf1_written;
+           int buf2_avail, buf2_written;
+
+           if (argc != 4) {
+               fprintf (stderr,
+                        "Usage\n\tfwd <listen-port> \
+       <forward-to-port> <forward-to-ip-address>\n");
+               exit (1);
+           }
+
+           signal (SIGPIPE, SIG_IGN);
+
+           forward_port = atoi (argv[2]);
+
+           h = listen_socket (atoi (argv[1]));
+           if (h < 0)
+               exit (1);
+
+           for (;;) {
+               int r, nfds = 0;
+               fd_set rd, wr, er;
+               FD_ZERO (&rd);
+               FD_ZERO (&wr);
+               FD_ZERO (&er);
+               FD_SET (h, &rd);
+               nfds = max (nfds, h);
+               if (fd1 > 0 && buf1_avail < BUF_SIZE) {
+                   FD_SET (fd1, &rd);
+                   nfds = max (nfds, fd1);
+               }
+               if (fd2 > 0 && buf2_avail < BUF_SIZE) {
+                   FD_SET (fd2, &rd);
+                   nfds = max (nfds, fd2);
+               }
+               if (fd1 > 0
+                   && buf2_avail - buf2_written > 0) {
+                   FD_SET (fd1, &wr);
+                   nfds = max (nfds, fd1);
+               }
+               if (fd2 > 0
+                   && buf1_avail - buf1_written > 0) {
+                   FD_SET (fd2, &wr);
+                   nfds = max (nfds, fd2);
+               }
+               if (fd1 > 0) {
+                   FD_SET (fd1, &er);
+                   nfds = max (nfds, fd1);
+               }
+               if (fd2 > 0) {
+                   FD_SET (fd2, &er);
+                   nfds = max (nfds, fd2);
+               }
+
+               r = select (nfds + 1, &rd, &wr, &er, NULL);
+
+               if (r == -1 && errno == EINTR)
+                   continue;
+               if (r < 0) {
+                   perror ("select()");
+                   exit (1);
+               }
+               if (FD_ISSET (h, &rd)) {
+                   unsigned int l;
+                   struct sockaddr_in client_address;
+                   memset (&client_address, 0, l =
+                           sizeof (client_address));
+                   r = accept (h, (struct sockaddr *)
+                               &client_address, &l);
+                   if (r < 0) {
+                       perror ("accept()");
+                   } else {
+                       SHUT_FD1;
+                       SHUT_FD2;
+                       buf1_avail = buf1_written = 0;
+                       buf2_avail = buf2_written = 0;
+                       fd1 = r;
+                       fd2 =
+                           connect_socket (forward_port,
+                                           argv[3]);
+                       if (fd2 < 0) {
+                           SHUT_FD1;
+                       } else
+                           printf ("connect from %s\n",
+                                   inet_ntoa
+                                   (client_address.sin_addr));
+                   }
+               }
+       /* NB: read oob data before normal reads */
+               if (fd1 > 0)
+                   if (FD_ISSET (fd1, &er)) {
+                       char c;
+                       errno = 0;
+                       r = recv (fd1, &c, 1, MSG_OOB);
+                       if (r < 1) {
+                           SHUT_FD1;
+                       } else
+                           send (fd2, &c, 1, MSG_OOB);
+                   }
+               if (fd2 > 0)
+                   if (FD_ISSET (fd2, &er)) {
+                       char c;
+                       errno = 0;
+                       r = recv (fd2, &c, 1, MSG_OOB);
+                       if (r < 1) {
+                           SHUT_FD1;
+                       } else
+                           send (fd1, &c, 1, MSG_OOB);
+                   }
+               if (fd1 > 0)
+                   if (FD_ISSET (fd1, &rd)) {
+                       r =
+                           read (fd1, buf1 + buf1_avail,
+                                 BUF_SIZE - buf1_avail);
+                       if (r < 1) {
+                           SHUT_FD1;
+                       } else
+                           buf1_avail += r;
+                   }
+               if (fd2 > 0)
+                   if (FD_ISSET (fd2, &rd)) {
+                       r =
+                           read (fd2, buf2 + buf2_avail,
+                                 BUF_SIZE - buf2_avail);
+                       if (r < 1) {
+                           SHUT_FD2;
+                       } else
+                           buf2_avail += r;
+                   }
+               if (fd1 > 0)
+                   if (FD_ISSET (fd1, &wr)) {
+                       r =
+                           write (fd1,
+                                  buf2 + buf2_written,
+                                  buf2_avail -
+                                  buf2_written);
+                       if (r < 1) {
+                           SHUT_FD1;
+                       } else
+                           buf2_written += r;
+                   }
+               if (fd2 > 0)
+                   if (FD_ISSET (fd2, &wr)) {
+                       r =
+                           write (fd2,
+                                  buf1 + buf1_written,
+                                  buf1_avail -
+                                  buf1_written);
+                       if (r < 1) {
+                           SHUT_FD2;
+                       } else
+                           buf1_written += r;
+                   }
+       /* check if write data has caught read data */
+               if (buf1_written == buf1_avail)
+                   buf1_written = buf1_avail = 0;
+               if (buf2_written == buf2_avail)
+                   buf2_written = buf2_avail = 0;
+       /* one side has closed the connection, keep
+          writing to the other side until empty */
+               if (fd1 < 0
+                   && buf1_avail - buf1_written == 0) {
+                   SHUT_FD2;
+               }
+               if (fd2 < 0
+                   && buf2_avail - buf2_written == 0) {
+                   SHUT_FD1;
+               }
+           }
+           return 0;
+       }
+
+       The  above  program  properly  forwards  most  kinds of TCP connections
+       including OOB signal data transmitted by telnet servers. It handles the
+       tricky  problem  of having data flow in both directions simultaneously.
+       You might think it more efficient to use a fork()  call  and  devote  a
+       thread to each stream. This becomes more tricky than you might suspect.
+       Another idea is to set non-blocking IO using an ioctl() call. This also
+       has  its  problems  because you end up having to have inefficient time-
+       outs.
+
+       The program does not handle more than one simultaneous connection at  a
+       time,  although  it  could  easily be extended to do this with a linked
+       list of buffers - one for each connection. At the moment,  new  connec-
+       tions cause the current connection to be dropped.
+
+
+SELECT LAW
+       Many  people  who try to use select come across behavior that is diffi-
+       cult to understand and produces non-portable or borderline results. For
+       instance,  the  above  program is carefully written not to block at any
+       point, even though it does not set its file descriptors to non-blocking
+       mode  at all (see ioctl(2)). It is easy to introduce subtle errors that
+       will remove the advantage of using select, hence I will present a  list
+       of essentials to watch for when using the select call.
+
+
+       1.     You should always try use select without a timeout. Your program
+              should have nothing to do if there is no  data  available.  Code
+              that  depends  on timeouts is not usually portable and difficult
+              to debug.
+
+       2.     The value nfds must be properly  calculated  for  efficiency  as
+              explained above.
+
+       3.     No file descriptor must be added to any set if you do not intend
+              to check its result after the select call, and respond appropri-
+              ately. See next rule.
+
+       4.     After  select  returns, all file descriptors in all sets must be
+              checked. Any file descriptor that is available for writing  must
+              be  written  to,  and  any file descriptor available for reading
+              must be read, etc.
+
+       5.     The functions read(), recv(), write(), and send() do not  neces-
+              sarily  read/write  the  full  amount  of  data  that  you  have
+              requested. If they do read/write the full  amount,  its  because
+              you  have  a  low  traffic  load  and a fast stream. This is not
+              always going to be the case. You should cope with  the  case  of
+              your functions only managing to send or receive a single byte.
+
+       6.     Never  read/write only in single bytes at a time unless your are
+              really sure that you have a small amount of data to process.  It
+              is  extremely  inefficient not to read/write as much data as you
+              can buffer each time.  The buffers in the example above are 1024
+              bytes although they could easily be made as large as the maximum
+              possible packet size on your local network.
+
+       7.     The functions read(), recv(), write(), and send() as well as the
+              select()  call  can  return  an errno of EINTR or EAGAIN
+              (EWOULDBLOCK) which are not errors. These results must be  prop-
+              erly  managed  (not done properly above). If your program is not
+              going to receive any signals then it is unlikely  you  will  get
+              EINTR.  If  your  program does not set non-blocking IO, you will
+              not get EAGAIN. Nonetheless you should  still  cope  with  these
+              errors for completeness.
+
+       8.     Never  call  read(),  recv(),  write(),  or send() with a buffer
+              length of zero.
+
+       9.     Except  as  indicated  in  7.,  the  functions  read(),  recv(),
+              write(), and send() never have a return value less than 1 except
+              if an error has occurred. For instance, a read() on a pipe where
+              the  other  end  has  died  returns zero (so does an end-of-file
+              error), but only returns zero once (a  followup  read  or  write
+              will return error). Should any of these functions return 0 or error,
+              you should not pass that descriptor to select ever again. In the
+              above  example, I close the descriptor immediately, and then set
+              it to error to prevent it being included in a set.
+
+       10.    The timeout value must be initialized  with  each  new  call  to
+              select,  since some operating systems modify the structure. pse-
+              lect however does not modify its timeout structure.
+
+       11.    I have heard that the Windows socket layer does  not  cope  with
+              OOB  data properly. It also does not cope with select calls when
+              no file descriptors are set at all. Having no  file  descriptors
+              set  is a useful way to sleep the process with sub-second preci-
+              sion by using the timeout.  (See further on.)
+
+
+USLEEP EMULATION
+       On systems that do not have a usleep function, you can call select with
+       a finite timeout and no file descriptors as follows:
+
+           struct timeval tv;
+           tv.tv_sec = 0;
+           tv.tv_usec = 200000;  /* 0.2 seconds */
+           select (0, NULL, NULL, NULL, &tv);
+
+       This is only guarenteed to work on Unix systems, however.
+
+
+RETURN VALUE
+
+       On  success,  select returns the total number of file descriptors still
+       present in the file descriptor sets.
+
+       If select timed out, then the file descriptors sets should be all empty
+       (but  may  not be on some systems). However the return value will defi-
+       nitely be zero.
+
+       A negative return indicates an error, and the timeout
+       struct contents are undefined and should not be used.  pselect  however
+       never modifies ntimeout.
+
+
+ERRORS
+       EBADF  A  set  contained  an  invalid file descriptor. This error often
+              occurs when you add a file descriptor to a  set  that  you  have
+              already  issued  a  close  on,  or when that file descriptor has
+              experienced some kind of error. Hence you should cease adding to
+              sets  any  file  descriptor  that returns an error on reading or
+              writing.
+
+       EINTR  An interrupting signal was caught like SIGINT  or  SIGCHLD  etc.
+              In  this  case  you should rebuild your file descriptor sets and
+              retry.
+
+       EINVAL Occurs if nfds is negative or an invalid value is  specified  in
+              utimeout or ntimeout.
+
+       ENOMEM Internal memory allocation failure.
+
+
+NOTES
+       Generally  speaking,  all  operating systems that support sockets, also
+       support select. Some people consider  select  to  be  an  esoteric  and
+       rarely  used  function. Indeed, many types of programs become extremely
+       complicated without it. select can be used to solve many problems in  a
+       portable  and  efficient  way  that naive programmers try to solve with
+       threads, forking, IPCs, signals, memory sharing and other  dirty  meth-
+       ods. pselect is a newer function that is less commonly used.
+
+       The  poll system call has the same functionality as select, but with
+       less subtle behavior. It is less portable than select.
+
+
+CONFORMING TO
+       4.4BSD (the select function first appeared in 4.2BSD).  Generally  por-
+       table to/from non-BSD systems supporting clones of the BSD socket layer
+       (including System V variants). However, note that the System V  variant
+       typically  sets  the  timeout variable before exit, but the BSD variant
+       does not.
+
+       The pselect function is defined in IEEE  Std  1003.1g-2000  (POSIX.1g).
+       It  is  found  in glibc2.1 and later. Glibc2.0 has a function with this
+       name, that however does not take a sigmask parameter.
+
+
+SEE ALSO
+       accept, connect, ioctl, poll, read, recv,
+       send,  sigaddset,  sigdelset,  sigemptyset
+       sigprocmask, write
+
+
+

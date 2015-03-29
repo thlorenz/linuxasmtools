@@ -1,0 +1,4 @@
+touch cmos.asm
+nasm -g -felf cmos.asm
+cmos.asm:1: warning: label alone on a line without a colon might be in error
+ld -static -o cmos cmos.o /usr/lib/asmlib.a

@@ -1,0 +1,42 @@
+
+----------------------------------------------------------------------------
+224 gettid              - get thread ID
+----------------------------------------------------------------------------
+
+  mov eax,224
+  int 80h
+
+  This function returns the current thread ID
+
+SYNOPSIS
+       #include <sys/types.h>
+
+       pid_t gettid(void);
+
+DESCRIPTION
+       gettid returns the thread ID of the current process.  This is equal
+       to the process ID (as returned by getpid),  unless  the  process  is
+       part  of a thread group (created by specifying the CLONE_THREAD flag to
+       the clone system call).  All processes in the same thread group have
+       the same PID, but each one has a unique TID.
+
+RETURN VALUE
+       On success, returns the thread ID of the current process.
+
+ERRORS
+       This call is always successful.
+
+CONFORMING TO
+       gettid is Linux specific and should not be used in programs that are
+       intended to be portable.
+
+NOTES
+       Glibc does not provide a wrapper for this system call
+
+SEE ALSO
+       clone, fork, getpid
+
+
+
+
+

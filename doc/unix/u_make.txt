@@ -1,0 +1,31 @@
+
+ make - use rules to create programs
+
+the "make" program is very good at automating
+program compiles, but requires some setup.
+AsmTools come with some universal make files
+that eliminate the setup process.  Also the
+"project" program sets up a directory with
+a standard makefile.
+
+When "make" is typed, the make program starts
+and looks in the current directory for its
+control file.  Normally this file is called
+
+  Makefile
+
+Within Makefile is a list of actions which
+can be performed.  These actions can be
+added as parameters to "make" as follows:
+
+  make <program-name>
+  make install
+  make uninstall
+
+For novice programmers it will be easiest
+to use the standard Makefile found in
+AsmTools and type "make" to compile programs
+using nasm.  This uses the default state
+for compile and works with AsmMgr and
+other programs.
+

@@ -1,0 +1,119 @@
+
+Calling external unix libraries
+-------------------------------
+
+Most UNIX libraries use the same method of access.
+Parameters are pushed on the stack and the function
+called by name.  This works for both static and
+dynamic libraries.
+
+There are two ways to approach library calls in
+assembler.  The first is to use push and pop
+instructions.  Another is to view the stack as
+memory and use the "mov" instruction to fill it.
+
+Next, are examples for both methods using the
+following "C" library function:
+
+  sscanf (target, code, out);
+
+method 1
+--------
+
+Here is an example of using push/pop
+
+;-- begin program asm1 -----------------
+;
+; convert decimal ascii string to binary
+;
+extern sscanf
+  global main
+main:
+  mov	eax,out		;get ptr to output area
+  push	eax
+  mov	eax,code	;get type of conversion 
+  push	eax
+  mov	eax,target	;ascii input string
+  push	eax
+  call	sscanf		;call library
+  add	esp,12		;fix stack
+
+  mov	eax,1
+  int	byte 80h	;exit
+
+;------------
+  [section .data]
+out:	dd 0		;result stored here
+code:	db '%d',0	;flag (convert to bin)
+target:	db '1234',0	;ascii decimal string
+  [section .text]
+;-- program end asm1 ------------------
+
+Program asm1 can be compiled and linked as
+follows:
+
+   nasm -felf asm1.asm -o asm1.o
+   gcc asm1.o -o asm1
+
+method 2
+--------
+
+Method 1 does not work well for reentrant programs
+or programs that minipulate a large number of parameters.
+We can view the stack as memory and keep our parameters
+there or work on the stack to build them.  Here is a
+example of using the stack as memory.
+
+;-- begin program asm2 -----------------
+;
+; convert decimal ascii string to binary
+;
+extern sscanf
+
+struc sscanf_call
+.target resd 1
+.type	resd 1
+.out	resd 1
+endstruc
+
+  global main
+main:
+  sub	esp,12			;make room on stack
+  mov	eax,out
+  mov	[esp+sscanf_call.out],eax ;store output ptr
+  mov	eax,code
+  mov	[esp+sscanf_call.type],eax ;store type ptr
+  mov	eax,target
+  mov	[esp+sscanf_call.target],eax ;store ptr to ascii
+  call	sscanf
+  add	esp,12			;restore stack
+
+  mov	eax,1
+  int	byte 80h
+
+;------------
+  [section .data]
+out:	dd 0		;results stored here
+code:	db '%d',0	;type of conversion
+target:	db '1234',0	;input string
+  [section .text]
+;-- program end asm2 ------------------
+
+Program asm1 can be compiled and linked as
+follows:
+
+nasm -felf asm2.asm -o asm2.o
+gcc asm2.o -o asm2
+
+There is one problem with our example 2.  To be
+reentrant we need to keep our parametes on the
+stack also.  To do this we could modify the 
+sscanf structure and add our data at end, or
+we could create a separate stack area.
+
+We can also create "stack frames" and set the
+ebp register to these areas.  This is what many
+C compilers do and some x86 instructions support
+this.  See "enter" and "leave" instrucitons.
+
+

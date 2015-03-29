@@ -1,0 +1,92 @@
+This is FAQ for the AsmTools family of programs.
+
+1. What is AsmTools?
+
+   AsmTools is a growing collection of programs
+   written in assembler to support development
+   in the Linux console or x terminal environments.
+
+   The AsmRef program provides documentation to
+   each program along with other information of
+   interest to assembly language programmers.
+   
+2. This collection of programs is confusing, is
+   there an easy way to set it up?
+
+   Answer: The best way to start is to make a
+   master directory (AsmTools) and decompress the
+   AsmTools tag.gz file here.  Then do a "make
+   install" as root.  If you have the
+   individual programs as tar.gs's then decompress
+   them in this directory.  This should include:
+   AsmRef, AsmFile, AsmEdit, AsmLib. Then enter each
+   directory and do a "make install" as root.
+
+   It is probably a good idea to briefly review
+   operation of the AsmFile program at this point
+   by typing "asmfile" and clicking on "tools" and
+   then on "reference"
+
+3. I like editor x and want to use it rather than
+   AsmEdit, is this possible?
+
+   Answer: Yes, any text style editor should
+   work, although a programmers editor may be
+   a better choice.  Programmers can get fanatic
+   about the choice of editors and the 
+   vi versus emacs debate has raged for years.
+   For this reason AsmTools tries to be editor
+   neutral.
+
+4. Is there a style of development that AsmTools
+   encourages?
+
+   Answer: No.  You can choose the tools and style
+   that is comfortable.
+
+5. Which tools are best to start with?
+
+   Answer: New assembly programmers are probably better
+   off selecting the most used tools.  this includes
+   the nasm or yasm assemblers.  Any editor they like
+   or the built in AsmEdit.  The choice of libraries
+   is more complicated.  Assembly can use many existing
+   libraries but it may be easiest to start with AsmLib
+   because the documentation is written for assembly.
+   AsmLib is automatically set up by AsmTools and the
+   AsmRef help system describes  many sample programs.
+
+6. What about bugs?  Is AsmTools stable?
+
+   This is a growing project and it will have bugs.
+   The core programs are in constant use and are
+   not expected to harbor any major problems.  The
+   newer programs will have a higher probability of
+   problems.  No bugs are known as of 8-31-2007
+
+7. Where can questions be answered?
+
+   The author can be found on the DesktopLinuxAsm
+   discussion group at yahoogroups.  To join send
+   a blank email to:
+
+   DesktopLinuxAsm-subscribe@yahoogroups.com
+
+   Or visiting the web page at:
+
+   http://groups.yahoo.com/group/DesktopLlnuxAsm
+
+   Additional information may be available on the
+   home page at:
+
+    http://linuxasmtools.net/
+
+    http://sourceforge.net/projects/asmedit
+    http://sourceforge.net/projects/asmref
+    http://sourceforge.net/projects/asmmgr
+    http://sourceforge.net/projects/asmlib
+
+ 
+
+
+   

@@ -1,0 +1,5 @@
+
+1. Signal handling was not tested enough.
+
+2. Splitvt does not see ctrl-w key inside minibug?
+

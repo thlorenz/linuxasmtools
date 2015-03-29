@@ -1,0 +1,354 @@
+  extern crt_window
+
+;-------------  m_help.in -------------------------------
+
+show_help_win:
+  mov	eax,help_menu_txt	;get text for main menu
+  call	show_menu_line
+  call	view_buffer
+  cmp	[pop_help_flag],byte 0
+  je	shw_exit
+  mov	ecx,mini_hh_msg
+  call	show_mini_help
+shw_exit:
+  ret
+;-------------------------------------------------------
+;help_win_help:
+  mov	eax,[aux_win_color]
+  call	crt_set_color
+  mov	al,[mini_win_top_line] ;get row
+  mov	[hh_row],al
+  mov	ecx,mini_hh_msg
+hh_lp:
+  mov	ah,[hh_row]
+  mov	al,[reg_win_start_col]
+  push	ecx
+  call	move_cursor
+  pop	ecx
+  inc	byte [hh_row]
+  mov	edx,24
+  call	crt_write
+  add	ecx,24		;move to next line
+  cmp	[ecx],byte 0
+  jne	hh_lp
+  mov	al,3		;no display
+  ret
+;-------------------------------------------------------
+  [section .data]
+hh_row	dd	0
+hh_buf	dd	0
+hh_adr	dd	0	;address in app memory
+mini_hh_msg:
+ db '?-this help win         '
+ db 'w-next operational win  '
+ db 'q-quit this window      '
+ db 'esc-quit window         '
+ db 'up arrow                '
+ db 'down arrow              '
+ db 'pgup - page up          '
+ db 'pgdn - page down        '
+ db '                        '
+ db '                        '
+ db '                        ',0
+  [section .text]
+
+;---------------------------------
+fb_up:
+  mov	esi,[display_top]
+  call	prev_line
+  mov	[display_top],esi
+;  mov	ebx,esi
+;  mov	al,2    
+  ret
+
+;-----------------------
+fb_down:
+  mov	esi,[display_top]
+  call	next_line
+  mov	[display_top],esi
+;  mov	ebx,esi
+  ret
+
+;-----------------------
+fb_right:
+  inc	dword [scroll]
+;  mov	ebx,[display_top]
+;  mov	al,2
+  ret
+
+;-----------------------
+fb_left:
+  cmp	dword [scroll],0
+  je	fb_left_exit
+  dec	dword [scroll]
+fb_left_exit:
+;  mov	ebx,[display_top]
+;  mov	al,2
+  ret
+
+;-----------------------
+fb_pgup:
+  xor	ecx,ecx
+  mov	cl,[c_win_rows]
+  mov	esi,[display_top]
+fbp_lp:
+  call	prev_line
+  dec	ecx
+  jnz	fbp_lp
+  mov	[display_top],esi
+;  mov	ebx,esi
+;  mov	al,2
+  ret
+
+;-----------------------
+fb_pgdn:
+  xor	ecx,ecx
+  mov	cl,[c_win_rows]
+  mov	esi,[display_top]
+fbpg_lp:
+  call	next_line
+  jc	at_bottom
+  dec	ecx
+  jnz	fbpg_lp
+  jmp	fbpg_exit
+at_bottom:
+  call	prev_line
+fbpg_exit:
+  mov	[display_top],esi
+;  mov	ebx,esi
+;  mov	al,2
+  ret  
+;-----------------------
+goto_top:
+  mov	[display_top],dword help_buffer
+;mov	al,1
+  ret
+;-----------------------
+help_quit:
+  mov	[win_select],byte 0
+  ret
+;----------------------------------------------
+; input: esi = ptr to line start
+; output: esi = ptr to next line
+;         carry = at top now
+;        no-carry = not at top
+;
+prev_line:
+  cmp	esi,help_buffer
+  jbe	pl_top
+  dec	esi
+  cmp	esi,help_buffer
+  je	pl_top
+  cmp	byte [esi -1],0ah
+  jne	prev_line
+  clc
+  jmp	short pl_exit
+pl_top:
+  stc
+pl_exit:
+  ret
+  
+;----------------------------------------------
+; input: esi = ptr to current line start
+; output: esi = ptr to next line
+;         carry = at bottom 
+next_line:
+  cmp	esi,[file_end_ptr]
+  jae	nl_end		;jmp if at end
+  lodsb
+  cmp	al,0ah
+  jne	next_line
+  clc
+  jmp	short nl_exit
+nl_end:
+  stc	
+nl_exit:
+  ret
+
+;-----------------------------------------------------
+view_buffer:
+  xor	eax,eax
+  mov	[scroll],eax
+  mov	eax,[crt_columns]
+  mov	[c_win_cols],al
+  mov	al,[mini_win_top_line]
+  mov	[c_start_row],al	
+display_lp1:
+  mov	ebx,help_buffer
+display_lp2:
+;  mov	[display_top],ebx
+
+  mov	esi,in_block
+  call	crt_window
+check_keys:
+;  call	read_stdin
+;  mov	edx,kbuf
+;  mov	esi,help_win_decode_tbl
+;  call	terminfo_key_decode2
+;  call	eax			;returns -1 if done
+;  cmp	al,-1
+;  je	vb_exit
+;  cmp	al,2
+;  jb	display_lp1		;jmp if redisplay from top of file
+;  ja	check_keys
+;  jmp	display_lp2		;jmp if ebx is redisplay ptr
+;vb_exit:
+  ret
+;-------------------------------------------------------
+  [section .data]
+
+help_buffer:
+ db 'MiniBug has 5 operational windows at bottom of screen.',0ah
+ db ' debug window - disassembly of program',0ah
+ db ' registers    - current register state ',0ah
+ db ' memory       - view of program memory',0ah
+ db ' break        - set and view breakpoinns',0ah
+ db ' stack        - view of program stack ',0ah
+ db 'Windows can be selected by pressing <w> or alt-<first-letter>',0ah
+ db 0ah
+ db 'You can cycle through the windows by pressing ',22h,'w',22h,' (6 times) now',0ah
+ db 0ah
+ db 'MiniBug starts in debug window, recognizing the following keys:',0ah
+ db ' ?-window help                f-find label, or type <eip>',0ah
+ db ' w-toggle to next win         <enter>-find next',0ah
+ db ' W-toggle mini win on right   alt-letter -select window by letter ',0ah
+ db ' s-step                       up-scroll up',0ah
+ db ' o-step over                  down-scroll down ',0ah
+ db ' g-go                         pgup-page up ',0ah
+ db ' q-quit                       pgdn-page down ',0ah
+ db ' h-help',0ah
+ db 0ah
+ db 'Register window recognizes the following keys:',0ah
+ db ' ?-window help               alt-letter -select window by letter ',0ah
+ db ' w-toggle to next win        q-quit to debug window',0ah
+ db ' e-edit register value',0ah
+ db 0ah
+ db 'Memory window recognizes the following keys:',0ah
+ db ' ?-window help               alt-letter -select window by letter ',0ah
+ db ' w-toggle to next win        q-quit to debug window',0ah
+ db ' e-edit memory value         f-find label',0ah
+ db ' b-show bytes   2-show words   d-show dwords',0ah
+ db ' up/down-scroll up/down      pgup/pgdn-page up/down',0ah
+ db 0ah
+ db 'Break window recognizes the following keys:',0ah
+ db ' ?-window help               alt-letter -select window by letter ',0ah
+ db ' w-toggle to next win        q-quit to debug window',0ah
+ db ' a-add breakpoint',0ah
+ db ' c-clear breakpoints',0ah
+ db 0ah
+ db 'Note: breaks may be easier to set from the debug window.',0ah
+ db '      using f(find) and b(break-here)',0ah
+ db 0ah
+ db 'Stack window recognizes the following keys: ',0ah
+ db ' ?-window help               alt-letter -select window by letter ',0ah
+ db ' w-toggle to next win        q-quit to debug window',0ah
+ db ' up-scroll up',0ah
+ db ' down-scroll down ',0ah
+ db ' pgup-page up ',0ah
+ db ' pgdn-page down',0ah
+help_buffer_end:
+
+help_menu_txt:
+ db ' ? win quit(esc) ^up,down,pgup,pgdn ',0
+
+
+in_block:				;inputs for crt_window
+color		dd	30003437h
+display_top	dd	help_buffer
+file_end_ptr	dd	help_buffer_end
+scroll		dd	0
+c_win_cols	db	0	;win columns
+c_win_rows	db	10	;win rows
+c_start_row	db	0
+c_start_col	db	1
+
+
+help_win_decode_tbl:
+  db 0	;pad
+  db 2	;flag
+
+  db 'w',0
+  dd next_window
+
+  db '?',0
+  dd enable_mini_help
+
+  db 'q',0
+  dd help_quit
+
+  db 1bh,0
+  dd help_quit
+
+  db 1bh,5bh,41h,0		;15 pad_up
+  dd fb_up
+
+  db 1bh,4fh,41h,0		;15 pad_up
+  dd fb_up
+
+  db 1bh,4fh,78h,0		;15 pad_up
+  dd fb_up
+
+  db 1bh,5bh,42h,0		;20 pad_down
+  dd fb_down
+
+  db 1bh,4fh,42h,0		;20 pad_down
+  dd fb_down
+
+  db 1bh,4fh,72h,0		;20 pad_down
+  dd fb_down
+
+  db 1bh,5bh,43h,0		;18 pad_right
+  dd fb_right
+
+  db 1bh,4fh,43h,0		;18 pad_right
+  dd fb_right
+
+  db 1bh,4fh,76h,0		;18 pad_right
+  dd fb_right
+
+  db 1bh,5bh,44h,0		;17 pad_left
+  dd fb_left
+
+  db 1bh,4fh,44h,0		;17 pad_left
+  dd fb_left
+
+  db 1bh,4fh,74h,0		;17 pad_left
+  dd fb_left
+
+  db 1bh,5bh,35h,7eh,0		;16 pad_pgup
+  dd fb_pgup
+
+  db 1bh,4fh,79h,0		;16 pad_pgup
+  dd fb_pgup
+
+  db 1bh,5bh,36h,7eh,0		;21 pad_pgdn
+  dd fb_pgdn
+
+  db 1bh,4fh,73h,0		;21 pad_pgdn
+  dd fb_pgdn
+
+  db 1bh,'r',0
+  dd select_reg_win
+  db 0c3h,0b2h,0
+  dd select_reg_win
+
+  db 1bh,'m',0
+  dd select_mem_win
+  db 0c3h,0adh,0
+  dd select_mem_win
+
+  db 1bh,'b',0
+  dd select_break_win
+  db 0c3h,0a2h,0
+  dd select_break_win
+
+  db 1bh,'s',0
+  dd select_stack_win
+  db 0c3h,0b3h,0
+  dd select_stack_win
+
+
+  db 0	;end of table
+
+
+  [section .text]

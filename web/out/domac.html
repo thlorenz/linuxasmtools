@@ -1,0 +1,510 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <title>unique macro processor for scripts</title>
+ <meta name="keywords" content="macro language, linux, utilities,">
+ <meta name="description" content="unique tool to process text files, similiar to sed">
+ <meta name="robots" content="NOINDEX NOFOLLOW">
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== -->
+        <!-- main layout table -->
+</head>
+
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####-->
+<!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap;">
+      <div align="center"><img alt="LinuxAsmTools"
+ src="logo.jpg" style="width: 110px; height: 120px;">
+      <br>LinuxAsmTools<br>
+      </div>
+      <p  style="font-weight: bold;">
+      <a href="new.html">What's New</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="program.html">Programs</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="libraries.html">Libraries</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="download.html">Downloads</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="puzzle.html">Puzzles</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="opinion.html">Opinion</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="tips.html">Tips,Tutors</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="sff.html">SFF Guideline</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="about.html">About</a><br>
+      </p>
+      <p style="font-weight: bold;">
+      <a href="links.html">Links</a><br>
+      </p>
+  </td>
+
+<!-- ######################-->
+<!-- ### content cell #####-->
+<!-- ######################-->
+<td width="100%" nowrap>
+
+<!-- header here -->
+
+<br>
+           "domac" text processor<br>
+          <br>
+<br>
+  PURPOSE<br>
+<br>
+Domac is a simple alternative to unix text<br>
+processors (awk,sed,m4 and others). It is<br>
+easy to read and understand domac programs<br>
+without a manual. It has the unique<br>
+capibility to add comments everywhere, <br>
+even inside commands.  Also, it is designed<br>
+for embedding into scripts and other<br>
+languages.<br>
+<br>
+  STARTING DOMAC<br>
+<br>
+The calling sequence for domac is;<br>
+<br>
+ domac commands &lt;data&gt; &lt;output&gt;<br>
+<br>
+   "commands" is a file name. The file<br>
+   has commands described in DOMAC COMMANDS<br>
+   section.<br>
+<br>
+   "data" is optional file name. The data<br>
+   file can use a mask to include numerous<br>
+   files or be a single file name. The<br>
+   command file will work on "data" and place<br>
+   result in "output" file.<br>
+<br>
+   "output" is a optional directory. The<br>
+   directory "out" will be used if this<br>
+   parameter is not provided. All processed<br>
+   data files will be stored here.<br>
+<br>
+   It is possible to use ../ ./ . a directory<br>
+   name or full path.<br>
+<br>
+Some examples:<br>
+<br>
+ 1. apply the "cmds" file to all html files<br>
+    in the current directory and store the output<br>
+    in directory "web"<br>
+<br>
+    domac cmds *.html ./web<br>
+<br>
+ 2. apply the "cmds" file to "foo" and store<br>
+    the results in default dir "out"<br>
+<br>
+    domac cmds foo<br>
+<br>
+ 3. create an executable commands file which<br>
+    sets its own inputs and outputs<br>
+<br>
+    #!/bin/bash<br>
+    domac $0<br>
+    exit 0<br>
+    ;domac commands are placed here<br>
+<br>
+    The above text can be placed in any<br>
+    file and the execute attribute set. It<br>
+    will run as a domac program.<br>
+<br>
+<br>
+  DOMAC OPERATION<br>
+<br>
+domac expects to read commands and apply them to a data<br>
+file. It then builds an output file with the same name<br>
+and writes it out. If the output file goes into the <br>
+current directory, it will replace the input file.<br>
+<br>
+domac can also be programmed to manually read data<br>
+files and construct output files, or modify filename<br>
+created by domac.<br>
+<br>
+All domac commands start with "^" followed by a name.<br>
+Everything else is assumed to be comments and is ignored.<br>
+Once a valid command name is found, the program then<br>
+expects parameters which are preceeded by "$" for labels<br>
+and "#" for keywords. All available labels are text<br>
+string pointers and pre definded by domac at start up.<br>
+They include various file names and the input file.<br>
+<br>
+See the DOMAC STRINGS section for label information and<br>
+the DOMAC KEYWORDS section for keyword information.<br>
+<br>
+  DOMAC COMMANDS<br>
+<br>
+All domac commands work on named strings which are<br>
+identified with a "$". When all processing on a<br>
+data file is done, the output file will be written.<br>
+<br>
+^ifeq<br>
+<br>
+  If any named string is equal to another string<br>
+  then exectute the following commands until a<br>
+  ^endif command is found. Nesting of ^ifeq and<br>
+  ^ifne commands are allowed.<br>
+<br>
+  example 1 compare two strings. The following<br>
+  two commands are identical in operation.<br>
+<br>
+  ^ifeq $work $temp<br>
+  ^ifeq string $work and string $temp are equal<br>
+<br>
+  example 2 check if a string exists<br>
+<br>
+  ^ifeq $work and ("") then<br>
+<br>
+  example 3 check a string contents<br>
+<br>
+  ^ifeq string $work is equal to ("yes") then<br>
+<br>
+^ifne<br>
+<br>
+  If any named string is not equal to another<br>
+  then execute the following commands until<br>
+  a ^endif is found.<br>
+<br>
+  see ^ifeq for examples<br>
+<br>
+^endif<br>
+<br>
+  ^endif signal the end of a list of "if" commands.<br>
+  It can be nested.<br>
+<br>
+^find<br>
+<br>
+  the ^find command searchs for a string in other<br>
+  strings and sets the $findptr. The $findptr<br>
+  is uinque, because it always points inside<br>
+  other strings. If we modify the $findptr we<br>
+  also modify the sting it points to.<br>
+<br>
+  This is a powerful way to edit other strings<br>
+  by selecting a area ($findptr) and then<br>
+  modifying the $findptr. The ^copy, ^shrink,<br>
+  and ^expand commands can be applied to the<br>
+  $findptr.<br>
+<br>
+  example 1. search a string and set &findptr<br>
+<br>
+  ^find $temp in $work<br>
+<br>
+  example 2. search a string for known text<br>
+<br>
+  ^find ("foo") in $work<br>
+  ^ifeq $findptr and ("") then<br>
+  ^show ("not found")<br>
+  ^stop<br>
+<br>
+^copy<br>
+<br>
+  The ^copy command always places new contents into<br>
+  a named string. Data can come from another string<br>
+  or file. Two named strings are handled specially,<br>
+  the $findptr and $infile. When data is copied to<br>
+  the $findptr it replaces the data in the string<br>
+  pointed to by $findptr. The ^copy to $infile<br>
+  builds a default $outfilename which is used to<br>
+  store domac output data.<br>
+<br>
+  syntax: ^copy ("xx") $xxx<br>
+          ^copy $xxx $xxx <br>
+          ^copy /filename $xxx<br>
+          ^copy /$xxx $yyy      <br>
+<br>
+  example 1. initialize a naned string<br>
+<br>
+  ^copy the string ("hello") to $work<br>
+<br>
+  example 2 copy named strings<br>
+<br>
+  ^copy $temp to $work<br>
+<br>
+  example 3 load a input file for processing<br>
+<br>
+  ^copy /file $infile<br>
+<br>
+  example 4 insert file into another string<br>
+<br>
+  ^find ("insert here") in string $infile<br>
+  ^copy /myfile $findptr<br>
+<br>
+  example 5 load a file with name in $doptr<br>
+  ^copy /$doptr $infile<br>
+<br>
+^expand<br>
+<br>
+  The ^expand command works on the beginning or end of<br>
+  strings. The keyword #front tells ^expand to work on<br>
+  front. The keyword #back says to operate on end of<br>
+  string.<br>
+<br>
+  syntax: ^expand $xxxx {#front / #back} $xxx        &lt;- insert string<br>
+          ^expand $xxxx (#front / #back} ("xxx")     &lt;- insert string  <br>
+          ^expand $xxxx (#front / #back} /file       &lt;- insert file<br>
+          ^expand $xxxx (#front / #back} #n          &lt;- move pointer n times<br>
+          ^expand $xxxx (#front / #back} #till ("x") &lt;- move pointer<br>
+                                                     &lt;- till char x<br>
+                                                     &lt;- encountered<br>
+<br>
+  example 1. insert a string at front of another<br>
+<br>
+  ^expand string $work #front by adding ("insert")<br>
+<br>
+  example 2. append a file to end of string<br>
+<br>
+  ^expand string $work #back with file ./foo<br>
+<br>
+^shrink<br>
+<br>
+  The ^shrink command works on beginning of end of strings.<br>
+<br>
+  syntax:<br>
+     ^shrink $xxxx (#front / #back} #n          &lt;- move pointer n times<br>
+     ^shrink $xxxx (#front / #back} #till ("x") &lt;- move pointer<br>
+                                                &lt;- till char x<br>
+                                                &lt;- encountered<br>
+  example 1. Shrink the front and back of a string by 1<br>
+<br>
+  ^shrink the string $work #back by #1<br>
+  ^shrink the string $work #front by #1<br>
+  <br>
+^replace<br>
+<br>
+  The ^replace command replaces all occurances of one<br>
+  string in a second string.<br>
+<br>
+  syntax: ^replace &lt;instring&gt; &lt;match string&gt; &lt;replacement string&gt;<br>
+<br>
+  The instring has to be a named string ($xxxx)<br>
+  The match string can be either a named string or ("string")<br>
+  The replacement string can be either a named string<br>
+   or ("string")<br>
+<br>
+  example 1. replace all occurances of "x" in string $work<br>
+             with "yy"<br>
+<br>
+  ^replace in $work all ("x") with ("yy")<br>
+<br>
+^dolist<br>
+<br>
+  The ^dolist command executes a set of commands for<br>
+  each line in a file or string. The current line is<br>
+  placed in named string $doptr.<br>
+<br>
+  syntax: ^dolist /file<br>
+          ^dolist named-string<br>
+<br>
+  All commands after the ^dolist, until a ^enddo<br>
+  are executed for each line on list.<br>
+<br>
+  example 1. if file "list" has two lines as follows:<br>
+             I'm line 1<br>
+             I'm line 2<br>
+             then the following commands will list each<br>
+             line:<br>
+<br>
+  ^dolist /list<br>
+  ^show $doptr<br>
+  ^enddo<br>
+<br>
+  example 2. read a list of files<br>
+<br>
+  ^dolist /list<br>
+  ^copy /$doptr $infile  ;load file<br>
+  ^show $infile<br>
+  ^enddo<br>
+<br>
+<br>
+^enddo<br>
+<br>
+ The ^enddo command terminates a ^dolist.  This command<br>
+ can not be nested.<br>
+<br>
+^shell<br>
+<br>
+  The ^shell command call the resident shell with a<br>
+  request. The shell command can contain embedded<br>
+  named strings.<br>
+<br>
+  syntax: ^shell ("shell command")<br>
+<br>
+  example 1. list files in current directory for processing<br>
+<br>
+  ^shell ("ls &gt; files")<br>
+<br>
+  example 2. execute shell command in named string<br>
+<br>
+  ^shell $temp<br>
+<br>
+^show<br>
+<br>
+  The ^show command displays text in named string or<br>
+  defined string. It is normally used to debug<br>
+  programs or display status of processing.<br>
+<br>
+  syntax: ^show named_string<br>
+          ^show ("string")<br>
+<br>
+  example 1. show contents of $work<br>
+<br>
+  ^show $work<br>
+<br>
+  example 2. show status message<br>
+<br>
+  ^show ("processing completed")<br>
+<br>
+^stop<br>
+<br>
+  The ^stop command terminates domac. It needs to<br>
+  be used at end of program and within any "if" commands<br>
+  that want to force an exit.<br>
+<br>
+  example: 1. terminate the program if error<br>
+<br>
+  ^ifeq $work ("")<br>
+  ^show ("no data present")<br>
+  ^stop<br>
+  ^endif<br>
+<br>
+<br>
+  DOMAC STRINGS<br>
+<br>
+The following named strings can be used with<br>
+most commands. Occasionally, a named string is<br>
+inappropiate and results in error message. An<br>
+example is use of $findptr by ^dolist<br>
+<br>
+$infilename   - set by domac anytime $inbuf is filled.<br>
+              - Max size is 200 bytes.<br>
+$outfilename  - set by domac anytime $inbuf is filled<br>
+              - Can be modified. Used to write output.<br>
+              - Max size is 200 bytes.<br>
+$temp         - 4000 byte work area<br>
+$infile       - input buffer (allocated memory)<br>
+$findptr      - psuedo string, points into other strings<br>
+$doptr        - current line while ^dolist executes<br>
+$work         - 16000 byte work area<br>
+<br>
+<br>
+  DOMAC KEYWORDS<br>
+<br>
+#front  - used by ^expand and ^shrink<br>
+#back   - used by ^expand and ^shrink<br>
+#till   - used by ^expand and ^shrink<br>
+<br>
+#n     - number token used by ^expand<br>
+       - and ^shrink. Example: #1 <br>
+<br>
+/      - indicates a filename follows.<br>
+       - filenames in a string are shown<br>
+       - as /$  example:  /$doptr<br>
+<br>
+<br>
+  DOMAC FAQ<br>
+<br>
+Why isn't a delete command available?<br>
+<br>
+ The delete function is available as paat<br>
+ of other commands.  There are two basic<br>
+ ways to do deletes:<br>
+<br>
+ 1. use ^replace to replace a string with<br>
+    (""). This works as a delete.<br>
+ 2. For most deletes a copy to the $findptr<br>
+    is used. First, find the area to be<br>
+    deleted and adjust it with shring and<br>
+    expand. Then copy ("") to $findptr.<br>
+<br>
+Why do I sometimes get errors when expanding<br>
+or shriking strings?<br>
+<br>
+ Strings have fixed buffers and a length.<br>
+ We can't move outside the buffer or beyond<br>
+ the end of a string.  Normally, the $findptr<br>
+ is used with shrink and expand because it<br>
+ can float anywhere inside a string.<br>
+<br>
+  DOMAC EXAMPLES<br>
+<br>
+A simple hello world program. Assumes that<br>
+domac is installed. Since we did not supply<br>
+an output filename, the program will also<br>
+give a warning.<br>
+<br>
+    #!/bin/bash<br>
+    domac $0<br>
+    exit 0<br>
+    ^show ("hello world")<br>
+    ^stop<br>
+<br>
+We can create a standalone command file<br>
+and duplicate the previous example:<br>
+<br>
+file cmds = ^show ("hello world")<br>
+            ^stop<br>
+<br>
+we now call domac as follows:<br>
+<br>
+   domac cmds<br>
+<br>
+Next, we can list the current directory and<br>
+show each filename<br>
+<br>
+   #!/bin/bash<br>
+   domac $0<br>
+   exit 0<br>
+   ^shell ("ls &gt; dummy") ;collect file names<br>
+   ^dolist /dummy<br>
+   ^shrink $doptr #back #1 ;remove 0ah at end<br>
+   ^show $doptr ;show file name<br>
+   ^enddo<br>
+   ^stop<br>
+<br>
+A program to replace all "2" characters with<br>
+the character "3"<br>
+<br>
+  ^copy ("1212") $work<br>
+  ^replace $work ("2") with ("3")<br>
+  ^ifeq $work ("1313")<br>
+  ^show ("success $work=1313")<br>
+  ^enddo<br>
+  ^stop<br>
+<br>
+<br>
+<br>
+<br>
+      <br>
+      </big><br>
+      <br>
+<!-- END of the content cell --></big></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<em>Last Updated: December 13, 2008</em></div>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+
+----------------------------------------------------------------------------
+sysfs  135                  - return filesystem info
+----------------------------------------------------------------------------
+  mov   eax,135
+  mov   ebx,option
+  mov   ecx,arg1
+  mov   edx,arg2
+  int   80h
+
+
+   Returns information about the file system types currently present in
+   the kernel.
+
+ ebx     option  1: fstype index by fs-name
+                 2: fs-name @arg2 by fstype-index
+                 3: no. of known file system types
+
+ ecx     if ebx=1 then ecx= ptr to string;
+         if ebx=2 then ecx= fstype index
+
+ edx     if ebx=2 then edx= ptr to string buffer
+
+   ebx option 1 translates the file-system identifier string pointed
+   to by ecx into a file-system type index, and edx is ignored.
+   The numbering of the file-system type indexes begins with zero.
+
+   ebx option 2 Translates the file-system type index ecx into a
+   null-terminated file-system identifier string. This string will
+   be written to the buffer pointed to by edx. Make sure that buffer
+   has enough space to accept the string.
+
+   ebx option 3 Returns the total number of file system types currently
+   present in the kernel, and ecx and edx are ignored.
+
+   Return values
+
+   If the system call succeeds the return value is the file-system index
+   for option 1, zero for option 2, and the number of currently
+   configured file systems for option 3.
+   If the system call fails the return value is one of the following
+   errno values:
+
+   -EFAULT Either ecx or edx is outside your accessible address space.
+   -EINVAL ecx (option 1) is not a valid file-system type identifier; ecx
+    (option 2) is out-of-bounds; ebx is invalid.
+

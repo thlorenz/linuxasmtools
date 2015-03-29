@@ -1,0 +1,727 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <meta name="keywords"
+ content="assembler, assembler development, linux, utilities">
+  <meta name="description"
+ content="programming tools for Linux assemblers ">
+  <title>DesktopLinuxAsm: Assembler Development:</title>
+<!-- ==================== -->
+  <link rel="stylesheet" href="stylej.css" type="text/css">
+<!-- ==================== --><!--
+        .menubottom  a:hover { color: #FF3300;     }  /* orangish-red */
+        .menuleft       { color:#000000; font-size: 80%; } 
+        HR.content      { color:#663300;} /* brown */
+        .codex          { color:orange; font-family: monospace; font-size:90%;}
+        --><!-- main layout table -->
+</head>
+<body>
+<table style="width: 100%;" border="0" cellpadding="10" cellspacing="0">
+  <tbody>
+    <tr valign="top">
+<!-- ###########################-->
+<!-- ### left menubar cell #####--><!-- ###########################--> <td
+ class="menuleft"
+ style="vertical-align: top; white-space: nowrap; background-color: rgb(51, 204, 255);">
+      <div align="center"><strong><img alt="DesktopLinuxAsm"
+ src="logo.jpg" style="width: 110px; height: 150px;"><br>
+      <small>DesktopLinuxAsm<br>
+      </small></strong></div>
+      <br>
+      <p><strong></strong><big style="font-weight: bold;"><a
+ href="program.htm">Programs</a><br>
+      </big></p>
+      <p style="font-weight: bold;"><big><a href="libraries.htm">Libraries</a><br>
+      </big></p>
+      <p style="font-weight: bold;"><big><a href="reference.htm">Reference</a><br>
+      </big></p>
+      <p style="font-weight: bold;"><big><a href="download.htm">Downloads</a><br>
+      </big></p>
+      <p style="font-weight: bold;"><big><a href="puzzle.htm">Puzzles</a><br>
+      </big></p>
+      <p style="font-weight: bold;"><big><a href="opinion.htm">Opinion</a><br>
+      </big></p>
+      <p style="font-weight: bold;"><big><a href="new.htm">What's New</a><br>
+      </big></p>
+      <p style="font-weight: bold;"><big><a href="tips.htm">Tips,Tutors</a><br>
+      </big></p>
+      <p style="font-weight: bold;"><big><a href="links.htm">Links</a><br>
+      </big></p>
+      <p style="font-weight: bold;"><big><a href="sff.htm">SFF Guideline</a></big><br>
+      </p>
+      <p><br>
+      <big> </big></p>
+      </td>
+<!-- ######################-->
+<!-- ### content cell #####--><!-- ######################--> <td
+ width="100%"><!-- header here --> <span style="font-weight: bold;"><big><big>DesktopLinuxAsm
+- Downloads<img alt="download" src="download.jpg"
+ style="width: 100px; height: 100px;" align="right" hspace="40"><br>
+      </big></big><br>
+      <br>
+      <br>
+      </span><br>
+      <br>
+      <hr style="width: 100%; height: 2px;"><br>
+      <br>
+<!-- begin content here -->
+      <p></p>
+AsmIDE is the complete integertated development tool set.&nbsp; Only
+the DOS library is excluded.<br>
+      <table
+ style="margin-left: auto; margin-right: auto; width: 100px; text-align: left; background-color: rgb(255, 204, 102);"
+ border="1" cellpadding="2" cellspacing="2">
+        <tbody>
+          <tr>
+            <td style="width: 100px; white-space: nowrap;">Program
+Title </td>
+            <td>Download</td>
+            <td style="background-color: rgb(255, 204, 102);">Documentation</td>
+            <td>Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmIDE<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="AsmIDE-0.9.49.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="asmide.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">complete package of all
+programs<br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+AsmMgr is the standalone control program (file manager) used by AsmIDE<br>
+      <table
+ style="margin-left: auto; margin-right: auto; width: 100px; text-align: left; background-color: rgb(255, 204, 102);"
+ border="1" cellpadding="2" cellspacing="2">
+        <tbody>
+          <tr>
+            <td style="width: 100px; white-space: nowrap;">Program
+Title </td>
+            <td>Download</td>
+            <td style="vertical-align: top;">Status <br>
+            </td>
+            <td style="background-color: rgb(255, 204, 102);">Documentation</td>
+            <td>Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmMgr<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmmgr-0.9.47.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">beta<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="asmmgr.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">assembler development file
+manager<br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      <br>
+AsmIDE tool set #1<br>
+      <table
+ style="margin-left: auto; margin-right: auto; width: 100px; text-align: left; background-color: rgb(255, 204, 102);"
+ border="1" cellpadding="2" cellspacing="2">
+        <tbody>
+          <tr>
+            <td style="width: 100px; white-space: nowrap;">Program
+Title </td>
+            <td>Download</td>
+            <td style="vertical-align: top;">Status<br>
+            </td>
+            <td style="background-color: rgb(255, 204, 102);">Documentation</td>
+            <td>Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmRef<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmref-0.9.49.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">beta<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="asmref.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">assembler reference and
+menu<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmBug<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmbug-0.9.49.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">alpha<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="asmbug.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">debugger<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmDis<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmdis-0.9.47.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">alpha<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="asmdis.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">disassembler<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmSrc<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmsrc-0.9.46.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">alpha<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="asmsrc.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">source code generator <br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmEdit<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmedit-0.9.46.tar.gz">tar,gz</a><br>
+            </td>
+            <td style="vertical-align: top;">stable<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="editors.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">editor optimized for
+assembler<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmNano<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmnano-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">alpha<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="editors.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">nano clone (easy to use)<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmTrace<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmtrace-0.9.49.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">alpha<br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;">function &amp;
+disassemblly trace, very alpha<br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      <br>
+The library used to develop AsmIDE and some example applications.<br>
+      <table
+ style="margin-left: auto; margin-right: auto; width: 100px; text-align: left; background-color: rgb(255, 204, 102);"
+ border="1" cellpadding="2" cellspacing="2">
+        <tbody>
+          <tr>
+            <td style="width: 100px; white-space: nowrap;">Program
+Title </td>
+            <td>Download</td>
+            <td style="vertical-align: top;">Status<br>
+            </td>
+            <td style="background-color: rgb(255, 204, 102);">Documentation</td>
+            <td>Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmLib<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmlib-0.9.47.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">beta<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="asmlib.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">library of over 400
+functions<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmLibx<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmlibx-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">alpha<br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">Dos Library<br>
+            </td>
+            <td style="vertical-align: top;"><a href="alib40.zip">alib40.zip</a><br>
+            </td>
+            <td style="vertical-align: top;">obs<br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;">Dos library (basis for
+AsmLib)<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmFile<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmfile-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">alpha<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="asmfile.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">general file manager<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">Ainfo<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="ainfo-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">alpha<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="ainfo.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">front end for "info"
+program<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">format_doc<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="format_doc-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">stable<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="format_doc.htm"> info</a><br>
+            </td>
+            <td style="vertical-align: top;">search and replace tool<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">file_browse<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="file_browse-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">beta<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="file_browse.htm"> info</a><br>
+            </td>
+            <td style="vertical-align: top;">generic dir browser<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">fileset<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="fileInfo-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">alpha<br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;">menu front end to chmod<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">sort<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="sort-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">beta<br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;">demo of library sort
+functions<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">step test<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="../asm/webpage/new/steptest-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">stable<br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;">step fitness test<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">walk test<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="../asm/webpage/new/walktest-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">stable<br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;">walk fitness test<br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      <br>
+AsmIDE tool set #2, support programs and utilities<br>
+      <table
+ style="margin-left: auto; margin-right: auto; width: 100px; text-align: left; background-color: rgb(255, 204, 102);"
+ border="1" cellpadding="2" cellspacing="2">
+        <tbody>
+          <tr>
+            <td style="width: 100px; white-space: nowrap;">Program
+Title </td>
+            <td>Download</td>
+            <td style="vertical-align: top;">Status<br>
+            </td>
+            <td style="background-color: rgb(255, 204, 102);">Documentation</td>
+            <td>Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmPlan<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmplan-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">stable<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="asmplan.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">planner (todo)<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmPub<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmpub-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">beta<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="asmpub.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">format assembler
+documentation<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmFind<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmfind-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">beta<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="asmfind.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">file and data search<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmView<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmview-0.9.46.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">stable<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="asmview.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">file viewer<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmTimer<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmtimer-0.9.46.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">stable<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmtimer.htm"> info</a><br>
+            </td>
+            <td style="vertical-align: top;">program timer<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmColor<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmcolor-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">stable<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmcolor.htm"> info</a><br>
+            </td>
+            <td style="vertical-align: top;">color selector for library
+functions<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmMenu<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmmenu-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">stable<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="asmmenu.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">simple script menu in
+assembler<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">Crt_test<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="crt_test-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">beta<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a href="testcrt.htm">
+info</a><br>
+            </td>
+            <td style="vertical-align: top;">interrogate display state<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">key_echo<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="key_echo-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">stable<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp; <a
+ href="key_echo.htm">info</a><br>
+            </td>
+            <td style="vertical-align: top;">echo termnal keys<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmProject<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmproject-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">beta<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp; <br>
+            </td>
+            <td style="vertical-align: top;">project setup<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmLinks<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmlinks-0.9.44.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">beta<br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;">file viewer with links<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">ElfDecode<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="elfdecode-0.9.46.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">beta<br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;">show input to
+AsmBug,AsmDis,AsmSrc<br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+AsmIDE updates, (new versions, may have bugs and new features partially
+implemented)<br>
+      <table
+ style="margin-left: auto; margin-right: auto; width: 100px; text-align: left; background-color: rgb(255, 204, 102);"
+ border="1" cellpadding="2" cellspacing="2">
+        <tbody>
+          <tr>
+            <td style="width: 100px; white-space: nowrap;">Program
+Title </td>
+            <td>Download</td>
+            <td style="background-color: rgb(255, 204, 102);">Documentation</td>
+            <td>Description&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmBug<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmbug-0.9.51.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmLib<br>
+            </td>
+            <td style="vertical-align: top;"><a
+ href="asmlib-0.9.49.tar.gz">&nbsp;tar.gz<br>
+            </a> </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">AsmTrace<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="asmtrace-0.9.50.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;">MiniBug<br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;<a
+ href="minibug-0.9.01.tar.gz">tar.gz</a><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;">&nbsp;simple console
+debugger<br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+            <td style="vertical-align: top;"><br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+<!-- END of the content cell --></td>
+    </tr>
+  </tbody>
+</table>
+<!-- bottom page info here or in the content cell -->
+<hr class="content" noshade="noshade">
+<div class="menubottom" align="center"><br>
+<br>
+<em>Last Updated: Augusst 22, 2007</em></div>
+</body>
+</html>

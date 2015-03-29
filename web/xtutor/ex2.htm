@@ -1,0 +1,2259 @@
+&nbsp;&nbsp;&nbsp;;-----------------------------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;Copyright (C) 2007 Jeff Owens<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;This program is free software: you can
+redistribute it and/or modify<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;it under the terms of the GNU General
+Public License as published by<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;the Free Software Foundation, either
+version 3 of the License, or<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;(at your option) any later version.<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;This program is distributed in the hope
+that it will be useful,<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;but WITHOUT ANY WARRANTY; without even
+the implied warranty of<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. &nbsp;See the<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;GNU General Public License for more
+details.<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;You should have received a copy of the
+GNU General Public License<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;along with this program. &nbsp;If not,
+see &lt;http://www.gnu.org/licenses/&gt;.<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;global _start<br>
+&nbsp;&nbsp;&nbsp;_start:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;env_stack<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_list_extension<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;show_extensions<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,01<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;byte 80h<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;-----------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .data]<br>
+&nbsp;&nbsp;&nbsp;crlf: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0ah<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .text]<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;show_extensions:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lea
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,[ecx+32]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;al,[ecx+1]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;get number of items returned<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebp,eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;save count<br>
+&nbsp;&nbsp;&nbsp;show_loop:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line_feed<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lea
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,[esi+1]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dl,[esi]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;get length of name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,edx
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;move to next name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inc
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;crt_write<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dec
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebp<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jnz
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;show_loop<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line_feed<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;line_feed:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,crlf<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;crt_write<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;---------- x_list_extension ------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;x_list_extension - get list of extensions<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;none<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT:<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;failure - eax = negative error
+code<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flags
+set for "js"<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;success - eax positive read
+length and flag set "jns"<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx
+= buffer ptr with<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;resb 1 &nbsp;;1 Reply<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;resb 1 &nbsp;;number of names returned<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;resb 2 &nbsp;;sequence number<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;resb 4 &nbsp;;reply length<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;resb 24 ;unused<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;resb 1 &nbsp;;length of extension n<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;resb x &nbsp;;extension n string<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;resb 1 &nbsp;;length of extension n+1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;resb x &nbsp;;extension n+1 string<br>
+&nbsp;&nbsp;&nbsp;; * ----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;x_list_extension:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,list_extension_request<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,(qer_end -
+list_extension_request)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;neg
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;indicate
+reply expected<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_send_request<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js ger_exit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_wait_reply<br>
+&nbsp;&nbsp;&nbsp;ger_exit:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .data]<br>
+&nbsp;&nbsp;&nbsp;list_extension_request:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;db 99
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;opcode<br>
+&nbsp;&nbsp;&nbsp;&nbsp;db 0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;unused<br>
+&nbsp;&nbsp;&nbsp;&nbsp;dw 1
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;request length in dwords<br>
+&nbsp;&nbsp;&nbsp;qer_end:<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .text]<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;--------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;env_stack - find stack ptrs to environment<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;esp = stack ptr before any pops
+or pushes<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;ebp = ptr to environment pointers<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;[enviro_ptrs] set also<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;*
+----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;env_stack:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cld<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,esp<br>
+&nbsp;&nbsp;&nbsp;es_lp:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lodsd<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jnz
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;es_lp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;loop till
+start of env ptrs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebp,esi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[enviro_ptrs],esi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;--------------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;struc connect_reply<br>
+&nbsp;&nbsp;&nbsp;.reply_code &nbsp;resb 1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resb
+1 &nbsp;;unused<br>
+&nbsp;&nbsp;&nbsp;.proto_major resw 1<br>
+&nbsp;&nbsp;&nbsp;.proto_minor resw 1<br>
+&nbsp;&nbsp;&nbsp;.append_len &nbsp;resw 1 &nbsp;;dword len<br>
+&nbsp;&nbsp;&nbsp;.release_num resd 1<br>
+&nbsp;&nbsp;&nbsp;.id_base &nbsp;&nbsp;&nbsp;&nbsp;resd 1<br>
+&nbsp;&nbsp;&nbsp;.id_mask &nbsp;&nbsp;&nbsp;&nbsp;resd 1<br>
+&nbsp;&nbsp;&nbsp;.motion_buf_len resd 1<br>
+&nbsp;&nbsp;&nbsp;.vendor_len &nbsp;resw 1<br>
+&nbsp;&nbsp;&nbsp;.max_req_size
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resw 1<br>
+&nbsp;&nbsp;&nbsp;.screen_cnt &nbsp;resb 1 &nbsp;;number of screen
+struc's at end<br>
+&nbsp;&nbsp;&nbsp;.format_cnt &nbsp;resb 1 &nbsp;;number of format
+struc's at end<br>
+&nbsp;&nbsp;&nbsp;.img_byte_ordr
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resb 1 &nbsp;;image byte order
+0=lsb 1=msb<br>
+&nbsp;&nbsp;&nbsp;.map_byte_ordr
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resb 1 &nbsp;;bitmap byte order
+0=least sig first<br>
+&nbsp;&nbsp;&nbsp;.scan_unit &nbsp;&nbsp;resb 1<br>
+&nbsp;&nbsp;&nbsp;.scan_pad &nbsp;&nbsp;&nbsp;resb 1<br>
+&nbsp;&nbsp;&nbsp;.min_keycode resb 1<br>
+&nbsp;&nbsp;&nbsp;.max_keycode resb 1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+1 &nbsp;;unused<br>
+&nbsp;&nbsp;&nbsp;.vendor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resb
+8 &nbsp;;string here<br>
+&nbsp;&nbsp;&nbsp;.pad
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resb 12 ;?<br>
+&nbsp;&nbsp;&nbsp;.formats:
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;format
+strucs start here, followed by screen strucs<br>
+&nbsp;&nbsp;&nbsp;connect_reply_len:<br>
+&nbsp;&nbsp;&nbsp;endstruc<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;struc format<br>
+&nbsp;&nbsp;&nbsp;.depth
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resb
+1<br>
+&nbsp;&nbsp;&nbsp;.bytes_per_pix
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resb 1<br>
+&nbsp;&nbsp;&nbsp;.scanline_pad
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resb 1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resb
+5 &nbsp;;unused<br>
+&nbsp;&nbsp;&nbsp;format_len:<br>
+&nbsp;&nbsp;&nbsp;endstruc<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;struc screen<br>
+&nbsp;&nbsp;&nbsp;.root_win &nbsp;&nbsp;&nbsp;resd 1<br>
+&nbsp;&nbsp;&nbsp;.color_map &nbsp;&nbsp;resd 1<br>
+&nbsp;&nbsp;&nbsp;.white_pixel resd 1<br>
+&nbsp;&nbsp;&nbsp;.black_pixel resd 1<br>
+&nbsp;&nbsp;&nbsp;.event_mask &nbsp;resd 1<br>
+&nbsp;&nbsp;&nbsp;.pix_width &nbsp;&nbsp;resw 1<br>
+&nbsp;&nbsp;&nbsp;.pix_height &nbsp;resw 1<br>
+&nbsp;&nbsp;&nbsp;.width_mil &nbsp;&nbsp;resw 1<br>
+&nbsp;&nbsp;&nbsp;.height_mil &nbsp;resw 1<br>
+&nbsp;&nbsp;&nbsp;.min_maps &nbsp;&nbsp;&nbsp;resw 1<br>
+&nbsp;&nbsp;&nbsp;.max_maps &nbsp;&nbsp;&nbsp;resw 1<br>
+&nbsp;&nbsp;&nbsp;.root_visual resd 1<br>
+&nbsp;&nbsp;&nbsp;.backing &nbsp;&nbsp;&nbsp;&nbsp;resb 1 ;0=never
+1=when mapped 2=always<br>
+&nbsp;&nbsp;&nbsp;.save_under &nbsp;resb 1 ;bool<br>
+&nbsp;&nbsp;&nbsp;.root_depth &nbsp;resb 1<br>
+&nbsp;&nbsp;&nbsp;.depth_cnt &nbsp;&nbsp;resb 1 ;number of depths that
+follow<br>
+&nbsp;&nbsp;&nbsp;;more data here<br>
+&nbsp;&nbsp;&nbsp;endstruc<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;---------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;x_connect - connect to x server<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;env_stack library function must
+be called before<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using
+x_connect<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT:<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;flag set (jns) if success<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and [socket_fd]
+global set to socket fd (dword)<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[x_id_base] base
+for id assign (dword)<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[root_win_id] set
+(dword)<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[root_win_pix_width]
+set (word)<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[root_win_pix_height]
+set (word)<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[root_win_color_map]
+set (dword)<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lib_buf has
+connection reply<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;connection_reply_length
+= size of reply<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;flag set (js) if err, eax=error
+code<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;ecx points to connection table as
+follows:<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_reply_code
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db
+0 &nbsp;&nbsp;&nbsp;;unused<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_proto_major
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_proto_minor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_append_len
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw 0 &nbsp;&nbsp;&nbsp;;dword len<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_release_num
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_id_base &nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_id_mask &nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_motion_buf_len dd 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_vendor_len
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_max_req_size
+&nbsp;&nbsp;&nbsp;&nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_screen_cnt
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0 &nbsp;&nbsp;&nbsp;;number of
+screen struc's at end<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_format_cnt
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0 &nbsp;;number of format
+struc's at end<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_img_byte_ordr
+&nbsp;&nbsp;&nbsp;db 0 &nbsp;&nbsp;&nbsp;;image byte order 0=lsb 1=msb<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_map_byte_ordr
+&nbsp;&nbsp;&nbsp;db 0 &nbsp;&nbsp;&nbsp;;bitmap byte order 0=least sig
+first<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_scan_unit
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_scan_pad db 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_min_keycode
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_max_keycode
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_depth
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_bytes_per_pix
+&nbsp;&nbsp;&nbsp;db 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_scanline_pad
+&nbsp;&nbsp;&nbsp;&nbsp;db 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db
+0 ;pad<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root_win_id
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root_win_color_map dd 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_white_pixel
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_black_pixel
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_event_mask
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root_win_pix_width dw 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root_win_pix_height
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_width_mil
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_height_mil
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_min_maps dw 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_max_maps dw 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_root_visual
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_backing &nbsp;db 0
+;0=never 1=when mapped 2=always<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_save_under
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0 ;bool<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_root_depth
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;c_depth_cnt
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0 ;number of depths that
+follow<br>
+&nbsp;&nbsp;&nbsp;; * ----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;x_connect:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dword [socket_fd],eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jne
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;err
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;exit
+if already connected<br>
+&nbsp;&nbsp;&nbsp;;check if environment variable DISPLAY=:x set<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,display_var<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,display_var_contents<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;find_env_variable<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;al,[display_var_contents+1]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or al,al<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jz x_conn_strt
+&nbsp;&nbsp;&nbsp;&nbsp;;jmp if no display variable<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[display_number],al
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;x_conn_strt:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;get_authorization ;get server info<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js err
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;exit
+if error<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;connect
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;connect to socket<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js err
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;exit
+if error<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[connection_reply_length],eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov &nbsp;&nbsp;esi, lib_buf<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;byte [esi],1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;je x_conn_ok<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,-1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short err<br>
+&nbsp;&nbsp;&nbsp;x_conn_ok:<br>
+&nbsp;&nbsp;&nbsp;;save data from connnecton reply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi,c_reply_code<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,lib_buf<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,(c_max_keycode+1) -
+c_reply_code<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rep
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;movsb<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,lib_buf+connect_reply_len<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,4<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rep
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;movsb<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;compute index to first screen struc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ax,[lib_buf+connect_reply.format_cnt]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;shl
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,3
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;multiply
+by 8<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,connect_reply_len ;move
+to start of screen struc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,lib_buf
+&nbsp;&nbsp;&nbsp;&nbsp;;add in buffer start<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,36<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rep
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;movsb<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,c_reply_code<br>
+&nbsp;&nbsp;&nbsp;err:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;--------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .data]<br>
+&nbsp;&nbsp;&nbsp;connection_reply_length: dd 0<br>
+&nbsp;&nbsp;&nbsp;socket_fd:<br>
+&nbsp;&nbsp;&nbsp;xfd_array: dd 0,-1<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;c_reply_code db 0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db
+0 &nbsp;&nbsp;&nbsp;;unused<br>
+&nbsp;&nbsp;&nbsp;c_proto_major
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;c_proto_minor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;c_append_len dw 0 &nbsp;&nbsp;&nbsp;;dword len<br>
+&nbsp;&nbsp;&nbsp;c_release_num
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;x_id_base &nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;c_id_mask &nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;c_motion_buf_len dd 0<br>
+&nbsp;&nbsp;&nbsp;c_vendor_len dw 0<br>
+&nbsp;&nbsp;&nbsp;c_max_req_size &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw
+0<br>
+&nbsp;&nbsp;&nbsp;c_screen_cnt db 0 &nbsp;&nbsp;&nbsp;;number of screen
+struc's at end<br>
+&nbsp;&nbsp;&nbsp;c_format_cnt db 0 &nbsp;;number of format struc's at
+end<br>
+&nbsp;&nbsp;&nbsp;c_img_byte_ordr &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0
+&nbsp;&nbsp;&nbsp;;image byte order 0=lsb 1=msb<br>
+&nbsp;&nbsp;&nbsp;c_map_byte_ordr &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0
+&nbsp;&nbsp;&nbsp;;bitmap byte order 0=least sig first<br>
+&nbsp;&nbsp;&nbsp;c_scan_unit &nbsp;db 0<br>
+&nbsp;&nbsp;&nbsp;c_scan_pad &nbsp;&nbsp;db 0<br>
+&nbsp;&nbsp;&nbsp;c_min_keycode
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0<br>
+&nbsp;&nbsp;&nbsp;c_max_keycode
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;struc format<br>
+&nbsp;&nbsp;&nbsp;c_depth
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db
+0<br>
+&nbsp;&nbsp;&nbsp;c_bytes_per_pix &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db 0<br>
+&nbsp;&nbsp;&nbsp;c_scanline_pad &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db
+0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db
+0 ;pad<br>
+&nbsp;&nbsp;&nbsp;;format_len<br>
+&nbsp;&nbsp;&nbsp;;endstruc<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;struc screen<br>
+&nbsp;&nbsp;&nbsp;root_win_id &nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;root_win_color_map &nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;c_white_pixel
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;c_black_pixel
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;c_event_mask dd 0<br>
+&nbsp;&nbsp;&nbsp;root_win_pix_width &nbsp;&nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;root_win_pix_height &nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;c_width_mil &nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;c_height_mil dw 0<br>
+&nbsp;&nbsp;&nbsp;c_min_maps &nbsp;&nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;c_max_maps &nbsp;&nbsp;dw 0<br>
+&nbsp;&nbsp;&nbsp;c_root_visual
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;c_backing &nbsp;&nbsp;&nbsp;db 0 ;0=never 1=when
+mapped 2=always<br>
+&nbsp;&nbsp;&nbsp;c_save_under db 0 ;bool<br>
+&nbsp;&nbsp;&nbsp;c_root_depth db 0<br>
+&nbsp;&nbsp;&nbsp;c_depth_cnt &nbsp;db 0 ;number of depths that follow<br>
+&nbsp;&nbsp;&nbsp;;more data here<br>
+&nbsp;&nbsp;&nbsp;;endstruc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .text]<br>
+&nbsp;&nbsp;&nbsp;;---------------------------------<br>
+&nbsp;&nbsp;&nbsp;;output: eax=negative if error,sign bit set<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;connect:<br>
+&nbsp;&nbsp;&nbsp;; create a socket<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,102
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;socket<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebx,1
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;create
+socket<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,socket_create_blk<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;byte 80h<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js c_exit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov [socket_fd2],eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov [socket_fd],eax<br>
+&nbsp;&nbsp;&nbsp;; connect to it<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,102
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;socket kernel function<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebx,3
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;connect<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,socket_connect_blk<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;byte 80h<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js c_exit<br>
+&nbsp;&nbsp;&nbsp;; make the socket non-blocking<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ebx, [socket_fd]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ecx, 3
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;F_GETFL (get flags)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov eax,55
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;fcntl<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int byte 0x80<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js c_exit
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;exit if error<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ebx, [socket_fd]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ecx, 4
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;F_SETFL (set
+flags)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov edx, eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or edx, 0x800
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;
+NON_BLOCKING<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov eax,55
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;fcntl<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int byte 0x80<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js c_exit<br>
+&nbsp;&nbsp;&nbsp;; write a connection request to it<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov eax,4
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;write kernel
+function<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ebx, [socket_fd]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ecx, conn_request<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov edx, [conn_request_length]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int byte 80h<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js c_exit &nbsp;;exit if error<br>
+&nbsp;&nbsp;&nbsp;; wait for reply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[socket_fd]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,xfd_array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[esi],eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;store fd into array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;wait forever<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait_event<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;error check<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js conn_err<br>
+&nbsp;&nbsp;&nbsp;;test set bit, did our fd have an event?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[socket_fd]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi,ecx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bit_test<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jc read_conn_reply ;jmp if correct bit<br>
+&nbsp;&nbsp;&nbsp;conn_err:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,-1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short c_exit<br>
+&nbsp;&nbsp;&nbsp;;read the connection reply<br>
+&nbsp;&nbsp;&nbsp;read_conn_reply:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ebx, [socket_fd]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read_fd<br>
+&nbsp;&nbsp;&nbsp;c_exit:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;set return flag<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;--------------------------------------<br>
+&nbsp;&nbsp;&nbsp;; check for x socket info<br>
+&nbsp;&nbsp;&nbsp;;input: [enviro_ptrs] - environment<br>
+&nbsp;&nbsp;&nbsp;;output: eax= negative if error<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax=
+connection packet setup if eax=positive<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;get_authorization:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebx,[enviro_ptrs]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi,auth_path<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;env_home
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;extract
+home path<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov esi, auth_file_name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ecx, auth_file_name_len<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rep movsb
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;append
+.Xauthority to home path<br>
+&nbsp;&nbsp;&nbsp;open_xauth:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov eax,5
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;open
+kernel function<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ebx, auth_path<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xor ecx, ecx
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;readonly<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int byte 80h
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;read
+file .Xauthority<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov edi, conn_request_len &nbsp;;in case
+no .Xauth found<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js no_auth
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp
+if file not found<br>
+&nbsp;&nbsp;&nbsp;;read and process Xauthority &nbsp;file<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ebx, eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;get
+handle in ebx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;read_fd<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js gx_exit
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;exit
+if error<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov eax,6
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;close
+kernel function<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int byte 80h<br>
+&nbsp;&nbsp;&nbsp;; copy authorization proto name and data<br>
+&nbsp;&nbsp;&nbsp;; to connect request data packet<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov esi, lib_buf + 3
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; offset of host name length<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;movzx eax, byte [esi]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; host name length<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lea esi, [esi + eax + 2] &nbsp;&nbsp;;
+skip host name<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;movzx eax, byte [esi]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; length<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lea esi, [esi + eax + 2] &nbsp;&nbsp;;
+skip it<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;movzx ecx, byte [esi]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; this ought to be auth name length<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov [conn_request.proto_str_len], cx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inc esi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov edi, conn_request.proto_str<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rep movsb<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inc esi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add edi,byte 3
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; round up for "pad"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and edi,byte &nbsp;-4<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;movzx ecx, byte [esi]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; length of auth data<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov [conn_request.proto_data_len], cx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inc esi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rep movsb<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sub edi, conn_request<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add edi,byte 3<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and edi,byte -4<br>
+&nbsp;&nbsp;&nbsp;no_auth:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov [conn_request_length], edi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;set good return<br>
+&nbsp;&nbsp;&nbsp;gx_exit:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;set result flag<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;----------------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .data]<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;socket_create_blk: &nbsp;&nbsp;;create a socket data<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 1
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;PF_UNIX<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 1
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;SOCK_STREAM<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;socket_connect_blk:<br>
+&nbsp;&nbsp;&nbsp;socket_fd2:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd socket_path<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd socket_path_len<br>
+&nbsp;&nbsp;&nbsp;socket_path:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw &nbsp;&nbsp;&nbsp;1
+&nbsp;&nbsp;&nbsp;&nbsp;; 1: AF_UNIX, AF_LOCAL
+&nbsp;(/usr/include/linux/socket.h)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db
+&nbsp;&nbsp;&nbsp;"/tmp/.X11-unix/X"<br>
+&nbsp;&nbsp;&nbsp;display_number:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db &nbsp;&nbsp;&nbsp;"0"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;from
+display &nbsp;variable<br>
+&nbsp;&nbsp;&nbsp;socket_path_len equ $ - socket_path<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;auth_file_name db '/.Xauthority', 0<br>
+&nbsp;&nbsp;&nbsp;auth_file_name_len equ $ - auth_file_name<br>
+&nbsp;&nbsp;&nbsp;auth_path &nbsp;&nbsp;&nbsp;times 200 + 1 db 0<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;display_var: db 'DISPLAY',0<br>
+&nbsp;&nbsp;&nbsp;display_var_contents: times 8 db 0<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;; Connection Setup info<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;align 4, db 0<br>
+&nbsp;&nbsp;&nbsp;conn_request:<br>
+&nbsp;&nbsp;&nbsp;.endian &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6Ch &nbsp;&nbsp;&nbsp;&nbsp;; LSB first<br>
+&nbsp;&nbsp;&nbsp;.unused &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;db
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0<br>
+&nbsp;&nbsp;&nbsp;.major &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;11<br>
+&nbsp;&nbsp;&nbsp;.minor &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;
+major/minor version<br>
+&nbsp;&nbsp;&nbsp;.proto_str_len dw &nbsp;&nbsp;&nbsp;0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; protocol_string_len<br>
+&nbsp;&nbsp;&nbsp;.proto_data_len dw &nbsp;&nbsp;0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; fill in at runtime<br>
+&nbsp;&nbsp;&nbsp;.unused2 &nbsp;&nbsp;&nbsp;&nbsp;dw
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;conn_request_len equ $ - conn_request<br>
+&nbsp;&nbsp;&nbsp;.proto_str times 256 db 0 &nbsp;&nbsp;&nbsp;; enough
+for anybody<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;conn_request_length dd 0<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;local_fd &nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .text]<br>
+&nbsp;&nbsp;&nbsp;;----------------------<br>
+&nbsp;&nbsp;&nbsp;;input: ebx= fd<br>
+&nbsp;&nbsp;&nbsp;;output: eax = result &amp; sign bit set<br>
+&nbsp;&nbsp;&nbsp;read_fd:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[local_fd],ebx &nbsp;;save fd<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov eax,3
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;kernel read
+function<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ecx, lib_buf<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov edx, 700
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;lib_buf_len<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int byte 80h
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;read
+file<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jns
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rf_exit
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if good read<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,-11<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jne
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rf_exit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[local_fd]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebx,-1
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;wait forever<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;poll_socket<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js rf_exit
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;exit if error<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebx,[local_fd]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short read_fd<br>
+&nbsp;&nbsp;&nbsp;rf_exit:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .text]<br>
+&nbsp;&nbsp;&nbsp;;----------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;wait_event - poll fd input/output status<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;esi = array of dword fd's
+terminated by -1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;eax = max wait time(usec), or
+zero to wait forever, and<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;minus 1 for
+immediate return of status<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;eax = 0 child has died? signal?<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+negative, then error/signal active(-4)<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+positive number of events pending<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;ecx = ptr to array of bits set
+for each fd with<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pending actions,
+bit 1 represents stdin (fd 0).<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fd's must be in
+numerical order (small to large).<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;*
+---------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;wait_event:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;save
+wait forever flag<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,20<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi,event_buf
+&nbsp;&nbsp;;temp buffer for array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blk_clear<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bit_set_list &nbsp;&nbsp;&nbsp;;set
+bits<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebx,[esi-8]
+&nbsp;&nbsp;&nbsp;&nbsp;;get value of highest fd<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inc
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebx
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;ebx
+= highest fd +1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,edi
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;ecx = bit array ptr
+(input)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,edx
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;edx = 0 (no write bit
+array)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,esi
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;esi = 0 (no exceptfds
+bit array)<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;get
+wait flag<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or edi,edi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js we_fast_rtn
+&nbsp;&nbsp;&nbsp;&nbsp;;jmp if immediate return<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jz we_forever<br>
+&nbsp;&nbsp;&nbsp;;edi = number of microseconds to wait<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[_time+4],edi
+&nbsp;&nbsp;;set microseconds<br>
+&nbsp;&nbsp;&nbsp;we_fast_rtn:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi,_time
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;assume stored time is zero<br>
+&nbsp;&nbsp;&nbsp;we_forever: &nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,142<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;80h<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .data]<br>
+&nbsp;&nbsp;&nbsp;_time: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;zero seconds, returns status
+immediately<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;microseconds to wait<br>
+&nbsp;&nbsp;&nbsp;event_buf: dd
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0,0,0,0,0,0,0<br>
+&nbsp;&nbsp;&nbsp;;bits representing fd numbers to poll, stdin=bit#1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .text]<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;----------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;blk_clear - clear array of bytes<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;ecx = size of array (byte count)<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edi = array pointer<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;the CLD flag is set<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;ecx = 0<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edi = unchanged<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;*
+---------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;blk_clear:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rep
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stosb<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;----------------------<br>
+&nbsp;&nbsp;&nbsp;;bit_set_list - set bits in array<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;esi = pointer to list of dword
+bit values<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0 = bit 1 or
+00000001h<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1 = end of list<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;values in
+increasing order<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edi = array pointer<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;bits set in array<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;esi moved to end of list, beyond
+-1 entry<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;*
+---------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;bit_set_list:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax<br>
+&nbsp;&nbsp;&nbsp;sa_loop:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lodsd
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;get
+bit value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js sa_exit
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;exit if done (end of
+list)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;shr
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,5<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,1fh<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lea
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,[edx*4 + edi] <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bts
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[edx],eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short sa_loop
+&nbsp;&nbsp;;loop<br>
+&nbsp;&nbsp;&nbsp;sa_exit:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;------------------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;bit_test - test array of bits<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;eax = bit number<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(0=bit 1) or
+00000001h<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edi = bit array pointer<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;carry = bit set<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;no-carry = bit cleared<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;registers unchanged<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;*
+---------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;bit_test:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;shr
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,5<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lea
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,[edx*4 + edi]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,1fh<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bt dword [edx],eax ;check bit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;------------------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;env_home - search the environment for $HOME<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;ebx = ptr to list of env
+pointers<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;edi = buffer to store $HOME
+contents<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edi = ptr to zero at end of $HOME
+string<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;*
+----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;env_home:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or ebx,ebx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jz fh_50
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if
+home path not found<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,[ebx]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or esi,esi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jz fh_50
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if
+home path not found<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dword [esi],'HOME'<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jne
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fh_12
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if not
+found yet<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;byte [esi + 4],'='<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;je fh_20
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if
+HOME found<br>
+&nbsp;&nbsp;&nbsp;fh_12:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebx,byte 4<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short env_home
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;loop &nbsp;back
+and keep looking<br>
+&nbsp;&nbsp;&nbsp;fh_20:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi, 5
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;move to start of
+home path<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;; assume edi points at execve_buf<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str_move<br>
+&nbsp;&nbsp;&nbsp;fh_50:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret &nbsp;<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .data]<br>
+&nbsp;&nbsp;&nbsp;lib_buf &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;times 700 db 0<br>
+&nbsp;&nbsp;&nbsp;enviro_ptrs &nbsp;dd &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;from
+entry stack<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .text]<br>
+&nbsp;&nbsp;&nbsp;;----------------------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;str_move - move asciiz string<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;esi = input string ptr (asciiz)<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edi = destination ptr<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edi points at zero (end of moved
+asciiz string)<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;*
+----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;str_move:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cld<br>
+&nbsp;&nbsp;&nbsp;ms_loop:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lodsb<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stosb<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or al,al<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jnz
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ms_loop ;loop till done<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dec
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;------------------- poll_socket
+----------------------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;poll_socket - check if key avail.<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;eax = fd (file descriptor)<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edx = milliscond wait count,<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1=forever,
+0=immediate return<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;flags set "js" - error (check
+before jnz)<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"jz"
+- no event waiting, or timeout<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"jnz"
+- event ready <br>
+&nbsp;&nbsp;&nbsp;; * ----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;poll_socket:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[poll_tbl],eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;save fd<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,168
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;poll<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebx,poll_tbl<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,1
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;one
+structure at poll_tbl<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;80h<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js poll_exit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jz poll_exit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;byte [poll_data],1<br>
+&nbsp;&nbsp;&nbsp;poll_exit: <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .data]<br>
+&nbsp;&nbsp;&nbsp;poll_tbl &nbsp;&nbsp;&nbsp;&nbsp;dd
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;stdin<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;events of interest,data to read<br>
+&nbsp;&nbsp;&nbsp;poll_data &nbsp;&nbsp;&nbsp;dw
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;return
+from poll<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .text]<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;---------------------------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;find_env_variable - search environment for
+variable name<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;[enviro_ptrs] - setup by env_stack<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;ecx = ptr to variable name
+(asciiz)<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edx = storage point for variable
+contents<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;data stored at edx, if edi is
+preloaded with<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;a zero it can be checked to see
+if variable found<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edi - if success, edi points to
+end of variable stored<br>
+&nbsp;&nbsp;&nbsp;; * ----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;find_env_variable:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebx,[enviro_ptrs]<br>
+&nbsp;&nbsp;&nbsp;fev_10:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or ebx,ebx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jz fev_50<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov edi,[ebx]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or edi,edi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jz near fev_50<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,ecx
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;get input variable
+name ptr<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str_match<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jne fev_12<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp [edi],byte '='<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;je fev_20
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if var= found<br>
+&nbsp;&nbsp;&nbsp;fev_12:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add ebx,byte 4<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp short fev_10<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;; match found, store it<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;fev_20:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inc
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;move
+past "="<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,edi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi,edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;str_move<br>
+&nbsp;&nbsp;&nbsp;fev_50:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;--------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;str_match - compare asciiz string to buffer
+data, use case<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;esi = string1 (asciiz string)<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edi = string2 buffer<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;assumes direction flag set to
+-cld- forward state<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;flags set for je or jne<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;esi &amp; edi point at end of
+strings if match<br>
+&nbsp;&nbsp;&nbsp;; * ----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;str_match:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;ecx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;strlen1
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;find
+length of string1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;repe
+&nbsp;&nbsp;&nbsp;cmpsb<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;ecx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;----------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;strlen1 - get length of esi string<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;esi = pointer to asciiz string<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;ecx = length of string<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;all registers restored except for
+ecx<br>
+&nbsp;&nbsp;&nbsp;; * ----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;strlen1:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;edi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cld<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;edi,esi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sub
+&nbsp;&nbsp;&nbsp;&nbsp;al,al
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;set
+al=0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;ecx,-1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;repnz &nbsp;&nbsp;scasb<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not
+&nbsp;&nbsp;&nbsp;&nbsp;ecx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dec
+&nbsp;&nbsp;&nbsp;&nbsp;ecx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;edi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;---------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;x_send_request - send request to x server<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;ecx = packet ptr<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edx = packet length, negative
+packet length<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;indicates a reply
+is expected. &nbsp;Length<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is can be set
+negative with "neg edx"<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT:<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;flag set (jns) if success<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;flag set (js) if err, eax=error
+code<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;[sequence] - sequence number of
+packet sent<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;; NOTES<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;If socket_fd is zero this functions
+connects to<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;x socket. &nbsp;If the packet length is
+negative a<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;reply is expected and the sequence# is
+stored<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;for retrevial by x_read_socket<br>
+&nbsp;&nbsp;&nbsp;; * ----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;x_send_request:<br>
+&nbsp;&nbsp;&nbsp;x_send:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebx,[socket_fd] ;get socket fd<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or ebx,ebx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jnz
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_send2
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if connected<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_connect
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;connect to the server<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js x_send_exit
+&nbsp;&nbsp;&nbsp;&nbsp;;exit if error<br>
+&nbsp;&nbsp;&nbsp;x_send2:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inc
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dword [sequence]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or edx,edx
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;check if reply expected<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jns
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_send3
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if no reply
+expected<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;neg
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;make
+packet length positive<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,list_block<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,sequence<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list_put_at_end<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx<br>
+&nbsp;&nbsp;&nbsp;x_send3:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebx,[socket_fd]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;poll_out<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;append to buffer<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,[x_buf_avail]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jb queue_packet<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_flush
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;flush before<br>
+&nbsp;&nbsp;&nbsp;queue_packet:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sub
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[x_buf_avail],edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,ecx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi,[x_buf_ptr]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rep
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;movsb<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[x_buf_ptr],edi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;set exit flag<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;---------------------<br>
+&nbsp;&nbsp;&nbsp;;&gt;1 server<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;x_flush - send queued events to x server<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;the x_send_request function buffers all
+output<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;and sends if buffer becomes full or the
+program<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;waits for input. &nbsp;This function
+flushes (sends)<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;the buffer to the x server.<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;none<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT:<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;sign flag set if error and eax
+modified<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;all other registers preserved.<br>
+&nbsp;&nbsp;&nbsp;; * ----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;x_flush:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pusha<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,x_buf<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,[x_buf_ptr]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sub
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,ecx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or edx,edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jz x_send_exit
+&nbsp;&nbsp;&nbsp;&nbsp;;exit if buffer empty &nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov eax,4
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; __NR_write<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ebx, [socket_fd]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int byte 80h<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,-11
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;is server busy<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jne
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_send4
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if success or error<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short x_flush <br>
+&nbsp;&nbsp;&nbsp;x_send4:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[x_buf_ptr],dword x_buf<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[x_buf_avail],dword x_buf_size<br>
+&nbsp;&nbsp;&nbsp;x_send_exit:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[save_eax],eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;popa<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[save_eax]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;---------------------<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;poll_out:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[polled_fd],ebx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,168<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ebx,poll_block<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,1 &nbsp;&nbsp;;one fd<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,-1 &nbsp;;timeout<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;byte 80h<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[poll_response], byte 4<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;---------------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .data]<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;poll_block:<br>
+&nbsp;&nbsp;&nbsp;polled_fd: &nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dw 4
+;write now will not block<br>
+&nbsp;&nbsp;&nbsp;poll_response: &nbsp;dw -1<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;sequence: dd 0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;socket
+sequence#<br>
+&nbsp;&nbsp;&nbsp;;sequence# database control block<br>
+&nbsp;&nbsp;&nbsp;list_block:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd buffer
+&nbsp;&nbsp;&nbsp;&nbsp;;top of buffer<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd
+buffer_end ;end of buffer<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 2
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;each entry x
+bytes long<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd buffer
+&nbsp;&nbsp;&nbsp;&nbsp;;first entry ptr<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd buffer
+&nbsp;&nbsp;&nbsp;&nbsp;;last entry ptr<br>
+&nbsp;&nbsp;&nbsp;;storage for sequence# expecting a reply<br>
+&nbsp;&nbsp;&nbsp;buffer: times 60 dw 0<br>
+&nbsp;&nbsp;&nbsp;buffer_end:<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;x_buf_size &nbsp;&nbsp;equ &nbsp;1024<br>
+&nbsp;&nbsp;&nbsp;x_buf_ptr &nbsp;&nbsp;&nbsp;dd x_buf<br>
+&nbsp;&nbsp;&nbsp;x_buf_avail &nbsp;dd x_buf_size<br>
+&nbsp;&nbsp;&nbsp;x_buf &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;times
+x_buf_size db 0<br>
+&nbsp;&nbsp;&nbsp;save_eax &nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;;-------------------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .text]<br>
+&nbsp;&nbsp;&nbsp;;---------------- list_put_at_end.asm
+-------------------<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;struc list<br>
+&nbsp;&nbsp;&nbsp;.list_buf_top_ptr resd 1<br>
+&nbsp;&nbsp;&nbsp;.list_buf_end_ptr resd 1<br>
+&nbsp;&nbsp;&nbsp;.list_entry_size resd 1<br>
+&nbsp;&nbsp;&nbsp;.list_start_ptr resd 1<br>
+&nbsp;&nbsp;&nbsp;.list_tail_ptr resd 1<br>
+&nbsp;&nbsp;&nbsp;endstruc<br>
+&nbsp;&nbsp;&nbsp;;---------------------<br>
+&nbsp;&nbsp;&nbsp;;&gt;1 list<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;list_put_at_end - add entry to end of list<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edx = list control block<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;struc list<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_buf_top_ptr
+resd 1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_buf_end_ptr
+resd 1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_entry_size resd
+1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_start_ptr resd 1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_tail_ptr resd 1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endstruc<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;Initially the control block for a
+empty<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;list could be set as follows by
+caller:<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd buffer
+&nbsp;&nbsp;&nbsp;&nbsp;;top of buffer<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd buffer_end
+;end of buffer<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd x
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;each entry x
+bytes long<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd buffer
+&nbsp;&nbsp;&nbsp;&nbsp;;first entry ptr<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd buffer
+&nbsp;&nbsp;&nbsp;&nbsp;;last entry ptr<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;esi = ptr to data of length<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;liss_entry_size<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT:<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;flag set (jns) if success<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi = will be
+advanced by size of entry<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,ebp unchanged<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;flag set (js) if no room<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,edx,ebp
+&nbsp;unchanged <br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;if data wraps in buffer, the
+global<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;[last_buf_put_at_end_adr] will be
+set &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;; NOTES<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;A full list will have a one entry gap<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;between the list_start_ptr and
+list_tail_ptr.<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;The list pointers cycle around the
+buffer<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;and entries can be removed from start or<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;end of list.<br>
+&nbsp;&nbsp;&nbsp;; * ----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;list_put_at_end:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;next_put_at_end ;eax=next stuff
+&nbsp;edi=current stuff<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[edx+list.list_start_ptr]
+&nbsp;&nbsp;;room for another entry<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jne
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;have_room<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov &nbsp;&nbsp;eax, -1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short list_put_at_end_exit<br>
+&nbsp;&nbsp;&nbsp;have_room:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[edx+list.list_tail_ptr],eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,[edx+list.list_entry_size]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rep
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;movsb<br>
+&nbsp;&nbsp;&nbsp;list_put_at_end_exit:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;---------------------<br>
+&nbsp;&nbsp;&nbsp;; compute next put ptr<br>
+&nbsp;&nbsp;&nbsp;;input: edx = control block<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,ebp not
+available<br>
+&nbsp;&nbsp;&nbsp;;output: eax=next ptr ptr<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi=current stuff ptr<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;next_put_at_end:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[edx+list.list_tail_ptr]
+&nbsp;&nbsp;&nbsp;;get ptr to last entry<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edi,eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;save
+stuff ptr<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[edx+list.list_entry_size]
+&nbsp;;move ptr forward<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[edx+list.list_buf_end_ptr]
+;beyond end of buffer<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jb np_exit
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp
+if ok<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[edx+list.list_buf_top_ptr]
+;restart put at top of buffer<br>
+&nbsp;&nbsp;&nbsp;np_exit:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;---------------------<br>
+&nbsp;&nbsp;&nbsp;;---------------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .text]<br>
+&nbsp;&nbsp;&nbsp;;--------- x_wait_reply -------------<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;struc XAnyEvent<br>
+&nbsp;&nbsp;&nbsp;;.type
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1 ;<br>
+&nbsp;&nbsp;&nbsp;;.serial
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1 ; # of last request processed by server<br>
+&nbsp;&nbsp;&nbsp;;.send_event resd &nbsp;&nbsp;&nbsp;1 ; true if this
+came from a SendEvent request<br>
+&nbsp;&nbsp;&nbsp;;.display &nbsp;&nbsp;&nbsp;resd &nbsp;&nbsp;&nbsp;1
+; Display the event was read from<br>
+&nbsp;&nbsp;&nbsp;;.window
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1 ; window on which event was requested in event mask<br>
+&nbsp;&nbsp;&nbsp;;endstruc<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;struc XKeyEvent<br>
+&nbsp;&nbsp;&nbsp;.type
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; of event<br>
+&nbsp;&nbsp;&nbsp;.serial
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; # of last request processed by server<br>
+&nbsp;&nbsp;&nbsp;.send_event &nbsp;resd &nbsp;&nbsp;&nbsp;1; true if
+this came from a SendEvent request<br>
+&nbsp;&nbsp;&nbsp;.display &nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; Display the event was read from<br>
+&nbsp;&nbsp;&nbsp;.window
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"event" window it is
+reported relative to<br>
+&nbsp;&nbsp;&nbsp;.root
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root window that the
+event occurred on<br>
+&nbsp;&nbsp;&nbsp;.subwindow &nbsp;&nbsp;resd &nbsp;&nbsp;&nbsp;1;
+child window<br>
+&nbsp;&nbsp;&nbsp;.time
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; milliseconds<br>
+&nbsp;&nbsp;&nbsp;.x
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1<br>
+&nbsp;&nbsp;&nbsp;.y
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; pointer x, y coordinates in event window<br>
+&nbsp;&nbsp;&nbsp;.x_root &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1<br>
+&nbsp;&nbsp;&nbsp;.y_root
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; coordinates relative to root<br>
+&nbsp;&nbsp;&nbsp;.state
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; key or button mask<br>
+&nbsp;&nbsp;&nbsp;.keycode &nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; detail<br>
+&nbsp;&nbsp;&nbsp;.same_screen resd &nbsp;&nbsp;&nbsp;1; same screen
+flag<br>
+&nbsp;&nbsp;&nbsp;endstruc<br>
+&nbsp;&nbsp;&nbsp;struc XButtonEvent<br>
+&nbsp;&nbsp;&nbsp;.type
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; of event<br>
+&nbsp;&nbsp;&nbsp;.serial
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; # of last request processed by server<br>
+&nbsp;&nbsp;&nbsp;.send_event &nbsp;resd &nbsp;&nbsp;&nbsp;1; true if
+this came from a SendEvent request<br>
+&nbsp;&nbsp;&nbsp;.display &nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; Display the event was read from<br>
+&nbsp;&nbsp;&nbsp;.window
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"event" window it is
+reported relative to<br>
+&nbsp;&nbsp;&nbsp;.root
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root window that the
+event occurred on<br>
+&nbsp;&nbsp;&nbsp;.subwindow &nbsp;&nbsp;resd &nbsp;&nbsp;&nbsp;1;
+child window<br>
+&nbsp;&nbsp;&nbsp;.time
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; milliseconds<br>
+&nbsp;&nbsp;&nbsp;.x
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1<br>
+&nbsp;&nbsp;&nbsp;.y
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; pointer x, y coordinates in event window<br>
+&nbsp;&nbsp;&nbsp;.x_root
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1<br>
+&nbsp;&nbsp;&nbsp;.y_root
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; coordinates relative to root<br>
+&nbsp;&nbsp;&nbsp;.state
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; key or button mask<br>
+&nbsp;&nbsp;&nbsp;.button
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;resd
+&nbsp;&nbsp;&nbsp;1; detail<br>
+&nbsp;&nbsp;&nbsp;.same_screen resd &nbsp;&nbsp;&nbsp;1; same screen
+flag<br>
+&nbsp;&nbsp;&nbsp;endstruc<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;---------------------<br>
+&nbsp;&nbsp;&nbsp;;&gt;1 server<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;x_wait_reply - wait for xx milliseconds for
+reply<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;none <br>
+&nbsp;&nbsp;&nbsp;; OUTPUT:<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;failure - eax=negative error code<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;flags
+set for js<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1=reply
+read error (buffer error)<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-2=error
+packet in buffer<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-3=reply
+out of sequence<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-4=timeout
+expired or servers in tryagain loop<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-5=unexpected
+event while waiting for reply.<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-6=socket
+dead<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-x=all
+other errors are from kernel<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;success - eax = number of bytes
+read from server<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx
+= pointer to reply buffer info.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(see
+file event_info.inc for buffer data) &nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;; NOTES<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;source file: x_wait_reply.asm<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;If replies are not pending this
+function will<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;return an error of -1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;If reply does not occur within 2
+seconds a timeout<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;error will be returned<br>
+&nbsp;&nbsp;&nbsp;; * ----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;x_wait_reply:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,list_block<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list_check_front<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js wr_exit
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;exit if no reply
+pending<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,2000
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;wait for 2 seconds max<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,lib_buf
+&nbsp;&nbsp;&nbsp;&nbsp;;buffer<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,700
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;buffer length<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_read_socket<br>
+&nbsp;&nbsp;&nbsp;wr_exit:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;---------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;list_check_front - check list top, do not
+remove entry<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edx = list control block<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;struc list<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_buf_top_ptr
+resd 1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_buf_end_ptr
+resd 1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_entry_size resd
+1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_start_ptr resd 1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_tail_ptr resd 1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endstruc<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT:<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;flag set (jns) if success<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi = ptr to data<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax = 0<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,ebp unchanged<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;flag set (js) if no data on list<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax=-1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,ebp
+&nbsp;unchanged <br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;; NOTES<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;A full list will have a one entry gap<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;between the list_start_ptr and
+list_tail_ptr.<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;The list pointers cycle around the
+buffer<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;and entries can be removed from start or<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;end of list.<br>
+&nbsp;&nbsp;&nbsp;; * ----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;list_check_front:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,[edx+list.list_start_ptr]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,[edx+list.list_tail_ptr]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jne
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;have_data<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,-1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short list_check_front_exit<br>
+&nbsp;&nbsp;&nbsp;have_data:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;set
+success flag<br>
+&nbsp;&nbsp;&nbsp;list_check_front_exit:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;---------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;x_read_socket - read x server socket<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;eax = wait length in milliseconds<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0=no
+wait,immediate check for data<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1=forever<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;ecx = buffer for data<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edx = buffer length<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;note: the sequence number queue
+set<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;by x_send_request
+may be used.<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT:<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;success state
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;flag set (jns) if success -
+expected reply or event<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;eax = number of bytes in
+buffer<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;ecx = reply buffer ptr <br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;fail state<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;flags - set for js<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;eax = negative error<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-1=reply
+read error (buffer error)<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-2=error
+packet in buffer<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-3=reply
+out of sequence<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-4=timeout
+expired or servers in tryagain loop<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-5=unexpected
+event while waiting for reply.<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-6=socket
+died<br>
+&nbsp;&nbsp;&nbsp;;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-x=all
+other errors are from kernel<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;; NOTES<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;see file event_info.inc for reply codes<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;This is the low level function used by
+all other<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;x server packet read functions.
+&nbsp;See also,<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;x_wait_event<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;x_wait_reply<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;x_wait_big_reply<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;window_event_decode<br>
+&nbsp;&nbsp;&nbsp;; * ----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;x_read_socket:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[poll_timeout],eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[pkt_buf],ecx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[pkt_buf_length],edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[timeout],byte 80<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_flush<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short data_waiting
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;;<br>
+&nbsp;&nbsp;&nbsp;x_read_socket3:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[socket_fd]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,[poll_timeout]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;poll_socket<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jnz
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data_waiting<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,-4
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_read_socket_exit<br>
+&nbsp;&nbsp;&nbsp;data_waiting:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ebx, [socket_fd]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov eax,3
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; __NR_read<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,[pkt_buf]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,32
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;standard read
+size<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int byte 80h<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,-11
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;try again?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jne
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_read_socket4 &nbsp;;jmp if
+possible good read<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dec
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dword [timeout]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[timeout]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jnz
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_read_socket3 &nbsp;;loop
+back = retry<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,-1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short x_read_socket_exit<br>
+&nbsp;&nbsp;&nbsp;;check if good read<br>
+&nbsp;&nbsp;&nbsp;x_read_socket4:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js x_read_socket_exit
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;exit if error<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jnz
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_read_socket4a
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if socket data read<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,-6
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;eax=0,
+socket dead, exit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short x_read_socket_exit<br>
+&nbsp;&nbsp;&nbsp;x_read_socket4a:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;byte [ecx],0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;error
+packet?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jne
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_read_socket5
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if not error
+packet<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;; note; do we need to pop possible reply packet here?<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,-2
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;get
+code = error packet<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short x_read_socket_exit<br>
+&nbsp;&nbsp;&nbsp;;check if waiting for reply, eax=read cnt, ecx=buf ptr<br>
+&nbsp;&nbsp;&nbsp;x_read_socket5:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,list_block<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list_check_front
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;point at seq# on top of list<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;restore
+read count<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js x_read_socket_exit
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;exit if not reply (expected event?)<br>
+&nbsp;&nbsp;&nbsp;;verify this is a reply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;byte [ecx],1
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;reply
+packet<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jne
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x_read_socket5a
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if not replay
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;this should be reply event,check seq#, esi=event ptr<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bx,[ecx+2]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;get
+seq# from reply<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bx,[esi]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;check
+against list<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;je x_read_socket7
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if sequence#
+match, expected pkt<br>
+&nbsp;&nbsp;&nbsp;;this is unexpected packet,check if event or reply<br>
+&nbsp;&nbsp;&nbsp;x_read_socket5a:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,-5<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short x_read_socket_exit<br>
+&nbsp;&nbsp;&nbsp;x_read_socket6:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,-3
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;reply
+out of sequence<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short x_read_socket_exit<br>
+&nbsp;&nbsp;&nbsp;;we have expected reply,pop list, read tail if more
+data<br>
+&nbsp;&nbsp;&nbsp;x_read_socket7:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;push
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;call
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list_get_from_front<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;restore
+read length<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,[ecx+4]
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;get
+remaining pkt data count<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or edx,edx<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jz x_read_socket_exit
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp if all pkt data read<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,32
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;advance
+buffer ptr<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;shl
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,2
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;convert
+to byte count<br>
+&nbsp;&nbsp;&nbsp;;read rest of packet<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ebx, [socket_fd]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov eax,3
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; __NR_read<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int byte 80h<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;js x_read_socket_exit<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,32
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;restore correct
+packet length<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sub
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ecx,32
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;restore buffer
+start<br>
+&nbsp;&nbsp;&nbsp;x_read_socket_exit:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;;--------------------------<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .data]<br>
+&nbsp;&nbsp;&nbsp;pkt_buf &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dd 0<br>
+&nbsp;&nbsp;&nbsp;pkt_buf_length dd 0<br>
+&nbsp;&nbsp;&nbsp;poll_timeout dd 0<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;timeout: dd 0
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;used
+if server says try again later<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[section .text]<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;---------------------<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;list_get_from_front - return entry from top
+of list<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edx = list control block<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;struc list<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_buf_top_ptr
+resd 1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_buf_end_ptr
+resd 1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_entry_size resd
+1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_start_ptr resd 1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.list_tail_ptr resd 1<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;endstruc<br>
+&nbsp;&nbsp;&nbsp;;<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT:<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;flag set (jns) if success<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi = ptr to data<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,ebp unchanged<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;flag set (js) if no data on list<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edx,ebp
+&nbsp;unchanged <br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;; NOTES<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;source file: list_get_from_front.asm<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;A full list will have a one entry gap<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;between the list_start_ptr and
+list_tail_ptr.<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;The list pointers cycle around the
+buffer<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;and entries can be removed from start or<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;end of list.<br>
+&nbsp;&nbsp;&nbsp;; * ----------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;list_get_from_front:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,[edx+list.list_start_ptr]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;esi,[edx+list.list_tail_ptr]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jne
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;have_data2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,-1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short list_get_from_front_exit<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;have_data2:<br>
+&nbsp;&nbsp;&nbsp;;move pointer forward to next entry<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,esi<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[edx+list.list_entry_size]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cmp
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[edx+list.list_buf_end_ptr]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;jb update_start_ptr
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;jmp
+if not at end <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,[edx+list.list_buf_top_ptr]
+;start at top<br>
+&nbsp;&nbsp;&nbsp;update_start_ptr:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[edx+list.list_start_ptr],eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xor
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;eax,eax
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;set
+success flag<br>
+&nbsp;&nbsp;&nbsp;list_get_from_front_exit:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or eax,eax<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;;----------------------------------------------------
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;crt_write - display block of data<br>
+&nbsp;&nbsp;&nbsp;; INPUTS<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;ecx = ptr to data<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;&nbsp;edx = length of block<br>
+&nbsp;&nbsp;&nbsp;; OUTPUT<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;&nbsp;uses current color, see crt_set_color,
+crt_clear<br>
+&nbsp;&nbsp;&nbsp;; &nbsp;*
+---------------------------------------------------<br>
+&nbsp;&nbsp;&nbsp;crt_write:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov eax, 0x4
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;
+system call 0x4 (write)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mov ebx,1
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; stdout
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;; file desc. is stdout<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int byte 0x80<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ret<br>

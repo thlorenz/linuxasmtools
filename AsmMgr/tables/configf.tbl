@@ -1,0 +1,10 @@
+This is table configf.tbl located at
+/usr/share/asmmgr
+Only data enclosed in quotes is seen
+by AsmFile, everything else is comments.
+Each entry constists of a label in
+quotes, followed by data in quotes.
+
+"exit" "0_" 0_=normal run state  1_=exit requested by external process
+"path" "" this setting is set by other programs
+"edit" "nano" default editor, attaches to edit key

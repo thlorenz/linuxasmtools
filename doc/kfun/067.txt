@@ -1,0 +1,240 @@
+
+----------------------------------------------------------------------------
+ 67 sigaction       - sets up the action for a given signal
+----------------------------------------------------------------------------
+  mov  eax,067
+  mov  ebx,signum       ;signal number, SIGKILL & SIGSTOP can not be used
+  mov  ecx,act		;pointer to sa_structure, or zero to query handler
+  mov  edx,oldaction	;optional pointer to save area for old setting
+  int  80h
+
+
+    sigaction can attach or remove signal handlers.  If the oldaction
+    pointer is non-zero a copy of previous settings will be saved.
+    The act parameter points to sa_structure with:
+
+        sa_handler  dd ?  <- can be pointer to handler or SIG_DFL(0) or SIG_IGN(1)
+        sa_mask     dd ?  <- signals to block while handler executes
+        sa_flags    dd ?  <- see flags
+        sa_restoref dd ?  (unused)
+
+        The sa_handler field can be either a handler or flag as follows:
+        SIG_DFL(0) - restore default action for this signal
+        SIG_IGN(1) - ignore this signal
+
+        sa_mask gives a mask of signals which should be blocked  during  execu-
+        tion  of  the  signal handler.  In addition, the signal which triggered
+        the handler will be blocked, unless the SA_NODEFER or  SA_NOMASK  flags
+        are used.
+
+        sa_flags  specifies  a  set  of flags which modify the behaviour of the
+        signal handling process. It is formed by the bitwise OR of zero or more
+        of the following:
+
+        SA_NOCLDSTOP 0x00000001
+                     If  signum  is  SIGCHLD, do not receive notification when
+                     child processes stop (i.e., when child processes  receive
+                     one of SIGSTOP, SIGTSTP, SIGTTIN or SIGTTOU).
+
+        SA_ONESHOT or SA_RESETHAND 0x80000000
+                     Restore  the  signal action to the default state once the
+                     signal handler has been called.
+
+        SA_ONSTACK 0x08000000
+                     Call the signal handler on an alternate signal stack pro-
+                     vided  by  sigaltstack(2).   If an alternate stack is not
+                     available, the default stack will be used.
+
+        SA_RESTART 0x10000000
+                     Provide behaviour compatible with BSD signal semantics by
+                     making certain system calls restartable across signals.
+
+        SA_NOMASK or SA_NODEFER 0x40000000
+                     Do not prevent the signal from being received from within
+                     its own signal handler.
+
+        SA_SIGINFO 0x00000004
+                     The signal handler takes 3 arguments, not one.   In  this
+                     case,  sa_sigaction  should be set instead of sa_handler.
+                     (The sa_sigaction field was added in Linux 2.1.86.)
+
+ Signal handlers are passed three parameters if    
+ SA_SIGINFO was specified in sa_flags.  They are:
+ signal number, ptr to siginfo_t, ptr to ucontext_t
+ These parmaters are on the stack (see example handlers)
+
+              siginfo_t {
+        0         int      si_signo;  /* Signal number */
+        4         int      si_errno;  /* An errno value */
+        8         int      si_code;   /* Signal code */
+                  pid_t    si_pid;    /* Sending process ID */
+                  uid_t    si_uid;    /* Real user ID of sending process */
+                  int      si_status; /* Exit value or signal */
+                  clock_t  si_utime;  /* User time consumed */
+                  clock_t  si_stime;  /* System time consumed */
+                  sigval_t si_value;  /* Signal value */
+                  int      si_int;    /* POSIX.1b signal */
+                  void *   si_ptr;    /* POSIX.1b signal */
+                  void *   si_addr;   /* Memory location which caused fault */
+                  int      si_band;   /* Band event */
+                  int      si_fd;     /* File descriptor */
+
+       si_signo,  si_errno  and si_code are defined for all signals.  The rest
+       of the struct may be a union, so that one should only read  the  fields
+       that  are  meaningful  for the given signal.  kill(2), POSIX.1b signals
+       and SIGCHLD fill in si_pid and si_uid.   SIGCHLD also fills in  si_sta-
+       tus,  si_utime  and  si_stime.   si_int and si_ptr are specified by the
+       sender of the POSIX.1b signal.  SIGILL, SIGFPE, SIGSEGV and SIGBUS fill
+       in si_addr with the address of the fault.  SIGPOLL fills in si_band and
+       si_fd.
+
+       si_code indicates why this signal was sent.  It is a value, not a  bit-
+       mask.   The values which are possible for any signal are listed in this
+       table:
+
+              si_code   
+  +-----------+------------------------+
+   Value             Signal origin           
+  +-----------+------------------------+
+   SI_USER      kill, sigsend or raise =0  
+   SI_KERNEL    The kernel              =80h
+   SI_QUEUE     sigqueue                =-1
+   SI_TIMER     timer expired           =-2
+   SI_MESGQ     mesq state changed      =-3
+   SI_ASYNCIO   AIO completed           =-4
+   SI_SIGIO     queued SIGIO            =-5
+
+
+    SIGILL - illegal operation signal handler                 
+  +-----------+-------------------------+
+  |ILL_ILLOPC | illegal opcode           =1
+  |ILL_ILLOPN | illegal operand  =2
+  |ILL_ILLADR | illegal addressing mode =3
+  |ILL_ILLTRP | illegal trap             =4
+  |ILL_PRVOPC | privileged opcode        =5
+  |ILL_PRVREG | privileged register     =6
+  |ILL_COPROC | coprocessor error        =7
+  |ILL_BADSTK | internal stack error    =8
+
+
+     SIGFPE - floating point math error                
+  +-----------+----------------------------------+
+  |FPE_INTDIV | integer divide by zero            =1
+  |FPE_INTOVF | integer overflow                  =2
+  |FPE_FLTDIV | floating point divide by zero    =3
+  |FPE_FLTOVF | floating point overflow   =4
+  |FPE_FLTUND | floating point underflow          =5
+  |FPE_FLTRES | floating point inexact result    =6
+  |FPE_FLTINV | floating point invalid operation =7
+  |FPE_FLTSUB | subscript out of range            =8
+
+           sigsegv
+  +------------+---------------------------------------+
+  |SEGV_MAPERR | address not mapped to object           =1
+  |SEGV_ACCERR | invalid permissions for mapped object =2
+
+       +--------------------------------------------+
+       |                  SIGBUS                    |
+       +-----------+--------------------------------+
+       |BUS_ADRALN | invalid address alignment      |
+       +-----------+--------------------------------+
+       |BUS_ADRERR | non-existent physical address  |
+       +-----------+--------------------------------+
+       |BUS_OBJERR | object specific hardware error |
+       +-----------+--------------------------------+
+
+      SIGTRAP - signal handler           
+  +-----------+--------------------+
+  |TRAP_BRKPT | process breakpoint =1
+  |TRAP_TRACE | process trace trap =2
+
+       +--------------------------------------------+
+       |                  SIGCHLD                   |
+       +--------------+-----------------------------+
+       |CLD_EXITED    | child has exited            |
+       +--------------+-----------------------------+
+       |CLD_KILLED    | child was killed            |
+       +--------------+-----------------------------+
+       |CLD_DUMPED    | child terminated abnormally |
+       +--------------+-----------------------------+
+       |CLD_TRAPPED   | traced child has trapped    |
+       +--------------+-----------------------------+
+       |CLD_STOPPED   | child has stopped           |
+       +--------------+-----------------------------+
+       |CLD_CONTINUED | stopped child has continued |
+       +--------------+-----------------------------+
+
+       +-----------------------------------------+
+       |                SIGPOLL                  |
+       +---------+-------------------------------+
+       |POLL_IN  | data input available          |
+       +---------+-------------------------------+
+       |POLL_OUT | output buffers available      |
+       +---------+-------------------------------+
+       |POLL_MSG | input message available       |
+       +---------+-------------------------------+
+       |POLL_ERR | i/o error                     |
+       +---------+-------------------------------+
+       |POLL_PRI | high priority input available |
+       +---------+-------------------------------+
+       |POLL_HUP | device disconnected           |
+       +---------+-------------------------------+
+
+
+RETURN VALUE
+       The functions sigaction, sigprocmask, and sigpending return 0  on  suc-
+       cess  or error code.
+
+
+ERRORS
+       EINVAL An invalid signal was specified.  This will also be generated if
+       (22)   an  attempt is made to change the action for SIGKILL or SIGSTOP,
+              which cannot be caught.
+
+       EFAULT act, oldact, set, oldset or mask point to memory which is not  a
+       (14)      valid part of the process address space.
+
+       EINTR (4)  System call was interrupted.
+
+
+NOTES
+       According to POSIX, the behaviour of a process is  undefined  after  it
+       ignores  a  SIGFPE, SIGILL, or SIGSEGV signal that was not generated by
+       the kill() or the raise() functions.   Integer  division  by  zero  has
+       undefined result.  On some architectures it will generate a SIGFPE sig-
+       nal.  (Also dividing the most  negative  integer  by  -1  may  generate
+       SIGFPE.)  Ignoring this signal might lead to an endless loop.
+
+       POSIX  (B.3.3.1.3) disallows setting the action for SIGCHLD to SIG_IGN.
+       The BSD and SYSV behaviours differ, causing BSD software that sets  the
+       action for SIGCHLD to SIG_IGN to fail on Linux.
+
+       The  POSIX  spec  only  defines SA_NOCLDSTOP.  Use of other sa_flags is
+       non-portable.
+
+       The SA_RESETHAND flag is compatible with the  SVr4  flag  of  the  same
+       name.
+
+       The  SA_NODEFER  flag is compatible with the SVr4 flag of the same name
+       under kernels 1.3.9 and newer.  On older kernels the Linux  implementa-
+       tion  allowed  the  receipt  of  any  signal,  not  just the one we are
+       installing (effectively overriding any sa_mask settings).
+
+       The SA_RESETHAND  and  SA_NODEFER  names  for  SVr4  compatibility  are
+       present only in library versions 3.0.9 and greater.
+
+       The SA_SIGINFO flag is specified by POSIX.1b.  Support for it was added
+       in Linux 2.2.
+
+       sigaction can be called with a null second argument to query  the  cur-
+       rent  signal handler. It can also be used to check whether a given sig-
+       nal is valid for the current machine by calling it with null second and
+       third arguments.
+
+       See sigsetops(3) for details on manipulating signal sets.
+
+
+SEE ALSO
+       kill, pause, sigaltstack, raise, siginterrupt, signal
+
+

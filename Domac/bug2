@@ -1,0 +1,14 @@
+#!/bin/bash
+#asmbug domac test_cmd.in '*.dat' ./xx
+./domac $0
+exit 0
+
+^copy ("1") $work
+^expand $work #front /2
+^ifne $work ("21")
+^show ("expand #front /2 - failed")
+^stop
+^endif
+^show ("expand #front /2 - passed")
+
+^stop

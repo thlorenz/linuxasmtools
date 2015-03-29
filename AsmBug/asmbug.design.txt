@@ -1,0 +1,50 @@
+
+The asmbug design is ogranized into blocks and flows
+from: 1. setup
+      2. execution loop
+      3. exit processing
+
+Four major flags control most operation:
+     win_bit_map - bits enable display of window areas
+     app_mode - descrie state of application
+                ;4=app stopped  8=app died 12=running  16=stepOver
+     event_mode - describes x-server and other states
+                ;(or'ed bits) 1=exit request  2=warning state 4=forced stop
+     msg_ptr - set to message ptr for status line or zero if none
+
+The program code is divided into sections:
+   .abugrc                -run time history file, stored in current dir by asmbug
+   asmbug.asm             -main program, calls everyone else
+   window.inc             -asmlibx structure describing a window
+   system.inc             -general structures used by asmbug
+   1setup_app.inc         -initialization of target applcation
+   1setup_codehunt.inc    -searches app for code areas
+   1setup_datahunt.inc    -searches app or data areas
+   1setup_history.inc     -reads/writes .abugrc
+   1setup_parse.inc       -reads user parameters and processes
+   1setup_win.inc         -computes window info
+   2brk.inc               -break window display and setup
+   2code.inc              -code window display and setup
+   2mem.inc               -memory window display and setup
+   2reg.inc               -register window display and setup
+   3event_socket.inc      -x-server handling
+   3event_trace.inc       -kernel ptrace interface
+   4brk_win.inc           -break window actions
+   4code_win.inc          -code window actions
+   4common.inc            -common pop up code and other actions
+   4mem_win.inc           -memory window actions
+   4reg_win.inc           -register window actions
+   5help.inc              -pop up help 
+   elf_prep.inc           -ELF file decode and setup
+   TRACE.inc              -development only (enables trace of socket)
+
+Two libraries provide functions:
+  asmlib - general functions
+  asmlibx - x server functions
+
+Other notes:
+
+
+   
+   
+    

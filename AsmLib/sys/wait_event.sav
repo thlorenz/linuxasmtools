@@ -1,0 +1,56 @@
+  extern blk_clear
+  extern bit_set_list
+  extern lib_buf
+;----------------------
+;****f* sys/wait_event *
+; NAME
+;   wait_event - poll fd input/output status
+; INPUTS
+;  * esi = array of dword fd's terminated by -1
+;  * eax = max wait time, or zero to wait forever, and
+;  * -     minus 1 for immediate return of status
+; OUTPUT
+;  * eax = 0 child has died
+;  * -   = negative, then error/signal active(-4)
+;  * -   = positive number of events pending
+;  * ecx = ptr to array of bits set for each fd with
+;  * -     pending actions, bit 1 represents stdin (fd 0)
+; NOTES
+;  * file wait_event.asm
+;  * note: see bit_test, bit_set_list
+;  * ---------------------------------------------------
+;*******
+  global wait_event
+wait_event:
+  mov	ecx,20
+  mov	edi,lib_buf	;temp buffer for array
+  call	blk_clear
+  call	bit_set_list	;set bits
+  mov	ebx,[esi-8]	;get value of highest fd
+  inc	ebx		;ebx = highest fd +1
+  mov	ecx,edi		;ecx = bit array ptr (input)
+  xor	edx,edx		;edx = 0 (no write bit array)
+  xor	esi,esi		;esi = 0 (no exceptfds bit array)
+  or	eax,eax
+  js	we_fast_rtn	;jmp if immediate return
+  jz	we_forever
+;eax = number of microseconds to wait
+  mov	[time + 4],eax	;set microseconds
+  mov	edi,time
+  jmp	short we_start
+we_fast_rtn:
+  mov	edi,time	;assume stored time is zero
+  jmp	short we_start
+we_forever:	
+  xor	edi,edi
+we_start:
+  mov	eax,142
+  int	80h
+  ret
+
+  [section .data]
+time:	dd	0	;zero seconds, returns status immediatly
+	dd	0	;microseconds to wait
+;bits representing fd numbers to poll, stdin=bit#1
+  [section .text]
+

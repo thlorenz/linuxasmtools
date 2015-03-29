@@ -1,0 +1,43 @@
+
+----------------------------------------------------------------
+246 io_destroy   - Destroy an asynchronous I/O context
+----------------------------------------------------------------
+
+  mov  eax,246
+  mov  ebx,ctxp  ;pointer to context
+  int  80h
+
+
+SYNOPSIS
+
+       int io_destroy(aio_context_t ctx);
+
+
+DESCRIPTION
+       io_destroy()  removes the asynchronous I/O context from the list of I/O
+       contexts and then destroys it.  io_destroy() can also cancel  any  out‐
+       standing asynchronous I/O actions on ctx and block on completion.
+
+RETURN VALUE
+       io_destroy()  returns  0  on success; on failure, it returns one of the
+       errors listed under ERRORS.
+
+ERRORS
+       EINVAL The AIO context specified by ctx is invalid.
+
+       EFAULT The context pointed to is invalid.
+
+       ENOSYS io_destroy() is not implemented on this architecture.
+
+VERSIONS
+       The asynchronous I/O system calls first appeared in Linux  2.5,  August
+       2002.
+
+CONFORMING TO
+       io_destroy()  is Linux specific and should not be used in programs that
+       are intended to be portable.
+
+SEE ALSO
+       io_setup, io_submit, io_getevents, io_cancel
+
+

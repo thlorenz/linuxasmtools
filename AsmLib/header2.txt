@@ -1,0 +1,17 @@
+
+
+Asmlib is a library of Linux functions for X86
+processors.  All code was written in assembler.
+In general, functions do not preserve registers
+or check for errors.  The CLD flag is assumed
+to be set.  Also, some functions assume other
+functions are called first.  For example, the
+functions mouse_enable, read_window_size are
+setup functions usually called at beginning of
+programs.
+
+Copyrighted by the GNU public liscense.
+----------------------------------------------
+
+TABLE OF CONTENTS
+-----------------
